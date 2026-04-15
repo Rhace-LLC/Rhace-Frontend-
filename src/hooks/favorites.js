@@ -1,5 +1,6 @@
 import { userService } from "@/services/user.service";
 import { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
 
 export const useFavorites = () => {
@@ -234,6 +235,7 @@ export const useCarouselLogic = () => {
 export const useRestaurantData = (vendorType, type) => {
   const [restaurants, setRestaurants] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const user = useSelector((state) => state.auth.user);
 
   useEffect(() => {
     const fetchRestaurant = async () => {
@@ -249,7 +251,8 @@ export const useRestaurantData = (vendorType, type) => {
           });
           setRestaurants(res.data);
         } else {
-          const res = await userService.getVendor(vendorType);
+          const res = await userService.getVendors(vendorType, user ? user.user?._id : "");
+          console.log("Fetched restaurants:", res.data);
           setRestaurants(res.data);
         }
       } catch (error) {

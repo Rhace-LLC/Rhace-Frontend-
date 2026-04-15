@@ -9,6 +9,7 @@ import { logout } from "@/redux/slices/authSlice";
 import logoWhite from "@/public/images/Rhace-09.png";
 import logoBlack from "@/public/images/Rhace-11.png";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { authService } from "@/services/auth.service";
 
 const UserHeader = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -77,6 +78,8 @@ const UserHeader = () => {
     console.log("Attempting to logout");
     dispatch(logout());
     setProfile(null);
+    await authService.logout();
+    navigates("/auth/user/login");
   };
 
   // Navigate helper
@@ -87,7 +90,7 @@ const UserHeader = () => {
 
   return (
     <header
-      className={`${profile ? "absolute md:fixed" : "fixed"} top-0 z-50 w-full transition-all duration-300 ${scrolled ? "bg-white shadow-md" : "bg-transparent text-white"}`}
+      className={`${profile ? "absolute md:fixed" : "fixed"} top-0 z-99 w-full transition-all duration-300 ${scrolled ? "bg-white shadow-md" : "bg-transparent text-white"}`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center py-4">
@@ -278,7 +281,10 @@ export function UserProfileMenu({
 
       {/* Menu Items Section 2 */}
       <div className="py-1">
-        <MenuItem text="Account" onClick={() => handleNavigation("/account")} />
+        <MenuItem
+          text="Account"
+          onClick={() => handleNavigation("/account-settings")}
+        />
         <MenuItem
           text="Help Center"
           onClick={() => handleNavigation("/contact")}

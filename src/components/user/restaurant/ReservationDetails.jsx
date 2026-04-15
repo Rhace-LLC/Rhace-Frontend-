@@ -41,8 +41,8 @@ export default function ReservationDetails({
   const fetchVendor = async () => {
     try {
       setLoading(true);
-      const response = await userService.getVendor("restaurant", id);
-      setVendor(response.data[0]);
+      const response = await userService.getVendor(id);
+      setVendor(response.data);
     } catch (error) {
       console.error("Error fetching vendor:", error);
     } finally {
@@ -154,8 +154,8 @@ export default function ReservationDetails({
               <h3 className="text-lg font-semibold">Reservation Details</h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4">
-              <DatePicker value={date} onChange={setDate} />
-              <TimePicker value={time} onChange={setTime} 
+              <DatePicker value={date} onChange={setDate} edit/>
+              <TimePicker value={time} onChange={setTime} edit
                               slot={[
                   '09:00 AM','09:30 AM',
                   '10:00 AM','10:30 AM',
@@ -171,7 +171,7 @@ export default function ReservationDetails({
                   '08:00 PM','08:30 PM',
                 ]}
               />
-              <GuestPicker value={guestCount} onChange={setGuestCount} />
+              <GuestPicker value={guestCount} onChange={setGuestCount} edit/>
             </div>
           </div>
         </div>
@@ -273,7 +273,7 @@ export default function ReservationDetails({
             Back to Restaurant Page
           </Button>
           <Button
-            className="bg-[#0A6C6D] hover:bg-[#0A6C6D]/80 px-8 w-full md:max-w-xs h-10 rounded-xl cursor-pointer"
+            className="bg-[#0A6C6D] hover:bg-[#0A6C6D]/80 px-8 py-6 md:py-0 w-full md:max-w-xs h-10 rounded-xl cursor-pointer"
             onClick={handleContinue}
             disabled={!date || !seatingPreference || !guestCount || !time}
           >

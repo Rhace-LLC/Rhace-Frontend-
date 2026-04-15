@@ -14,10 +14,12 @@ import { userService } from "@/services/user.service";
 import StarRating from "@/components/ui/starrating";
 import UniversalLoader from "@/components/user/ui/LogoLoader";
 import Footer from "@/components/Footer";
+import TableGrid from "@/components/TableGridRecommendations";
 
 const RestaurantsPage = () => {
     const { id } = useParams();
     const [isLoading, setIsLoading] = useState(true);
+    const [recommendations, setRecommendations] = useState([]);
     const [restaurant, setRestaurant] = useState({
         _id: "",
         businessName: "",
@@ -49,9 +51,9 @@ const RestaurantsPage = () => {
     useEffect(() => {
         const fetchRestaurant = async () => {
             try {
-                const res = await userService.getVendor("restaurant", id)
-                console.log(res)
-                setRestaurant(res.data[0])
+                const res = await userService.getVendor(id)
+                setRestaurant(res.data)
+                setRecommendations(res.recommendations)
             } catch (error) {
                 console.error(error)
             } finally {
@@ -61,7 +63,7 @@ const RestaurantsPage = () => {
         fetchRestaurant();
     }, [])
 
-      if (isLoading) return <UniversalLoader fullscreen />
+    if (isLoading) return <UniversalLoader fullscreen type="vendor-page" />
 
     return (
         <>
@@ -84,13 +86,13 @@ const RestaurantsPage = () => {
                                 />
                                 <div className="space-y-2">
                                     <div className="flex flex-col md:flex-row md:justify-between md:items-cente w-full gap-4">
-                                        <div className="flex gap-2 items-center pt-2 md:pt-0 px-4 md:px-0">
+                                        <div className="flex justify-between items-center pt-2 md:pt-0 px-4 md:px-0">
                                             <h1 className="text-2xl text-[#111827] font-semibold">
                                                 {restaurant.businessName}{" "}
                                             </h1>{" "}
                                             <span className="px-2 py-0.5 rounded-full border border-[#37703F] bg-[#D1FAE5] text-xs text-[#37703F]">
                                                 {" "}
-                                                Opened
+                                                Open
                                             </span>
                                         </div>
                                         <RestaurantSaveCopy type="restaurants" id={id} vendor={restaurant} />

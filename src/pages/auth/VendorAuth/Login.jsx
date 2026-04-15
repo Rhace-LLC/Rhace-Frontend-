@@ -33,6 +33,7 @@ const Login = () => {
   const redirectTo = searchParams.get("redirect") || "/dashboard";
 
   const handleLogin = async () => {
+
     try {
       if (!formValidation()) {
         return
@@ -48,15 +49,19 @@ const Login = () => {
       } else {
         user = await authService.vendorLogin(formData.email, formData.password);
         dispatch(setVendor(user?.vendor));
+        localStorage.setItem('vendorId', user?.vendor?._id || user?.vendor?.id);
         toast.success("Welcome back!");
-        if (!user.vendor.isOnboarded) {
-          navigate("/auth/vendor/onboarding")
+        
+        const dashboardPath = `/dashboard/${vendorData.vendorType}`;
+        if (!vendorData.isOnboarded) {
+          navigate("/auth/vendor/onboarding");
         } else {
-          navigate(redirectTo === "/dashboard" ? `/dashboard/${user.vendor.vendorType}` : "/dashboard");
+          navigate(redirectTo === "/dashboard" ? dashboardPath : dashboardPath);
         }
       }
     } catch (err) {
-      toast.error(err.response?.data.message);
+
+      toast.error(err.response?.data?.message || err.message || 'Login failed');
       if (err.response?.data?.message === "Please verify your email with the OTP sent to your inbox.") {
         navigate(`/auth/vendor/otp?email=${formData.email}`)
       }

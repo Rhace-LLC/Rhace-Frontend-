@@ -132,11 +132,12 @@ return (
         </button>
         <form onSubmit={handleSubmit} className="space-y-6 mt-6">
           <div className="flex flex-col md:flex-row w-full gap-4">
-            <DatePicker className="bg-white" value={date} onChange={setDate} />
+            <DatePicker className="bg-white" value={date} onChange={setDate} chevron/>
             <TimePicker
               className="bg-white"
               value={time}
               onChange={setTime}
+              chevron
               slot={[
                 '09:00 AM', '09:30 AM',
                 '10:00 AM', '10:30 AM',
@@ -153,7 +154,7 @@ return (
               ]}
             />
           </div>
-          <GuestPicker className="bg-white" value={guests} onChange={setGuests} />
+          <GuestPicker className="bg-white" value={guests} onChange={setGuests} chevron/>
           <div className="flex flex-col gap-y-3">
             <Label htmlFor="special-request">Special Request</Label>
             <Textarea
@@ -168,7 +169,7 @@ return (
             <Button
               type="submit"
               disabled={!date || !time || isLoading}
-              className="w-full rounded-xl h-10 bg-[#0A6C6D] hover:bg-[0A6C6D]/50"
+              className="bg-[#0A6C6D] hover:bg-[#0A6C6D]/90 px-8 py-6 h-10 w-full sm:w-full md:max-w-xs rounded-xl cursor-pointer"
             >
               {isLoading ? (
                 <>
@@ -184,7 +185,7 @@ return (
     )}
     <div className="flex fixed bottom-0 left-0 w-full bg-white p-4 border-t border-[#E5E7EB]">
       <Button
-        className="w-full rounded-xl bg-[#0A6C6D] h-10 hover:bg-[0A6C6D]/50"
+        className=" bg-[#0A6C6D] hover:bg-[#0A6C6D]/90 px-8 py-6 h-10 w-full sm:w-full md:max-w-xs rounded-xl cursor-pointer"
         onClick={handlePopup}
       >
         Reserve Table

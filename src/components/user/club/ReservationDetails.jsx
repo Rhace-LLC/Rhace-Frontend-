@@ -8,6 +8,14 @@ import {
   Minus,
   Plus,
   Star,
+  Users,
+  Clock,
+  AlertCircle,
+  Crown,
+  Sparkles,
+  Wine,
+  Music,
+  Coffee,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useReservations } from "@/contexts/club/ReservationContext";
@@ -20,15 +28,37 @@ import { GuestPicker } from "../ui/guestpicker";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useNavigate } from "react-router";
+// eslint-disable-next-line no-unused-vars
 import { useInView, motion } from "framer-motion";
 import UniversalLoader from "../ui/LogoLoader";
 import { TablePicker } from "../ui/tablepicker";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+
+// Category color mapping for bottles
+const categoryColors = {
+  "Champagne": "bg-[#FEF3E2] border-[#FFE0B5] text-[#B45F2B]",
+  "Vodka": "bg-[#E6F3F5] border-[#B3D9E0] text-[#1A6B7A]",
+  "Whiskey": "bg-[#F0E6D2] border-[#D4B68A] text-[#8B4513]",
+  "Cognac": "bg-[#F5E6E6] border-[#D9B3B3] text-[#8B3A3A]",
+  "Tequilla": "bg-[#E6F0E6] border-[#B3D9B3] text-[#2E7D32]",
+  "Drink Mixers": "bg-[#F0E0F5] border-[#D9B3E0] text-[#6A1B9A]",
+};
+
+// Table category icons
+const tableCategoryIcons = {
+  "VIP": Crown,
+  "VVIP": Sparkles,
+  "Regular": Users,
+  "Super Regular": Users,
+  "Private": Wine,
+  "Booth": Music,
+  "Bar": Coffee,
+};
 
 export default function ReservationDetails({
   id,
-  searchQuery,
 }) {
   const {
     comboItems,
@@ -49,7 +79,6 @@ export default function ReservationDetails({
     vendor,
     setProposedPayment,
     totalPrice,
-    tableSelected,
     loading,
     comboLoading,
     bottlesLoading,
@@ -57,41 +86,66 @@ export default function ReservationDetails({
   } = useReservations();
   const [itemsToShow, setItemsToShow] = useState(8);
   const [activeTab, setActiveTab] = useState("All Bottles");
+  const [tableFilter, setTableFilter] = useState("all"); // all, available, limited
   const navigate = useNavigate();
-  const ref = useRef(null);
+  // const ref = useRef(null);
   const containerRef = useRef(null);
+  const comboContainerRef = useRef(null);
   const cardRef = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: "-100px" });
+  // const isInView = useInView(ref, { once: true, margin: "-100px" });
   const [maxTranslate, setMaxTranslate] = useState(0);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [scrollState, setScrollState] = useState({ atStart: true, atEnd: false });
-  const [tableAdded, setTableAdded] = useState(false)
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Check if mobile on mount and resize
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   useEffect(() => {
-    if (!containerRef.current) return;
+    if (!comboContainerRef.current) return;
 
-    const containerWidth = containerRef.current.offsetWidth;
-    const contentWidth = containerRef.current.scrollWidth;
+    const containerWidth = comboContainerRef.current.offsetWidth;
+    const contentWidth = comboContainerRef.current.scrollWidth;
 
     setMaxTranslate(contentWidth - containerWidth);
   }, [comboItems]);
 
-  const handleTable = (v) => {
+  // Handle table quantity change
+  const handleTableQuantityChange = (id, change, type = "button") => {
     setTable(
-      table.map((item) => ({
-        ...item,
-        selected: item._id === v._id ? true : false,
-      }))
+      table.map((item) => {
+        if (item._id === id) {
+          let newQuantity;
+          if (type === "input") {
+            newQuantity = change;
+          } else {
+            newQuantity = Math.max(0, (item.quantity || 0) + change);
+          }
+          
+          // Check availability
+          const available = item.quantityAvailable;
+          if (newQuantity > available) {
+            toast.error(`Only ${available} ${item.name} tables available`);
+            return item;
+          }
+          
+          return { 
+            ...item, 
+            quantity: newQuantity, 
+            selected: newQuantity > 0 ? true : false 
+          };
+        }
+        return item;
+      })
     );
-  }
-
-  useEffect(() => {
-    if (table.length > 0 && !tableAdded) {
-      const theTable = table.find(t => t._id === searchQuery.table)
-      handleTable(theTable)
-      setTableAdded(true)
-    }
-  }, [table])
+  };
 
   const filteredBottles =
     activeTab === "All Bottles"
@@ -100,17 +154,46 @@ export default function ReservationDetails({
 
   const displayedItems = filteredBottles?.slice(0, itemsToShow);
 
-
   const nextSlide = () => {
-    setCurrentIndex((prev) => (prev + 1) % comboItems.length);
+    if (isMobile) {
+      // On mobile, scroll the container
+      if (comboContainerRef.current) {
+        const container = comboContainerRef.current;
+        const cardWidth = cardRef.current?.offsetWidth || 280;
+        const newScrollLeft = container.scrollLeft + cardWidth + 24;
+        container.scrollTo({ left: newScrollLeft, behavior: 'smooth' });
+      }
+    } else {
+      // On desktop, use motion animation
+      setCurrentIndex((prev) => {
+        const nextIndex = prev + 1;
+        if (nextIndex >= comboItems.length) return prev;
+        return nextIndex;
+      });
+    }
   };
 
   const prevSlide = () => {
-    setCurrentIndex((prev) => (prev - 1 + comboItems.length) % comboItems.length);
+    if (isMobile) {
+      // On mobile, scroll the container
+      if (comboContainerRef.current) {
+        const container = comboContainerRef.current;
+        const cardWidth = cardRef.current?.offsetWidth || 280;
+        const newScrollLeft = Math.max(0, container.scrollLeft - cardWidth - 24);
+        container.scrollTo({ left: newScrollLeft, behavior: 'smooth' });
+      }
+    } else {
+      // On desktop, use motion animation
+      setCurrentIndex((prev) => {
+        const prevIndex = prev - 1;
+        if (prevIndex < 0) return 0;
+        return prevIndex;
+      });
+    }
   };
 
   const slideWidth =
-    cardRef.current?.offsetWidth && containerRef.current
+    cardRef.current?.offsetWidth && comboContainerRef.current
       ? cardRef.current.offsetWidth + 24
       : 0;
 
@@ -119,7 +202,6 @@ export default function ReservationDetails({
     maxTranslate
   );
   const LOAD_MORE_STEP = 4;
-
 
   const hasMore = (filteredBottles ? filteredBottles.length : 0) > itemsToShow;
 
@@ -132,7 +214,6 @@ export default function ReservationDetails({
     );
   };
 
-
   const handleContinue = () => {
     if (!date || !guestCount || !time) {
       toast.error("Fill the required field");
@@ -144,11 +225,16 @@ export default function ReservationDetails({
 
   if (loading) return <UniversalLoader fullscreen />
 
-  const handleQuantityChange = (id, change) => {
+  const handleBottleQuantityChange = (id, change, type = "button") => {
     setBottleItems(
       bottleItems.map((item) => {
         if (item._id === id) {
-          const newQuantity = Math.max(0, item.quantity + change);
+          let newQuantity;
+          if (type === "input") {
+            newQuantity = change;
+          } else {
+            newQuantity = Math.max(0, item.quantity + change);
+          }
           return { ...item, quantity: newQuantity, selected: newQuantity > 0 ? true : false };
         }
         return item;
@@ -156,34 +242,68 @@ export default function ReservationDetails({
     );
   };
 
-  const handleSelectionChange = (id, value) => {
-    if (value === 1) {
-      // Table selection: only one can be selected at a time
-      setTable(
-        table.map((item) => ({
-          ...item,
-          selected: item._id === id ? !item.selected : false,
-        }))
-      );
-    } else {
-      // Combo selection: multiple can be selected
-      setComboItems(
-        comboItems.map((item) => {
-          if (item._id === id) {
-            return { ...item, selected: !item.selected };
-          }
-          return item;
-        })
-      );
-    }
+  const handleComboSelectionChange = (id) => {
+    setComboItems(
+      comboItems.map((item) => {
+        if (item._id === id) {
+          return { ...item, selected: !item.selected };
+        }
+        return item;
+      })
+    );
   };
-
 
   const onScroll = e => {
     const el = e.target;
     const atStart = el.scrollLeft <= 0;
     const atEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - 1;
     setScrollState({ atStart, atEnd });
+  };
+
+  const getCategoryColor = (category) => {
+    return categoryColors[category] || "bg-[#FDEFDC] border-[#FFE0B5] text-[#606368]";
+  };
+
+  // Format selected tables for display
+  const getSelectedTablesText = () => {
+    const selectedTables = table.filter(t => t.selected);
+    if (selectedTables.length === 0) return "";
+    if (selectedTables.length === 1) {
+      const table = selectedTables[0];
+      return table.quantity > 1 ? `${table.name} (${table.quantity})` : table.name;
+    }
+    const totalCount = selectedTables.reduce((sum, t) => sum + (t.quantity || 1), 0);
+    return `${selectedTables.length} table types (${totalCount} total)`;
+  };
+
+  // Filter tables based on availability
+  const filteredTables = table.filter(item => {
+    if (tableFilter === "all") return true;
+    const available = item.quantityAvailable;
+    if (tableFilter === "available") return available > 0;
+    if (tableFilter === "limited") return available > 0 && available <= 2;
+    return true;
+  });
+
+  // Get table category icon
+  const getTableIcon = (category) => {
+    const IconComponent = tableCategoryIcons[category] || Users;
+    return <IconComponent className="size-3.5" />;
+  };
+
+  // Generate dummy descriptions for tables
+  const getTableDescription = (table) => {
+    const descriptions = {
+      "VIP": "Premium seating with exclusive bottle service and dedicated waitstaff",
+      "VVIP": "Ultimate luxury experience with private area and personalized service",
+      "Regular": "Comfortable seating with great views of the main stage",
+      "Super Regular": "Spacious seating ideal for groups, close to the dance floor",
+      "Private": "Enclosed area for maximum privacy and intimate gatherings",
+      "Booth": "Semi-private booth with premium sound and lighting",
+      "Bar": "High-top seating at the bar counter with direct bartender access",
+    };
+    
+    return descriptions[table.category] || "Comfortable seating arrangement with great ambiance";
   };
 
   return (
@@ -252,10 +372,32 @@ export default function ReservationDetails({
               <h3 className="text-lg font-medium md:font-semibold">Reservation Details</h3>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 p-4">
-              <DatePicker title="Date" edit value={date} onChange={setDate} />
-              <TimePicker title="Time" edit value={time} onChange={setTime} slot={['09:00 PM', '09:30 PM', '10:00 PM', '10:30 PM', '11:00 PM', '11:30 PM', '12:00 AM', '12:30 AM', '01:00 AM', '01:30 AM', '02:00 AM', '02:30 AM', '03:00 AM']} />
-              <TablePicker edit loading={loading} tables={table} value={tableSelected && tableSelected.name} onChange={(value) => handleTable(value)} />
-              <GuestPicker edit value={guestCount} onChange={setGuestCount} />
+              <DatePicker 
+                title="Date" 
+                edit 
+                value={date} 
+                onChange={setDate} 
+              />
+              <TimePicker 
+                title="Time" 
+                edit 
+                value={time} 
+                onChange={setTime} 
+                slot={['09:00 PM', '09:30 PM', '10:00 PM', '10:30 PM', '11:00 PM', '11:30 PM', '12:00 AM', '12:30 AM', '01:00 AM', '01:30 AM', '02:00 AM', '02:30 AM', '03:00 AM']} 
+              />
+              <TablePicker 
+                edit 
+                loading={loading} 
+                tables={table} 
+                value={getSelectedTablesText()} 
+                onChange={(value) => handleTableQuantityChange(value._id, 1)} 
+              />
+              <GuestPicker 
+                edit 
+                value={guestCount} 
+                onChange={setGuestCount} 
+                hideChildren hideInfants
+                />
             </div>
           </div>
         </div>
@@ -269,12 +411,30 @@ export default function ReservationDetails({
             </p>
           </div>
 
+          {/* Tables Section - KEPT THE SAME */}
           <div className="space-y-6">
             <div className="flex items-center justify-between w-full">
-              <h3 className="text-xs md:text-sm text-[#111827]">
-                Tables
-              </h3>
+              <h3 className="text-xs md:text-sm text-[#111827]">Tables</h3>
+              <div className="flex items-center gap-3">
+                {/* Table Filter */}
+                <select
+                  value={tableFilter}
+                  onChange={(e) => setTableFilter(e.target.value)}
+                  className="text-xs border rounded-lg px-2 py-1 bg-white"
+                >
+                  <option value="all">All Tables</option>
+                  <option value="available">Available Only</option>
+                  <option value="limited">Limited Stock</option>
+                </select>
+                
+                {table.filter(t => t.selected).length > 0 && (
+                  <span className="text-xs text-[#0A6C6D] bg-[#E7F0F0] px-2 py-1 rounded-full">
+                    {table.filter(t => t.selected).reduce((sum, t) => sum + (t.quantity || 1), 0)} selected
+                  </span>
+                )}
+              </div>
             </div>
+            
             <div onScroll={onScroll} className={cn(
               "flex overflow-x-auto scroll-smooth hide-scrollbar transition-all w-full",
               !scrollState.atStart && !scrollState.atEnd && "mask-x-from-95% mask-x-to-100%",
@@ -287,68 +447,175 @@ export default function ReservationDetails({
               >
                 {tableLoading ? (
                   <div className="flex w-full justify-center items-center">
-
                     <UniversalLoader />
                   </div>
-                ) : table.length === 0 ? (
-                  <div>No available Tables</div>
+                ) : filteredTables.length === 0 ? (
+                  <div>No tables match your filter</div>
                 ) : (
                   <div className="flex w-full gap-4 sm:gap-6">
-                    {table?.map((item) => (
-                      <div key={item._id} className={`p-1 rounded-xl border w-[230px] flex ${item.selected ? "bg-[#E7F0F0] border-[#B3D1D2]" : "bg-white"}`}>
-                        <div className={`p-2 flex flex-col justify-between duration-200 w-full space-y-4 bg-white transition-all border rounded-lg ${item.selected ? "border-[#E5E7EB]" : "border-transparent"}`}>
-                          <div>
-                            <h3 className="font-bold text-gray-800 text-sm">{item.name}</h3>
-                          </div>
-                          <div className="space-y-2 flex-1">
-                            {item.addOns && item.addOns.slice(0, 4).map((offer, i) => (
-                              <div key={i} className="flex items-center gap-2 ">
-                                <Check className="text-[#0A6C6D] shrink-0 size-4" />
-                                <span className="text-sm text-[#111827]">
-                                  {offer}
-                                </span>
+                    {filteredTables?.map((item) => {
+                      const available = item.quantityAvailable;
+                      const TableIcon = getTableIcon(item.category);
+                      const isUnavailable = available === 0;
+                      const isLimited = available <= 2 && available > 0;
+                      
+                      return (
+                        <div 
+                          key={item._id} 
+                          className={cn(
+                            "p-1 rounded-xl border w-[300px] flex transition-all duration-200",
+                            item.selected ? "bg-[#E7F0F0] border-[#B3D1D2]" : "bg-white",
+                            isUnavailable && "opacity-60"
+                          )}
+                        >
+                          <div className={cn(
+                            "p-3 flex flex-col justify-between duration-200 w-full space-y-3 bg-white transition-all border rounded-lg",
+                            item.selected ? "border-[#E5E7EB]" : "border-transparent",
+                            isUnavailable && "bg-gray-50"
+                          )}>
+                            {/* Header with Name, Category Icon and Availability Badge */}
+                            <div className="flex items-start justify-between">
+                              <div className="flex items-center gap-2">
+                                <div className={cn(
+                                  "p-1.5 rounded-full",
+                                  item.category === "VIP" && "bg-yellow-100",
+                                  item.category === "VVIP" && "bg-purple-100",
+                                  item.category === "Regular" && "bg-blue-100",
+                                  item.category === "Lounge" && "bg-green-100",
+                                )}>
+                                  {TableIcon}
+                                </div>
+                                <div>
+                                  <h3 className="font-bold text-gray-800 text-base">{item.name}</h3>
+                                  {item.category && (
+                                    <span className="text-xs text-gray-500">{item.category}</span>
+                                  )}
+                                </div>
                               </div>
-                            ))}
-                          </div>
-                          <div className="flex justify-between w-full items-center">
-                            <p className="font-semibold text-gray-900">
-                              ₦{item.price.toLocaleString()}
+                              
+                              {/* Availability Badge */}
+                              {isUnavailable ? (
+                                <Badge variant="destructive" className="text-[10px] px-2 py-0.5">
+                                  <AlertCircle className="size-3 mr-1" /> Unavailable
+                                </Badge>
+                              ) : isLimited ? (
+                                <Badge variant="warning" className="bg-orange-100 text-orange-700 border-orange-200 text-[10px] px-2 py-0.5">
+                                  <Clock className="size-3 mr-1" /> Only {available} left
+                                </Badge>
+                              ) : (
+                                <Badge variant="success" className="bg-green-100 text-green-700 border-green-200 text-[10px] px-2 py-0.5">
+                                  <Check className="size-3 mr-1" /> Available
+                                </Badge>
+                              )}
+                            </div>
+                            
+                            {/* Enhanced Description */}
+                            <p className="text-xs text-gray-600 line-clamp-2 min-h-[32px]">
+                              {item.description || getTableDescription(item)}
                             </p>
-                            <div
-                              className={`w-6 h-6 rounded-md border flex items-center justify-center cursor-pointer ${item.selected
-                                ? "bg-[#0A6C6D] border-[#0A6C6D] text-white"
-                                : "border-gray-300"
-                                }`}
-                              onClick={() => handleSelectionChange(item._id, 1)}
-                            >
-                              {item.selected && (
-                                <svg
-                                  width="16"
-                                  height="16"
-                                  viewBox="0 0 16 16"
-                                  fill="none"
-                                  xmlns="http://www.w3.org/2000/svg"
-                                >
-                                  <path
-                                    d="M3.33301 9.33301C3.33301 9.33301 4.66634 9.66634 5.66634 11.6663C5.66634 11.6663 9.37221 5.55523 12.6663 4.33301"
-                                    stroke="white"
-                                    strokeWidth="1.5"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                  />
-                                </svg>
+                            
+                            {/* Capacity Info */}
+                            <div className="flex items-center gap-2 text-xs text-gray-500">
+                              <Users className="size-3.5" />
+                              <span>Up to {item.seatingCapacity || 6} guests</span>
+                              {item.minimum && (
+                                <span className="ml-auto">Min. {item.minimum} guests</span>
+                              )}
+                            </div>
+                            
+                            {/* Table Features/AddOns */}
+                            <div className="space-y-1.5">
+                              {item.addOns && item.addOns.slice(0, 3).map((offer, i) => (
+                                <div key={i} className="flex items-center gap-2">
+                                  <Check className="text-[#0A6C6D] shrink-0 size-3.5" />
+                                  <span className="text-xs text-[#111827]">{offer}</span>
+                                </div>
+                              ))}
+                            </div>
+                            
+                            {/* Price and Quantity Controls */}
+                            <div className="flex flex-col gap-3 pt-2 border-t border-dashed">
+                              <div className="flex justify-between items-center">
+                                <p className="font-semibold text-gray-900">
+                                  ₦{item.price.toLocaleString()} 
+                                  <span className="text-xs font-normal text-gray-500 ml-1">per table</span>
+                                </p>
+                                {available > 0 && (
+                                  <span className="text-xs text-gray-500">
+                                    {available} available
+                                  </span>
+                                )}
+                              </div>
+                              
+                              {/* Quantity Controls - Disabled if unavailable */}
+                              {!isUnavailable && (
+                                <div className="flex items-center justify-between">
+                                  <span className="text-xs text-gray-500">Quantity:</span>
+                                  <div className="flex items-center gap-2">
+                                    <Button
+                                      variant="outline"
+                                      size="icon"
+                                      className="size-7 rounded-full border-[#0A6C6D] border text-[#0A6C6D] hover:bg-[#0A6C6D] hover:text-white"
+                                      onClick={() => handleTableQuantityChange(item._id, -1)}
+                                      disabled={!item.quantity || item.quantity === 0}
+                                    >
+                                      <Minus className="size-3" />
+                                    </Button>
+                                    <span className="w-8 text-center">
+                                      <Input
+                                        type="number"
+                                        value={item.quantity || 0}
+                                        min={0}
+                                        max={available}
+                                        inputMode="numeric"
+                                        pattern="[0-9]*"
+                                        className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none text-center px-1 h-7 text-sm"
+                                        onWheel={(e) => (e.target).blur()}
+                                        onChange={(e) => {
+                                          let value = Number(e.target.value);
+                                          if (value < 0) value = 0;
+                                          if (value > available) {
+                                            toast.error(`Maximum ${available} tables available`);
+                                            value = available;
+                                          }
+                                          handleTableQuantityChange(item._id, value, "input");
+                                        }}
+                                      />
+                                    </span>
+                                    <Button
+                                      variant="outline"
+                                      size="icon"
+                                      className="size-7 rounded-full border-[#0A6C6D] border text-[#0A6C6D] hover:bg-[#0A6C6D] hover:text-white"
+                                      onClick={() => handleTableQuantityChange(item._id, 1)}
+                                      disabled={item.quantity >= available}
+                                    >
+                                      <Plus className="size-3" />
+                                    </Button>
+                                  </div>
+                                </div>
+                              )}
+                              
+                              {/* Total for this table type */}
+                              {(item.quantity > 0) && (
+                                <div className="flex justify-between items-center pt-1 border-t border-dashed">
+                                  <span className="text-xs text-gray-500">Total:</span>
+                                  <span className="text-sm font-semibold text-[#0A6C6D]">
+                                    ₦{(item.price * (item.quantity || 1)).toLocaleString()}
+                                  </span>
+                                </div>
                               )}
                             </div>
                           </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
-                )
-                }
+                )}
               </motion.div>
             </div>
           </div>
+
+          {/* Premium Combos Section - FIXED with proper mobile/desktop behavior */}
           <div className="space-y-6">
             <div className="flex items-center justify-between w-full">
               <h3 className="text-xs md:text-sm text-[#111827]">
@@ -362,35 +629,44 @@ export default function ReservationDetails({
                 >
                   <ChevronLeft />
                 </button>
-                <button onClick={nextSlide} disabled={currentIndex * slideWidth >= maxTranslate} className="text-white rounded-full disabled:text-[#606368] bg-[#0A6C6D] disabled:bg-[#E5E7EB] flex items-center justify-center size-[32px]">
+                <button 
+                  onClick={nextSlide} 
+                  disabled={!isMobile && currentIndex >= comboItems.length - 1} 
+                  className="text-white rounded-full disabled:text-[#606368] bg-[#0A6C6D] disabled:bg-[#E5E7EB] flex items-center justify-center size-[32px]"
+                >
                   <ChevronRight />
                 </button>
               </div>
             </div>
-            <div className="flex overflow-hidden w-full" ref={containerRef} >
-              <motion.div
-                className="flex gap-6 w-full"
-                animate={{ x: -translateX }}
-                transition={{ duration: 0.6, ease: "easeInOut" }}
-              >
-                {comboLoading ? (
-                  <UniversalLoader />
-                ) : comboItems.length === 0 ? (
-                  <div>No available Combos</div>
-                ) : (
-                  comboItems.map((item, index) => {
-                    return (
-                      <motion.div
-                        key={index}
+            
+            <div 
+              ref={comboContainerRef}
+              className={cn(
+                "flex overflow-x-auto scroll-smooth hide-scrollbar transition-all w-full",
+                !isMobile && "overflow-hidden"
+              )}
+              style={isMobile ? { scrollBehavior: 'smooth' } : {}}
+            >
+              {!isMobile ? (
+                // Desktop: Motion animation controlled by buttons
+                <motion.div
+                  className="flex gap-6"
+                  animate={{ x: -translateX }}
+                  transition={{ duration: 0.5, ease: "easeInOut" }}
+                >
+                  {comboLoading ? (
+                    <UniversalLoader />
+                  ) : comboItems.length === 0 ? (
+                    <div>No available Combos</div>
+                  ) : (
+                    comboItems.map((item, index) => (
+                      <div
+                        key={item._id}
                         ref={index === 0 ? cardRef : null}
-                        animate={isInView ? { opacity: 1, scale: 1 } : {}}
-                        transition={{ duration: 0.5, delay: index * 0.1 }}
-                        className={`${item.selected
-                          && "bg-[#E7F0F0] border rounded-2xl border-[#B3D1D2]"
-                          } p-1 h-[400px] w-[254px] sm:w-[calc(28%-12px)] lg:w-[calc(23.333%-16px)] flex-shrink-0`}
+                        className={`${item.selected && "bg-[#E7F0F0] border rounded-2xl border-[#B3D1D2]"} p-1 h-[420px] w-[280px] sm:w-[300px] lg:w-[320px] flex-shrink-0`}
                       >
                         <div className="p-2 w-full h-full space-y-3 rounded-2xl bg-white border border-[#E5E7EB] flex flex-col">
-                          <div className="relative w-full h-[150px] overflow-hidden rounded-2xl flex-shrink-0">
+                          <div className="relative w-full h-[180px] overflow-hidden rounded-2xl flex-shrink-0">
                             {item.image ? (
                               <img
                                 src={item.image}
@@ -409,28 +685,27 @@ export default function ReservationDetails({
                             )}
                           </div>
                           <div className="px-3 space-y-3 flex-1 flex flex-col">
-                            <p className="text-[#111827] text-sm">{item.name}</p>
+                            <p className="text-[#111827] text-sm font-medium">{item.name}</p>
                             <div className="space-y-2 flex-1">
                               {item.addOns.slice(0, 4).map((offer, i) => (
-                                <div key={i} className="flex items-center gap-2 ">
+                                <div key={i} className="flex items-center gap-2">
                                   <Check size={16} className="text-[#0A6C6D] flex-shrink-0" />
-                                  <span className="text-sm text-[#111827]">
-                                    {offer}
-                                  </span>
+                                  <span className="text-sm text-[#111827]">{offer}</span>
                                 </div>
                               ))}
                             </div>
                             <div className="flex items-center justify-between w-full flex-shrink-0">
-                              <p className="text-sm text-[#111827]">
+                              <p className="text-sm font-semibold text-[#111827]">
                                 ₦{item.setPrice.toLocaleString()}
                               </p>
                               <div className="flex items-center gap-2">
                                 <div
-                                  className={`w-5 h-5 rounded-md border flex items-center justify-center cursor-pointer ${item.selected
-                                    ? "bg-teal-600 border-teal-600 text-white"
-                                    : "border-gray-300"
-                                    }`}
-                                  onClick={() => handleSelectionChange(item._id)}
+                                  className={`w-5 h-5 rounded-md border flex items-center justify-center cursor-pointer ${
+                                    item.selected
+                                      ? "bg-teal-600 border-teal-600 text-white"
+                                      : "border-gray-300"
+                                  }`}
+                                  onClick={() => handleComboSelectionChange(item._id)}
                                 >
                                   {item.selected && (
                                     <svg
@@ -455,13 +730,98 @@ export default function ReservationDetails({
                             </div>
                           </div>
                         </div>
-                      </motion.div>
-                    );
-                  }))}
-              </motion.div>
+                      </div>
+                    ))
+                  )}
+                </motion.div>
+              ) : (
+                // Mobile: Normal scroll
+                <div className="flex gap-6">
+                  {comboLoading ? (
+                    <UniversalLoader />
+                  ) : comboItems.length === 0 ? (
+                    <div>No available Combos</div>
+                  ) : (
+                    comboItems.map((item, index) => (
+                      <div
+                        key={item._id}
+                        ref={index === 0 ? cardRef : null}
+                        className={`${item.selected && "bg-[#E7F0F0] border rounded-2xl border-[#B3D1D2]"} p-1 h-[420px] w-[280px] flex-shrink-0`}
+                      >
+                        <div className="p-2 w-full h-full space-y-3 rounded-2xl bg-white border border-[#E5E7EB] flex flex-col">
+                          <div className="relative w-full h-[180px] overflow-hidden rounded-2xl flex-shrink-0">
+                            {item.image ? (
+                              <img
+                                src={item.image}
+                                alt={item.name}
+                                className="object-cover size-full"
+                              />
+                            ) : (
+                              <div className="bg-gray-200 size-full flex items-center justify-center">
+                                No Image
+                              </div>
+                            )}
+                            {item.specials && (
+                              <div className="absolute bg-[#E5E7EB] rounded-full top-2 left-2 px-3 text-xs font-medium text-[#111827] py-1">
+                                {item.specials}
+                              </div>
+                            )}
+                          </div>
+                          <div className="px-3 space-y-3 flex-1 flex flex-col">
+                            <p className="text-[#111827] text-sm font-medium">{item.name}</p>
+                            <div className="space-y-2 flex-1">
+                              {item.addOns.slice(0, 4).map((offer, i) => (
+                                <div key={i} className="flex items-center gap-2">
+                                  <Check size={16} className="text-[#0A6C6D] flex-shrink-0" />
+                                  <span className="text-sm text-[#111827]">{offer}</span>
+                                </div>
+                              ))}
+                            </div>
+                            <div className="flex items-center justify-between w-full flex-shrink-0">
+                              <p className="text-sm font-semibold text-[#111827]">
+                                ₦{item.setPrice.toLocaleString()}
+                              </p>
+                              <div className="flex items-center gap-2">
+                                <div
+                                  className={`w-5 h-5 rounded-md border flex items-center justify-center cursor-pointer ${
+                                    item.selected
+                                      ? "bg-teal-600 border-teal-600 text-white"
+                                      : "border-gray-300"
+                                  }`}
+                                  onClick={() => handleComboSelectionChange(item._id)}
+                                >
+                                  {item.selected && (
+                                    <svg
+                                      width="16"
+                                      height="16"
+                                      viewBox="0 0 16 16"
+                                      fill="none"
+                                      xmlns="http://www.w3.org/2000/svg"
+                                    >
+                                      <path
+                                        d="M3.33301 9.33301C3.33301 9.33301 4.66634 9.66634 5.66634 11.6663C5.66634 11.6663 9.37221 5.55523 12.6663 4.33301"
+                                        stroke="white"
+                                        strokeWidth="1.5"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                      />
+                                    </svg>
+                                  )}
+                                </div>
+                                <span className="text-xs text-[#111827]">Add</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
             </div>
           </div>
 
+          {/* Premium Bottles Section */}
           <div className="space-y-6">
             <div className="space-y-4">
               <h3 className="text-sm text-[#111827]">Premium Bottles</h3>
@@ -495,9 +855,9 @@ export default function ReservationDetails({
             ) : (
               <>
                 <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
-                  {displayedItems.map((item, i) => (
+                  {displayedItems.map((item) => (
                     <div
-                      key={i}
+                      key={item._id}
                       className="p-2 space-y-3 bg-white rounded-2xl border border-[#E5E7EB]"
                     >
                       <div className="relative w-full h-24 md:h-48 overflow-hidden rounded-2xl">
@@ -513,7 +873,10 @@ export default function ReservationDetails({
                         )}
                       </div>
                       <div className="space-y-3 md:px-3">
-                        <div className="border text-[#606368] bg-[#FDEFDC] w-max border-[#FFE0B5] text-xs py-1.5 px-2 rounded-md">
+                        <div className={cn(
+                          "border w-max text-xs py-1.5 px-2 rounded-md",
+                          getCategoryColor(item.category)
+                        )}>
                           {item.category}
                         </div>
                         <div className="space-y-1">
@@ -532,7 +895,7 @@ export default function ReservationDetails({
                               size="icon"
                               className="size-4 md:size-6 rounded-full border-[#1E3A8A] border-2 text-[#1E3A8A]"
                               onClick={() =>
-                                handleQuantityChange(item._id, -1)
+                                handleBottleQuantityChange(item._id, -1)
                               }
                             >
                               <Minus className="size-2" />
@@ -551,8 +914,9 @@ export default function ReservationDetails({
                                 }
                                 onChange={(e) => {
                                   let value = Number(e.target.value);
-                                  if (value < 1) value = 1;
-                                  handleQuantityChange(
+                                  if (value < 0) value = 0;
+                                  if (value > 20) value = 20;
+                                  handleBottleQuantityChange(
                                     item._id,
                                     value,
                                     "input"
@@ -565,7 +929,7 @@ export default function ReservationDetails({
                               size="icon"
                               className="size-4 md:size-6 rounded-full border-[#1E3A8A] border-2 text-[#1E3A8A]"
                               onClick={() =>
-                                handleQuantityChange(item._id, 1)
+                                handleBottleQuantityChange(item._id, 1)
                               }
                             >
                               <Plus className="size-2" />
@@ -583,10 +947,7 @@ export default function ReservationDetails({
                       className="text-[#0A6C6D] hover:underline text-sm cursor-pointer flex items-center gap-2"
                     >
                       Show more{" "}
-                      <ChevronDown
-                        className="
-                            h-4 w-4"
-                      />
+                      <ChevronDown className="h-4 w-4" />
                     </button>
                   </div>
                 )}
@@ -626,7 +987,7 @@ export default function ReservationDetails({
             Back to Club Page
           </Button>
           <Button
-            className="bg-[#0A6C6D] hover:bg-[#0A6C6D]/90 px-8 w-full max-w-xs rounded-xl h-10 cursor-pointer"
+            className="bg-[#0A6C6D] hover:bg-[#0A6C6D]/90 px-8 py-6 w-full max-w-xs rounded-xl h-10 cursor-pointer"
             onClick={handleContinue}
             disabled={!date || !guestCount || !time}
           >
@@ -637,3 +998,7 @@ export default function ReservationDetails({
     </div>
   );
 }
+
+//WISDOM KINDLY FIX UP THE PAYMENT TOTAL FOR THIS..
+// It currently selects tables, and table quanitiy 
+// The payment logic doesnt add the extra price for each quanitity.. so FIX IT.

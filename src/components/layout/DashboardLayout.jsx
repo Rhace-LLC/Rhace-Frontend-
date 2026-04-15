@@ -1,40 +1,40 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Sidebar from './sidebar/Sidebar';
-import Header from './headers/vendor-header';
-import { useNavigate } from 'react-router';
-import { useSelector } from 'react-redux';
+import VendorHeader from './headers/vendor-header';
 
-const DashboardLayout = ({ children, section, settings }) => {
+const DashboardLayout = ({ children, type }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const navigate = useNavigate()
-  const vendor = useSelector(state => state.auth.vendor)
+  const navigate = useNavigate();
 
+return (
+    <div className="h-screen flex bg-gray-50 overflow-hidden">
 
-  return (
-    <div className="flex h-dvh">
-      {/* Sidebar */}
-      <Sidebar onNavigate={navigate} type={vendor.vendorType} settings={settings} isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-      
-      {/* Main content area */}
-      <div className="flex-1 flex flex-col relative overflow-hidden">
-        {/* Header */}
-        <Header section={section}  onMenuClick={() => setSidebarOpen(true)} />
-        
-        {/* Main content */}
-        <main className="flex-1 overflow-auto">
+      <div className="hidden lg:flex lg:flex-shrink-0">
+        <Sidebar
+          isOpen={false}
+          onClose={() => {}}
+          onNavigate={(path) => navigate(path)}
+          type={type}
+        />
+      </div>
+
+      <div className="flex flex-1 relative overfow-hidden flex-col w-full">
+        <VendorHeader onMenuClick={() => setSidebarOpen(true)} />
+        <main className="flex-1 overflow-auto lg:mb-14">
           {children}
         </main>
       </div>
-      
-      {/* Mobile sidebar overlay */}
-      {/* {sidebarOpen && (
+
+      {sidebarOpen && (
         <div
-          className="fixed inset-0 z-20 bg-black bg-opacity-50 lg:hidden"
+          className="fixed inset-0 z-20 bg-black/30 lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
-      )} */}
-    </div>
+      )}
+  </div>
   );
 };
 
 export default DashboardLayout;
+

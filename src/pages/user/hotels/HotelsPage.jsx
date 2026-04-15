@@ -1,37 +1,43 @@
 "use client";
-import React, { useEffect, useState } from "react";
-import { Hotel, Mail, MapPin, Phone, Star } from "lucide-react";
-import HotelInfo from "../../../components/user/hotel/HotelInfo";
-import HotelSaveCopy from "@/components/user/ui/SaveCopy";
+import Footer from "@/components/Footer";
+import StarRating from "@/components/ui/starrating";
+import Header from "@/components/user/Header";
+import HotelBookingPopup from "@/components/user/hotel/BookiingPopup";
+import HotelBookingForm from "@/components/user/hotel/BookingForm";
 import Images from "@/components/user/ui/Image";
 import Images2 from "@/components/user/ui/Image2";
-import Footer from "@/components/Footer";
-import { useParams } from "react-router";
-import HotelBookingForm from "@/components/user/hotel/BookingForm";
-import MapComponent from "@/components/user/ui/mapComponent";
-import HotelBookingPopup from "@/components/user/hotel/BookiingPopup";
-import Header from "@/components/user/Header";
-import { userService } from "@/services/user.service";
-import StarRating from "@/components/ui/starrating";
 import UniversalLoader from "@/components/user/ui/LogoLoader";
+import MapComponent from "@/components/user/ui/mapComponent";
+import HotelSaveCopy from "@/components/user/ui/SaveCopy";
 import { hotelService } from "@/services/hotel.service";
+import { userService } from "@/services/user.service";
+import { Mail, MapPin, Phone } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useLocation, useParams } from "react-router";
+import HotelInfo from "../../../components/user/hotel/HotelInfo";
+import { TableGridTwo } from "@/components/TableGridRecommendations";
+
 
 const HotelsPage = () => {
-  const [activeTab, setActiveTab] = useState("details");
+  const location = useLocation();
+  const section = location.hash ? location.hash.substring(1) : "details";
+    const [activeTab, setActiveTab] = useState(section);
 
   const { id } = useParams();
   const [hotel, setHotel] = useState({});
+      const [recommendations, setRecommendations] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [show, setShow] = useState(false);
   const [rooms, setRooms] = useState(null);
-  const [selectedRoom, setSelectedRoom] = useState(null);
+  const [selectedRooms, setSelectedRooms] = useState([]);
 
   useEffect(() => {
     const fetchHotel = async () => {
       try {
-        const res = await userService.getVendor("hotel", id);
+        const res = await userService.getVendor(id);
         console.log(res);
-        setHotel(res.data[0]);
+        setHotel(res.data);
+        setRecommendations(res.recommendations)
       } catch (error) {
         console.error(error);
       } finally {
@@ -50,7 +56,8 @@ const HotelsPage = () => {
     fetchRooms();
   }, []);
 
-  if (isLoading || !rooms) return <UniversalLoader fullscreen />;
+  if (isLoading || !rooms)
+    return <UniversalLoader fullscreen type="vendor-page" />;
   return (
     <>
       <div className="hidden md:block">
@@ -74,10 +81,9 @@ const HotelsPage = () => {
                   {activeTab === "rooms" && (
                     <div className="hidden md:block">
                       <HotelBookingForm
-                        selectedRoom={selectedRoom}
-                        setSelectedRoom={setSelectedRoom}
+                        selectedRooms={selectedRooms}
+                        setSelectedRooms={setSelectedRooms}
                         id={id}
-                        rooms={rooms}
                         restaurant={hotel}
                       />
                     </div>
@@ -91,7 +97,7 @@ const HotelsPage = () => {
                       </h1>{" "}
                       <span className="px-2 py-0.5 rounded-full border border-[#37703F] bg-[#D1FAE5] text-xs text-[#37703F]">
                         {" "}
-                        Opened
+                        Open
                       </span>
                     </div>
                     <HotelSaveCopy type="hotels" vendor={hotel} id={id} />
@@ -119,10 +125,10 @@ const HotelsPage = () => {
                 data={hotel}
                 activeTab={activeTab}
                 setActiveTab={setActiveTab}
-                selectedRoom={selectedRoom}
+                selectedRooms={selectedRooms}
                 setShow={setShow}
                 rooms={rooms}
-                setSelectedRoom={setSelectedRoom}
+                setSelectedRooms={setSelectedRooms}
               />
             </div>
           </div>
@@ -132,10 +138,9 @@ const HotelsPage = () => {
             <div className="space-y-8 px-4 md:px-0">
               <div className="hidden md:block">
                 <HotelBookingForm
-                  selectedRoom={selectedRoom}
-                  setSelectedRoom={setSelectedRoom}
+                  selectedRooms={selectedRooms}
+                  setSelectedRooms={setSelectedRooms}
                   id={id}
-                  rooms={rooms}
                   restaurant={hotel}
                 />
               </div>
@@ -190,9 +195,8 @@ const HotelsPage = () => {
           setActiveTab={setActiveTab}
           show={show}
           setShow={setShow}
-          selectedRoom={selectedRoom}
-          setSelectedRoom={setSelectedRoom}
-          rooms={rooms}
+          selectedRooms={selectedRooms}
+          setSelectedRooms={setSelectedRooms}
           id={id}
         />
       </main>
