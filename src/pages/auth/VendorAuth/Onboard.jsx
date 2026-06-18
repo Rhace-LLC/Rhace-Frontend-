@@ -355,7 +355,7 @@ export function Onboard() {
       });
       console.log("Verification response:", response);
 
-      const { accountName } = "Test" //response.data;
+      const { accountName } = response.data;
 
       updateFormData({
         bankName: banks.find((b) => b.code === formData.bankCode)?.name || "",
