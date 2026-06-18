@@ -72,7 +72,8 @@ class AuthService {
   }
 
   async vendorUpdate(formData, vendorId) {
-    const res = await api.put(`/vendors/${vendorId}`, formData);
+    const id = vendorId || formData?._id || formData?.id;
+    const res = await api.put(`/vendors/${id}`, formData);
     return res.data;
   }
 

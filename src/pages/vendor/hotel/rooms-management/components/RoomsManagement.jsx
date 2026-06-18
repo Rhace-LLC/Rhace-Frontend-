@@ -18,6 +18,14 @@ import RoomFilter from "./RoomFilter";
 import DashboardButton from "@/components/dashboard/ui/DashboardButton";
 import { Add } from "@/components/dashboard/ui/svg";
 
+const normalizeCategory = (name) => {
+  const n = (name || "").toLowerCase();
+  if (n.includes("suite")) return "suite";
+  if (n.includes("penthouse")) return "penthouse";
+  if (n.includes("deluxe") || n.includes("luxury")) return "deluxe";
+  return "standard";
+};
+
 const RoomsManagementComponent = ({
   currentPage = 1,
   itemsPerPage = 12,
@@ -194,7 +202,7 @@ const RoomsManagementComponent = ({
         roomNumber: rt.roomNumber || String(idx + 1),
         name: rt.name || `Room ${idx + 1}`,
         roomType: rt.name || `Room ${idx + 1}`,
-        type: rt.name || "standard",
+        type: rt.category || rt.roomCategory || normalizeCategory(rt.name),
         pricePerNight: rt.pricePerNight || rt.price || 0,
         price: rt.pricePerNight || rt.price || 0,
         adultsCapacity: rt.adultsCapacity || 0,

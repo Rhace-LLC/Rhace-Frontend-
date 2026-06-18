@@ -115,6 +115,7 @@ const BookingManagement = () => {
       case "confirmed":
         return "bg-[#D1FAE5] text-[#37703F] border-[#B8FFC2]";
       case "canceled":
+      case "cancelled":
         return "bg-[#FCE6E6] text-[#EF4444] border-[#FAE48A]";
       case "no-show":
         return "bg-[#FCE6E6] text-[#EF4444] border-[#FAE48A]";
@@ -422,8 +423,9 @@ const BookingManagement = () => {
           >
             {row.getValue("reservationStatus") === "upcoming" && "Upcoming"}
             {row.getValue("reservationStatus") === "confirmed" && "Confirmed"}
-            {row.getValue("reservationStatus") === "canceled" && "Canceled"}
+            {["canceled", "cancelled"].includes(row.getValue("reservationStatus")) && "Canceled"}
             {row.getValue("reservationStatus") === "no-show" && "No Show"}
+            {!["upcoming", "confirmed", "canceled", "cancelled", "no-show"].includes(row.getValue("reservationStatus")) && row.getValue("reservationStatus")}
           </div>
         ),
       },

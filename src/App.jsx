@@ -69,6 +69,7 @@ import ClubSettings from "./pages/vendor/club/Settings";
 import AddRooms from "./pages/vendor/hotel/add-rooms/page";
 import BookingManagement from "./pages/vendor/hotel/bookings";
 import HotelDashboard from "./pages/vendor/hotel/Dashboard";
+import HotelProfile from "./pages/vendor/hotel/Profile";
 import RoomsManagement from "./pages/vendor/hotel/rooms-management/page";
 import HotelSettings from "./pages/vendor/hotel/Settings";
 
@@ -196,7 +197,8 @@ const hotelVendorRoutes = [
   { path: "hotel/rooms", element: <RoomsManagement /> },
   { path: "hotel/payments", element: <PaymentDashboard /> },
   { path: "hotel/staffs", element: <StaffManagementSystem /> },
-  { path: "hotel/settings", element: <RestaurantSettings /> },
+  { path: "hotel/profile", element: <HotelProfile /> },
+  { path: "hotel/settings", element: <HotelSettings /> },
 ];
 
 const clubVendorRoutes = [

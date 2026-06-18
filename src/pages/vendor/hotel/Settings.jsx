@@ -4,10 +4,9 @@ import TagInput from "@/components/TagInput";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Building2, Clock, DollarSign, Globe, Phone, Tag, Save, RotateCcw, Hotel, MapPin, Briefcase, Sparkles, Coffee, Wifi, ParkingCircle } from "lucide-react";
+import { Building2, Clock, DollarSign, Globe, Phone, Tag, Save, RotateCcw, Hotel, MapPin, Briefcase, Coffee, Wifi, ParkingCircle } from "lucide-react";
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { BusinessLogo } from "../settings/part/BusinessInfo";
 import { toast } from "react-toastify";
 import { authService } from "@/services/auth.service";
 import { setVendor } from "@/redux/slices/authSlice";
@@ -58,20 +57,6 @@ const HotelSettings = () => {
             <p className="text-slate-500 ml-12">
               Manage your hotel profile, amenities, pricing, and booking preferences
             </p>
-          </div>
-
-          {/* Logo Section */}
-          <div className="mb-8 p-6 bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow duration-300">
-            <div className="flex items-center gap-2 mb-4">
-              <Sparkles className="w-5 h-5 text-blue-600" />
-              <h3 className="text-sm font-semibold text-slate-700 uppercase tracking-wide">
-                Brand Identity
-              </h3>
-            </div>
-            <BusinessLogo
-              value={formData.logo}
-              onChange={(value) => updateField("logo", value)}
-            />
           </div>
 
           <div className="grid gap-6">
