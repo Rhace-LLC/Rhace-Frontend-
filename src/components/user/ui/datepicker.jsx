@@ -31,6 +31,7 @@ const DatePicker = ({
   title = "Select date",
   chevron,
   edit,
+  minDate,
 }) => {
   const [open, setOpen] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(value || new Date());
@@ -43,24 +44,32 @@ const DatePicker = ({
   const rows = [];
   let days = [];
   let day = startDate;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
   const work = () => {
     while (day <= endDate) {
       for (let i = 0; i < 7; i++) {
         const cloneDay = day;
+        const isPastDate = cloneDay < today;
+        const isBeforeMin = minDate ? cloneDay <= minDate : false;
+        const isDisabled = isPastDate || isBeforeMin;
         days.push(
           <div
             key={cloneDay.toString()}
             className={`
-                   w-8 h-8 sm:w-12.5 sm:h-12 flex items-center justify-center text-black text-sm font-normal cursor-pointer  outline-1  outline-gray-300 
+                   w-8 h-8 sm:w-12.5 sm:h-12 flex items-center justify-center text-black text-sm font-normal outline-1 outline-gray-300 
                    ${
                      !isSameMonth(cloneDay, monthStart)
                        ? "text-neutral-400 "
                        : isSameDay(cloneDay, value || new Date())
                          ? "bg-indigo-800 text-white"
-                         : "text-gray-700 hover:bg-indigo-100 bg-gray-100"
+                         : isDisabled
+                           ? "text-neutral-300 cursor-not-allowed"
+                           : "text-gray-700 hover:bg-indigo-100 bg-gray-100 cursor-pointer"
                    }
                  `}
             onClick={() => {
+              if (isDisabled) return;
               onChange?.(cloneDay);
               setOpen(false);
             }}

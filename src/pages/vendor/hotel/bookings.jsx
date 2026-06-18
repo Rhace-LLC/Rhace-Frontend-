@@ -60,6 +60,7 @@ import {
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
+import { useWebSocket } from "@/contexts/WebSocketContext";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -459,7 +460,7 @@ const BookingManagement = () => {
                     setOpen(true);
                   }}
                 >
-                  <CheckCircle /> Mark as Completed
+                  <CheckCircle />  Confirm Reservation
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem className="text-[#EF4444]">
@@ -499,62 +500,21 @@ const BookingManagement = () => {
 
   const tabs = ["All", "Upcoming", "Completed", "Canceled", "No shows"];
 
-  const socketRef = useRef(null);
-  const reconnectTimeout = useRef(null);
+  // Replace native WebSocket with Socket.IO WebSocketContext
+  const { subscribe, unsubscribe, connected } = useWebSocket();
 
   useEffect(() => {
-    if (!vendor?._id) return;
-    let isComponentMounted = true;
-
-    const connect = () => {
-      if (!isComponentMounted) return;
-      const socket = new WebSocket(
-        `wss://rhace-backend-mkne.onrender.com?type=vendor&id=${vendor._id}`,
-      );
-      socketRef.current = socket;
-
-      socket.onopen = () => console.log("✅ WebSocket connected");
-
-      socket.onmessage = (event) => {
-        try {
-          const message = JSON.parse(event.data);
-          console.log("📩 Message from server:", message);
-          if (message.type === "new_reservation") {
-            toast.success(
-              `🆕 New reservation from ${message.data.customerName}`,
-            );
-            setBookings((prev) => [message.data, ...prev]);
-          }
-        } catch (error) {
-          console.error("❌ Failed to parse message:", error);
-        }
-      };
-
-      socket.onerror = (err) => console.error("⚠️ WebSocket error:", err);
-
-      socket.onclose = (e) => {
-        console.warn(`🔌 WebSocket closed (code: ${e.code})`);
-        socketRef.current = null;
-        if (isComponentMounted && e.code !== 1000) {
-          reconnectTimeout.current = setTimeout(() => {
-            console.log("🔁 Reconnecting WebSocket...");
-            connect();
-          }, 5000);
-        }
-      };
+    const handleNewReservation = (data) => {
+      toast.success(`🆕 New reservation from ${data.customerName}`);
+      setBookings((prev) => [data, ...prev]);
     };
 
-    connect();
+    subscribe("reservation-created", handleNewReservation);
 
     return () => {
-      isComponentMounted = false;
-      if (socketRef.current) {
-        socketRef.current.close(1000, "Component unmounted");
-        socketRef.current = null;
-      }
-      if (reconnectTimeout.current) clearTimeout(reconnectTimeout.current);
+      unsubscribe("reservation-created");
     };
-  }, [vendor?._id]);
+  }, [subscribe, unsubscribe]);
 
   useEffect(() => {
     const fetchReservations = async () => {
@@ -738,6 +698,32 @@ const BookingManagement = () => {
                 variant="secondary"
                 text="Export"
                 icon={<Export />}
+                onClick={() => {
+                  try {
+                    const headers = ["Customer Name", "Email", "Check In", "Check Out", "Room Type", "Status", "Payment", "Amount"];
+                    const rows = filteredBookings.map(b => [
+                      b.customerName || "",
+                      b.email || "",
+                      b.checkInDate ? new Date(b.checkInDate).toLocaleDateString() : "",
+                      b.checkOutDate ? new Date(b.checkOutDate).toLocaleDateString() : "",
+                      b.rooms?.map(r => r.roomId?.name).join("; ") || "",
+                      b.reservationStatus || "",
+                      b.paymentStatus || "",
+                      b.totalAmount || 0,
+                    ]);
+                    const csv = [headers.join(","), ...rows.map(r => r.map(c => `"${c}"`).join(","))].join("\n");
+                    const blob = new Blob([csv], { type: "text/csv" });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.download = `bookings-${new Date().toISOString().slice(0,10)}.csv`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    toast.success("Bookings exported successfully");
+                  } catch (e) {
+                    toast.error("Failed to export bookings");
+                  }
+                }}
               />
             </div>
           </div>

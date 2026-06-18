@@ -10,6 +10,8 @@ import Success from "@/public/images/success.gif";
 export default function ConfirmPage() {
     const navigate = useNavigate();
     const { id } = useParams();
+    const [searchParams] = useState(() => new URLSearchParams(window.location.search));
+    const reference = searchParams.get('reference');
 
     const [state, setState] = useState({
         reservation: null,
@@ -33,8 +35,15 @@ export default function ConfirmPage() {
         let pollCount = 0;
         const MAX_POLLS = 10;
 
-        const completeReservation = async () => {
+        const processPayment = async () => {
             try {
+                // Step 1: Verify the payment with Paystack first
+                if (reference) {
+                    toast.info("Verifying payment...");
+                    await paymentService.verifyPayment(reference);
+                }
+
+                // Step 2: Complete the reservation
                 const result = await paymentService.completeReservation(id);
 
                 if (!isMounted) return;
@@ -56,11 +65,12 @@ export default function ConfirmPage() {
             } catch (err) {
                 if (!isMounted) return;
 
+                // If verify succeeded but complete returned 404, poll as before
                 if (err.response?.status === 404 && pollCount < MAX_POLLS) {
                     pollCount++;
                     console.log(`Polling attempt ${pollCount}/${MAX_POLLS}...`);
 
-                    timeoutId = setTimeout(completeReservation, 2000);
+                    timeoutId = setTimeout(processPayment, 2000);
                     return;
                 }
 
@@ -76,13 +86,13 @@ export default function ConfirmPage() {
             }
         };
 
-        completeReservation();
+        processPayment();
 
         return () => {
             isMounted = false;
             if (timeoutId) clearTimeout(timeoutId);
         };
-    }, [id]);
+    }, [id, reference]);
 
     if (state.isLoading) {
         return (

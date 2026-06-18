@@ -2,16 +2,26 @@ import { useFavorites } from '@/hooks/favorites';
 import { HeartIcon } from '@/public/icons/icons';
 import { motion } from 'framer-motion';
 import { Heart } from 'lucide-react';
+import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router';
+import { toast } from 'react-toastify';
 
 export function FavoriteButton({ vendor, className = "" }) {
   const { isFavorite, toggleFavorite } = useFavorites();
+  const user = useSelector((state) => state.auth.user);
+  const navigate = useNavigate();
   const isFav = isFavorite(vendor._id);
 
   const handleClick = (e) => {
-    e.preventDefault(); // Prevent navigation if inside a link
+    e.preventDefault();
     e.stopPropagation();
 
-    // Pass vendor data for optimistic update
+    if (!user) {
+      toast.info("Please log in to save favorites");
+      navigate('/auth/user/login');
+      return;
+    }
+
     toggleFavorite(vendor._id, {
       name: vendor.name,
       image: vendor.image || vendor.logo,
@@ -72,13 +82,20 @@ export function FavoriteButton({ vendor, className = "" }) {
 
 export function FavoriteButton2({ vendor, className = "" }) {
   const { isFavorite, toggleFavorite } = useFavorites();
+  const user = useSelector((state) => state.auth.user);
+  const navigate = useNavigate();
   const isFav = isFavorite(vendor._id);
 
   const handleClick = (e) => {
-    e.preventDefault(); // Prevent navigation if inside a link
+    e.preventDefault();
     e.stopPropagation();
 
-    // Pass vendor data for optimistic update
+    if (!user) {
+      toast.info("Please log in to save favorites");
+      navigate('/auth/user/login');
+      return;
+    }
+
     toggleFavorite(vendor._id, {
       name: vendor.name,
       image: vendor.image || vendor.logo,
@@ -157,13 +174,20 @@ export function FavoriteButton2({ vendor, className = "" }) {
 
 export function FavoriteButton3({ vendor, className = "" }) {
   const { isFavorite, toggleFavorite } = useFavorites();
+  const user = useSelector((state) => state.auth.user);
+  const navigate = useNavigate();
   const isFav = isFavorite(vendor._id);
 
   const handleClick = (e) => {
-    e.preventDefault(); // Prevent navigation if inside a link
+    e.preventDefault();
     e.stopPropagation();
 
-    // Pass vendor data for optimistic update
+    if (!user) {
+      toast.info("Please log in to save favorites");
+      navigate('/auth/user/login');
+      return;
+    }
+
     toggleFavorite(vendor._id, {
       name: vendor.name,
       image: vendor.image || vendor.logo,

@@ -132,6 +132,21 @@ export default function UserManagement() {
     }
     try {
       await updateUserStatus(userId, { status: "Suspended" });
+      // Update local state immediately so UI reflects the change without refresh
+      setUsers((prev) =>
+        prev.map((u) =>
+          (u.id === userId || u._id === userId)
+            ? { ...u, status: "Suspended", accountStatus: "Suspended" }
+            : u
+        )
+      );
+      setFilteredUsers((prev) =>
+        prev.map((u) =>
+          (u.id === userId || u._id === userId)
+            ? { ...u, status: "Suspended", accountStatus: "Suspended" }
+            : u
+        )
+      );
       alert(`User ${user.name || user.email || "account"} has been suspended successfully`);
     } catch (e) {
       console.error("Failed to suspend user", e);

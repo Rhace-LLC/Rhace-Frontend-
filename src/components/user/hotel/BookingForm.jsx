@@ -282,6 +282,7 @@ const updateQuantity = (roomId, delta) => {
                         onChange={(date) =>
                           updateRoomDates(room._id, "checkOutDate", date)
                         }
+                        minDate={room.checkInDate ? new Date(room.checkInDate) : null}
                         className="bg-white"
                       />
                     </div>

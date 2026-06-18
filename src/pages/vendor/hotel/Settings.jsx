@@ -4,7 +4,7 @@ import TagInput from "@/components/TagInput";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Building2, Clock, DollarSign, Globe, Phone, Tag, Save, RotateCcw, Hotel, MapPin, Briefcase, Coffee, Wifi, ParkingCircle } from "lucide-react";
+import { Building2, Clock, DollarSign, Globe, Phone, Tag, Save, RotateCcw, Hotel, MapPin, Briefcase, Coffee, Wifi, ParkingCircle, Dog, Users, Ban } from "lucide-react";
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
@@ -190,6 +190,82 @@ const HotelSettings = () => {
                     onChange={(e) => updateField("offer", e.target.value)}
                     className="focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
                   />
+                </div>
+              </div>
+            </Card>
+
+            {/* Hotel Policies Card */}
+            <Card className="group border-0 shadow-lg shadow-slate-200/50 rounded-2xl overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-blue-100/30">
+              <div className="p-6 md:p-8 space-y-6">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+                  <h2 className="text-xl font-semibold text-slate-800 flex items-center gap-2">
+                    <div className="p-1.5 bg-blue-100 rounded-lg">
+                      <Ban className="w-5 h-5 text-blue-700" />
+                    </div>
+                    Hotel Policies
+                  </h2>
+                  <div className="text-xs text-slate-400 font-mono">
+                    Booking rules
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-slate-700">Check-In Time</label>
+                    <input
+                      type="time"
+                      value={formData.checkInTime || "14:00"}
+                      onChange={(e) => updateField("checkInTime", e.target.value)}
+                      className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-slate-700">Check-Out Time</label>
+                    <input
+                      type="time"
+                      value={formData.checkOutTime || "12:00"}
+                      onChange={(e) => updateField("checkOutTime", e.target.value)}
+                      className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                    />
+                  </div>
+                </div>
+                <Textarea
+                  label="Cancellation Policy"
+                  placeholder="Describe your cancellation policy, deadlines, fees, etc."
+                  value={formData.cancellationPolicy || ""}
+                  onChange={(e) => updateField("cancellationPolicy", e.target.value)}
+                  className="focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all min-h-[80px]"
+                />
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <label className="flex items-center gap-2 p-3 bg-slate-50 rounded-xl border border-slate-100 cursor-pointer hover:bg-slate-100 transition-colors">
+                    <input
+                      type="checkbox"
+                      checked={formData.petPolicy !== "no"}
+                      onChange={(e) => updateField("petPolicy", e.target.checked ? "allowed" : "no")}
+                      className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                    />
+                    <Dog className="w-4 h-4 text-blue-600" />
+                    <span className="text-sm text-slate-700">Pets Allowed</span>
+                  </label>
+                  <label className="flex items-center gap-2 p-3 bg-slate-50 rounded-xl border border-slate-100 cursor-pointer hover:bg-slate-100 transition-colors">
+                    <input
+                      type="checkbox"
+                      checked={formData.smokingPolicy === "allowed"}
+                      onChange={(e) => updateField("smokingPolicy", e.target.checked ? "allowed" : "no")}
+                      className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                    />
+                    <Ban className="w-4 h-4 text-blue-600" />
+                    <span className="text-sm text-slate-700">Smoking Allowed</span>
+                  </label>
+                  <label className="flex items-center gap-2 p-3 bg-slate-50 rounded-xl border border-slate-100 cursor-pointer hover:bg-slate-100 transition-colors">
+                    <input
+                      type="checkbox"
+                      checked={formData.childrenPolicy !== "no"}
+                      onChange={(e) => updateField("childrenPolicy", e.target.checked ? "allowed" : "no")}
+                      className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                    />
+                    <Users className="w-4 h-4 text-blue-600" />
+                    <span className="text-sm text-slate-700">Children Welcome</span>
+                  </label>
                 </div>
               </div>
             </Card>
