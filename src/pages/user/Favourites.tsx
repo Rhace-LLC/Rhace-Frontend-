@@ -1,167 +1,165 @@
-import Footer from "@/components/Footer";
-import { Button } from "@/components/ui/button";
-import Header from "@/components/user/Header";
-import { useFavorites } from "@/hooks/favorites";
-import { Heart } from "lucide-react";
-import React, { useEffect, useState } from "react";
-import { FaStar } from "react-icons/fa6";
-import { FiHeart } from "react-icons/fi";
+import Footer from '@/components/Footer';
+import { Button } from '@/components/ui/button';
+import Header from '@/components/user/Header';
+import { useFavorites } from '@/hooks/favorites';
+import { Heart } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { FaStar } from 'react-icons/fa6';
+import { FiHeart } from 'react-icons/fi';
 
 // Enhanced dummy data with multiple images
 const restaurantsData = [
   {
-    _id: "r1",
-    businessName: "The Golden Spoon",
+    _id: 'r1',
+    businessName: 'The Golden Spoon',
     profileImages: [
-      "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800",
-      "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800",
-      "https://images.unsplash.com/photo-1559339352-11d035aa65de?w=800",
+      'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800',
+      'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800',
+      'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=800',
     ],
     rating: 4.8,
     reviews: 245,
-    cuisines: ["Fine Dining", "Italian Cuisine", "Wine Bar"],
-    address: "123 Main Street, Downtown",
+    cuisines: ['Fine Dining', 'Italian Cuisine', 'Wine Bar'],
+    address: '123 Main Street, Downtown',
     isFavorite: true,
-    badge: "Popular",
+    badge: 'Popular',
   },
   {
-    _id: "r2",
-    businessName: "Sushi Paradise",
+    _id: 'r2',
+    businessName: 'Sushi Paradise',
     profileImages: [
-      "https://images.unsplash.com/photo-1579027989536-b7b1f875659b?w=800",
-      "https://images.unsplash.com/photo-1583623025817-d180a2221d0a?w=800",
-      "https://images.unsplash.com/photo-1611143669185-af224c5e3252?w=800",
+      'https://images.unsplash.com/photo-1579027989536-b7b1f875659b?w=800',
+      'https://images.unsplash.com/photo-1583623025817-d180a2221d0a?w=800',
+      'https://images.unsplash.com/photo-1611143669185-af224c5e3252?w=800',
     ],
     rating: 4.6,
     reviews: 189,
-    cuisines: ["Japanese", "Sushi Bar", "Asian Fusion"],
-    address: "456 Ocean Ave, Waterfront",
+    cuisines: ['Japanese', 'Sushi Bar', 'Asian Fusion'],
+    address: '456 Ocean Ave, Waterfront',
     isFavorite: true,
-    offer: "20% off",
+    offer: '20% off',
   },
   {
-    _id: "r3",
-    businessName: "Burger Haven",
-    profileImages: [
-      "https://images.unsplash.com/photo-1550547660-d9450f859349?w=800",
-    ],
+    _id: 'r3',
+    businessName: 'Burger Haven',
+    profileImages: ['https://images.unsplash.com/photo-1550547660-d9450f859349?w=800'],
     rating: 4.5,
     reviews: 312,
-    cuisines: ["American", "Burgers", "Casual Dining"],
-    address: "789 Park Lane, Central District",
+    cuisines: ['American', 'Burgers', 'Casual Dining'],
+    address: '789 Park Lane, Central District',
     isFavorite: true,
   },
   {
-    _id: "r4",
-    businessName: "Spice Route",
+    _id: 'r4',
+    businessName: 'Spice Route',
     profileImages: [
-      "https://images.unsplash.com/photo-1552566626-52f8b828add9?w=800",
-      "https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=800",
-      "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=800",
-      "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=800",
+      'https://images.unsplash.com/photo-1552566626-52f8b828add9?w=800',
+      'https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=800',
+      'https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=800',
+      'https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=800',
     ],
     rating: 4.7,
     reviews: 198,
-    cuisines: ["Indian", "Vegetarian Options", "Takeaway"],
-    address: "321 Curry Street, Little India",
+    cuisines: ['Indian', 'Vegetarian Options', 'Takeaway'],
+    address: '321 Curry Street, Little India',
     isFavorite: true,
-    offer: "15% off",
+    offer: '15% off',
   },
   {
-    _id: "r5",
-    businessName: "La Petite Bistro",
+    _id: 'r5',
+    businessName: 'La Petite Bistro',
     profileImages: [
-      "https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=800",
-      "https://images.unsplash.com/photo-1590846406792-0adc7f938f1d?w=800",
+      'https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=800',
+      'https://images.unsplash.com/photo-1590846406792-0adc7f938f1d?w=800',
     ],
     rating: 4.9,
     reviews: 267,
-    cuisines: ["French Cuisine", "Brunch", "Romantic Setting"],
-    address: "555 Boulevard St, Arts Quarter",
+    cuisines: ['French Cuisine', 'Brunch', 'Romantic Setting'],
+    address: '555 Boulevard St, Arts Quarter',
     isFavorite: true,
   },
   {
-    _id: "r6",
-    businessName: "Taco Fiesta",
+    _id: 'r6',
+    businessName: 'Taco Fiesta',
     profileImages: [
-      "https://images.unsplash.com/photo-1565299507177-b0ac66763828?w=800",
-      "https://images.unsplash.com/photo-1624300629298-e9de39c13be5?w=800",
-      "https://images.unsplash.com/photo-1613514785940-daed07799d9b?w=800",
+      'https://images.unsplash.com/photo-1565299507177-b0ac66763828?w=800',
+      'https://images.unsplash.com/photo-1624300629298-e9de39c13be5?w=800',
+      'https://images.unsplash.com/photo-1613514785940-daed07799d9b?w=800',
     ],
     rating: 4.4,
     reviews: 421,
-    cuisines: ["Mexican", "Tacos", "Margaritas"],
-    address: "888 Fiesta Road, South Side",
+    cuisines: ['Mexican', 'Tacos', 'Margaritas'],
+    address: '888 Fiesta Road, South Side',
     isFavorite: true,
-    badge: "Trending",
+    badge: 'Trending',
   },
 ];
 
 const clubsData = [
   {
-    _id: "c1",
-    businessName: "Velvet Lounge",
+    _id: 'c1',
+    businessName: 'Velvet Lounge',
     profileImages: [
-      "https://images.unsplash.com/photo-1566417713940-fe7c737a9ef2?w=800",
-      "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=800",
-      "https://images.unsplash.com/photo-1571266028243-d220c98a7313?w=800",
+      'https://images.unsplash.com/photo-1566417713940-fe7c737a9ef2?w=800',
+      'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=800',
+      'https://images.unsplash.com/photo-1571266028243-d220c98a7313?w=800',
     ],
     rating: 4.5,
     reviews: 178,
-    categories: ["Nightclub", "Live DJ", "VIP Tables"],
-    address: "100 Night Street, Entertainment District",
+    categories: ['Nightclub', 'Live DJ', 'VIP Tables'],
+    address: '100 Night Street, Entertainment District',
     isFavorite: true,
-    priceRange: "50,000",
-    offer: "VIP Access",
+    priceRange: '50,000',
+    offer: 'VIP Access',
   },
   {
-    _id: "c2",
-    businessName: "Pulse Nightclub",
+    _id: 'c2',
+    businessName: 'Pulse Nightclub',
     profileImages: [
-      "https://images.unsplash.com/photo-1571266028243-d220c98a7313?w=800",
-      "https://images.unsplash.com/photo-1598387846786-a41de1034d39?w=800",
+      'https://images.unsplash.com/photo-1571266028243-d220c98a7313?w=800',
+      'https://images.unsplash.com/photo-1598387846786-a41de1034d39?w=800',
     ],
     rating: 4.6,
     reviews: 294,
-    categories: ["EDM Music", "Late Night", "Dance Floor"],
-    address: "234 Beat Avenue, Party Zone",
+    categories: ['EDM Music', 'Late Night', 'Dance Floor'],
+    address: '234 Beat Avenue, Party Zone',
     isFavorite: true,
-    priceRange: "35,000",
-    offer: "Free Entry",
+    priceRange: '35,000',
+    offer: 'Free Entry',
   },
 ];
 
 const hotelsData = [
   {
-    _id: "h1",
-    businessName: "Grand Palace Hotel",
+    _id: 'h1',
+    businessName: 'Grand Palace Hotel',
     profileImages: [
-      "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
-      "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800",
-      "https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?w=800",
+      'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800',
+      'https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800',
+      'https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?w=800',
     ],
     rating: 4.9,
     reviews: 542,
-    cuisines: ["5-Star", "Spa", "Fine Dining", "Pool"],
-    address: "1 Royal Drive, City Center",
+    cuisines: ['5-Star', 'Spa', 'Fine Dining', 'Pool'],
+    address: '1 Royal Drive, City Center',
     isFavorite: true,
-    priceRange: "120,000",
-    offer: "Breakfast Included",
+    priceRange: '120,000',
+    offer: 'Breakfast Included',
   },
   {
-    _id: "h2",
-    businessName: "Seaside Resort",
+    _id: 'h2',
+    businessName: 'Seaside Resort',
     profileImages: [
-      "https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?w=800",
-      "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800",
+      'https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?w=800',
+      'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800',
     ],
     rating: 4.7,
     reviews: 389,
-    cuisines: ["Beach Access", "Water Sports", "All-Inclusive"],
-    address: "50 Ocean View Road, Coastal Area",
+    cuisines: ['Beach Access', 'Water Sports', 'All-Inclusive'],
+    address: '50 Ocean View Road, Coastal Area',
     isFavorite: true,
-    priceRange: "95,000",
-    offer: "Free Upgrade",
+    priceRange: '95,000',
+    offer: 'Free Upgrade',
   },
 ];
 
@@ -200,12 +198,7 @@ const useCarouselLogic = () => {
     }
   };
 
-  const handleMouseEnter = (
-    venueId,
-    venue,
-    getImagesForVenue,
-    hasMultipleImages
-  ) => {
+  const handleMouseEnter = (venueId, venue, getImagesForVenue, hasMultipleImages) => {
     if (!venue || !hasMultipleImages(venue)) return;
 
     const images = getImagesForVenue(venue);
@@ -238,9 +231,7 @@ const useCarouselLogic = () => {
 
   useEffect(() => {
     return () => {
-      Object.values(intervalIds).forEach((intervalId) =>
-        clearInterval(intervalId as number)
-      );
+      Object.values(intervalIds).forEach((intervalId) => clearInterval(intervalId as number));
     };
   }, [intervalIds]);
 
@@ -257,9 +248,7 @@ const getImagesForVenue = (venue) => {
   if (venue?.profileImages && venue?.profileImages?.length > 1) {
     return venue.profileImages;
   }
-  return venue.profileImages?.[0]
-    ? [venue.profileImages[0]]
-    : ["/placeholder.jpg"];
+  return venue.profileImages?.[0] ? [venue.profileImages[0]] : ['/placeholder.jpg'];
 };
 
 const hasMultipleImages = (venue) => {
@@ -269,40 +258,39 @@ const hasMultipleImages = (venue) => {
 
 // Common cuisine color palette
 const cuisineColorPalette = [
-  "bg-orange-100 outline-orange-200",
-  "bg-green-100 outline-green-200",
-  "bg-blue-100 outline-blue-200",
-  "bg-purple-100 outline-purple-200",
-  "bg-pink-100 outline-pink-200",
-  "bg-yellow-100 outline-yellow-200",
-  "bg-teal-100 outline-teal-200",
+  'bg-orange-100 outline-orange-200',
+  'bg-green-100 outline-green-200',
+  'bg-blue-100 outline-blue-200',
+  'bg-purple-100 outline-purple-200',
+  'bg-pink-100 outline-pink-200',
+  'bg-yellow-100 outline-yellow-200',
+  'bg-teal-100 outline-teal-200',
 ];
 
 const Favorites: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<
-    "restaurants" | "clubs" | "hotels"
-  >("restaurants");
-  const { currentIndices, handleMouseEnter, handleMouseLeave, handleDotClick } =
-    useCarouselLogic();
+  const [activeTab, setActiveTab] = useState<'restaurants' | 'clubs' | 'hotels'>('restaurants');
+  const { currentIndices, handleMouseEnter, handleMouseLeave, handleDotClick } = useCarouselLogic();
 
-  const { favorites, loading, fetchFavorites, toggleFavorite, isFavorite } =
-    useFavorites();
+  const { favorites, loading, fetchFavorites, toggleFavorite, isFavorite } = useFavorites();
   const [filteredFavorites, setFilteredFavorites] = useState([]);
 
   useEffect(() => {
     fetchFavorites();
   }, []);
 
-  const hotel = favorites.filter((fav) => fav.vendorType === "hotel");
-  const restaurant = favorites.filter((fav) => fav.vendorType === "restaurant");
-  const club = favorites.filter((fav) => fav.vendorType === "club");
-  
+  const hotel = favorites.filter((fav) => fav.vendorType === 'hotel');
+  const restaurant = favorites.filter((fav) => fav.vendorType === 'restaurant');
+  const club = favorites.filter((fav) => fav.vendorType === 'club');
+
   // Filter favorites by type
   useEffect(() => {
     if (favorites.length > 0) {
-      const filtered = (activeTab === "restaurants") ? restaurant :
-        (activeTab === "clubs") ? club :
-        (activeTab === "hotels") && hotel;
+      const filtered =
+        activeTab === 'restaurants'
+          ? restaurant
+          : activeTab === 'clubs'
+            ? club
+            : activeTab === 'hotels' && hotel;
       setFilteredFavorites(filtered);
     } else {
       setFilteredFavorites([]);
@@ -310,11 +298,11 @@ const Favorites: React.FC = () => {
   }, [favorites, activeTab]);
   const getCurrentData = () => {
     switch (activeTab) {
-      case "restaurants":
+      case 'restaurants':
         return restaurantsData;
-      case "clubs":
+      case 'clubs':
         return clubsData;
-      case "hotels":
+      case 'hotels':
         return hotelsData;
       default:
         return restaurantsData;
@@ -324,7 +312,7 @@ const Favorites: React.FC = () => {
   const venues = filteredFavorites;
 
   const getCategories = (venue) => {
-    if (activeTab === "restaurants" || activeTab === "hotels") {
+    if (activeTab === 'restaurants' || activeTab === 'hotels') {
       return venue.cuisines || [];
     }
     return venue.categories || [];
@@ -332,24 +320,20 @@ const Favorites: React.FC = () => {
 
   const handleClick = (venueId) => {
     const basePath =
-      activeTab === "restaurants"
-        ? "/restaurants"
-        : activeTab === "clubs"
-        ? "/clubs"
-        : "/hotels";
+      activeTab === 'restaurants' ? '/restaurants' : activeTab === 'clubs' ? '/clubs' : '/hotels';
     console.log(`Navigate to: ${basePath}/${venueId}`);
   };
 
   const getButtonText = () => {
     switch (activeTab) {
-      case "restaurants":
-        return "Reserve Table";
-      case "clubs":
-        return "Book now";
-      case "hotels":
-        return "Book now";
+      case 'restaurants':
+        return 'Reserve Table';
+      case 'clubs':
+        return 'Book now';
+      case 'hotels':
+        return 'Book now';
       default:
-        return "View details";
+        return 'View details';
     }
   };
 
@@ -392,11 +376,11 @@ const Favorites: React.FC = () => {
           <div className="border-b border-gray-200">
             <nav className="flex space-x-8">
               <button
-                onClick={() => setActiveTab("restaurants")}
+                onClick={() => setActiveTab('restaurants')}
                 className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
-                  activeTab === "restaurants"
-                    ? "border-teal-500 text-teal-600"
-                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                  activeTab === 'restaurants'
+                    ? 'border-teal-500 text-teal-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }`}
               >
                 Restaurants
@@ -405,11 +389,11 @@ const Favorites: React.FC = () => {
                 </span>
               </button>
               <button
-                onClick={() => setActiveTab("clubs")}
+                onClick={() => setActiveTab('clubs')}
                 className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
-                  activeTab === "clubs"
-                    ? "border-teal-500 text-teal-600"
-                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                  activeTab === 'clubs'
+                    ? 'border-teal-500 text-teal-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }`}
               >
                 Clubs
@@ -418,11 +402,11 @@ const Favorites: React.FC = () => {
                 </span>
               </button>
               <button
-                onClick={() => setActiveTab("hotels")}
+                onClick={() => setActiveTab('hotels')}
                 className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
-                  activeTab === "hotels"
-                    ? "border-teal-500 text-teal-600"
-                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                  activeTab === 'hotels'
+                    ? 'border-teal-500 text-teal-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }`}
               >
                 Hotels
@@ -439,12 +423,9 @@ const Favorites: React.FC = () => {
             <div className="w-48 h-48 bg-gray-100 rounded-full flex items-center justify-center mb-6">
               <Heart className="w-20 h-20 text-gray-300" />
             </div>
-            <h2 className="text-xl font-semibold text-gray-700 mt-6">
-              No favorites yet
-            </h2>
+            <h2 className="text-xl font-semibold text-gray-700 mt-6">No favorites yet</h2>
             <p className="text-gray-500 mt-2 max-w-sm">
-              When you add restaurants, clubs, or hotels to your favorites,
-              they'll appear here.
+              When you add restaurants, clubs, or hotels to your favorites, they'll appear here.
             </p>
           </div>
         ) : (
@@ -461,12 +442,7 @@ const Favorites: React.FC = () => {
                   key={venueId}
                   className="snap-start min-w-[185px] sm:min-w-0 w-[185px] sm:w-auto h-auto sm:h-full flex-shrink-0 sm:flex-shrink cursor-pointer  pb-2 sm:pb-4 flex flex-col bg-white rounded-xl sm:rounded-2xl overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.06)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] transition-all duration-300"
                   onMouseEnter={() =>
-                    handleMouseEnter(
-                      venueId,
-                      venue,
-                      getImagesForVenue,
-                      hasMultipleImages
-                    )
+                    handleMouseEnter(venueId, venue, getImagesForVenue, hasMultipleImages)
                   }
                   onMouseLeave={() => handleMouseLeave(venueId)}
                 >
@@ -479,15 +455,13 @@ const Favorites: React.FC = () => {
                           src={image}
                           alt={`${venue.vendor.businessName} - Image ${index + 1}`}
                           className={`absolute size-full object-cover transition-all duration-500 ease-in-out ${
-                            index === currentIndex
-                              ? "opacity-100 scale-100"
-                              : "opacity-0 scale-105"
+                            index === currentIndex ? 'opacity-100 scale-100' : 'opacity-0 scale-105'
                           }`}
                           style={{
                             transform:
                               index === currentIndex
-                                ? "translateX(0) scale(1)"
-                                : "translateX(100%) scale(1.05)",
+                                ? 'translateX(0) scale(1)'
+                                : 'translateX(100%) scale(1.05)',
                           }}
                         />
                       ))}
@@ -520,8 +494,8 @@ const Favorites: React.FC = () => {
                             onClick={(e) => handleDotClick(venueId, index, e)}
                             className={`block rounded-full transition-all duration-300 ease-out cursor-pointer focus:outline-none ${
                               index === currentIndex
-                                ? "bg-white scale-125 w-4 sm:w-6 h-1.5 sm:h-2 shadow-md"
-                                : "bg-white/70 w-1.5 sm:w-2 h-1.5 sm:h-2 hover:bg-white/90"
+                                ? 'bg-white scale-125 w-4 sm:w-6 h-1.5 sm:h-2 shadow-md'
+                                : 'bg-white/70 w-1.5 sm:w-2 h-1.5 sm:h-2 hover:bg-white/90'
                             }`}
                           />
                         ))}
@@ -550,10 +524,7 @@ const Favorites: React.FC = () => {
                       {categories.length > 0 && (
                         <div className="inline-flex flex-wrap gap-1.5 sm:gap-2 mt-2">
                           {categories.slice(0, 2).map((category, index) => {
-                            const classes =
-                              cuisineColorPalette[
-                                index % cuisineColorPalette.length
-                              ];
+                            const classes = cuisineColorPalette[index % cuisineColorPalette.length];
                             return (
                               <div
                                 key={index}
@@ -579,10 +550,10 @@ const Favorites: React.FC = () => {
                         </p>
                       </div>
 
-                      {(activeTab === "clubs" || activeTab === "hotels") &&
+                      {(activeTab === 'clubs' || activeTab === 'hotels') &&
                         venue.vendor.priceRange && (
                           <div className="flex justify-start text-xl mt-4 text-black items-center gap-1">
-                            {activeTab === "clubs" && (
+                            {activeTab === 'clubs' && (
                               <div className="text-zinc-00 text-sm font-bold leading-none">
                                 Table from
                               </div>
@@ -590,7 +561,7 @@ const Favorites: React.FC = () => {
                             <div className=" text-sm font-bold leading-none">
                               ₦{venue.vendor.priceRange}
                             </div>
-                            {activeTab === "hotels" && (
+                            {activeTab === 'hotels' && (
                               <div className="text-zinc-00 text-xs font-normal leading-none">
                                 /night
                               </div>
@@ -601,8 +572,8 @@ const Favorites: React.FC = () => {
 
                     <div className="mt-2 sm:mt-4 w-full flex justify- items-en-safe">
                       <Button
-                        variant={"primary"}
-                        size={"big"}
+                        variant={'primary'}
+                        size={'big'}
                         onClick={() => handleClick(venueId)}
                         className=" hidden sm:flex
                       w-full text-xs sm:text-sm font-semibold 
@@ -615,8 +586,8 @@ const Favorites: React.FC = () => {
                         {getButtonText()}
                       </Button>
                       <Button
-                        variant={"primary"}
-                        size={"small"}
+                        variant={'primary'}
+                        size={'small'}
                         onClick={() => handleClick(venueId)}
                         className=" flex sm:hidden
                       w-full text-[10px] sm:text-sm font-medium

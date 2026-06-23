@@ -1,5 +1,5 @@
-import { StatCard } from "@/components/dashboard/stats/mainStats";
-import DashboardButton from "@/components/dashboard/ui/DashboardButton";
+import { StatCard } from '@/components/dashboard/stats/mainStats';
+import DashboardButton from '@/components/dashboard/ui/DashboardButton';
 import {
   Add,
   Calendar,
@@ -17,19 +17,19 @@ import {
   Phone,
   Printer,
   XCircle,
-} from "@/components/dashboard/ui/svg";
-import DashboardLayout from "@/components/layout/DashboardLayout";
-import NoDataFallback from "@/components/NoDataFallback";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
+} from '@/components/dashboard/ui/svg';
+import DashboardLayout from '@/components/layout/DashboardLayout';
+import NoDataFallback from '@/components/NoDataFallback';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
 import ConfirmReservation, {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
+} from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
 import {
   Table,
   TableBody,
@@ -37,11 +37,11 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import UniversalLoader from "@/components/user/ui/LogoLoader";
-import { cn } from "@/lib/utils";
-import { userService } from "@/services/user.service";
-import { format } from "date-fns";
+} from '@/components/ui/table';
+import UniversalLoader from '@/components/user/ui/LogoLoader';
+import { cn } from '@/lib/utils';
+import { userService } from '@/services/user.service';
+import { format } from 'date-fns';
 import {
   ChevronDown,
   ChevronLeft,
@@ -50,51 +50,51 @@ import {
   Mail,
   MoreVertical,
   Search,
-} from "lucide-react";
-import { useEffect, useRef, useState } from "react";
-import { useSelector } from "react-redux";
-import { useNavigate } from "react-router";
-import { toast } from "react-toastify";
+} from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router';
+import { toast } from 'react-toastify';
 
-const normalizePaymentStatus = (status = "") => {
-  const s = status?.toLowerCase() || "";
+const normalizePaymentStatus = (status = '') => {
+  const s = status?.toLowerCase() || '';
 
-  if (s === "paid" || s === "success") return "Fully Paid";
-  if (s === "partial" || s === "part paid") return "Part Paid";
-  if (s.includes("refunded")) return "Refunded";
-  if (s.includes("unpaid") || s.includes("not paid")) return "Unpaid";
+  if (s === 'paid' || s === 'success') return 'Fully Paid';
+  if (s === 'partial' || s === 'part paid') return 'Part Paid';
+  if (s.includes('refunded')) return 'Refunded';
+  if (s.includes('unpaid') || s.includes('not paid')) return 'Unpaid';
 
-  return "Pending";
+  return 'Pending';
 };
 
 // Helper function to format date
 const formatDate = (dateString) => {
-  if (!dateString) return "N/A";
+  if (!dateString) return 'N/A';
 
   const date = new Date(dateString);
 
   // Check if date is valid
-  if (isNaN(date.getTime())) return "N/A";
+  if (isNaN(date.getTime())) return 'N/A';
 
-  return date.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
+  return date.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
   });
 };
 
 // Helper function to extract time from date
 const extractTime = (dateString) => {
-  if (!dateString) return "N/A";
+  if (!dateString) return 'N/A';
 
   const date = new Date(dateString);
 
   // Check if date is valid
-  if (isNaN(date.getTime())) return "N/A";
+  if (isNaN(date.getTime())) return 'N/A';
 
-  return date.toLocaleTimeString("en-US", {
-    hour: "2-digit",
-    minute: "2-digit",
+  return date.toLocaleTimeString('en-US', {
+    hour: '2-digit',
+    minute: '2-digit',
     hour12: true,
   });
 };
@@ -116,7 +116,7 @@ const calculateTotalDrinksQuantity = (reservation) => {
 };
 
 const ClubReservationTable = () => {
-  const [activeTab, setActiveTab] = useState("All");
+  const [activeTab, setActiveTab] = useState('All');
   const [selectedReservations, setSelectedReservations] = useState([]);
   const vendor = useSelector((state) => state.auth.vendor);
   const [reservations, setReservations] = useState([]);
@@ -124,7 +124,7 @@ const ClubReservationTable = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
   const [totalItems, setTotalItems] = useState(0);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState('');
   const [stats, setStats] = useState({
     totalReservations: { count: 0, change: 0 },
     prepaidReservations: { count: 0, change: 0 },
@@ -132,9 +132,9 @@ const ClubReservationTable = () => {
     pendingPayments: { count: 0, change: 0 },
   });
   const [open, setOpen] = useState(false);
-  const [selectedDate, setSelectedDate] = useState("all");
-  const [selectedPaymentStatus, setSelectedPaymentStatus] = useState("all");
-  const [selectedTable, setSelectedTable] = useState("all");
+  const [selectedDate, setSelectedDate] = useState('all');
+  const [selectedPaymentStatus, setSelectedPaymentStatus] = useState('all');
+  const [selectedTable, setSelectedTable] = useState('all');
   const [resID, setResID] = useState();
 
   const [hideTab, setHideTab] = useState(false);
@@ -165,7 +165,7 @@ const ClubReservationTable = () => {
       pages.push(1);
 
       if (currentPage > maxVisible) {
-        pages.push("ellipsis-start");
+        pages.push('ellipsis-start');
       }
 
       const start = Math.max(2, currentPage - 1);
@@ -176,7 +176,7 @@ const ClubReservationTable = () => {
       }
 
       if (currentPage < totalPages - maxVisible + 1) {
-        pages.push("ellipsis-end");
+        pages.push('ellipsis-end');
       }
 
       pages.push(totalPages);
@@ -185,15 +185,13 @@ const ClubReservationTable = () => {
     return pages;
   };
 
-  const tabs = ["All", "Upcoming", "Completed", "Canceled", "No Shows"];
+  const tabs = ['All', 'Upcoming', 'Completed', 'Canceled', 'No Shows'];
 
   const handleSelectReservation = (id, checked) => {
     if (checked) {
       setSelectedReservations([...selectedReservations, id]);
     } else {
-      setSelectedReservations(
-        selectedReservations.filter((reservationId) => reservationId !== id),
-      );
+      setSelectedReservations(selectedReservations.filter((reservationId) => reservationId !== id));
     }
   };
 
@@ -205,32 +203,30 @@ const ClubReservationTable = () => {
 
     const connect = () => {
       const socket = new WebSocket(
-        `wss://rhace-backend-mkne.onrender.com?type=vendor&id=${vendor._id}`,
+        `wss://rhace-backend-mkne.onrender.com?type=vendor&id=${vendor._id}`
       );
       socketRef.current = socket;
 
       socket.onopen = () => {
-        console.log("✅ WebSocket connected");
+        console.log('✅ WebSocket connected');
       };
 
       socket.onmessage = (event) => {
         try {
           const message = JSON.parse(event.data);
-          console.log("📩 Message from server:", message);
+          console.log('📩 Message from server:', message);
 
-          if (message.type === "new_reservation") {
-            toast.success(
-              `🆕 New reservation from ${message.data.customerName}`,
-            );
+          if (message.type === 'new_reservation') {
+            toast.success(`🆕 New reservation from ${message.data.customerName}`);
             setReservations((prev) => [...prev, message.data]);
           }
         } catch (error) {
-          console.error("❌ Failed to parse message:", error);
+          console.error('❌ Failed to parse message:', error);
         }
       };
 
       socket.onerror = (err) => {
-        console.error("⚠️ WebSocket error:", err);
+        console.error('⚠️ WebSocket error:', err);
       };
 
       socket.onclose = (e) => {
@@ -239,7 +235,7 @@ const ClubReservationTable = () => {
 
         if (e.code !== 1000) {
           reconnectTimeout.current = setTimeout(() => {
-            console.log("🔁 Reconnecting WebSocket...");
+            console.log('🔁 Reconnecting WebSocket...');
             connect();
           }, 3000);
         }
@@ -250,7 +246,7 @@ const ClubReservationTable = () => {
 
     return () => {
       if (socketRef.current) {
-        socketRef.current.close(1000, "Component unmounted");
+        socketRef.current.close(1000, 'Component unmounted');
         socketRef.current = null;
       }
       if (reconnectTimeout.current) {
@@ -262,16 +258,14 @@ const ClubReservationTable = () => {
   useEffect(() => {
     const fetchReservations = async () => {
       try {
-        console.log("Fetching reservations for vendor:", vendor._id);
+        console.log('Fetching reservations for vendor:', vendor._id);
         const res = await userService.fetchReservations({
           vendorId: vendor._id,
         });
         setReservations(res.data || []);
       } catch (error) {
         console.error(error);
-        toast.error(
-          error.response?.data?.message || "Failed to fetch reservations",
-        );
+        toast.error(error.response?.data?.message || 'Failed to fetch reservations');
       } finally {
         setIsLoading(false);
       }
@@ -283,7 +277,7 @@ const ClubReservationTable = () => {
         setStats(res.data || {});
       } catch (error) {
         console.error(error);
-        toast.error(error.response?.data?.message || "Failed to fetch stats");
+        toast.error(error.response?.data?.message || 'Failed to fetch stats');
       }
     };
 
@@ -299,7 +293,7 @@ const ClubReservationTable = () => {
     const totalReservations = reservations.length;
 
     const prepaidReservations = reservations.filter(
-      (res) => normalizePaymentStatus(res.paymentStatus) === "Fully Paid",
+      (res) => normalizePaymentStatus(res.paymentStatus) === 'Fully Paid'
     ).length;
 
     const todayReservations = reservations.filter((res) => {
@@ -308,16 +302,13 @@ const ClubReservationTable = () => {
       return resDate.getTime() === today.getTime();
     });
 
-    const expectedGuestsToday = todayReservations.reduce(
-      (sum, res) => sum + (res.guests || 0),
-      0,
-    );
+    const expectedGuestsToday = todayReservations.reduce((sum, res) => sum + (res.guests || 0), 0);
 
     const pendingPayments = reservations
       .filter(
         (res) =>
-          normalizePaymentStatus(res.paymentStatus) === "Unpaid" ||
-          normalizePaymentStatus(res.paymentStatus) === "Part Paid",
+          normalizePaymentStatus(res.paymentStatus) === 'Unpaid' ||
+          normalizePaymentStatus(res.paymentStatus) === 'Part Paid'
       )
       .reduce((sum, res) => sum + (res.totalAmount || 0), 0);
 
@@ -333,37 +324,27 @@ const ClubReservationTable = () => {
   const filteredReservations = reservations.filter((reservation) => {
     const matchesSearch =
       !searchTerm ||
-      reservation.customerName
-        ?.toLowerCase()
-        .includes(searchTerm.toLowerCase()) ||
+      reservation.customerName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       reservation._id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      reservation.bookingCode
-        ?.toLowerCase()
-        .includes(searchTerm.toLowerCase()) ||
-      (reservation.vendor?.businessName || "")
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase());
+      reservation.bookingCode?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (reservation.vendor?.businessName || '').toLowerCase().includes(searchTerm.toLowerCase());
 
     let matchesTab = true;
-    if (activeTab !== "All") {
-      const status = (
-        reservation.reservationStatus ||
-        reservation.status ||
-        ""
-      ).toLowerCase();
+    if (activeTab !== 'All') {
+      const status = (reservation.reservationStatus || reservation.status || '').toLowerCase();
 
       switch (activeTab) {
-        case "Upcoming":
-          matchesTab = status === "upcoming";
+        case 'Upcoming':
+          matchesTab = status === 'upcoming';
           break;
-        case "Completed":
-          matchesTab = status === "completed" || status === "paid";
+        case 'Completed':
+          matchesTab = status === 'completed' || status === 'paid';
           break;
-        case "Canceled":
-          matchesTab = status === "canceled" || status === "cancelled";
+        case 'Canceled':
+          matchesTab = status === 'canceled' || status === 'cancelled';
           break;
-        case "No Shows":
-          matchesTab = status === "no shows" || status === "no-shows";
+        case 'No Shows':
+          matchesTab = status === 'no shows' || status === 'no-shows';
           break;
         default:
           matchesTab = true;
@@ -371,155 +352,130 @@ const ClubReservationTable = () => {
     }
 
     const matchesPaymentStatus =
-      selectedPaymentStatus === "all" ||
-      normalizePaymentStatus(reservation.paymentStatus) ===
-        selectedPaymentStatus;
+      selectedPaymentStatus === 'all' ||
+      normalizePaymentStatus(reservation.paymentStatus) === selectedPaymentStatus;
 
-    const matchesTable =
-      selectedTable === "all" || reservation.table === selectedTable;
+    const matchesTable = selectedTable === 'all' || reservation.table === selectedTable;
 
     let matchesDate = true;
-    if (selectedDate !== "all") {
+    if (selectedDate !== 'all') {
       const reservationDate = new Date(reservation.date);
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
-      if (selectedDate === "Today") {
+      if (selectedDate === 'Today') {
         reservationDate.setHours(0, 0, 0, 0);
         matchesDate = reservationDate.getTime() === today.getTime();
       }
 
-      if (selectedDate === "This Week") {
+      if (selectedDate === 'This Week') {
         const weekStart = new Date(today);
         weekStart.setDate(today.getDate() - today.getDay());
         const weekEnd = new Date(weekStart);
         weekEnd.setDate(weekStart.getDate() + 6);
-        matchesDate =
-          reservationDate >= weekStart && reservationDate <= weekEnd;
+        matchesDate = reservationDate >= weekStart && reservationDate <= weekEnd;
       }
 
-      if (selectedDate === "This Month") {
+      if (selectedDate === 'This Month') {
         matchesDate =
           reservationDate.getMonth() === today.getMonth() &&
           reservationDate.getFullYear() === today.getFullYear();
       }
 
-      if (selectedDate === "Last 30 Days") {
+      if (selectedDate === 'Last 30 Days') {
         const thirtyDaysAgo = new Date(today);
         thirtyDaysAgo.setDate(today.getDate() - 30);
         matchesDate = reservationDate >= thirtyDaysAgo;
       }
     }
 
-    return (
-      matchesSearch &&
-      matchesTab &&
-      matchesPaymentStatus &&
-      matchesTable &&
-      matchesDate
-    );
+    return matchesSearch && matchesTab && matchesPaymentStatus && matchesTable && matchesDate;
   });
 
   const data = filteredReservations;
 
   const reservationStatusOptions = (status) => {
     switch (status) {
-      case "upcoming":
-        return "bg-[#E7F0F0] text-[#0A6C6D] border-[#B3D1D2]";
-      case "confirmed":
-        return "bg-[#D1FAE5] text-[#37703F] border-[#B8FFC2]";
-      case "canceled":
-        return "bg-[#FCE6E6] text-[#EF4444] border-[#FAE48A]";
-      case "no-show":
-        return "bg-[#FCE6E6] text-[#EF4444] border-[#FAE48A]";
+      case 'upcoming':
+        return 'bg-[#E7F0F0] text-[#0A6C6D] border-[#B3D1D2]';
+      case 'confirmed':
+        return 'bg-[#D1FAE5] text-[#37703F] border-[#B8FFC2]';
+      case 'canceled':
+        return 'bg-[#FCE6E6] text-[#EF4444] border-[#FAE48A]';
+      case 'no-show':
+        return 'bg-[#FCE6E6] text-[#EF4444] border-[#FAE48A]';
       default:
-        return "bg-gray-100 text-gray-800 border-gray-300";
+        return 'bg-gray-100 text-gray-800 border-gray-300';
     }
   };
   const reservationStatusOptions2 = (status) => {
     switch (status) {
-      case "partly_paid":
-        return "bg-[#D4FCE7] text-[#37703F]  border-[#B8D1C2]";
-      case "paid":
-        return "bg-[#D1FAE5] text-[#37703F] border-[#B8FFC2]";
-      case "failed":
-        return "bg-[#FCE6E6] text-[#EF4444] border-[#FAE48A]";
+      case 'partly_paid':
+        return 'bg-[#D4FCE7] text-[#37703F]  border-[#B8D1C2]';
+      case 'paid':
+        return 'bg-[#D1FAE5] text-[#37703F] border-[#B8FFC2]';
+      case 'failed':
+        return 'bg-[#FCE6E6] text-[#EF4444] border-[#FAE48A]';
       default:
-        return "bg-gray-100 text-gray-800 border-gray-300";
+        return 'bg-gray-100 text-gray-800 border-gray-300';
     }
   };
 
   // Update total items based on filtered reservations
   useEffect(() => {
     setTotalItems(filteredReservations.length);
-    const maxPage = Math.max(
-      1,
-      Math.ceil(filteredReservations.length / itemsPerPage),
-    );
+    const maxPage = Math.max(1, Math.ceil(filteredReservations.length / itemsPerPage));
     setCurrentPage((prev) => Math.min(prev, maxPage));
   }, [filteredReservations.length, itemsPerPage]);
 
   // Reset to page 1 when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [
-    activeTab,
-    searchTerm,
-    selectedDate,
-    selectedPaymentStatus,
-    selectedTable,
-  ]);
+  }, [activeTab, searchTerm, selectedDate, selectedPaymentStatus, selectedTable]);
 
   // compute paginated reservations for current page
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedReservations = data.slice(
-    startIndex,
-    startIndex + itemsPerPage,
-  );
+  const paginatedReservations = data.slice(startIndex, startIndex + itemsPerPage);
 
   // Toggle selection for visible page items
   const handleToggleSelectPage = (checked) => {
     const pageIds = paginatedReservations.map((r) => r._id);
     if (checked) {
-      setSelectedReservations((prev) =>
-        Array.from(new Set([...prev, ...pageIds])),
-      );
+      setSelectedReservations((prev) => Array.from(new Set([...prev, ...pageIds])));
     } else {
-      setSelectedReservations((prev) =>
-        prev.filter((id) => !pageIds.includes(id)),
-      );
+      setSelectedReservations((prev) => prev.filter((id) => !pageIds.includes(id)));
     }
   };
 
   const getPaymentStatusColor = (status) => {
     switch (normalizePaymentStatus(status)) {
-      case "Fully Paid":
-        return "bg-[#D1FAE5] text-[#37703F]";
-      case "Part Paid":
-        return "bg-[#FEF3C7] text-[#92400E]";
-      case "Unpaid":
-        return "bg-gray-100 text-gray-800";
-      case "Refunded":
-        return "bg-gray-100 text-gray-800";
+      case 'Fully Paid':
+        return 'bg-[#D1FAE5] text-[#37703F]';
+      case 'Part Paid':
+        return 'bg-[#FEF3C7] text-[#92400E]';
+      case 'Unpaid':
+        return 'bg-gray-100 text-gray-800';
+      case 'Refunded':
+        return 'bg-gray-100 text-gray-800';
       default:
-        return "bg-gray-100 text-gray-800";
+        return 'bg-gray-100 text-gray-800';
     }
   };
 
   const getReservationStatusColor = (status) => {
-    const s = status?.toLowerCase() || "";
-    if (s === "confirmed" || s === "upcoming") {
-      return "bg-[#D1FAE5] text-[#37703F]";
-    } else if (s === "pending") {
-      return "bg-[#FEF3C7] text-[#92400E]";
-    } else if (s === "completed") {
-      return "bg-[#DBEAFE] text-[#1E40AF]";
-    } else if (s === "cancelled" || s === "canceled") {
-      return "bg-[#FEE2E2] text-[#991B1B]";
-    } else if (s === "no shows" || s === "no-shows") {
-      return "bg-gray-100 text-gray-800";
+    const s = status?.toLowerCase() || '';
+    if (s === 'confirmed' || s === 'upcoming') {
+      return 'bg-[#D1FAE5] text-[#37703F]';
+    } else if (s === 'pending') {
+      return 'bg-[#FEF3C7] text-[#92400E]';
+    } else if (s === 'completed') {
+      return 'bg-[#DBEAFE] text-[#1E40AF]';
+    } else if (s === 'cancelled' || s === 'canceled') {
+      return 'bg-[#FEE2E2] text-[#991B1B]';
+    } else if (s === 'no shows' || s === 'no-shows') {
+      return 'bg-gray-100 text-gray-800';
     }
-    return "bg-gray-100 text-gray-800";
+    return 'bg-gray-100 text-gray-800';
   };
 
   return (
@@ -531,23 +487,17 @@ const ClubReservationTable = () => {
           <div className="min-h-screen bg-gray0 p-2 md:p-6 mb-12">
             <div className="max-w-7xl mx-auto">
               <div className="md:flex justify-between items-center mb-6">
-                <h2 className="text-[#111827] mb-2 font-semibold">
-                  Club Reservation Management
-                </h2>
+                <h2 className="text-[#111827] mb-2 font-semibold">Club Reservation Management</h2>
                 <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-2 md:gap-6">
                   <DashboardButton
                     onClick={() => setHideTab(!hideTab)}
                     variant="secondary"
-                    text={hideTab ? "Open tabs" : "Hide tabs"}
+                    text={hideTab ? 'Open tabs' : 'Hide tabs'}
                     icon={hideTab ? <Eye /> : <EyeClose />}
                   />
+                  <DashboardButton variant="secondary" text="Export" icon={<Export />} />
                   <DashboardButton
-                    variant="secondary"
-                    text="Export"
-                    icon={<Export />}
-                  />
-                  <DashboardButton
-                    onClick={() => navigate("/dashboard/club/reservation/new")}
+                    onClick={() => navigate('/dashboard/club/reservation/new')}
                     variant="primary"
                     text="New Reservation"
                     icon={<Add fill="#fff" />}
@@ -589,13 +539,10 @@ const ClubReservationTable = () => {
                   <div className="flex-1">
                     <StatCard
                       title="Pending Payments"
-                      value={`₦${stats.pendingPayments.count.toLocaleString(
-                        "en-US",
-                        {
-                          minimumFractionDigits: 0,
-                          maximumFractionDigits: 0,
-                        },
-                      )}`}
+                      value={`₦${stats.pendingPayments.count.toLocaleString('en-US', {
+                        minimumFractionDigits: 0,
+                        maximumFractionDigits: 0,
+                      })}`}
                       change={stats.pendingPayments.change}
                       color="orange"
                       IconColor="#E1B505"
@@ -615,8 +562,8 @@ const ClubReservationTable = () => {
                         onClick={() => setActiveTab(tab)}
                         className={`p-2 text-xs md:text-sm rounded-lg border font-medium cursor-pointer ${
                           activeTab === tab
-                            ? "border-[#B3D1D2] bg-[#E7F0F0] text-[#111827]"
-                            : "border-transparent text-[#606368]"
+                            ? 'border-[#B3D1D2] bg-[#E7F0F0] text-[#111827]'
+                            : 'border-transparent text-[#606368]'
                         }`}
                       >
                         {tab}
@@ -638,62 +585,48 @@ const ClubReservationTable = () => {
                       {/* Date Filter */}
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button
-                            variant="outline"
-                            className="ml-auto text-[#606368]"
-                          >
-                            {selectedDate === "all" ? "Date" : selectedDate}{" "}
-                            <ChevronDown />
+                          <Button variant="outline" className="ml-auto text-[#606368]">
+                            {selectedDate === 'all' ? 'Date' : selectedDate} <ChevronDown />
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-48">
                           <div className="p-2">
                             <button
-                              onClick={() => setSelectedDate("all")}
+                              onClick={() => setSelectedDate('all')}
                               className={`w-full text-left px-3 py-2 rounded-md hover:bg-gray-100 ${
-                                selectedDate === "all"
-                                  ? "bg-gray-100 font-medium"
-                                  : ""
+                                selectedDate === 'all' ? 'bg-gray-100 font-medium' : ''
                               }`}
                             >
                               All Dates
                             </button>
                             <button
-                              onClick={() => setSelectedDate("Today")}
+                              onClick={() => setSelectedDate('Today')}
                               className={`w-full text-left px-3 py-2 rounded-md hover:bg-gray-100 ${
-                                selectedDate === "Today"
-                                  ? "bg-gray-100 font-medium"
-                                  : ""
+                                selectedDate === 'Today' ? 'bg-gray-100 font-medium' : ''
                               }`}
                             >
                               Today
                             </button>
                             <button
-                              onClick={() => setSelectedDate("This Week")}
+                              onClick={() => setSelectedDate('This Week')}
                               className={`w-full text-left px-3 py-2 rounded-md hover:bg-gray-100 ${
-                                selectedDate === "This Week"
-                                  ? "bg-gray-100 font-medium"
-                                  : ""
+                                selectedDate === 'This Week' ? 'bg-gray-100 font-medium' : ''
                               }`}
                             >
                               This Week
                             </button>
                             <button
-                              onClick={() => setSelectedDate("This Month")}
+                              onClick={() => setSelectedDate('This Month')}
                               className={`w-full text-left px-3 py-2 rounded-md hover:bg-gray-100 ${
-                                selectedDate === "This Month"
-                                  ? "bg-gray-100 font-medium"
-                                  : ""
+                                selectedDate === 'This Month' ? 'bg-gray-100 font-medium' : ''
                               }`}
                             >
                               This Month
                             </button>
                             <button
-                              onClick={() => setSelectedDate("Last 30 Days")}
+                              onClick={() => setSelectedDate('Last 30 Days')}
                               className={`w-full text-left px-3 py-2 rounded-md hover:bg-gray-100 ${
-                                selectedDate === "Last 30 Days"
-                                  ? "bg-gray-100 font-medium"
-                                  : ""
+                                selectedDate === 'Last 30 Days' ? 'bg-gray-100 font-medium' : ''
                               }`}
                             >
                               Last 30 Days
@@ -705,36 +638,29 @@ const ClubReservationTable = () => {
                       {/* Payment Status Filter */}
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button
-                            variant="outline"
-                            className="ml-auto text-[#606368]"
-                          >
-                            {selectedPaymentStatus === "all"
-                              ? "Payment Status"
-                              : selectedPaymentStatus}{" "}
+                          <Button variant="outline" className="ml-auto text-[#606368]">
+                            {selectedPaymentStatus === 'all'
+                              ? 'Payment Status'
+                              : selectedPaymentStatus}{' '}
                             <ChevronDown />
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-48">
                           <div className="p-2">
                             <button
-                              onClick={() => setSelectedPaymentStatus("all")}
+                              onClick={() => setSelectedPaymentStatus('all')}
                               className={`w-full text-left px-3 py-2 rounded-md hover:bg-gray-100 ${
-                                selectedPaymentStatus === "all"
-                                  ? "bg-gray-100 font-medium"
-                                  : ""
+                                selectedPaymentStatus === 'all' ? 'bg-gray-100 font-medium' : ''
                               }`}
                             >
                               All Status
                             </button>
                             <button
-                              onClick={() =>
-                                setSelectedPaymentStatus("Fully Paid")
-                              }
+                              onClick={() => setSelectedPaymentStatus('Fully Paid')}
                               className={`w-full text-left px-3 py-2 rounded-md hover:bg-gray-100 ${
-                                selectedPaymentStatus === "Fully Paid"
-                                  ? "bg-gray-100 font-medium"
-                                  : ""
+                                selectedPaymentStatus === 'Fully Paid'
+                                  ? 'bg-gray-100 font-medium'
+                                  : ''
                               }`}
                             >
                               <span className="inline-flex items-center gap-2">
@@ -743,13 +669,11 @@ const ClubReservationTable = () => {
                               </span>
                             </button>
                             <button
-                              onClick={() =>
-                                setSelectedPaymentStatus("Part Paid")
-                              }
+                              onClick={() => setSelectedPaymentStatus('Part Paid')}
                               className={`w-full text-left px-3 py-2 rounded-md hover:bg-gray-100 ${
-                                selectedPaymentStatus === "Part Paid"
-                                  ? "bg-gray-100 font-medium"
-                                  : ""
+                                selectedPaymentStatus === 'Part Paid'
+                                  ? 'bg-gray-100 font-medium'
+                                  : ''
                               }`}
                             >
                               <span className="inline-flex items-center gap-2">
@@ -758,11 +682,9 @@ const ClubReservationTable = () => {
                               </span>
                             </button>
                             <button
-                              onClick={() => setSelectedPaymentStatus("Unpaid")}
+                              onClick={() => setSelectedPaymentStatus('Unpaid')}
                               className={`w-full text-left px-3 py-2 rounded-md hover:bg-gray-100 ${
-                                selectedPaymentStatus === "Unpaid"
-                                  ? "bg-gray-100 font-medium"
-                                  : ""
+                                selectedPaymentStatus === 'Unpaid' ? 'bg-gray-100 font-medium' : ''
                               }`}
                             >
                               <span className="inline-flex items-center gap-2">
@@ -771,13 +693,11 @@ const ClubReservationTable = () => {
                               </span>
                             </button>
                             <button
-                              onClick={() =>
-                                setSelectedPaymentStatus("Refunded")
-                              }
+                              onClick={() => setSelectedPaymentStatus('Refunded')}
                               className={`w-full text-left px-3 py-2 rounded-md hover:bg-gray-100 ${
-                                selectedPaymentStatus === "Refunded"
-                                  ? "bg-gray-100 font-medium"
-                                  : ""
+                                selectedPaymentStatus === 'Refunded'
+                                  ? 'bg-gray-100 font-medium'
+                                  : ''
                               }`}
                             >
                               <span className="inline-flex items-center gap-2">
@@ -792,10 +712,7 @@ const ClubReservationTable = () => {
                       {/* Advanced Filter */}
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button
-                            variant="outline"
-                            className="ml-auto text-[#606368]"
-                          >
+                          <Button variant="outline" className="ml-auto text-[#606368]">
                             Advanced filter <Filter2 fill="black" />
                           </Button>
                         </DropdownMenuTrigger>
@@ -807,18 +724,12 @@ const ClubReservationTable = () => {
                               </label>
                               <select
                                 value={selectedTable}
-                                onChange={(e) =>
-                                  setSelectedTable(e.target.value)
-                                }
+                                onChange={(e) => setSelectedTable(e.target.value)}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
                               >
                                 <option value="all">All Tables</option>
                                 {Array.from(
-                                  new Set(
-                                    reservations
-                                      .map((r) => r.table)
-                                      .filter(Boolean),
-                                  ),
+                                  new Set(reservations.map((r) => r.table).filter(Boolean))
                                 ).map((table) => (
                                   <option key={table} value={table}>
                                     {table}
@@ -849,9 +760,9 @@ const ClubReservationTable = () => {
                             <div className="pt-2 border-t">
                               <button
                                 onClick={() => {
-                                  setSelectedDate("all");
-                                  setSelectedPaymentStatus("all");
-                                  setSelectedTable("all");
+                                  setSelectedDate('all');
+                                  setSelectedPaymentStatus('all');
+                                  setSelectedTable('all');
                                 }}
                                 className="w-full px-3 py-2 text-sm text-teal-600 hover:bg-teal-50 rounded-md font-medium"
                               >
@@ -882,12 +793,10 @@ const ClubReservationTable = () => {
                               checked={
                                 paginatedReservations.length > 0 &&
                                 paginatedReservations.every((r) =>
-                                  selectedReservations.includes(r._id),
+                                  selectedReservations.includes(r._id)
                                 )
                               }
-                              onChange={(e) =>
-                                handleToggleSelectPage(e.target.checked)
-                              }
+                              onChange={(e) => handleToggleSelectPage(e.target.checked)}
                               className="rounded border-gray-300 text-teal-600 focus:ring-teal-500"
                               disabled={paginatedReservations.length === 0}
                             />
@@ -926,22 +835,15 @@ const ClubReservationTable = () => {
                               key={reservation._id}
                               className="hover:bg-gray-50"
                               data-state={
-                                selectedReservations.includes(
-                                  reservation._id,
-                                ) && "selected"
+                                selectedReservations.includes(reservation._id) && 'selected'
                               }
                             >
                               <TableCell>
                                 <input
                                   type="checkbox"
-                                  checked={selectedReservations.includes(
-                                    reservation._id,
-                                  )}
+                                  checked={selectedReservations.includes(reservation._id)}
                                   onChange={(e) =>
-                                    handleSelectReservation(
-                                      reservation._id,
-                                      e.target.checked,
-                                    )
+                                    handleSelectReservation(reservation._id, e.target.checked)
                                   }
                                   className="rounded border-gray-300 text-teal-600 focus:ring-teal-500"
                                 />
@@ -951,22 +853,17 @@ const ClubReservationTable = () => {
                                   <Avatar>
                                     <AvatarFallback>
                                       {reservation.customerName
-                                        ?.split(" ")
-                                        .map((i) =>
-                                          i.slice(0, 1).toUpperCase(),
-                                        ) || "N/A"}
+                                        ?.split(' ')
+                                        .map((i) => i.slice(0, 1).toUpperCase()) || 'N/A'}
                                     </AvatarFallback>
                                   </Avatar>
                                   <div>
                                     <div className="font-medium text-gray-900">
-                                      {reservation.customerName || "Unknown"}
+                                      {reservation.customerName || 'Unknown'}
                                     </div>
                                     <div className="text-sm text-gray-500">
-                                      ID: #
-                                      {reservation._id?.slice(0, 8) || "N/A"}
-                                      <div className="text-xs">
-                                        {reservation.bookingCode}
-                                      </div>
+                                      ID: #{reservation._id?.slice(0, 8) || 'N/A'}
+                                      <div className="text-xs">{reservation.bookingCode}</div>
                                     </div>
                                   </div>
                                 </div>
@@ -974,10 +871,10 @@ const ClubReservationTable = () => {
                               <TableCell>
                                 <div className="flex flex-col">
                                   <span className="text-sm text-gray-900">
-                                    {formatDate(reservation.date) || "N/A"}
+                                    {formatDate(reservation.date) || 'N/A'}
                                   </span>
                                   <span className="text-xs text-gray-500">
-                                    {reservation.time || "N/A"}
+                                    {reservation.time || 'N/A'}
                                   </span>
                                 </div>
                               </TableCell>
@@ -993,21 +890,18 @@ const ClubReservationTable = () => {
                                 <div className="flex gap-2 items-center">
                                   <div className="text-sm text-gray-900 space-y-0.5">
                                     {reservation.tables
-                                      ? reservation.tables
-                                          .slice(0, 2)
-                                          .map((t, i) => (
-                                            <div key={i} className="mr-2">
-                                              {t.tableType.name}
-                                            </div>
-                                          ))
-                                      : "Not Assigned"}
+                                      ? reservation.tables.slice(0, 2).map((t, i) => (
+                                          <div key={i} className="mr-2">
+                                            {t.tableType.name}
+                                          </div>
+                                        ))
+                                      : 'Not Assigned'}
                                   </div>
-                                  {reservation.tables &&
-                                    reservation.tables.length > 2 && (
-                                      <span className="text-xs text-gray-500">
-                                        +{reservation.tables.length - 2} more
-                                      </span>
-                                    )}
+                                  {reservation.tables && reservation.tables.length > 2 && (
+                                    <span className="text-xs text-gray-500">
+                                      +{reservation.tables.length - 2} more
+                                    </span>
+                                  )}
                                 </div>
                               </TableCell>
                               <TableCell>
@@ -1016,27 +910,22 @@ const ClubReservationTable = () => {
                                     Combos: {reservation.combos?.length || 0}
                                   </span>
                                   <span className="text-xs text-gray-600">
-                                    Drinks:{" "}
-                                    {calculateTotalDrinksQuantity(reservation)}
+                                    Drinks: {calculateTotalDrinksQuantity(reservation)}
                                   </span>
                                 </div>
                               </TableCell>
                               <TableCell>
                                 <span className="text-sm text-gray-900 font-medium">
-                                  ₦
-                                  {reservation.totalAmount?.toLocaleString() ||
-                                    "0"}
+                                  ₦{reservation.totalAmount?.toLocaleString() || '0'}
                                 </span>
                               </TableCell>
                               <TableCell>
                                 <div
                                   className={` w-max ${reservationStatusOptions2(reservation.paymentStatus)} flex py-1.5 px-3 border rounded-full`}
                                 >
-                                  {reservation.paymentStatus === "not_paid"
-                                    ? "Pay at Restaurant"
-                                    : reservation.paymentStatus
-                                        .split("_")
-                                        .join(" ")}
+                                  {reservation.paymentStatus === 'not_paid'
+                                    ? 'Pay at Restaurant'
+                                    : reservation.paymentStatus.split('_').join(' ')}
                                 </div>
                               </TableCell>
                               <TableCell>
@@ -1045,14 +934,10 @@ const ClubReservationTable = () => {
                                   ${reservationStatusOptions(reservation.reservationStatus)} 
                                     flex py-1.5 px-3 border rounded-full`}
                                 >
-                                  {reservation.reservationStatus ===
-                                    "upcoming" && "Upcoming"}
-                                  {reservation.reservationStatus ===
-                                    "confirmed" && "Confirmed"}
-                                  {reservation.reservationStatus ===
-                                    "canceled" && "Canceled"}
-                                  {reservation.reservationStatus ===
-                                    "no-show" && "No Show"}
+                                  {reservation.reservationStatus === 'upcoming' && 'Upcoming'}
+                                  {reservation.reservationStatus === 'confirmed' && 'Confirmed'}
+                                  {reservation.reservationStatus === 'canceled' && 'Canceled'}
+                                  {reservation.reservationStatus === 'no-show' && 'No Show'}
                                 </div>
                               </TableCell>
                               <TableCell>
@@ -1069,10 +954,7 @@ const ClubReservationTable = () => {
                             </button> */}
                                 <DropdownMenu>
                                   <DropdownMenuTrigger asChild>
-                                    <Button
-                                      variant="ghost"
-                                      className="h-8 w-8 p-0"
-                                    >
+                                    <Button variant="ghost" className="h-8 w-8 p-0">
                                       <span className="sr-only">Open menu</span>
                                       <MoreVertical />
                                     </Button>
@@ -1118,11 +1000,7 @@ const ClubReservationTable = () => {
                                       <CheckCircle /> Mark as No-Show
                                     </DropdownMenuItem>
                                     <DropdownMenuItem
-                                      onClick={() =>
-                                        navigator.clipboard.writeText(
-                                          reservation.id,
-                                        )
-                                      }
+                                      onClick={() => navigator.clipboard.writeText(reservation.id)}
                                     >
                                       <Copy /> Dupllicate Reservation
                                     </DropdownMenuItem>
@@ -1137,10 +1015,7 @@ const ClubReservationTable = () => {
                           ))
                         ) : (
                           <TableRow>
-                            <TableCell
-                              colSpan={10}
-                              className="h-24 text-center"
-                            >
+                            <TableCell colSpan={10} className="h-24 text-center">
                               No reservations found.
                             </TableCell>
                           </TableRow>
@@ -1160,32 +1035,25 @@ const ClubReservationTable = () => {
             <div className="absolute hidden md:flex bottom-0 border-t border-[#E5E7EB] left-0 right-0 bg-white">
               <div className="flex items-center w-full px-8 justify-between space-x-2 py-4">
                 <div className="text-muted-foreground text-sm">
-                  Page {currentPage} of {totalPages} ({totalItems} total
-                  reservations)
+                  Page {currentPage} of {totalPages} ({totalItems} total reservations)
                 </div>
                 <div className="flex items-center gap-2">
                   {getPageNumbers().map((page, idx) => (
                     <button
                       key={idx}
-                      onClick={() =>
-                        typeof page === "number" && handlePageChange(page)
-                      }
-                      disabled={
-                        page === "ellipsis-start" || page === "ellipsis-end"
-                      }
+                      onClick={() => typeof page === 'number' && handlePageChange(page)}
+                      disabled={page === 'ellipsis-start' || page === 'ellipsis-end'}
                       className={`px-3 py-1 rounded-md ${
                         currentPage === page
-                          ? "bg-teal-600 text-white"
-                          : "bg-white text-gray-700 border border-gray-200"
+                          ? 'bg-teal-600 text-white'
+                          : 'bg-white text-gray-700 border border-gray-200'
                       } ${
-                        page === "ellipsis-start" || page === "ellipsis-end"
-                          ? "cursor-default"
-                          : "hover:bg-gray-100"
+                        page === 'ellipsis-start' || page === 'ellipsis-end'
+                          ? 'cursor-default'
+                          : 'hover:bg-gray-100'
                       }`}
                     >
-                      {page === "ellipsis-start" || page === "ellipsis-end"
-                        ? "…"
-                        : page}
+                      {page === 'ellipsis-start' || page === 'ellipsis-end' ? '…' : page}
                     </button>
                   ))}
                 </div>
@@ -1226,19 +1094,19 @@ const ClubReservationTable = () => {
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-4 px-4">
                         <div
                           className={cn(
-                            "w-full justify-between text-left font-normal md:bg-[#F9FAFB] md:border border-[#E5E7EB] items-center rounded-xl md:px-6! min-w-[150px] flex h-[60px]",
+                            'w-full justify-between text-left font-normal md:bg-[#F9FAFB] md:border border-[#E5E7EB] items-center rounded-xl md:px-6! min-w-[150px] flex h-[60px]'
                           )}
                         >
                           <div className="gap-2 flex flex-col">
                             <div htmlFor="date" className="text-black text-xs">
                               Date
                             </div>
-                            {format(showPopup.details.date, "do MMM, yyyy")}
+                            {format(showPopup.details.date, 'do MMM, yyyy')}
                           </div>
                         </div>
                         <div
                           className={cn(
-                            "w-full justify-between text-left font-normal md:bg-[#F9FAFB] md:border border-[#E5E7EB] items-center rounded-xl md:px-6! min-w-[150px] flex h-[60px]",
+                            'w-full justify-between text-left font-normal md:bg-[#F9FAFB] md:border border-[#E5E7EB] items-center rounded-xl md:px-6! min-w-[150px] flex h-[60px]'
                           )}
                         >
                           <div className="gap-2 flex flex-col">
@@ -1250,7 +1118,7 @@ const ClubReservationTable = () => {
                         </div>
                         <div
                           className={cn(
-                            "w-full justify-between text-left font-normal md:bg-[#F9FAFB] md:border border-[#E5E7EB] items-center rounded-xl md:px-6! min-w-[150px] flex h-[60px]",
+                            'w-full justify-between text-left font-normal md:bg-[#F9FAFB] md:border border-[#E5E7EB] items-center rounded-xl md:px-6! min-w-[150px] flex h-[60px]'
                           )}
                         >
                           <div className="gap-2 flex flex-col">
@@ -1259,15 +1127,15 @@ const ClubReservationTable = () => {
                             </div>
                             {showPopup.details.tables.length > 0
                               ? showPopup.details.tables[0].tableType.name
-                              : "N/A"}{" "}
+                              : 'N/A'}{' '}
                             {showPopup.details.tables.length > 0
                               ? `+${showPopup.details.tables.length - 1} more`
-                              : ""}
+                              : ''}
                           </div>
                         </div>
                         <div
                           className={cn(
-                            "w-full justify-between text-left font-normal md:bg-[#F9FAFB] md:border border-[#E5E7EB] items-center rounded-xl md:px-6! min-w-[150px] flex h-[60px]",
+                            'w-full justify-between text-left font-normal md:bg-[#F9FAFB] md:border border-[#E5E7EB] items-center rounded-xl md:px-6! min-w-[150px] flex h-[60px]'
                           )}
                         >
                           <div className="gap-2 flex flex-col">
@@ -1281,9 +1149,7 @@ const ClubReservationTable = () => {
                     </div>
 
                     <div className="rounded-2xl border border-gray-200 mb-6 bg-white">
-                      <h2 className="text-lg font-semibold text-[#111827] py-4 px-5">
-                        Add Ons
-                      </h2>
+                      <h2 className="text-lg font-semibold text-[#111827] py-4 px-5">Add Ons</h2>
 
                       <hr className="border-gray-200 mb-4" />
                       <div className="py-4 px-5 space-y-4">
@@ -1293,14 +1159,10 @@ const ClubReservationTable = () => {
                             className="space-y-4 px-2 py-3 rounded-2xl border border-[#E5E7EB] bg-[#F9FAFB]"
                           >
                             <div className="flex justify-between items-center">
-                              <p className="text-sm text-[#111827]">
-                                {item.name}
-                              </p>
+                              <p className="text-sm text-[#111827]">{item.name}</p>
                             </div>
                             <div className="flex justify-between items-center">
-                              <p className="text-xs text-[#111827]">
-                                {item.addOns.join(" ")}
-                              </p>
+                              <p className="text-xs text-[#111827]">{item.addOns.join(' ')}</p>
                               <p className="text-sm text-[#111827]">
                                 ₦{item.setPrice.toLocaleString()}
                               </p>
@@ -1314,9 +1176,7 @@ const ClubReservationTable = () => {
                               className="space-y-4 px-2 py-3 rounded-2xl border border-[#E5E7EB] bg-[#F9FAFB]"
                             >
                               <div className="flex justify-between items-center">
-                                <p className="text-sm text-[#111827]">
-                                  {item.tableType.name}
-                                </p>
+                                <p className="text-sm text-[#111827]">{item.tableType.name}</p>
                               </div>
                               <div className="flex justify-between items-center">
                                 <p className="text-sm text-[#111827]">
@@ -1331,9 +1191,7 @@ const ClubReservationTable = () => {
                             className="space-y-4 px-2 py-3 rounded-2xl border border-[#E5E7EB] bg-[#F9FAFB]"
                           >
                             <div className="flex justify-between items-center">
-                              <p className="text-sm text-[#111827]">
-                                {item.drink.name}
-                              </p>
+                              <p className="text-sm text-[#111827]">{item.drink.name}</p>
                             </div>
                             <div className="flex justify-between items-center">
                               <p className="text-xs text-[#111827]">
@@ -1355,11 +1213,9 @@ const ClubReservationTable = () => {
                       <div className="flex items-start gap-3">
                         <Mail className="w-5 h-5 text-[#0A6C6D] mt-0.5 flex-shrink-0" />
                         <div>
-                          <p className="text-sm font-medium text-gray-900">
-                            Customer Contact
-                          </p>
+                          <p className="text-sm font-medium text-gray-900">Customer Contact</p>
                           <p className="text-sm text-gray-700">
-                            {showPopup.details.customerEmail || "N/A"}
+                            {showPopup.details.customerEmail || 'N/A'}
                           </p>
                         </div>
                       </div>
@@ -1367,8 +1223,7 @@ const ClubReservationTable = () => {
                       <div className="flex items-start gap-3">
                         <Clock className="w-5 h-5 text-[#0A6C6D] mt-0.5 flex-shrink-0" />
                         <p className="text-sm">
-                          Please remind guests to arrive 15 mins early for VIP
-                          processing
+                          Please remind guests to arrive 15 mins early for VIP processing
                         </p>
                       </div>
                     </div>
@@ -1386,15 +1241,11 @@ const ClubReservationTable = () => {
                     </button>
                     <button
                       onClick={() => {
-                        if (
-                          showPopup.details.bookingCode ||
-                          showPopup.details._id
-                        ) {
+                        if (showPopup.details.bookingCode || showPopup.details._id) {
                           navigator.clipboard.writeText(
-                            showPopup.details.bookingCode ||
-                              showPopup.details._id,
+                            showPopup.details.bookingCode || showPopup.details._id
                           );
-                          toast.success("Booking code copied to clipboard");
+                          toast.success('Booking code copied to clipboard');
                         }
                       }}
                       className="flex-1 h-10 text-sm font-medium rounded-xl px-6 bg-[#0A6C6D] hover:bg-teal-800 text-white transition-colors"
@@ -1409,9 +1260,7 @@ const ClubReservationTable = () => {
           <ConfirmReservation
             onConfirm={async () => {
               if (!vendor?._id) {
-                toast.error(
-                  "Vendor information missing. Please refresh the page.",
-                );
+                toast.error('Vendor information missing. Please refresh the page.');
                 return;
               }
 
@@ -1420,18 +1269,15 @@ const ClubReservationTable = () => {
                   reservationId: resID,
                   vendorId: vendor._id,
                 });
-                toast.success("Reservation marked as complete!");
+                toast.success('Reservation marked as complete!');
                 // Refresh reservations list
                 const freshRes = await userService.fetchReservations({
                   vendorId: vendor._id,
                 });
                 setReservations(freshRes.data || []);
               } catch (error) {
-                console.error("Update failed:", error);
-                toast.error(
-                  error.response?.data?.message ||
-                    "Failed to update reservation",
-                );
+                console.error('Update failed:', error);
+                toast.error(error.response?.data?.message || 'Failed to update reservation');
               }
             }}
             setOpen={setOpen}

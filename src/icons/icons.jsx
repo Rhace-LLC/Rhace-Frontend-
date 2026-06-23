@@ -1,11 +1,5 @@
 const FoodIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="18"
-    height="16"
-    fill="none"
-    viewBox="0 0 18 16"
-  >
+  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="16" fill="none" viewBox="0 0 18 16">
     <path
       fill="#fff"
       fillRule="evenodd"

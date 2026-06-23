@@ -1,17 +1,7 @@
-
-
 import { Eye, Download, X } from 'lucide-react';
 import { useEffect } from 'react';
 
-
-
-export function ActionMenu({
-  isOpen,
-  onClose,
-  onViewDetails,
-  onDownloadInvoice,
-  onCancelBooking,
-}) {
+export function ActionMenu({ isOpen, onClose, onViewDetails, onDownloadInvoice, onCancelBooking }) {
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
@@ -27,10 +17,7 @@ export function ActionMenu({
 
   return (
     <>
-      <div
-        className="fixed inset-0 bg-black/40 z-40 transition-opacity"
-        onClick={onClose}
-      />
+      <div className="fixed inset-0 bg-black/40 z-40 transition-opacity" onClick={onClose} />
       <div className="fixed inset-x-0 bottom-0 z-50 animate-slide-up">
         <div className="bg-white rounded-t-3xl shadow-2xl max-w-2xl mx-auto">
           <div className="p-6 space-y-3">

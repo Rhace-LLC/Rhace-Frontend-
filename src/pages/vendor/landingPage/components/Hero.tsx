@@ -181,27 +181,14 @@
 //   );
 // }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-//Variant 2 design, more saas inclined 
-import { ArrowRight, CheckCircle } from "lucide-react";
-import { motion, useScroll, useTransform, useSpring } from "framer-motion";
-import { useNavigate } from "react-router";
-import { useRef } from "react";
+//Variant 2 design, more saas inclined
+import { ArrowRight, CheckCircle } from 'lucide-react';
+import { motion, useScroll, useTransform, useSpring } from 'framer-motion';
+import { useNavigate } from 'react-router';
+import { useRef } from 'react';
 
 // Dashboard image import
-import dashboardPreview from "@/public/auth/HeroVendor.svg";
+import dashboardPreview from '@/public/auth/HeroVendor.svg';
 
 export function Hero() {
   const navigate = useNavigate();
@@ -209,22 +196,21 @@ export function Hero() {
 
   const { scrollYProgress } = useScroll({
     target: imageRef,
-    offset: ["start end", "center center"],
+    offset: ['start end', 'center center'],
   });
 
   const smooth = useSpring(scrollYProgress, { stiffness: 60, damping: 20 });
-  const imageScale   = useTransform(smooth, [0, 1], [0.88, 1]);
-  const imageY       = useTransform(smooth, [0, 1], [32, 0]);
+  const imageScale = useTransform(smooth, [0, 1], [0.88, 1]);
+  const imageY = useTransform(smooth, [0, 1], [32, 0]);
   const imageOpacity = useTransform(smooth, [0, 0.25], [0, 1]);
 
   return (
     <section
       className="relative flex flex-col items-center overflow-hidden pb-24"
-      style={{ paddingTop: "88px" }}
+      style={{ paddingTop: '88px' }}
     >
-
       {/* ── Base white background ── */}
-      <div className="absolute inset-0 -z-10" style={{ backgroundColor: "#ffffff" }} />
+      <div className="absolute inset-0 -z-10" style={{ backgroundColor: '#ffffff' }} />
 
       {/* ── Grid — fainted dark green ── */}
       <div
@@ -234,7 +220,7 @@ export function Hero() {
             linear-gradient(rgba(1,77,67,0.045) 1px, transparent 1px),
             linear-gradient(90deg, rgba(1,77,67,0.045) 1px, transparent 1px)
           `,
-          backgroundSize: "48px 48px",
+          backgroundSize: '48px 48px',
         }}
       />
 
@@ -243,21 +229,24 @@ export function Hero() {
       <div
         className="absolute top-0 left-0 w-[420px] h-[420px] -z-10 pointer-events-none"
         style={{
-          background: "radial-gradient(ellipse at top left, rgba(1,77,67,0.07) 0%, transparent 70%)",
+          background:
+            'radial-gradient(ellipse at top left, rgba(1,77,67,0.07) 0%, transparent 70%)',
         }}
       />
       {/* Right blob */}
       <div
         className="absolute top-10 right-0 w-[380px] h-[380px] -z-10 pointer-events-none"
         style={{
-          background: "radial-gradient(ellipse at top right, rgba(1,107,92,0.06) 0%, transparent 65%)",
+          background:
+            'radial-gradient(ellipse at top right, rgba(1,107,92,0.06) 0%, transparent 65%)',
         }}
       />
       {/* Bottom-left accent */}
       <div
         className="absolute bottom-0 left-0 w-[300px] h-[300px] -z-10 pointer-events-none"
         style={{
-          background: "radial-gradient(ellipse at bottom left, rgba(1,77,67,0.05) 0%, transparent 65%)",
+          background:
+            'radial-gradient(ellipse at bottom left, rgba(1,77,67,0.05) 0%, transparent 65%)',
         }}
       />
 
@@ -265,26 +254,26 @@ export function Hero() {
       <div
         className="absolute inset-0 -z-10"
         style={{
-          background: "radial-gradient(ellipse 70% 45% at 50% 0%, rgba(255,255,255,0.95) 0%, transparent 100%)",
+          background:
+            'radial-gradient(ellipse 70% 45% at 50% 0%, rgba(255,255,255,0.95) 0%, transparent 100%)',
         }}
       />
 
       {/* ── Copy ── */}
       <div className="relative w-full max-w-2xl mx-auto px-4 sm:px-6 text-center mt-2">
-
         <motion.h1
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
           className="text-4xl lg:text-5xl xl:text-[3.2rem] font-bold text-gray-950 leading-[1.1] tracking-tight"
         >
-          One Dashboard to{" "}
+          One Dashboard to{' '}
           <motion.span
             initial={{ opacity: 0, x: -10 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
             className="relative inline-block"
-            style={{ color: "#014d43" }}
+            style={{ color: '#014d43' }}
           >
             Manage
             <svg
@@ -303,10 +292,10 @@ export function Hero() {
                 opacity="0.4"
                 initial={{ pathLength: 0 }}
                 animate={{ pathLength: 1 }}
-                transition={{ duration: 0.9, delay: 0.85, ease: "easeOut" }}
+                transition={{ duration: 0.9, delay: 0.85, ease: 'easeOut' }}
               />
             </svg>
-          </motion.span>{" "}
+          </motion.span>{' '}
           Your Hotel, Restaurant, or Club
         </motion.h1>
 
@@ -316,8 +305,8 @@ export function Hero() {
           transition={{ duration: 0.6, delay: 0.35, ease: [0.22, 1, 0.36, 1] }}
           className="mt-5 text-base text-gray-500 leading-relaxed font-light max-w-md mx-auto"
         >
-          Manage reservations, track payments, control inventory, and monitor
-          business performance — all from one powerful vendor dashboard.
+          Manage reservations, track payments, control inventory, and monitor business performance —
+          all from one powerful vendor dashboard.
         </motion.p>
 
         <motion.div
@@ -328,10 +317,10 @@ export function Hero() {
         >
           <motion.button
             className="inline-flex items-center gap-2 text-sm font-semibold text-white px-5 py-3 rounded-xl shadow-lg"
-            style={{ backgroundColor: "#014d43" }}
-            whileHover={{ scale: 1.05, boxShadow: "0 16px 32px -6px rgba(1,77,67,0.4)", y: -2 }}
+            style={{ backgroundColor: '#014d43' }}
+            whileHover={{ scale: 1.05, boxShadow: '0 16px 32px -6px rgba(1,77,67,0.4)', y: -2 }}
             whileTap={{ scale: 0.96 }}
-            onClick={() => navigate("/auth/vendor/signup")}
+            onClick={() => navigate('/auth/vendor/signup')}
           >
             Start Free Trial
             <ArrowRight className="w-4 h-4" />
@@ -339,11 +328,11 @@ export function Hero() {
 
           <motion.button
             className="inline-flex items-center gap-2 text-sm font-semibold text-gray-700 px-5 py-3 rounded-xl border border-gray-200 bg-white/70 backdrop-blur-sm"
-            whileHover={{ scale: 1.05, y: -2, backgroundColor: "rgba(255,255,255,0.95)" }}
+            whileHover={{ scale: 1.05, y: -2, backgroundColor: 'rgba(255,255,255,0.95)' }}
             whileTap={{ scale: 0.96 }}
-            onClick={() => navigate("/auth/vendor/login")}
+            onClick={() => navigate('/auth/vendor/login')}
           >
-            <CheckCircle className="w-4 h-4" style={{ color: "#014d43" }} />
+            <CheckCircle className="w-4 h-4" style={{ color: '#014d43' }} />
             Book a Demo
           </motion.button>
         </motion.div>
@@ -356,7 +345,6 @@ export function Hero() {
         className="relative w-full mt-12 px-4 sm:px-6"
       >
         <div className="max-w-3xl mx-auto">
-
           {/* Glow behind container */}
           <motion.div
             initial={{ opacity: 0 }}
@@ -364,7 +352,8 @@ export function Hero() {
             transition={{ duration: 1.5, delay: 0.9 }}
             className="absolute -inset-8 rounded-[28px] pointer-events-none blur-2xl"
             style={{
-              background: "radial-gradient(ellipse at 50% 60%, rgba(1,77,67,0.1) 0%, transparent 70%)",
+              background:
+                'radial-gradient(ellipse at 50% 60%, rgba(1,77,67,0.1) 0%, transparent 70%)',
             }}
           />
 
@@ -372,10 +361,10 @@ export function Hero() {
           <div
             className="relative rounded-[22px] p-3"
             style={{
-              background: "rgba(255,255,255,0.55)",
-              backdropFilter: "blur(24px)",
-              WebkitBackdropFilter: "blur(24px)",
-              border: "1.5px solid rgba(255,255,255,0.9)",
+              background: 'rgba(255,255,255,0.55)',
+              backdropFilter: 'blur(24px)',
+              WebkitBackdropFilter: 'blur(24px)',
+              border: '1.5px solid rgba(255,255,255,0.9)',
               boxShadow: `
                 0 0 0 1px rgba(1,77,67,0.07),
                 0 8px 16px -4px rgba(1,77,67,0.07),
@@ -387,16 +376,16 @@ export function Hero() {
             {/* Inner card */}
             <motion.div
               whileHover={{ y: -3 }}
-              transition={{ duration: 0.35, ease: "easeOut" }}
+              transition={{ duration: 0.35, ease: 'easeOut' }}
               className="relative w-full rounded-[14px] overflow-hidden shadow-lg"
-              style={{ border: "1px solid rgba(1,77,67,0.09)" }}
+              style={{ border: '1px solid rgba(1,77,67,0.09)' }}
             >
               {/* Browser chrome */}
               <div
                 className="px-4 py-2.5 flex items-center gap-2"
                 style={{
-                  background: "rgba(248,250,252,0.98)",
-                  borderBottom: "1px solid rgba(1,77,67,0.07)",
+                  background: 'rgba(248,250,252,0.98)',
+                  borderBottom: '1px solid rgba(1,77,67,0.07)',
                 }}
               >
                 <div className="flex gap-1.5">
@@ -408,8 +397,8 @@ export function Hero() {
                   <div
                     className="rounded-md px-3 py-0.5 text-xs text-gray-400 text-center w-full max-w-[180px] mx-auto"
                     style={{
-                      background: "rgba(255,255,255,0.9)",
-                      border: "1px solid rgba(0,0,0,0.06)",
+                      background: 'rgba(255,255,255,0.9)',
+                      border: '1px solid rgba(0,0,0,0.06)',
                     }}
                   >
                     dashboard.rhace.com
@@ -425,16 +414,11 @@ export function Hero() {
               />
             </motion.div>
           </div>
-
         </div>
       </motion.div>
-
     </section>
   );
 }
-
-
-
 
 //Final variant: Morden more animations saas type
 // import { ArrowRight, CheckCircle, ChevronLeft, ChevronRight } from "lucide-react";

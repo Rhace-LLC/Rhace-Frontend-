@@ -1,15 +1,15 @@
-import DashboardLayout from "@/components/layout/DashboardLayout";
-import RoomsManagementComponent from "./components/RoomsManagement";
+import DashboardLayout from '@/components/layout/DashboardLayout';
+import RoomsManagementComponent from './components/RoomsManagement';
 import {
   Pagination,
   PaginationContent,
   PaginationItem,
   PaginationLink,
   PaginationEllipsis,
-} from "@/components/ui/pagination";
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import DashboardButton from "@/components/dashboard/ui/DashboardButton";
-import { useState } from "react";
+} from '@/components/ui/pagination';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import DashboardButton from '@/components/dashboard/ui/DashboardButton';
+import { useState } from 'react';
 
 const RoomsManagement = () => {
   const [currentPage, setCurrentPage] = useState(1);
@@ -39,7 +39,7 @@ const RoomsManagement = () => {
       pages.push(1);
 
       if (currentPage > maxVisible) {
-        pages.push("ellipsis-start");
+        pages.push('ellipsis-start');
       }
 
       // Show pages around current page
@@ -51,7 +51,7 @@ const RoomsManagement = () => {
       }
 
       if (currentPage < totalPages - maxVisible + 1) {
-        pages.push("ellipsis-end");
+        pages.push('ellipsis-end');
       }
 
       // Always show last page
@@ -81,7 +81,7 @@ const RoomsManagement = () => {
                 <PaginationContent>
                   {getPageNumbers().map((page, idx) => (
                     <PaginationItem key={idx}>
-                      {page === "ellipsis-start" || page === "ellipsis-end" ? (
+                      {page === 'ellipsis-start' || page === 'ellipsis-end' ? (
                         <PaginationEllipsis />
                       ) : (
                         <PaginationLink

@@ -1,7 +1,21 @@
-import { useState } from "react";
-import { Building2, Calendar, Download, Edit, Eye, Home, Loader, Loader2, MapPin, MoreVertical, Trash2, Users, X } from 'lucide-react';
-import { useNavigate } from "react-router";
-import { SvgIcon, SvgIcon2, SvgIcon3 } from "@/public/icons/icons";
+import { useState } from 'react';
+import {
+  Building2,
+  Calendar,
+  Download,
+  Edit,
+  Eye,
+  Home,
+  Loader,
+  Loader2,
+  MapPin,
+  MoreVertical,
+  Trash2,
+  Users,
+  X,
+} from 'lucide-react';
+import { useNavigate } from 'react-router';
+import { SvgIcon, SvgIcon2, SvgIcon3 } from '@/public/icons/icons';
 
 function BookingCard({ booking, onEdit, onCancel }) {
   const [showDropdown, setShowDropdown] = useState(false);
@@ -14,7 +28,7 @@ function BookingCard({ booking, onEdit, onCancel }) {
     return date.toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
-      year: 'numeric'
+      year: 'numeric',
     });
   };
 
@@ -33,9 +47,9 @@ function BookingCard({ booking, onEdit, onCancel }) {
   //   }
   // };
 
-  // Temporary normalization added because backend paymentStatus values 
+  // Temporary normalization added because backend paymentStatus values
   // are not yet standardized (case/format mismatch).
-  // Once backend aligns paymentStatus to consistent values 
+  // Once backend aligns paymentStatus to consistent values
   // like: 'paid', 'part_paid', 'not_paid', this logic can be simplified.
   const getStatusColor = (status) => {
     if (!status) return 'bg-gray-100 text-gray-800 border-gray-200';
@@ -60,7 +74,7 @@ function BookingCard({ booking, onEdit, onCancel }) {
     }
   };
 
-  //Switch betweek proper Icons 
+  //Switch betweek proper Icons
   const getReservationIcon = (type) => {
     if (!type) return <Home className="w-4 h-4 flex-shrink-0" />;
 
@@ -88,26 +102,25 @@ function BookingCard({ booking, onEdit, onCancel }) {
     return 'View Details';
   };
 
-
   const handleDownloadInvoice = () => {
     console.log('Download invoice:', booking.id);
     setShowDropdown(false);
   };
 
   const handleCancelBooking = async () => {
-      setCancelLoading(true);
-      try {
-        console.log('Cancelling booking with ID:', booking._id);
-        await onCancel(booking._id);
-      } catch (err) {
-          console.log(err);
-        } finally {
-          setCancelLoading(false);
-          setShowCancel(false);
-        }
+    setCancelLoading(true);
+    try {
+      console.log('Cancelling booking with ID:', booking._id);
+      await onCancel(booking._id);
+    } catch (err) {
+      console.log(err);
+    } finally {
+      setCancelLoading(false);
+      setShowCancel(false);
+    }
   };
 
-  //Capitalize Vendor type 
+  //Capitalize Vendor type
   const formatReservationType = (type) => {
     if (!type) return '';
 
@@ -119,7 +132,6 @@ function BookingCard({ booking, onEdit, onCancel }) {
 
     return normalized.charAt(0).toUpperCase() + normalized.slice(1);
   };
-
 
   return (
     <div className="bg-white rounded-xl relative shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-200">
@@ -137,7 +149,6 @@ function BookingCard({ booking, onEdit, onCancel }) {
             <h3 className="text-lg font-semibold text-gray-900 truncate">
               {booking.vendor.businessName}
             </h3>
-
           </div>
 
           <div className="space-y-2 mb-4">
@@ -157,10 +168,10 @@ function BookingCard({ booking, onEdit, onCancel }) {
             <div className="flex items-center gap-2 text-gray-700">
               <Calendar className="w-4 h-4 flex-shrink-0" />
               <span className="text-sm">
-                {booking.reservationType.toLowerCase().includes('hotel') && booking.rooms?.length > 0
+                {booking.reservationType.toLowerCase().includes('hotel') &&
+                booking.rooms?.length > 0
                   ? `${formatDate(booking.rooms[0].checkInDate)} - ${formatDate(booking.rooms[0].checkOutDate)}`
-                  : formatDate(booking.date)
-                }
+                  : formatDate(booking.date)}
               </span>
             </div>
 
@@ -177,7 +188,6 @@ function BookingCard({ booking, onEdit, onCancel }) {
             </div>
           </div>
         </div>
-
       </div>
       <div className="flex flex-col border-t p-2  sm:flex-row items-start sm:items-center justify-between gap-3">
         <span
@@ -185,17 +195,18 @@ function BookingCard({ booking, onEdit, onCancel }) {
             booking.reservationStatus
           )}`}
         >
-          {booking.reservationStatus.split("_").join(" ")}
+          {booking.reservationStatus.split('_').join(' ')}
         </span>
 
         <button
           className="px-6 py-3 rounded-full text-sm font-medium transition-colors w-full sm:w-auto bg-teal-700 hover:bg-teal-800 text-white"
           onClick={() => {
             if (getButtonText(booking.reservationStatus) === 'Leave Review') {
-              navigate(`/${booking.reservationType.slice(0, booking.reservationType.indexOf("Reservation")).toLowerCase()}s/${booking.vendor._id}#reviews`)
-            }
-            else {
-              navigate(`/bookings/${booking._id}`)
+              navigate(
+                `/${booking.reservationType.slice(0, booking.reservationType.indexOf('Reservation')).toLowerCase()}s/${booking.vendor._id}#reviews`
+              );
+            } else {
+              navigate(`/bookings/${booking._id}`);
             }
           }}
         >
@@ -228,14 +239,9 @@ function BookingCard({ booking, onEdit, onCancel }) {
 
           {showDropdown && (
             <>
-              <div
-                className="fixed inset-0 z-10"
-                onClick={() => setShowDropdown(false)}
-              />
+              <div className="fixed inset-0 z-10" onClick={() => setShowDropdown(false)} />
               <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-gray-200 z-20">
                 <div className="py-2">
-
-
                   <button
                     onClick={handleDownloadInvoice}
                     className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left"
@@ -283,17 +289,20 @@ function BookingCard({ booking, onEdit, onCancel }) {
                 onClick={handleCancelBooking}
                 className="px-3 py-2 text-sm rounded-full bg-red-600 hover:bg-red-700 text-white transition-colors"
               >
-                {cancelLoading ? <><Loader2 className="animate-spin" /></> : "Yes, Cancel It"}
+                {cancelLoading ? (
+                  <>
+                    <Loader2 className="animate-spin" />
+                  </>
+                ) : (
+                  'Yes, Cancel It'
+                )}
               </button>
             </div>
           </div>
-        </div> 
+        </div>
       )}
     </div>
   );
 }
 
 export default BookingCard;
-
-
-

@@ -1,23 +1,23 @@
-import { useState } from "react";
-import { X, AlertCircle, Plus, Trash } from "lucide-react";
-import { clubService } from "@/services/club.service";
+import { useState } from 'react';
+import { X, AlertCircle, Plus, Trash } from 'lucide-react';
+import { clubService } from '@/services/club.service';
 
 export function AddTablesModal({
   onClose,
   onSuccess,
   initialData = {
-    name: "",
-    price: "",
+    name: '',
+    price: '',
     addOns: [],
     quantityAvailable: 1,
     seatingCapacity: 1,
-    description: "",
-    category: "Regular",
+    description: '',
+    category: 'Regular',
   },
   editMode = false,
 }) {
   const [formData, setFormData] = useState(initialData);
-  const [addOns, setAddOns] = useState("");
+  const [addOns, setAddOns] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [saveAndAddAnother, setSaveAndAddAnother] = useState(false);
   const [error, setError] = useState(null);
@@ -28,7 +28,7 @@ export function AddTablesModal({
     setError(null);
 
     try {
-      console.log("Submitting form data:", formData);
+      console.log('Submitting form data:', formData);
       const payload = {
         name: formData.name,
         price: parseFloat(formData.price) || 0,
@@ -40,24 +40,24 @@ export function AddTablesModal({
       };
       let response;
       if (editMode) {
-         payload.tableId = initialData._id;
-         response = await clubService.updateTable(payload);
+        payload.tableId = initialData._id;
+        response = await clubService.updateTable(payload);
       } else {
-         response = await clubService.createTable(payload);
+        response = await clubService.createTable(payload);
       }
 
-      console.log("Drink created successfully:", response);
+      console.log('Drink created successfully:', response);
 
       if (saveAndAddAnother) {
         // Reset form for next entry
         setFormData({
-          name: "",
-          price: "",
+          name: '',
+          price: '',
           addOns: [],
           quantityAvailable: 1,
           seatingCapacity: 1,
-          description: "",
-          category: "Regular",
+          description: '',
+          category: 'Regular',
         });
         setError(null);
       } else {
@@ -65,19 +65,17 @@ export function AddTablesModal({
         onSuccess();
       }
     } catch (err) {
-      console.error("Error creating drink type:", err);
+      console.error('Error creating drink type:', err);
 
       // Set user-friendly error message
       if (err.response?.status === 403) {
-        setError(
-          "You do not have permission to add tables. Please contact your administrator.",
-        );
+        setError('You do not have permission to add tables. Please contact your administrator.');
       } else if (err.response?.status === 401) {
-        setError("Your session has expired. Please log in again.");
+        setError('Your session has expired. Please log in again.');
       } else if (err.response?.data?.message) {
         setError(err.response.data.message);
       } else {
-        setError("Failed to create table. Please try again.");
+        setError('Failed to create table. Please try again.');
       }
     } finally {
       setIsSubmitting(false);
@@ -89,10 +87,7 @@ export function AddTablesModal({
       <div className="bg-white rounded-lg w-full max-w-md max-h-[90vh] overflow-y-auto hide-scrollbar ">
         <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
           <h2 className="text-lg font-semibold">Add New Table</h2>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600"
-          >
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
             <X size={20} />
           </button>
         </div>
@@ -101,10 +96,7 @@ export function AddTablesModal({
           {/* Error Alert */}
           {error && (
             <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
-              <AlertCircle
-                className="text-red-500 flex-shrink-0 mt-0.5"
-                size={20}
-              />
+              <AlertCircle className="text-red-500 flex-shrink-0 mt-0.5" size={20} />
               <div className="flex-1">
                 <p className="text-sm text-red-800 font-medium">Error</p>
                 <p className="text-sm text-red-600 mt-1">{error}</p>
@@ -128,9 +120,7 @@ export function AddTablesModal({
               required
               placeholder="e.g. Moet & Chandon Ice Imperial"
               value={formData.name}
-              onChange={(e) =>
-                setFormData({ ...formData, name: e.target.value })
-              }
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
             />
           </div>
@@ -144,16 +134,12 @@ export function AddTablesModal({
               required
               placeholder="e.g. A luxurious table for special occasions"
               value={formData.description}
-              onChange={(e) =>
-                setFormData({ ...formData, description: e.target.value })
-              }
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Price
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Price</label>
             <div className="relative">
               <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500">
                 ₦
@@ -162,17 +148,13 @@ export function AddTablesModal({
                 type="number"
                 placeholder="100,000"
                 value={formData.price}
-                onChange={(e) =>
-                  setFormData({ ...formData, price: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, price: e.target.value })}
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
               />
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Addons
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Addons</label>
             <div className="relative">
               <input
                 placeholder="e.g Extra ice, Extra mixer"
@@ -189,7 +171,7 @@ export function AddTablesModal({
                       addOns: [...formData.addOns, addOns],
                     });
                     console.log(formData.addOns);
-                    setAddOns("");
+                    setAddOns('');
                   }
                 }}
                 className="absolute right-1 top-1/2 transform bg-[#0A6E7D] -translate-y-1/2 text-white p-1.5 rounded-full hover:bg-[#0A6E7D]/90 transition-colors"
@@ -204,7 +186,7 @@ export function AddTablesModal({
                     key={index}
                     className="text-sm text-gray-700 py-1 border-b last:border-b-0 flex justify-between items-center"
                   >
-                    {addon}{" "}
+                    {addon}{' '}
                     <button
                       type="button"
                       onClick={() => {
@@ -252,9 +234,7 @@ export function AddTablesModal({
                 required
                 placeholder="4"
                 value={formData.seatingCapacity}
-                onChange={(e) =>
-                  setFormData({ ...formData, seatingCapacity: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, seatingCapacity: e.target.value })}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
               />
             </div>
@@ -267,9 +247,7 @@ export function AddTablesModal({
               <select
                 value={formData.category}
                 required
-                onChange={(e) =>
-                  setFormData({ ...formData, category: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
               >
                 <option value="Regular">Regular</option>
@@ -294,7 +272,7 @@ export function AddTablesModal({
               disabled={isSubmitting}
               className="flex-1 px-4 py-2 bg-teal-700 text-white rounded-lg hover:bg-teal-800 transition-colors disabled:opacity-50"
             >
-              {isSubmitting ? "Saving..." : "Save Table"}
+              {isSubmitting ? 'Saving...' : 'Save Table'}
             </button>
           </div>
         </form>

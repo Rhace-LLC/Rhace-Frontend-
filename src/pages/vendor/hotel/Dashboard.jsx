@@ -13,10 +13,32 @@ import { Bar, BarChart, CartesianGrid, XAxis } from 'recharts';
 const SOURCE_COLORS = ['#14b8a6', '#fbbf24', '#60a5fa'];
 
 const statsConfig = [
-  { title: 'Reservations made today', icon: BookingsIcon,       iconColors: '#60A5FA', bgColor: 'bg-blue-50',   iconColor: 'text-blue-600'   },
-  { title: 'Prepaid Reservations',    icon: PrepaidIcon,        iconColors: '#06CD02', bgColor: 'bg-green-50',  iconColor: 'text-green-600'  },
-  { title: 'Expected Guests Today',   icon: GuestsIcon,                                bgColor: 'bg-purple-50', iconColor: 'text-purple-600' },
-  { title: 'Pending Payments',        icon: PendingPaymentIcon,                        bgColor: 'bg-yellow-50', iconColor: 'text-yellow-600' },
+  {
+    title: 'Reservations made today',
+    icon: BookingsIcon,
+    iconColors: '#60A5FA',
+    bgColor: 'bg-blue-50',
+    iconColor: 'text-blue-600',
+  },
+  {
+    title: 'Prepaid Reservations',
+    icon: PrepaidIcon,
+    iconColors: '#06CD02',
+    bgColor: 'bg-green-50',
+    iconColor: 'text-green-600',
+  },
+  {
+    title: 'Expected Guests Today',
+    icon: GuestsIcon,
+    bgColor: 'bg-purple-50',
+    iconColor: 'text-purple-600',
+  },
+  {
+    title: 'Pending Payments',
+    icon: PendingPaymentIcon,
+    bgColor: 'bg-yellow-50',
+    iconColor: 'text-yellow-600',
+  },
 ];
 
 const chartConfig = {
@@ -51,7 +73,7 @@ const HotelDashboard = () => {
   if (loading || !reservationStats) {
     return (
       <DashboardLayout type={vendor.vendorType} section="dashboard" settings={false}>
-        <UniversalLoader type='dashboard-1' />
+        <UniversalLoader type="dashboard-1" />
       </DashboardLayout>
     );
   }
@@ -60,7 +82,7 @@ const HotelDashboard = () => {
 
   // Filter to hotel reservations only for the table
   const hotelReservations = (reservationStats.todaysReservations || []).filter(
-    (r) => r.reservationType === 'hotelReservation',
+    (r) => r.reservationType === 'hotelReservation'
   );
 
   // Recharts data — same shape as restaurant (thisWeek / lastWeek keys)
@@ -115,17 +137,20 @@ const HotelDashboard = () => {
     <DashboardLayout type={vendor.vendorType} section="dashboard" settings={false}>
       <div className="min-h-screen bg-gray-50 p-6 mb-14">
         <div className="max-w-7xl mx-auto space-y-6">
-
           {/* Alert Banner */}
           {showAlert && upcomingCount > 0 && (
             <div className="bg-yellow-50 border-l-4 border-yellow-400 rounded-lg p-4 flex items-center justify-between">
               <div className="flex items-center">
                 <Clock className="w-5 h-5 text-yellow-600 mr-3" />
                 <p className="text-yellow-800 text-sm font-medium">
-                  {upcomingCount} Hotel Check-in{upcomingCount > 1 ? 's' : ''} in the next 30 minutes
+                  {upcomingCount} Hotel Check-in{upcomingCount > 1 ? 's' : ''} in the next 30
+                  minutes
                 </p>
               </div>
-              <button onClick={() => setShowAlert(false)} className="text-yellow-600 hover:text-yellow-800">
+              <button
+                onClick={() => setShowAlert(false)}
+                className="text-yellow-600 hover:text-yellow-800"
+              >
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -147,7 +172,10 @@ const HotelDashboard = () => {
             {reservationStats.todayStats.map((stat, index) => {
               const Icon = statsConfig[index].icon;
               return (
-                <div key={index} className="flex justify-between p-5 border-b lg:border-b-0 lg:border-r border-gray-100 last:border-0">
+                <div
+                  key={index}
+                  className="flex justify-between p-5 border-b lg:border-b-0 lg:border-r border-gray-100 last:border-0"
+                >
                   <div>
                     <p className="text-sm text-gray-600 mb-1">{statsConfig[index].title}</p>
                     <p className="text-3xl font-bold text-gray-900 mb-2">
@@ -156,13 +184,20 @@ const HotelDashboard = () => {
                         : stat.details}
                     </p>
                     {/* FIX: was showing "↑ -5%" for negative changes — now uses Math.abs */}
-                    <p className={`text-sm flex items-center ${stat.change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    <p
+                      className={`text-sm flex items-center ${stat.change >= 0 ? 'text-green-600' : 'text-red-600'}`}
+                    >
                       <span className="mr-1">{stat.change >= 0 ? '↑' : '↓'}</span>
                       {Math.abs(stat.change)}% vs last week
                     </p>
                   </div>
-                  <div className={`w-12 h-12 ${statsConfig[index].bgColor} rounded-lg flex items-center justify-center flex-shrink-0`}>
-                    <Icon className={`w-6 h-6 ${statsConfig[index].iconColor}`} colors={statsConfig[index].iconColors} />
+                  <div
+                    className={`w-12 h-12 ${statsConfig[index].bgColor} rounded-lg flex items-center justify-center flex-shrink-0`}
+                  >
+                    <Icon
+                      className={`w-6 h-6 ${statsConfig[index].iconColor}`}
+                      colors={statsConfig[index].iconColors}
+                    />
                   </div>
                 </div>
               );
@@ -171,7 +206,6 @@ const HotelDashboard = () => {
 
           {/* Main Content Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
             {/* Today's Hotel Reservations */}
             <div className="bg-white rounded-lg border border-gray-200">
               <div className="p-5 border-b border-gray-200 flex items-center justify-between">
@@ -184,51 +218,60 @@ const HotelDashboard = () => {
                 </a>
               </div>
               <div className="p-5 space-y-3">
-                {hotelReservations.length > 0
-                  ? hotelReservations.slice(0, 5).map((reservation) => (
-                      <div key={reservation._id} className="flex items-center justify-between hover:bg-gray-50 p-2 rounded-lg transition-colors">
-                        <div className="flex items-center flex-1">
-                          <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center mr-3">
-                            <User className="w-5 h-5 text-gray-600" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="font-medium text-gray-900">{reservation.customerName}</p>
-                            <p className="text-xs text-gray-500">
-                              Check-in: {formatDate(reservation.rooms?.[0]?.checkInDate)}
-                            </p>
-                          </div>
+                {hotelReservations.length > 0 ? (
+                  hotelReservations.slice(0, 5).map((reservation) => (
+                    <div
+                      key={reservation._id}
+                      className="flex items-center justify-between hover:bg-gray-50 p-2 rounded-lg transition-colors"
+                    >
+                      <div className="flex items-center flex-1">
+                        <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center mr-3">
+                          <User className="w-5 h-5 text-gray-600" />
                         </div>
-                        <div className="flex items-center gap-4">
-                          <div className="text-right">
-                            <p className="text-sm text-gray-900">
-                              {formatDate(reservation.rooms?.[0]?.checkOutDate)}
-                            </p>
-                            <p className="text-xs text-gray-500">Check-out</p>
-                          </div>
-                          <div className="text-center min-w-[70px]">
-                            <p className="text-sm font-medium text-gray-900">
-                              {reservation.rooms?.reduce((t, r) => t + (r.guests || 0), 0)} Guest
-                              {reservation.rooms?.reduce((t, r) => t + (r.guests || 0), 0) !== 1 ? 's' : ''}
-                            </p>
-                          </div>
-                          <div className="min-w-[90px]">
-                            <span className={`inline-block px-3 py-1 text-xs font-medium rounded ${
-                              reservation.reservationStatus === 'upcoming' ? 'bg-teal-50 text-teal-700'
-                              : reservation.reservationStatus === 'completed' ? 'bg-green-50 text-green-700'
-                              : 'bg-gray-50 text-gray-700'
-                            }`}>
-                              {reservation.reservationStatus}
-                            </span>
-                          </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-gray-900">{reservation.customerName}</p>
+                          <p className="text-xs text-gray-500">
+                            Check-in: {formatDate(reservation.rooms?.[0]?.checkInDate)}
+                          </p>
                         </div>
                       </div>
-                    ))
-                  : (
-                    <div className="h-48 flex flex-col items-center justify-center gap-2">
-                      <ListX className="size-6 text-gray-400" />
-                      <p className="text-sm text-gray-500">No hotel reservations today</p>
+                      <div className="flex items-center gap-4">
+                        <div className="text-right">
+                          <p className="text-sm text-gray-900">
+                            {formatDate(reservation.rooms?.[0]?.checkOutDate)}
+                          </p>
+                          <p className="text-xs text-gray-500">Check-out</p>
+                        </div>
+                        <div className="text-center min-w-[70px]">
+                          <p className="text-sm font-medium text-gray-900">
+                            {reservation.rooms?.reduce((t, r) => t + (r.guests || 0), 0)} Guest
+                            {reservation.rooms?.reduce((t, r) => t + (r.guests || 0), 0) !== 1
+                              ? 's'
+                              : ''}
+                          </p>
+                        </div>
+                        <div className="min-w-[90px]">
+                          <span
+                            className={`inline-block px-3 py-1 text-xs font-medium rounded ${
+                              reservation.reservationStatus === 'upcoming'
+                                ? 'bg-teal-50 text-teal-700'
+                                : reservation.reservationStatus === 'completed'
+                                  ? 'bg-green-50 text-green-700'
+                                  : 'bg-gray-50 text-gray-700'
+                            }`}
+                          >
+                            {reservation.reservationStatus}
+                          </span>
+                        </div>
+                      </div>
                     </div>
-                  )}
+                  ))
+                ) : (
+                  <div className="h-48 flex flex-col items-center justify-center gap-2">
+                    <ListX className="size-6 text-gray-400" />
+                    <p className="text-sm text-gray-500">No hotel reservations today</p>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -237,7 +280,10 @@ const HotelDashboard = () => {
               <div className="p-5 border-b border-gray-200 flex items-center justify-between">
                 <h3 className="text-lg font-semibold text-gray-900">Hotel Booking Trends</h3>
                 <div className="flex items-center gap-3">
-                  <a href={`/dashboard/${vendor.vendorType}/bookings`} className="text-teal-600 hover:text-teal-700 text-sm font-medium flex items-center">
+                  <a
+                    href={`/dashboard/${vendor.vendorType}/bookings`}
+                    className="text-teal-600 hover:text-teal-700 text-sm font-medium flex items-center"
+                  >
                     View All <ChevronRight className="w-4 h-4 ml-1" />
                   </a>
                   <select
@@ -254,15 +300,21 @@ const HotelDashboard = () => {
                 <div className="flex items-center gap-6 mb-6">
                   <div className="flex items-center">
                     <div className="w-3 h-3 bg-blue-400 rounded-full mr-2" />
-                    <span className="text-sm text-gray-600">This {timeFilter === 'Weekly' ? 'week' : 'month'}</span>
+                    <span className="text-sm text-gray-600">
+                      This {timeFilter === 'Weekly' ? 'week' : 'month'}
+                    </span>
                   </div>
                   <div className="flex items-center">
                     <div className="w-3 h-3 bg-teal-600 rounded-full mr-2" />
-                    <span className="text-sm text-gray-600">Last {timeFilter === 'Weekly' ? 'week' : 'month'}</span>
+                    <span className="text-sm text-gray-600">
+                      Last {timeFilter === 'Weekly' ? 'week' : 'month'}
+                    </span>
                   </div>
                 </div>
                 <p className="text-3xl font-bold text-gray-900 mb-1">{trendTotal}</p>
-                <p className={`text-sm mb-6 flex items-center ${trendChange >= 0 ? 'text-green-600' : 'text-red-500'}`}>
+                <p
+                  className={`text-sm mb-6 flex items-center ${trendChange >= 0 ? 'text-green-600' : 'text-red-500'}`}
+                >
                   <span className="mr-1">{trendChange >= 0 ? '↑' : '↓'}</span>
                   {Math.abs(trendChange)}% vs last {timeFilter === 'Weekly' ? 'week' : 'month'}
                 </p>
@@ -281,7 +333,6 @@ const HotelDashboard = () => {
 
           {/* Bottom Section */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
             {/* Guest Frequency */}
             <div className="bg-white rounded-lg border border-gray-200">
               <div className="p-5 border-b border-gray-200 flex items-center justify-between">
@@ -310,19 +361,40 @@ const HotelDashboard = () => {
                   <>
                     <div className="relative w-48 h-48 mb-4">
                       <svg className="w-full h-full -rotate-90">
-                        <circle cx="96" cy="96" r="70" fill="none" stroke="#E5E7EB" strokeWidth="24" />
-                        <circle cx="96" cy="96" r="70" fill="none" stroke="#14b8a6" strokeWidth="24"
+                        <circle
+                          cx="96"
+                          cy="96"
+                          r="70"
+                          fill="none"
+                          stroke="#E5E7EB"
+                          strokeWidth="24"
+                        />
+                        <circle
+                          cx="96"
+                          cy="96"
+                          r="70"
+                          fill="none"
+                          stroke="#14b8a6"
+                          strokeWidth="24"
                           strokeDasharray={`${newSeg.dashArray} ${newSeg.circumference}`}
                           strokeDashoffset={0}
                         />
-                        <circle cx="96" cy="96" r="70" fill="none" stroke="#fbbf24" strokeWidth="24"
+                        <circle
+                          cx="96"
+                          cy="96"
+                          r="70"
+                          fill="none"
+                          stroke="#fbbf24"
+                          strokeWidth="24"
                           strokeDasharray={`${retSeg.dashArray} ${retSeg.circumference}`}
-                          strokeDashoffset={-(newSeg.dashArray)}
+                          strokeDashoffset={-newSeg.dashArray}
                         />
                       </svg>
                       <div className="absolute inset-0 flex flex-col items-center justify-center">
                         <p className="text-xs text-gray-500 mb-1">Total Guests</p>
-                        <p className="text-2xl font-bold text-gray-900">{freqTotal.toLocaleString()}</p>
+                        <p className="text-2xl font-bold text-gray-900">
+                          {freqTotal.toLocaleString()}
+                        </p>
                       </div>
                     </div>
                     <div className="flex flex-col items-start gap-2">
@@ -380,14 +452,18 @@ const HotelDashboard = () => {
                       <p className="text-2xl font-bold text-gray-900">
                         ₦{revenueData.total.toLocaleString('en-NG', { minimumFractionDigits: 2 })}
                       </p>
-                      <p className={`text-sm flex items-center ${revenueData.change >= 0 ? 'text-green-600' : 'text-red-500'}`}>
+                      <p
+                        className={`text-sm flex items-center ${revenueData.change >= 0 ? 'text-green-600' : 'text-red-500'}`}
+                      >
                         <span className="mr-1">{revenueData.change >= 0 ? '↑' : '↓'}</span>
-                        {Math.abs(revenueData.change).toFixed(1)}% vs last {revenueFilter === 'Weekly' ? 'week' : 'month'}
+                        {Math.abs(revenueData.change).toFixed(1)}% vs last{' '}
+                        {revenueFilter === 'Weekly' ? 'week' : 'month'}
                       </p>
                     </div>
                     <div className="flex h-3 rounded-full overflow-hidden mb-4">
                       {revenueData.items.map((item, i) => (
-                        <div key={i}
+                        <div
+                          key={i}
                           className={`${item.color} transition-all duration-300 hover:opacity-80 cursor-pointer`}
                           style={{ width: `${item.percentage}%` }}
                           title={`${item.category}: ₦${item.amount.toLocaleString()}`}
@@ -396,7 +472,10 @@ const HotelDashboard = () => {
                     </div>
                     <div className="space-y-2">
                       {revenueData.items.map((item, i) => (
-                        <div key={i} className="flex items-center justify-between text-sm hover:bg-gray-50 p-1 rounded transition-colors">
+                        <div
+                          key={i}
+                          className="flex items-center justify-between text-sm hover:bg-gray-50 p-1 rounded transition-colors"
+                        >
                           <div className="flex items-center">
                             <div className={`w-3 h-3 rounded-sm ${item.color} mr-2`} />
                             <span className="text-gray-900 font-medium">{item.category}</span>
@@ -443,17 +522,31 @@ const HotelDashboard = () => {
                   <>
                     <div className="relative w-48 h-48 mb-4">
                       <svg className="w-full h-full -rotate-90">
-                        <circle cx="96" cy="96" r="70" fill="none" stroke="#E5E7EB" strokeWidth="24" />
+                        <circle
+                          cx="96"
+                          cy="96"
+                          r="70"
+                          fill="none"
+                          stroke="#E5E7EB"
+                          strokeWidth="24"
+                        />
                         {sourceData.sources.map((source, i) => {
-                          const preceding = sourceData.sources.slice(0, i).reduce((s, src) => s + src.count, 0);
+                          const preceding = sourceData.sources
+                            .slice(0, i)
+                            .reduce((s, src) => s + src.count, 0);
                           const seg = generateDonutSegment(source.count, sourceData.total);
                           const prevSeg = generateDonutSegment(preceding, sourceData.total);
                           return (
-                            <circle key={i} cx="96" cy="96" r="70" fill="none"
+                            <circle
+                              key={i}
+                              cx="96"
+                              cy="96"
+                              r="70"
+                              fill="none"
                               stroke={SOURCE_COLORS[i]}
                               strokeWidth="24"
                               strokeDasharray={`${seg.dashArray} ${seg.circumference}`}
-                              strokeDashoffset={-(prevSeg.dashArray)}
+                              strokeDashoffset={-prevSeg.dashArray}
                             />
                           );
                         })}
@@ -465,10 +558,18 @@ const HotelDashboard = () => {
                     </div>
                     <div className="space-y-2 w-full">
                       {sourceData.sources.map((source, i) => (
-                        <div key={i} className="flex items-center justify-between hover:bg-gray-50 p-1 rounded transition-colors">
+                        <div
+                          key={i}
+                          className="flex items-center justify-between hover:bg-gray-50 p-1 rounded transition-colors"
+                        >
                           <div className="flex items-center">
-                            <div className="w-3 h-3 rounded-full mr-2" style={{ background: SOURCE_COLORS[i] }} />
-                            <span className="text-sm text-gray-900 font-medium">{source.count} {source.name}</span>
+                            <div
+                              className="w-3 h-3 rounded-full mr-2"
+                              style={{ background: SOURCE_COLORS[i] }}
+                            />
+                            <span className="text-sm text-gray-900 font-medium">
+                              {source.count} {source.name}
+                            </span>
                           </div>
                           <span className="text-sm text-gray-600">{source.value}%</span>
                         </div>
@@ -489,13 +590,26 @@ const HotelDashboard = () => {
               <div className="p-5">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                   {roomsBreakdown.map((room, i) => {
-                    const colors = ['bg-teal-600', 'bg-blue-500', 'bg-purple-500', 'bg-yellow-500', 'bg-red-500'];
+                    const colors = [
+                      'bg-teal-600',
+                      'bg-blue-500',
+                      'bg-purple-500',
+                      'bg-yellow-500',
+                      'bg-red-500',
+                    ];
                     const totalRooms = roomsBreakdown.reduce((s, r) => s + r.count, 0);
                     return (
-                      <div key={i} className="flex items-center justify-between p-3 rounded-lg border border-gray-100 hover:bg-gray-50 transition-colors">
+                      <div
+                        key={i}
+                        className="flex items-center justify-between p-3 rounded-lg border border-gray-100 hover:bg-gray-50 transition-colors"
+                      >
                         <div className="flex items-center flex-1 min-w-0">
-                          <div className={`w-3 h-3 rounded-sm ${colors[i % colors.length]} mr-2 flex-shrink-0`} />
-                          <span className="text-gray-900 font-medium truncate">{room.roomName}</span>
+                          <div
+                            className={`w-3 h-3 rounded-sm ${colors[i % colors.length]} mr-2 flex-shrink-0`}
+                          />
+                          <span className="text-gray-900 font-medium truncate">
+                            {room.roomName}
+                          </span>
                         </div>
                         <div className="flex flex-col items-end ml-4">
                           <span className="text-gray-900 font-semibold">{room.count} booked</span>
@@ -510,7 +624,6 @@ const HotelDashboard = () => {
               </div>
             </div>
           )}
-
         </div>
       </div>
     </DashboardLayout>

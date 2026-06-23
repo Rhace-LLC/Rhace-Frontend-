@@ -1,5 +1,5 @@
-import { Edit, Eye, Trash2, MoreHorizontal } from "lucide-react";
-import { useState } from "react";
+import { Edit, Eye, Trash2, MoreHorizontal } from 'lucide-react';
+import { useState } from 'react';
 import {
   flexRender,
   getCoreRowModel,
@@ -7,7 +7,7 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
-} from "@tanstack/react-table";
+} from '@tanstack/react-table';
 import {
   Table,
   TableBody,
@@ -15,84 +15,72 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
+} from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { trimLongString } from "@/utils/helper";
+} from '@/components/ui/dropdown-menu';
+import { trimLongString } from '@/utils/helper';
 
-const RoomTable = ({
-  rooms,
-  onEdit,
-  onDelete,
-  onViewDetails,
-  onViewImages,
-}) => {
+const RoomTable = ({ rooms, onEdit, onDelete, onViewDetails, onViewImages }) => {
   const [sorting, setSorting] = useState([]);
   const [columnFilters, setColumnFilters] = useState([]);
   const [columnVisibility, setColumnVisibility] = useState({});
   const [rowSelection, setRowSelection] = useState({});
 
   const getStatusColor = (isAvailable, maintenanceStatus) => {
-    if (maintenanceStatus === "maintenance") {
-      return "bg-yellow-100 text-yellow-800";
+    if (maintenanceStatus === 'maintenance') {
+      return 'bg-yellow-100 text-yellow-800';
     }
-    return isAvailable
-      ? "bg-green-100 text-green-800"
-      : "bg-red-100 text-red-800";
+    return isAvailable ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
   };
 
   const getStatusText = (isAvailable, maintenanceStatus) => {
-    if (maintenanceStatus === "maintenance") {
-      return "Maintenance";
+    if (maintenanceStatus === 'maintenance') {
+      return 'Maintenance';
     }
-    return isAvailable ? "Available" : "Occupied";
+    return isAvailable ? 'Available' : 'Occupied';
   };
 
   // Define columns for tanstack/react-table
   const columns = [
     {
-      accessorKey: "name",
-      header: "Room",
-      cell: ({ row }) => (
-        <div className="font-medium text-gray-900">{row.getValue("name")}</div>
-      ),
+      accessorKey: 'name',
+      header: 'Room',
+      cell: ({ row }) => <div className="font-medium text-gray-900">{row.getValue('name')}</div>,
     },
     {
-      accessorKey: "pricePerNight",
-      header: "Price",
+      accessorKey: 'pricePerNight',
+      header: 'Price',
       cell: ({ row }) => (
         <div className="font-semibold text-gray-900">
-          ₦{row.getValue("pricePerNight")?.toLocaleString()}
+          ₦{row.getValue('pricePerNight')?.toLocaleString()}
         </div>
       ),
     },
     {
-      accessorKey: "capacity",
-      header: "Capacity",
+      accessorKey: 'capacity',
+      header: 'Capacity',
       cell: ({ row }) => {
         const room = row.original;
         return (
-          <div className="text-gray-500">
-            {room.adultsCapacity + room.childrenCapacity} guests
-          </div>
+          <div className="text-gray-500">{room.adultsCapacity + room.childrenCapacity} guests</div>
         );
       },
     },
     {
-      accessorKey: "status",
-      header: "Status",
+      accessorKey: 'status',
+      header: 'Status',
       cell: ({ row }) => {
         const room = row.original;
         return (
           <span
             className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(
               room.isAvailable,
-              room.maintenanceStatus,
+              room.maintenanceStatus
             )}`}
           >
             {getStatusText(room.isAvailable, room.maintenanceStatus)}
@@ -101,10 +89,10 @@ const RoomTable = ({
       },
     },
     {
-      accessorKey: "amenities",
-      header: "Amenities",
+      accessorKey: 'amenities',
+      header: 'Amenities',
       cell: ({ row }) => {
-        const amenities = row.getValue("amenities") || [];
+        const amenities = row.getValue('amenities') || [];
         return (
           <div className="flex flex-wrap gap-1">
             {amenities.slice(0, 2).map((amenity, index) => (
@@ -125,8 +113,8 @@ const RoomTable = ({
       },
     },
     {
-      accessorKey: "images",
-      header: "Images",
+      accessorKey: 'images',
+      header: 'Images',
       cell: ({ row }) => {
         const room = row.original;
         const images = room.images || [];
@@ -146,19 +134,15 @@ const RoomTable = ({
       },
     },
     {
-      id: "actions",
-      header: "Actions",
+      id: 'actions',
+      header: 'Actions',
       cell: ({ row }) => {
         const room = row.original;
         return (
           <div className="text-right">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 p-0 hover:bg-gray-100"
-                >
+                <Button variant="ghost" size="icon" className="h-8 w-8 p-0 hover:bg-gray-100">
                   <MoreHorizontal size={18} />
                 </Button>
               </DropdownMenuTrigger>
@@ -221,10 +205,7 @@ const RoomTable = ({
                       >
                         {header.isPlaceholder
                           ? null
-                          : flexRender(
-                              header.column.columnDef.header,
-                              header.getContext(),
-                            )}
+                          : flexRender(header.column.columnDef.header, header.getContext())}
                       </TableHead>
                     );
                   })}
@@ -236,25 +217,19 @@ const RoomTable = ({
                 table.getRowModel().rows.map((row) => (
                   <TableRow
                     key={row.id}
-                    data-state={row.getIsSelected() && "selected"}
+                    data-state={row.getIsSelected() && 'selected'}
                     className="hover:bg-gray-50 transition-colors"
                   >
                     {row.getVisibleCells().map((cell) => (
                       <TableCell key={cell.id} className="whitespace-nowrap">
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext(),
-                        )}
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
                       </TableCell>
                     ))}
                   </TableRow>
                 ))
               ) : (
                 <TableRow>
-                  <TableCell
-                    colSpan={columns.length}
-                    className="h-24 text-center"
-                  >
+                  <TableCell colSpan={columns.length} className="h-24 text-center">
                     No rooms found.
                   </TableCell>
                 </TableRow>
@@ -271,14 +246,14 @@ const RoomTable = ({
                 <div>
                   <div className="font-medium text-gray-900">{room.name}</div>
                   <div className="text-sm text-gray-500">
-                    ₦{room.pricePerNight.toLocaleString()} •{" "}
+                    ₦{room.pricePerNight.toLocaleString()} •{' '}
                     {room.adultsCapacity + room.childrenCapacity} guests
                   </div>
                 </div>
                 <span
                   className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(
                     room.isAvailable,
-                    room.maintenanceStatus,
+                    room.maintenanceStatus
                   )}`}
                 >
                   {getStatusText(room.isAvailable, room.maintenanceStatus)}

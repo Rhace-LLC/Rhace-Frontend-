@@ -1,7 +1,13 @@
 import React from 'react';
 import { X, AlertTriangle } from 'lucide-react';
 
-const DeleteConfirmationModal = ({ isOpen, onClose, onConfirm, title = "Delete Item", message = "Are you sure you want to delete this item?" }) => {
+const DeleteConfirmationModal = ({
+  isOpen,
+  onClose,
+  onConfirm,
+  title = 'Delete Item',
+  message = 'Are you sure you want to delete this item?',
+}) => {
   if (!isOpen) return null;
 
   return (
@@ -10,10 +16,7 @@ const DeleteConfirmationModal = ({ isOpen, onClose, onConfirm, title = "Delete I
         {/* Header */}
         <div className="flex justify-between items-center mb-3">
           <h2 className="text-lg font-semibold text-gray-800">{title}</h2>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
-          >
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
             <X size={20} />
           </button>
         </div>

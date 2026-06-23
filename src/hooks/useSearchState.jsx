@@ -1,18 +1,14 @@
-import { useState, useEffect, useCallback, useRef } from "react";
-import { useSearchParams } from "react-router-dom";
-import { filtersFromParams, saveRecent, getRecent } from "../utils/filterUtils";
-import { searchSvc } from "../services/search.service";
-import {
-  DEFAULT_FILTERS,
-  TYPE_SPECIFIC_KEYS,
-  DEBOUNCE_MS,
-} from "../utils/constants";
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { filtersFromParams, saveRecent, getRecent } from '../utils/filterUtils';
+import { searchSvc } from '../services/search.service';
+import { DEFAULT_FILTERS, TYPE_SPECIFIC_KEYS, DEBOUNCE_MS } from '../utils/constants';
 
 export const useSearchState = (userLocation) => {
   const [searchParams, setSearchParams] = useSearchParams();
 
   // ── Search input ──────────────────────────────────────────────────────────
-  const [inputValue, setInputValue] = useState(searchParams.get("q") || "");
+  const [inputValue, setInputValue] = useState(searchParams.get('q') || '');
   const [isFocused, setIsFocused] = useState(false);
   const [suggestions, setSuggestions] = useState([]);
   const [isSugLoading, setIsSugLoading] = useState(false);
@@ -32,7 +28,7 @@ export const useSearchState = (userLocation) => {
     hasPrevPage: false,
   });
   const [facets, setFacets] = useState({});
-  const [activeQuery, setActiveQuery] = useState(searchParams.get("q") || "");
+  const [activeQuery, setActiveQuery] = useState(searchParams.get('q') || '');
 
   // ── Discovery (no-search state) ───────────────────────────────────────────
   const [discovery, setDiscovery] = useState({});
@@ -45,7 +41,7 @@ export const useSearchState = (userLocation) => {
   const abortRef = useRef(null);
   const inputRef = useRef(null);
 
-  const hasActiveSearch = !!searchParams.get("q");
+  const hasActiveSearch = !!searchParams.get('q');
 
   // ── Load trending when type changes ──────────────────────────────────────
   useEffect(() => {
@@ -63,7 +59,7 @@ export const useSearchState = (userLocation) => {
     if (hasActiveSearch) return;
     setIsDiscLoading(true);
     searchSvc
-      .discover(userLocation, filters.type || undefined)  // <-- pass type
+      .discover(userLocation, filters.type || undefined) // <-- pass type
       .then(setDiscovery)
       .catch(() => {})
       .finally(() => setIsDiscLoading(false));
@@ -90,10 +86,10 @@ export const useSearchState = (userLocation) => {
 
   // ── Execute search when URL params change ─────────────────────────────────
   useEffect(() => {
-    const q = searchParams.get("q");
+    const q = searchParams.get('q');
     if (!q) {
       setResults([]);
-      setActiveQuery("");
+      setActiveQuery('');
       return;
     }
     if (abortRef.current) abortRef.current.abort();
@@ -103,10 +99,7 @@ export const useSearchState = (userLocation) => {
     const parsed = filtersFromParams(searchParams);
     setFilters(parsed);
     searchSvc
-      .search(
-        { q, page: searchParams.get("page") || "1", limit: "30", ...parsed },
-        userLocation,
-      )
+      .search({ q, page: searchParams.get('page') || '1', limit: '30', ...parsed }, userLocation)
       .then((data) => {
         setResults(data.data || []);
         setPagination(data.pagination || {});
@@ -114,8 +107,8 @@ export const useSearchState = (userLocation) => {
         setActiveQuery(q);
       })
       .catch((err) => {
-        if (err?.name === "AbortError" || err?.code === "ERR_CANCELED") return;
-        setError("Search failed. Please try again.");
+        if (err?.name === 'AbortError' || err?.code === 'ERR_CANCELED') return;
+        setError('Search failed. Please try again.');
         setResults([]);
       })
       .finally(() => setIsLoading(false));
@@ -126,41 +119,39 @@ export const useSearchState = (userLocation) => {
     (term) => {
       // 1. Determine the query and trim it
       const q = (term !== undefined ? term : inputValue).trim();
-      
+
       const next = new URLSearchParams(searchParams);
 
       if (!q) {
         // 2. If empty, remove 'q' and reset pagination
-        next.delete("q");
-        next.set("page", "1");
-        setInputValue(""); // Clear the actual input state
+        next.delete('q');
+        next.set('page', '1');
+        setInputValue(''); // Clear the actual input state
       } else {
         // 3. If exists, save to recent and set param
         saveRecent(q);
         setRecentSearches(getRecent());
         setInputValue(q);
-        next.set("q", q);
-        next.set("page", "1");
+        next.set('q', q);
+        next.set('page', '1');
       }
 
       // 4. Update the URL
       setSearchParams(next);
       setSuggestions([]);
     },
-    [inputValue, searchParams, setSearchParams],
+    [inputValue, searchParams, setSearchParams]
   );
 
   const updateFilter = useCallback(
     (key, value) => {
       const next = new URLSearchParams(searchParams);
       if (Array.isArray(value)) {
-        value.length ? next.set(key, value.join(",")) : next.delete(key);
+        value.length ? next.set(key, value.join(',')) : next.delete(key);
       } else {
-        value !== "" && value != null
-          ? next.set(key, String(value))
-          : next.delete(key);
+        value !== '' && value != null ? next.set(key, String(value)) : next.delete(key);
       }
-      if (key === "type") {
+      if (key === 'type') {
         TYPE_SPECIFIC_KEYS.forEach((k) => next.delete(k));
         setFilters((prev) => ({
           ...DEFAULT_FILTERS,
@@ -174,18 +165,18 @@ export const useSearchState = (userLocation) => {
       } else {
         setFilters((prev) => ({ ...prev, [key]: value }));
       }
-      next.set("page", "1");
+      next.set('page', '1');
       setSearchParams(next);
     },
-    [searchParams, setSearchParams],
+    [searchParams, setSearchParams]
   );
 
   const clearFilters = useCallback(() => {
-    const q = searchParams.get("q");
+    const q = searchParams.get('q');
     const type = filters.type;
     const next = new URLSearchParams();
-    if (q) next.set("q", q);
-    if (type) next.set("type", type);
+    if (q) next.set('q', q);
+    if (type) next.set('type', type);
     setFilters({ ...DEFAULT_FILTERS, type });
     setSearchParams(next);
   }, [searchParams, setSearchParams, filters.type]);
@@ -193,28 +184,25 @@ export const useSearchState = (userLocation) => {
   const goToPage = useCallback(
     (page) => {
       const next = new URLSearchParams(searchParams);
-      next.set("page", String(page));
+      next.set('page', String(page));
       setSearchParams(next);
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     },
-    [searchParams, setSearchParams],
+    [searchParams, setSearchParams]
   );
 
   // ── Derived ───────────────────────────────────────────────────────────────
-  const showRecent =
-    isFocused && inputValue.trim().length === 0 && recentSearches.length > 0;
-  const showTrending =
-    isFocused && inputValue.trim().length === 0 && !showRecent;
+  const showRecent = isFocused && inputValue.trim().length === 0 && recentSearches.length > 0;
+  const showTrending = isFocused && inputValue.trim().length === 0 && !showRecent;
   const showSuggestions = isFocused && inputValue.trim().length >= 1;
   const showDropdown =
-    (isFocused || inputValue.length > 0) &&
-    (showRecent || showTrending || showSuggestions);
+    (isFocused || inputValue.length > 0) && (showRecent || showTrending || showSuggestions);
 
   const hasFilters =
     Object.entries(filters).some(([k, v]) => {
-      if (k === "type" || k === "sort") return false;
-      return Array.isArray(v) ? v.length > 0 : v !== "" && v != null;
-    }) || filters.sort !== "rating";
+      if (k === 'type' || k === 'sort') return false;
+      return Array.isArray(v) ? v.length > 0 : v !== '' && v != null;
+    }) || filters.sort !== 'rating';
 
   return {
     inputValue,

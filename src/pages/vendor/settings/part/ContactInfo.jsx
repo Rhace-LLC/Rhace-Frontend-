@@ -1,6 +1,11 @@
-import { InputField, SectionCard } from "./settingsComp";
+import { InputField, SectionCard } from './settingsComp';
 
-export const ContactInformation = ({ supportEmail, setSupportEmail, supportPhone, setSupportPhone }) => (
+export const ContactInformation = ({
+  supportEmail,
+  setSupportEmail,
+  supportPhone,
+  setSupportPhone,
+}) => (
   <SectionCard title="Contact Information">
     <div className="space-y-4">
       <InputField

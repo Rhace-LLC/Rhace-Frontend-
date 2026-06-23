@@ -42,7 +42,7 @@
   position: relative;
 }
 .step-num {
-  font-family: "Playfair Display", serif;
+  font-family: 'Playfair Display', serif;
   font-size: 3.5rem;
   color: rgba(20, 184, 184, 0.12);
   line-height: 1;

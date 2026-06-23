@@ -1,10 +1,24 @@
-import { useEffect, useState } from "react";
-import { Plus, Upload, SlidersHorizontal, ChevronDown, MoreVertical, Eye, UserX, KeyRound, Star, Calendar, Search, Filter, Download, UserCheck, UserMinus, Users, Shield, Activity } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox";
+import { useEffect, useState } from 'react';
+import {
+  MoreVertical,
+  Eye,
+  UserX,
+  KeyRound,
+  Star,
+  Calendar,
+  Search,
+  Download,
+  UserCheck,
+  UserMinus,
+  Users,
+  Shield,
+  CheckCircle,
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,7 +26,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from '@/components/ui/dropdown-menu';
 import {
   Dialog,
   DialogContent,
@@ -20,52 +34,81 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from "@/components/ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
-import { Label } from "@/components/ui/label";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Progress } from "@/components/ui/progress";
-import { Skeleton } from "@/components/ui/skeleton";
-import { getUsers, getUserById, updateUserStatus, toggleUserVIP, exportUsers, getUserReservations, getUserStats, getReservations, getReservationById } from "@/services/admin.service";
-import { useWebSocket } from "@/contexts/WebSocketContext";
+} from '@/components/ui/dialog';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
+import { Label } from '@/components/ui/label';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Progress } from '@/components/ui/progress';
+import { Skeleton } from '@/components/ui/skeleton';
+import {
+  getUsers,
+  getUserById,
+  updateUserStatus,
+  toggleUserVIP,
+  exportUsers,
+  getUserReservations,
+  getUserStats,
+  getReservations,
+  getReservationById,
+} from '@/services/admin.service';
+import { useWebSocket } from '@/contexts/WebSocketContext';
+import { toast } from 'react-toastify';
+import { ConfirmationDialog } from '@/components/ConfirmationDialog';
 
 const extractArray = (p) => {
   if (Array.isArray(p)) return p;
   const candidates = [
-    p?.data, p?.items, p?.results, p?.docs, p?.rows, p?.users, p?.list,
-    p?.data?.data, p?.data?.items, p?.data?.results, p?.data?.docs, p?.data?.rows, p?.data?.users,
+    p?.data,
+    p?.items,
+    p?.results,
+    p?.docs,
+    p?.rows,
+    p?.users,
+    p?.list,
+    p?.data?.data,
+    p?.data?.items,
+    p?.data?.results,
+    p?.data?.docs,
+    p?.data?.rows,
+    p?.data?.users,
   ];
   for (const c of candidates) if (Array.isArray(c)) return c;
   return [];
 };
 
 const getUserIdFromReservation = (reservation) => {
-  const userId = reservation.guest || reservation.userId || reservation.user?.id || reservation.user?._id;
+  const userId =
+    reservation.guest || reservation.userId || reservation.user?.id || reservation.user?._id;
   return userId;
 };
 
 export default function UserManagement() {
-  const [activeTab, setActiveTab] = useState("all");
+  const [activeTab, setActiveTab] = useState('all');
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [users, setUsers] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [filters, setFilters] = useState({ 
-    status: "", 
-    role: "", 
-    dateRange: { from: null, to: null } 
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filters, setFilters] = useState({
+    status: '',
+    role: '',
+    dateRange: { from: null, to: null },
   });
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const { subscribe, unsubscribe, sendMessage, connected } = useWebSocket();
+  const { subscribe, unsubscribe, sendMessage } = useWebSocket();
   const [selectedUser, setSelectedUser] = useState(null);
   const [userDetails, setUserDetails] = useState(null);
   const [detailsLoading, setDetailsLoading] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
-  const [resetPasswordOpen, setResetPasswordOpen] = useState(false);
   const [reservationsOpen, setReservationsOpen] = useState(false);
   const [userReservations, setUserReservations] = useState([]);
   const [reservationDetailsOpen, setReservationDetailsOpen] = useState(false);
@@ -78,31 +121,32 @@ export default function UserManagement() {
     active: 0,
     inactive: 0,
     suspended: 0,
-    vip: 0
+    vip: 0,
   });
 
   const loadStats = async () => {
     try {
       const statsRes = await getUserStats();
       const statsData = statsRes?.data;
+      console.log('stats data', statsData);
 
       setStats({
         total: statsData?.total || 0,
         active: statsData?.active || 0,
         inactive: statsData?.inactive || 0,
         suspended: statsData?.suspended || 0,
-        vip: statsData?.vip || 0
+        vip: statsData?.vip || 0,
       });
       setTotalUsers(statsData?.total || 0);
     } catch (e) {
-      console.error("Failed to load stats", e);
+      console.error('Failed to load stats', e);
     }
   };
 
   const handleViewProfile = async (user) => {
     const userId = user.id || user._id || user.userId;
     if (!userId) {
-      console.error("User ID not found", user);
+      console.error('User ID not found', user);
       return;
     }
 
@@ -115,42 +159,71 @@ export default function UserManagement() {
       const response = await getUserById(userId);
       setUserDetails({ ...response.data, reservations: user.reservations || 0 });
     } catch (e) {
-      console.error("Failed to get user details", e);
+      console.error('Failed to get user details', e);
       setUserDetails(null);
     } finally {
       setDetailsLoading(false);
     }
   };
 
-  const handleSuspendAccount = async (user) => {
+  // State variables to coordinate state machines
+  const [statusDialogOpen, setStatusDialogOpen] = useState(false);
+  const [statusTargetUser, setStatusTargetUser] = useState(null);
+  const [pendingTargetStatus, setPendingTargetStatus] = useState('active'); // 'active' or 'suspended'
+
+  const handleToggleStatusInit = (user, targetActionStatus) => {
     if (!user) return;
     const userId = user.id || user._id || user.userId;
     if (!userId) {
-      console.error("User ID not found", user);
-      alert("User ID not found");
+      console.error('User ID not found', user);
+      toast.error('User ID not found');
       return;
     }
+    setStatusTargetUser(user);
+    setPendingTargetStatus(targetActionStatus);
+    setStatusDialogOpen(true);
+  };
+
+  const confirmStatusChangeAction = async () => {
+    const user = statusTargetUser;
+    const targetStatus = pendingTargetStatus; // 'active' or 'suspended'
+
+    if (!user) return;
+    const userId = user.id || user._id || user.userId;
+    if (!userId) {
+      toast.error('User ID not found');
+      setStatusDialogOpen(false);
+      return;
+    }
+
+    // Formatting strings for programmatic state updates matching backend configuration values
+    const normalizedPayloadStatus = targetStatus === 'suspended' ? 'Suspended' : 'Active';
+
     try {
-      await updateUserStatus(userId, { status: "Suspended" });
-      // Update local state immediately so UI reflects the change without refresh
-      setUsers((prev) =>
+      await updateUserStatus(userId, { status: normalizedPayloadStatus });
+
+      // Update local lists simultaneously
+      const syncState = (prev) =>
         prev.map((u) =>
-          (u.id === userId || u._id === userId)
-            ? { ...u, status: "Suspended", accountStatus: "Suspended" }
+          u.id === userId || u._id === userId
+            ? { ...u, status: normalizedPayloadStatus, accountStatus: normalizedPayloadStatus }
             : u
-        )
+        );
+
+      setUsers(syncState);
+      setFilteredUsers(syncState);
+
+      const messageVerb = targetStatus === 'suspended' ? 'suspended' : 'reactivated';
+      toast.success(
+        `User ${user.name || user.email || 'account'} has been ${messageVerb} successfully`
       );
-      setFilteredUsers((prev) =>
-        prev.map((u) =>
-          (u.id === userId || u._id === userId)
-            ? { ...u, status: "Suspended", accountStatus: "Suspended" }
-            : u
-        )
-      );
-      alert(`User ${user.name || user.email || "account"} has been suspended successfully`);
+
+      setStatusDialogOpen(false);
+      setStatusTargetUser(null);
     } catch (e) {
-      console.error("Failed to suspend user", e);
-      alert("Failed to suspend user");
+      console.error(`Failed to modify account status to ${targetStatus}`, e);
+      toast.error(`Failed to process state update action`);
+      setStatusDialogOpen(false);
     }
   };
 
@@ -158,15 +231,17 @@ export default function UserManagement() {
     if (!user) return;
     const userId = user.id || user._id || user.userId;
     if (!userId) {
-      alert("User ID not found");
+      toast.info('User ID not found');
       return;
     }
     try {
       // TODO: Implement actual password reset API call
-      alert(`Password reset initiated for ${user.name || `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim() || user.email || "user"}`);
+      toast.info(
+        `Password reset initiated for ${user.name || `${user.firstName ?? ''} ${user.lastName ?? ''}`.trim() || user.email || 'user'}`
+      );
     } catch (e) {
-      console.error("Failed to reset password", e);
-      alert("Failed to reset password");
+      console.error('Failed to reset password', e);
+      toast.info('Failed to reset password');
     }
   };
 
@@ -174,8 +249,8 @@ export default function UserManagement() {
     if (!user) return;
     const userId = user.id || user._id || user.userId;
     if (!userId) {
-      console.error("User ID not found", user);
-      alert("User ID not found");
+      console.error('User ID not found', user);
+      toast.error('User ID not found');
       return;
     }
 
@@ -183,79 +258,38 @@ export default function UserManagement() {
 
     // Optimistically update the local state immediately
     setUsers((prev) =>
-      prev.map((u) =>
-        u.id === userId || u._id === userId
-          ? { ...u, isVip: newVipStatus }
-          : u
-      )
+      prev.map((u) => (u.id === userId || u._id === userId ? { ...u, isVip: newVipStatus } : u))
     );
 
     // Update filtered users as well
     setFilteredUsers((prev) =>
-      prev.map((u) =>
-        u.id === userId || u._id === userId
-          ? { ...u, isVip: newVipStatus }
-          : u
-      )
+      prev.map((u) => (u.id === userId || u._id === userId ? { ...u, isVip: newVipStatus } : u))
     );
 
     try {
       await toggleUserVIP(userId, { isVip: newVipStatus });
 
       // Send WebSocket message for real-time updates to other clients
-      sendMessage("user-updated", { id: userId, isVip: newVipStatus });
+      sendMessage('user-updated', { id: userId, isVip: newVipStatus });
 
       // Reload stats to update VIP count
       await loadStats();
 
-      alert(`VIP status updated successfully for ${user.name || user.email || "user"}`);
+      toast.info(`VIP status updated successfully for ${user.name || user.email || 'user'}`);
     } catch (e) {
-      console.error("Failed to toggle VIP status", e);
+      console.error('Failed to toggle VIP status', e);
 
       // Revert the optimistic update on failure
       setUsers((prev) =>
-        prev.map((u) =>
-          u.id === userId || u._id === userId
-            ? { ...u, isVip: !newVipStatus }
-            : u
-        )
+        prev.map((u) => (u.id === userId || u._id === userId ? { ...u, isVip: !newVipStatus } : u))
       );
 
       // Revert filtered users as well
       setFilteredUsers((prev) =>
-        prev.map((u) =>
-          u.id === userId || u._id === userId
-            ? { ...u, isVip: !newVipStatus }
-            : u
-        )
+        prev.map((u) => (u.id === userId || u._id === userId ? { ...u, isVip: !newVipStatus } : u))
       );
 
-      alert("Failed to update VIP status");
-    }
-  };
-
-  const refreshUserReservationCounts = async () => {
-    try {
-      const updatedUsers = await Promise.all(
-        users.map(async (user) => {
-          try {
-            const userId = user.id || user._id;
-            const reservationsRes = await getUserReservations(userId);
-            const reservationsData = extractArray(reservationsRes?.data);
-            const reservationCount = reservationsData?.length || 0;
-            return {
-              ...user,
-              reservations: reservationCount
-            };
-          } catch (error) {
-            console.error(`Failed to refresh reservations for user ${user.id || user._id}:`, error);
-            return user; // Keep existing data on error
-          }
-        })
-      );
-      setUsers(updatedUsers);
-    } catch (error) {
-      console.error("Failed to refresh reservation counts:", error);
+     toast.info('Failed to update VIP status');
     }
   };
 
@@ -263,7 +297,7 @@ export default function UserManagement() {
     if (!user) return;
     const userId = user.id || user._id || user.userId;
     if (!userId) {
-      alert("User ID not found");
+      toast.info('User ID not found');
       return;
     }
     try {
@@ -282,10 +316,9 @@ export default function UserManagement() {
       subscribe(reservationTopic, (updatedReservations) => {
         setUserReservations(extractArray(updatedReservations));
       });
-
     } catch (e) {
-      console.error("Failed to load reservations", e);
-      alert("Failed to load reservations");
+      console.error('Failed to load reservations', e);
+      toast.info('Failed to load reservations');
     }
   };
 
@@ -293,7 +326,7 @@ export default function UserManagement() {
     if (!reservation) return;
     const reservationId = reservation.id || reservation._id;
     if (!reservationId) {
-      alert("Reservation ID not found");
+      toast.info('Reservation ID not found');
       return;
     }
     try {
@@ -306,7 +339,7 @@ export default function UserManagement() {
       const response = await getReservationById(reservationId);
       setReservationDetails(response.data);
     } catch (e) {
-      console.error("Failed to load reservation details", e);
+      console.error('Failed to load reservation details', e);
       // Fallback: Use the reservation data from the list if API call fails
       setReservationDetails({
         ...reservation,
@@ -320,45 +353,74 @@ export default function UserManagement() {
         mealPreselected: reservation.mealPreselected || reservation.meal?.preselected,
         specialRequests: reservation.specialRequests || reservation.notes,
         createdAt: reservation.createdAt,
-        updatedAt: reservation.updatedAt
+        updatedAt: reservation.updatedAt,
       });
     } finally {
       setReservationDetailsLoading(false);
     }
   };
 
+  const [exporting, setExporting] = useState(false);
+
   const handleExport = async () => {
+    if (exporting) return;
     try {
-      const response = await exportUsers({ status: activeTab !== "all" ? activeTab : undefined });
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', `users-export-${new Date().toISOString().split('T')[0]}.csv`);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
+      setExporting(true);
+      const response = await exportUsers({ status: activeTab !== 'all' ? activeTab : undefined });
+
+      // Check if response contains actual data
+      if (!response.data || response.data.size === 0) {
+        throw new Error('Empty response received from server');
+      }
+
+      // Check if it's a blob response
+      if (response.data instanceof Blob) {
+        const url = window.URL.createObjectURL(response.data);
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `users-export-${new Date().toISOString().split('T')[0]}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(url);
+        toast.success('Users exported successfully');
+      } else {
+        // If it's not a blob, it might be JSON with an error
+        const text = await new Response(response.data).text();
+        throw new Error(text || 'Unexpected response format');
+      }
     } catch (e) {
-      console.error("Failed to export users", e);
-      alert("Failed to export users");
+      console.error('Failed to export users', e);
+      const errorMsg = e.response?.data?.message || e.message || 'Failed to export users';
+      toast.error(errorMsg);
+    } finally {
+      setExporting(false);
     }
   };
 
   const applyFilters = () => {
     let filtered = users;
     if (searchQuery) {
-      filtered = filtered.filter(user =>
-        (user.name || `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim()).toLowerCase().includes(searchQuery.toLowerCase()) ||
-        user.email.toLowerCase().includes(searchQuery.toLowerCase())
+      filtered = filtered.filter(
+        (user) =>
+          (user.name || `${user.firstName ?? ''} ${user.lastName ?? ''}`.trim())
+            .toLowerCase()
+            .includes(searchQuery.toLowerCase()) ||
+          user.email.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
-    if (activeTab !== "all") {
-      filtered = filtered.filter(user => (user.status || user.accountStatus || "").toString().toLowerCase() === activeTab);
+    if (activeTab !== 'all') {
+      filtered = filtered.filter(
+        (user) => (user.status || user.accountStatus || '').toString().toLowerCase() === activeTab
+      );
     }
     if (filters.status) {
-      filtered = filtered.filter(user => (user.status || user.accountStatus || "").toString() === filters.status);
+      filtered = filtered.filter(
+        (user) => (user.status || user.accountStatus || '').toString() === filters.status
+      );
     }
     if (filters.role) {
-      filtered = filtered.filter(user => user.role === filters.role);
+      filtered = filtered.filter((user) => user.role === filters.role);
     }
     setFilteredUsers(filtered);
   };
@@ -372,14 +434,15 @@ export default function UserManagement() {
     try {
       // Fetch current page users only (no reservation counts initially)
       const usersRes = await getUsers({ page: currentPage, limit: 20 });
+      console.log("user res", usersRes)
       const payload = usersRes?.data;
       const list = extractArray(payload);
 
       // Normalize VIP field for all users (reservation counts will be lazy-loaded)
-      const normalizedUsers = list.map(user => ({
+      const normalizedUsers = list.map((user) => ({
         ...user,
         isVip: user.isVip || user.isVIP || false, // Ensure VIP status is properly set
-        reservations: user.reservations || 0 // Use cached value or default to 0
+        reservations: user.reservations || 0, // Use cached value or default to 0
       }));
 
       setUsers(normalizedUsers);
@@ -391,9 +454,8 @@ export default function UserManagement() {
 
       // Lazy load reservation counts in background (non-blocking)
       loadReservationCounts(normalizedUsers);
-
     } catch (e) {
-      console.error("Failed to load users", e);
+      console.error('Failed to load users', e);
       setUsers([]);
       setTotalUsers(0);
       setStats({
@@ -401,7 +463,7 @@ export default function UserManagement() {
         active: 0,
         inactive: 0,
         suspended: 0,
-        vip: 0
+        vip: 0,
       });
     } finally {
       setLoading(false);
@@ -419,7 +481,7 @@ export default function UserManagement() {
 
       // Create a map of user reservation counts
       const reservationCounts = {};
-      allReservations.forEach(reservation => {
+      allReservations.forEach((reservation) => {
         const userId = getUserIdFromReservation(reservation);
         if (userId) {
           reservationCounts[userId] = (reservationCounts[userId] || 0) + 1;
@@ -427,17 +489,17 @@ export default function UserManagement() {
       });
 
       // Update users with their reservation counts
-      setUsers(prevUsers =>
-        prevUsers.map(user => {
+      setUsers((prevUsers) =>
+        prevUsers.map((user) => {
           const userId = user.id || user._id;
           return {
             ...user,
-            reservations: reservationCounts[userId] || 0
+            reservations: reservationCounts[userId] || 0,
           };
         })
       );
     } catch (error) {
-      console.error("Failed to load reservation counts:", error);
+      console.error('Failed to load reservation counts:', error);
       // Don't show error to user, just keep default counts
     }
   };
@@ -459,7 +521,7 @@ export default function UserManagement() {
           if (u.id === activityData.userId || u._id === activityData.userId) {
             return {
               ...u,
-              lastActiveAt: activityData.lastActiveAt || new Date().toISOString()
+              lastActiveAt: activityData.lastActiveAt || new Date().toISOString(),
             };
           }
           return u;
@@ -495,15 +557,23 @@ export default function UserManagement() {
         setUsers((prev) =>
           prev.map((u) =>
             u.id === userId || u._id === userId
-              ? { ...u, reservations: Math.max(0, (u.reservations || 0)) } // Ensure non-negative
+              ? { ...u, reservations: Math.max(0, u.reservations || 0) } // Ensure non-negative
               : u
           )
         );
       }
 
-      if (reservationsOpen && selectedUser && (userId === selectedUser.id || userId === selectedUser._id)) {
+      if (
+        reservationsOpen &&
+        selectedUser &&
+        (userId === selectedUser.id || userId === selectedUser._id)
+      ) {
         setUserReservations((prev) =>
-          prev.map((r) => (r.id === updatedReservation.id || r._id === updatedReservation.id ? updatedReservation : r))
+          prev.map((r) =>
+            r.id === updatedReservation.id || r._id === updatedReservation.id
+              ? updatedReservation
+              : r
+          )
         );
       }
     };
@@ -522,7 +592,11 @@ export default function UserManagement() {
         );
       }
 
-      if (reservationsOpen && selectedUser && (userId === selectedUser.id || userId === selectedUser._id)) {
+      if (
+        reservationsOpen &&
+        selectedUser &&
+        (userId === selectedUser.id || userId === selectedUser._id)
+      ) {
         setUserReservations((prev) => [newReservation, ...prev]);
       }
     };
@@ -541,27 +615,32 @@ export default function UserManagement() {
         );
       }
 
-      if (reservationsOpen && selectedUser && userId === selectedUser.id || userId === selectedUser._id) {
-        setUserReservations((prev) => prev.filter((r) => r.id !== deletedReservation.id && r._id !== deletedReservation.id));
+      if (
+        (reservationsOpen && selectedUser && userId === selectedUser.id) ||
+        userId === selectedUser._id
+      ) {
+        setUserReservations((prev) =>
+          prev.filter((r) => r.id !== deletedReservation.id && r._id !== deletedReservation.id)
+        );
       }
     };
 
-    subscribe("user-updated", handleUserUpdate);
-    subscribe("user-created", handleUserCreate);
-    subscribe("user-deleted", handleUserDelete);
-    subscribe("user-activity", handleUserActivity);
-    subscribe("reservation-updated", handleReservationUpdate);
-    subscribe("reservation-created", handleReservationCreate);
-    subscribe("reservation-deleted", handleReservationDelete);
+    subscribe('user-updated', handleUserUpdate);
+    subscribe('user-created', handleUserCreate);
+    subscribe('user-deleted', handleUserDelete);
+    subscribe('user-activity', handleUserActivity);
+    subscribe('reservation-updated', handleReservationUpdate);
+    subscribe('reservation-created', handleReservationCreate);
+    subscribe('reservation-deleted', handleReservationDelete);
 
     return () => {
-      unsubscribe("user-updated");
-      unsubscribe("user-created");
-      unsubscribe("user-deleted");
-      unsubscribe("user-activity");
-      unsubscribe("reservation-updated");
-      unsubscribe("reservation-created");
-      unsubscribe("reservation-deleted");
+      unsubscribe('user-updated');
+      unsubscribe('user-created');
+      unsubscribe('user-deleted');
+      unsubscribe('user-activity');
+      unsubscribe('reservation-updated');
+      unsubscribe('reservation-created');
+      unsubscribe('reservation-deleted');
     };
   }, [subscribe, unsubscribe]);
 
@@ -576,18 +655,11 @@ export default function UserManagement() {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold tracking-tight text-gray-900">User Management</h1>
-            <p className="text-gray-600 mt-2">Manage and monitor all user accounts in your system</p>
+            <p className="text-gray-600 mt-2">
+              Manage and monitor all user accounts in your system
+            </p>
           </div>
           <div className="flex items-center gap-3">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowFilterModal(true)}
-              className="gap-2"
-            >
-              <Filter className="w-4 h-4" />
-              Filters
-            </Button>
             <Button
               variant="outline"
               size="sm"
@@ -622,7 +694,9 @@ export default function UserManagement() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-emerald-700">Active Users</p>
-                  <p className="text-3xl font-bold text-gray-900">{stats.active.toLocaleString()}</p>
+                  <p className="text-3xl font-bold text-gray-900">
+                    {stats.active.toLocaleString()}
+                  </p>
                 </div>
                 <div className="h-12 w-12 rounded-lg bg-white flex items-center justify-center shadow-sm">
                   <UserCheck className="h-6 w-6 text-emerald-600" />
@@ -637,7 +711,9 @@ export default function UserManagement() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-amber-700">Inactive Users</p>
-                  <p className="text-3xl font-bold text-gray-900">{stats.inactive.toLocaleString()}</p>
+                  <p className="text-3xl font-bold text-gray-900">
+                    {stats.inactive.toLocaleString()}
+                  </p>
                 </div>
                 <div className="h-12 w-12 rounded-lg bg-white flex items-center justify-center shadow-sm">
                   <UserMinus className="h-6 w-6 text-amber-600" />
@@ -652,7 +728,9 @@ export default function UserManagement() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-rose-700">Suspended</p>
-                  <p className="text-3xl font-bold text-gray-900">{stats.suspended.toLocaleString()}</p>
+                  <p className="text-3xl font-bold text-gray-900">
+                    {stats.suspended.toLocaleString()}
+                  </p>
                 </div>
                 <div className="h-12 w-12 rounded-lg bg-white flex items-center justify-center shadow-sm">
                   <Shield className="h-6 w-6 text-rose-600" />
@@ -693,14 +771,22 @@ export default function UserManagement() {
                   />
                 </div>
               </div>
-              
+
               <div className="flex items-center gap-3">
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full md:w-auto">
                   <TabsList className="bg-gray-100 p-1">
-                    <TabsTrigger value="all" className="data-[state=active]:bg-white">All Users</TabsTrigger>
-                    <TabsTrigger value="active" className="data-[state=active]:bg-white">Active</TabsTrigger>
-                    <TabsTrigger value="inactive" className="data-[state=active]:bg-white">Inactive</TabsTrigger>
-                    <TabsTrigger value="suspended" className="data-[state=active]:bg-white">Suspended</TabsTrigger>
+                    <TabsTrigger value="all" className="data-[state=active]:bg-white">
+                      All Users
+                    </TabsTrigger>
+                    <TabsTrigger value="active" className="data-[state=active]:bg-white">
+                      Active
+                    </TabsTrigger>
+                    <TabsTrigger value="inactive" className="data-[state=active]:bg-white">
+                      Inactive
+                    </TabsTrigger>
+                    <TabsTrigger value="suspended" className="data-[state=active]:bg-white">
+                      Suspended
+                    </TabsTrigger>
                   </TabsList>
                 </Tabs>
               </div>
@@ -717,19 +803,6 @@ export default function UserManagement() {
               <CardTitle className="text-lg font-semibold">User Directory</CardTitle>
               <CardDescription>{filteredUsers.length} users found</CardDescription>
             </div>
-            <Badge variant="outline" className={connected ? "bg-green-50 text-green-700 border-green-200" : "bg-red-50 text-red-700 border-red-200"}>
-              <Activity className={`h-3 w-3 mr-1 ${connected ? "text-green-600" : "text-red-600"}`} />
-              {connected ? "Real-time Connected" : "Real-time Disconnected"}
-            </Badge>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={refreshUserReservationCounts}
-              className="gap-2"
-            >
-              <Activity className="h-3 w-3" />
-              Refresh Counts
-            </Button>
           </div>
         </CardHeader>
         <CardContent className="p-0">
@@ -741,8 +814,9 @@ export default function UserManagement() {
                     <Checkbox />
                   </th>
                   <th className="text-left p-4 text-sm font-semibold text-gray-700">User</th>
-                  <th className="text-left p-4 text-sm font-semibold text-gray-700">Contact</th>
-                  <th className="text-left p-4 text-sm font-semibold text-gray-700">Reservations</th>
+                  <th className="text-left p-4 text-sm font-semibold text-gray-700">
+                    Reservations
+                  </th>
                   <th className="text-left p-4 text-sm font-semibold text-gray-700">Last Active</th>
                   <th className="text-left p-4 text-sm font-semibold text-gray-700">VIP</th>
                   <th className="text-left p-4 text-sm font-semibold text-gray-700">Status</th>
@@ -753,7 +827,9 @@ export default function UserManagement() {
                 {loading ? (
                   Array.from({ length: 5 }).map((_, i) => (
                     <tr key={i} className="border-b hover:bg-gray-50/50">
-                      <td className="p-4"><Skeleton className="h-4 w-4" /></td>
+                      <td className="p-4">
+                        <Skeleton className="h-4 w-4" />
+                      </td>
                       <td className="p-4">
                         <div className="flex items-center gap-3">
                           <Skeleton className="h-10 w-10 rounded-full" />
@@ -763,12 +839,24 @@ export default function UserManagement() {
                           </div>
                         </div>
                       </td>
-                      <td className="p-4"><Skeleton className="h-4 w-32" /></td>
-                      <td className="p-4"><Skeleton className="h-4 w-16" /></td>
-                      <td className="p-4"><Skeleton className="h-4 w-24" /></td>
-                      <td className="p-4"><Skeleton className="h-6 w-12 rounded-full" /></td>
-                      <td className="p-4"><Skeleton className="h-6 w-16 rounded-full" /></td>
-                      <td className="p-4"><Skeleton className="h-8 w-8 rounded-md" /></td>
+                      <td className="p-4">
+                        <Skeleton className="h-4 w-32" />
+                      </td>
+                      <td className="p-4">
+                        <Skeleton className="h-4 w-16" />
+                      </td>
+                      <td className="p-4">
+                        <Skeleton className="h-4 w-24" />
+                      </td>
+                      <td className="p-4">
+                        <Skeleton className="h-6 w-12 rounded-full" />
+                      </td>
+                      <td className="p-4">
+                        <Skeleton className="h-6 w-16 rounded-full" />
+                      </td>
+                      <td className="p-4">
+                        <Skeleton className="h-8 w-8 rounded-md" />
+                      </td>
                     </tr>
                   ))
                 ) : filteredUsers.length === 0 ? (
@@ -783,118 +871,131 @@ export default function UserManagement() {
                       </div>
                     </td>
                   </tr>
-                ) : filteredUsers.map((user, i) => (
-                  <tr key={i} className="border-b hover:bg-gray-50/50 transition-colors">
-                    <td className="p-4">
-                      <Checkbox />
-                    </td>
-                    <td className="p-4">
-                      <div className="flex items-center gap-3">
-                        <Avatar className="h-10 w-10 border-2 border-white shadow-sm">
-                          <AvatarFallback className="bg-gradient-to-br from-blue-100 to-indigo-100 text-blue-600">
-                            {user.name?.charAt(0) || user.email?.charAt(0).toUpperCase() || "U"}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <div className="font-medium text-gray-900">
-                            {user.name || `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim() || "Unnamed User"}
+                ) : (
+                  filteredUsers.map((user, i) => (
+                    <tr key={i} className="border-b hover:bg-gray-50/50 transition-colors">
+                      <td className="p-4">
+                        <Checkbox />
+                      </td>
+                      <td className="p-4">
+                        <div className="flex items-center gap-3">
+                          <Avatar className="h-10 w-10 border-2 border-white shadow-sm">
+                            <AvatarFallback className="bg-gradient-to-br from-blue-100 to-indigo-100 text-blue-600">
+                              {user.name?.charAt(0) || user.email?.charAt(0).toUpperCase() || 'U'}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <div className="font-medium text-gray-900">
+                              {user.name ||
+                                `${user.firstName ?? ''} ${user.lastName ?? ''}`.trim() ||
+                                'Unnamed User'}
+                            </div>
+                            <div className="text-sm text-gray-500">{user.email}</div>
                           </div>
-                          <div className="text-sm text-gray-500">{user.email}</div>
                         </div>
-                      </div>
-                    </td>
-                    <td className="p-4">
-                      <div className="space-y-1">
-                        <div className="text-sm text-gray-900">{user.email}</div>
-                        <div className="text-sm text-gray-500">{user.phone || user.phoneNumber || user.mobile || "-"}</div>
-                      </div>
-                    </td>
-                    <td className="p-4">
-                      <div className="text-center">
-                        <div className="text-lg font-semibold text-gray-900">{user.reservationCount ?? user.reservations ?? user.stats?.reservations ?? 0}</div>
-                        <div className="text-xs text-gray-500">reservations</div>
-                      </div>
-                    </td>
-                    <td className="p-4">
-                      <div className="text-sm text-gray-600">
-                        {user.lastActiveAt ? new Date(user.lastActiveAt).toLocaleDateString() :
-                         user.updatedAt ? new Date(user.updatedAt).toLocaleDateString() : "Never"}
-                      </div>
-                    </td>
-                    <td className="p-4">
-                      <Badge 
-                        variant={user.isVip ? "default" : "outline"} 
-                        className={user.isVip 
-                          ? "bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600" 
-                          : "bg-gray-100"
-                        }
-                      >
-                        {user.isVip ? "VIP" : "Regular"}
-                      </Badge>
-                    </td>
-                    <td className="p-4">
-                      <Badge
-                        variant="outline"
-                        className={
-                          user.status === "Active" 
-                            ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                            : user.status === "Suspended"
-                            ? "bg-rose-50 text-rose-700 border-rose-200"
-                            : "bg-gray-50 text-gray-700 border-gray-200"
-                        }
-                      >
-                        {(user.status || user.accountStatus || "Unknown").toString()}
-                      </Badge>
-                    </td>
-                    <td className="p-4">
-                      <div className="flex items-center justify-end gap-2">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 hover:bg-gray-100"
-                          onClick={() => handleViewProfile(user)}
-                          title="View Profile"
+                      </td>
+                      <td className="p-4">
+                        <div className="text-center">
+                          <div className="text-lg font-semibold text-gray-900">
+                            {user.reservationCount ??
+                              user.reservations ??
+                              user.stats?.reservations ??
+                              0}
+                          </div>
+                          <div className="text-xs text-gray-500">reservations</div>
+                        </div>
+                      </td>
+                      <td className="p-4">
+                        <div className="text-sm text-gray-600">
+                          {user.lastActiveAt
+                            ? new Date(user.lastActiveAt).toLocaleDateString()
+                            : user.updatedAt
+                              ? new Date(user.updatedAt).toLocaleDateString()
+                              : 'Never'}
+                        </div>
+                      </td>
+                      <td className="p-4">
+                        <Badge
+                          variant={user.isVip ? 'default' : 'outline'}
+                          className={
+                            user.isVip
+                              ? 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600'
+                              : 'bg-gray-100'
+                          }
                         >
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8">
-                              <MoreVertical className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="w-56">
-                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                            <DropdownMenuItem onClick={() => handleViewProfile(user)}>
-                              <Eye className="h-4 w-4 mr-2" />
-                              View Profile
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleResetPassword(user)}>
-                              <KeyRound className="h-4 w-4 mr-2" />
-                              Reset Password
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleMarkAsVIP(user)}>
-                              <Star className="h-4 w-4 mr-2" />
-                              {user.isVip ? "Remove VIP" : "Mark as VIP"}
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleViewReservations(user)}>
-                              <Calendar className="h-4 w-4 mr-2" />
-                              View Reservations
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem 
-                              onClick={() => handleSuspendAccount(user)}
-                              className="text-red-600"
-                            >
-                              <UserX className="h-4 w-4 mr-2" />
-                              Suspend Account
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                          {user.isVip ? 'VIP' : 'Regular'}
+                        </Badge>
+                      </td>
+                      <td className="p-4">
+                        <Badge
+                          variant="outline"
+                          className={
+                            user.status === 'Active'
+                              ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                              : user.status === 'Suspended'
+                                ? 'bg-rose-50 text-rose-700 border-rose-200'
+                                : 'bg-gray-50 text-gray-700 border-gray-200'
+                          }
+                        >
+                          {(user.status || user.accountStatus || 'Unknown').toString()}
+                        </Badge>
+                      </td>
+                      <td className="p-4">
+                        <div className="flex items-center justify-end gap-2">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="icon" className="h-8 w-8">
+                                <MoreVertical className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+
+                            {/* Everything MUST be inside Content */}
+                            <DropdownMenuContent align="end" className="w-56">
+                              <DropdownMenuLabel className="" inset="">
+                                Actions
+                              </DropdownMenuLabel>
+
+                              <DropdownMenuItem onClick={() => handleViewProfile(user)}>
+                                <Eye className="h-4 w-4 mr-2" />
+                                View Profile
+                              </DropdownMenuItem>
+
+                              <DropdownMenuItem onClick={() => handleMarkAsVIP(user)}>
+                                <Star className="h-4 w-4 mr-2" />
+                                {user.isVip ? 'Remove VIP' : 'Mark as VIP'}
+                              </DropdownMenuItem>
+
+                              <DropdownMenuItem onClick={() => handleViewReservations(user)}>
+                                <Calendar className="h-4 w-4 mr-2" />
+                                View Reservations
+                              </DropdownMenuItem>
+
+                              <DropdownMenuSeparator className="" />
+
+                              {user.status?.toLowerCase() === 'suspended' ? (
+                                <DropdownMenuItem
+                                  onClick={() => handleToggleStatusInit(user, 'active')}
+                                  className="text-emerald-600 focus:text-emerald-700"
+                                >
+                                  <CheckCircle className="h-4 w-4 mr-2" />
+                                  Reactivate Account
+                                </DropdownMenuItem>
+                              ) : (
+                                <DropdownMenuItem
+                                  onClick={() => handleToggleStatusInit(user, 'suspended')}
+                                  className="text-red-600 focus:text-red-700"
+                                >
+                                  <UserX className="h-4 w-4 mr-2" />
+                                  Suspend Account
+                                </DropdownMenuItem>
+                              )}
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
@@ -908,7 +1009,7 @@ export default function UserManagement() {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
                 disabled={currentPage === 1}
               >
                 Previous
@@ -925,11 +1026,11 @@ export default function UserManagement() {
                   } else {
                     pageNum = currentPage - 2 + i;
                   }
-                  
+
                   return (
                     <Button
                       key={pageNum}
-                      variant={currentPage === pageNum ? "default" : "outline"}
+                      variant={currentPage === pageNum ? 'default' : 'outline'}
                       size="sm"
                       className="h-8 w-8"
                       onClick={() => setCurrentPage(pageNum)}
@@ -942,7 +1043,7 @@ export default function UserManagement() {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
                 disabled={currentPage === totalPages}
               >
                 Next
@@ -962,7 +1063,10 @@ export default function UserManagement() {
           <div className="space-y-4 py-4">
             <div className="space-y-2">
               <Label className="text-sm font-medium">Status</Label>
-              <Select value={filters.status} onValueChange={(value) => setFilters({ ...filters, status: value })}>
+              <Select
+                value={filters.status}
+                onValueChange={(value) => setFilters({ ...filters, status: value })}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
@@ -974,10 +1078,13 @@ export default function UserManagement() {
                 </SelectContent>
               </Select>
             </div>
-            
+
             <div className="space-y-2">
               <Label className="text-sm font-medium">Role</Label>
-              <Select value={filters.role} onValueChange={(value) => setFilters({ ...filters, role: value })}>
+              <Select
+                value={filters.role}
+                onValueChange={(value) => setFilters({ ...filters, role: value })}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Select role" />
                 </SelectTrigger>
@@ -989,9 +1096,9 @@ export default function UserManagement() {
                 </SelectContent>
               </Select>
             </div>
-            
+
             <Separator />
-            
+
             <div className="space-y-2">
               <Label className="text-sm font-medium">Date Range</Label>
               <div className="grid grid-cols-2 gap-2">
@@ -1001,15 +1108,16 @@ export default function UserManagement() {
             </div>
           </div>
           <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => {
-              setFilters({ status: "", role: "", dateRange: { from: null, to: null } });
-              setShowFilterModal(false);
-            }}>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setFilters({ status: '', role: '', dateRange: { from: null, to: null } });
+                setShowFilterModal(false);
+              }}
+            >
               Clear Filters
             </Button>
-            <Button onClick={() => setShowFilterModal(false)}>
-              Apply Filters
-            </Button>
+            <Button onClick={() => setShowFilterModal(false)}>Apply Filters</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -1037,50 +1145,60 @@ export default function UserManagement() {
               <div className="flex flex-col items-center text-center">
                 <Avatar className="h-24 w-24 border-4 border-white shadow-lg">
                   <AvatarFallback className="text-2xl bg-gradient-to-br from-blue-100 to-indigo-100">
-                    {userDetails.name?.charAt(0) || userDetails.email?.charAt(0).toUpperCase() || "U"}
+                    {userDetails.name?.charAt(0) ||
+                      userDetails.email?.charAt(0).toUpperCase() ||
+                      'U'}
                   </AvatarFallback>
                 </Avatar>
                 <h3 className="mt-4 text-xl font-semibold">
-                  {userDetails.name || `${userDetails.firstName ?? ""} ${userDetails.lastName ?? ""}`.trim()}
+                  {userDetails.name ||
+                    `${userDetails.firstName ?? ''} ${userDetails.lastName ?? ''}`.trim()}
                 </h3>
                 <p className="text-gray-600">{userDetails.email}</p>
               </div>
-              
+
               <Separator />
-              
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label className="text-sm font-medium text-gray-500">Phone</Label>
-                  <p className="text-gray-900">{userDetails.phone || userDetails.phoneNumber || userDetails.mobile || "-"}</p>
+                  <p className="text-gray-900">
+                    {userDetails.phone || userDetails.phoneNumber || userDetails.mobile || '-'}
+                  </p>
                 </div>
                 <div>
                   <Label className="text-sm font-medium text-gray-500">Status</Label>
-                  <Badge variant="outline" className={
-                    userDetails.status === "Active" 
-                      ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                      : userDetails.status === "Suspended"
-                      ? "bg-rose-50 text-rose-700 border-rose-200"
-                      : "bg-gray-50 text-gray-700 border-gray-200"
-                  }>
-                    {userDetails.status || userDetails.accountStatus || "-"}
+                  <Badge
+                    variant="outline"
+                    className={
+                      userDetails.status === 'Active'
+                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                        : userDetails.status === 'Suspended'
+                          ? 'bg-rose-50 text-rose-700 border-rose-200'
+                          : 'bg-gray-50 text-gray-700 border-gray-200'
+                    }
+                  >
+                    {userDetails.status || userDetails.accountStatus || '-'}
                   </Badge>
                 </div>
                 <div>
                   <Label className="text-sm font-medium text-gray-500">VIP Status</Label>
-                  <Badge variant={userDetails.isVip ? "default" : "outline"}>
-                    {userDetails.isVip ? "VIP Member" : "Regular User"}
+                  <Badge variant={userDetails.isVip ? 'default' : 'outline'}>
+                    {userDetails.isVip ? 'VIP Member' : 'Regular User'}
                   </Badge>
                 </div>
                 <div>
                   <Label className="text-sm font-medium text-gray-500">Reservations</Label>
-                  <p className="text-gray-900">{userDetails.reservations ?? userDetails.stats?.reservations ?? 0}</p>
+                  <p className="text-gray-900">
+                    {userDetails.reservations ?? userDetails.stats?.reservations ?? 0}
+                  </p>
                 </div>
                 <div className="col-span-2">
                   <Label className="text-sm font-medium text-gray-500">Last Active</Label>
                   <p className="text-gray-900">
-                    {userDetails.lastActiveAt 
+                    {userDetails.lastActiveAt
                       ? new Date(userDetails.lastActiveAt).toLocaleString()
-                      : "Never"}
+                      : 'Never'}
                   </p>
                 </div>
               </div>
@@ -1089,11 +1207,17 @@ export default function UserManagement() {
             <p className="text-center text-gray-500">No user details available.</p>
           )}
           <DialogFooter>
-            <Button variant="outline" onClick={() => setProfileOpen(false)}>Close</Button>
-            <Button onClick={() => {
-              handleResetPassword(userDetails);
-              setProfileOpen(false);
-            }}>Reset Password</Button>
+            <Button variant="outline" onClick={() => setProfileOpen(false)}>
+              Close
+            </Button>
+            <Button
+              onClick={() => {
+                handleResetPassword(userDetails);
+                setProfileOpen(false);
+              }}
+            >
+              Reset Password
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -1103,7 +1227,9 @@ export default function UserManagement() {
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>Reservations</DialogTitle>
-            <DialogDescription>Reservation history for {selectedUser?.name || selectedUser?.email}</DialogDescription>
+            <DialogDescription>
+              Reservation history for {selectedUser?.name || selectedUser?.email}
+            </DialogDescription>
           </DialogHeader>
           {userReservations.length > 0 ? (
             <div className="space-y-4 max-h-96 overflow-y-auto">
@@ -1116,9 +1242,15 @@ export default function UserManagement() {
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between">
                       <div className="flex-1">
-                        <p className="font-medium">Reservation #{reservation.id || reservation._id || reservation.reference || index + 1}</p>
+                        <p className="font-medium">
+                          Reservation #
+                          {reservation.id || reservation._id || reservation.reference || index + 1}
+                        </p>
                         <div className="text-sm text-gray-600 space-y-1">
-                          <p>Date: {reservation.date || reservation.checkInDate || reservation.createdAt}</p>
+                          <p>
+                            Date:{' '}
+                            {reservation.date || reservation.checkInDate || reservation.createdAt}
+                          </p>
                           <p>Time: {reservation.time || reservation.checkInTime}</p>
                           <p>Guests: {reservation.guests}</p>
                           <p>Status: {reservation.status || reservation.reservationStatus}</p>
@@ -1127,16 +1259,17 @@ export default function UserManagement() {
                       <Badge
                         variant="outline"
                         className={
-                          (reservation.status || reservation.reservationStatus) === "Upcoming"
-                            ? "bg-blue-50 text-blue-700 border-blue-200"
-                            : (reservation.status || reservation.reservationStatus) === "Completed"
-                            ? "bg-green-50 text-green-700 border-green-200"
-                            : (reservation.status || reservation.reservationStatus) === "Cancelled"
-                            ? "bg-red-50 text-red-700 border-red-200"
-                            : "bg-gray-50 text-gray-700 border-gray-200"
+                          (reservation.status || reservation.reservationStatus) === 'Upcoming'
+                            ? 'bg-blue-50 text-blue-700 border-blue-200'
+                            : (reservation.status || reservation.reservationStatus) === 'Completed'
+                              ? 'bg-green-50 text-green-700 border-green-200'
+                              : (reservation.status || reservation.reservationStatus) ===
+                                  'Cancelled'
+                                ? 'bg-red-50 text-red-700 border-red-200'
+                                : 'bg-gray-50 text-gray-700 border-gray-200'
                         }
                       >
-                        {reservation.status || reservation.reservationStatus || "Unknown"}
+                        {reservation.status || reservation.reservationStatus || 'Unknown'}
                       </Badge>
                     </div>
                   </CardContent>
@@ -1153,7 +1286,9 @@ export default function UserManagement() {
             </div>
           )}
           <DialogFooter>
-            <Button variant="outline" onClick={() => setReservationsOpen(false)}>Close</Button>
+            <Button variant="outline" onClick={() => setReservationsOpen(false)}>
+              Close
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -1163,7 +1298,12 @@ export default function UserManagement() {
         <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
             <DialogTitle>Reservation Details</DialogTitle>
-            <DialogDescription>Complete details for Reservation #{selectedReservation?.id || selectedReservation?._id || selectedReservation?.reference}</DialogDescription>
+            <DialogDescription>
+              Complete details for Reservation #
+              {selectedReservation?.id ||
+                selectedReservation?._id ||
+                selectedReservation?.reference}
+            </DialogDescription>
           </DialogHeader>
           {reservationDetailsLoading ? (
             <div className="space-y-4">
@@ -1182,32 +1322,45 @@ export default function UserManagement() {
               <div className="grid grid-cols-2 gap-6">
                 <div>
                   <Label className="text-sm font-medium text-gray-500">Reservation ID</Label>
-                  <p className="text-gray-900 font-mono">{reservationDetails.id || reservationDetails._id || reservationDetails.reference}</p>
+                  <p className="text-gray-900 font-mono">
+                    {reservationDetails.id ||
+                      reservationDetails._id ||
+                      reservationDetails.reference}
+                  </p>
                 </div>
                 <div>
                   <Label className="text-sm font-medium text-gray-500">Status</Label>
                   <Badge
                     variant="outline"
                     className={
-                      (reservationDetails.status || reservationDetails.reservationStatus) === "Upcoming"
-                        ? "bg-blue-50 text-blue-700 border-blue-200"
-                        : (reservationDetails.status || reservationDetails.reservationStatus) === "Completed"
-                        ? "bg-green-50 text-green-700 border-green-200"
-                        : (reservationDetails.status || reservationDetails.reservationStatus) === "Cancelled"
-                        ? "bg-red-50 text-red-700 border-red-200"
-                        : "bg-gray-50 text-gray-700 border-gray-200"
+                      (reservationDetails.status || reservationDetails.reservationStatus) ===
+                      'Upcoming'
+                        ? 'bg-blue-50 text-blue-700 border-blue-200'
+                        : (reservationDetails.status || reservationDetails.reservationStatus) ===
+                            'Completed'
+                          ? 'bg-green-50 text-green-700 border-green-200'
+                          : (reservationDetails.status || reservationDetails.reservationStatus) ===
+                              'Cancelled'
+                            ? 'bg-red-50 text-red-700 border-red-200'
+                            : 'bg-gray-50 text-gray-700 border-gray-200'
                     }
                   >
-                    {reservationDetails.status || reservationDetails.reservationStatus || "Unknown"}
+                    {reservationDetails.status || reservationDetails.reservationStatus || 'Unknown'}
                   </Badge>
                 </div>
                 <div>
                   <Label className="text-sm font-medium text-gray-500">Date</Label>
-                  <p className="text-gray-900">{reservationDetails.date || reservationDetails.checkInDate || reservationDetails.createdAt}</p>
+                  <p className="text-gray-900">
+                    {reservationDetails.date ||
+                      reservationDetails.checkInDate ||
+                      reservationDetails.createdAt}
+                  </p>
                 </div>
                 <div>
                   <Label className="text-sm font-medium text-gray-500">Time</Label>
-                  <p className="text-gray-900">{reservationDetails.time || reservationDetails.checkInTime}</p>
+                  <p className="text-gray-900">
+                    {reservationDetails.time || reservationDetails.checkInTime}
+                  </p>
                 </div>
                 <div>
                   <Label className="text-sm font-medium text-gray-500">Guests</Label>
@@ -1218,28 +1371,38 @@ export default function UserManagement() {
                   <Badge
                     variant="outline"
                     className={
-                      (reservationDetails.paymentStatus || reservationDetails.payment?.status) === "paid"
-                        ? "bg-green-50 text-green-700 border-green-200"
-                        : (reservationDetails.paymentStatus || reservationDetails.payment?.status) === "pending"
-                        ? "bg-yellow-50 text-yellow-700 border-yellow-200"
-                        : "bg-red-50 text-red-700 border-red-200"
+                      (reservationDetails.paymentStatus || reservationDetails.payment?.status) ===
+                      'paid'
+                        ? 'bg-green-50 text-green-700 border-green-200'
+                        : (reservationDetails.paymentStatus ||
+                              reservationDetails.payment?.status) === 'pending'
+                          ? 'bg-yellow-50 text-yellow-700 border-yellow-200'
+                          : 'bg-red-50 text-red-700 border-red-200'
                     }
                   >
-                    {reservationDetails.paymentStatus || reservationDetails.payment?.status || "Unknown"}
+                    {reservationDetails.paymentStatus ||
+                      reservationDetails.payment?.status ||
+                      'Unknown'}
                   </Badge>
                 </div>
                 <div>
                   <Label className="text-sm font-medium text-gray-500">Meal Preselected</Label>
                   <Badge variant="secondary">
-                    {reservationDetails.meal === "Yes" || reservationDetails.mealPreselected || reservationDetails.meal?.preselected ? "✓ Yes" : "✗ No"}
+                    {reservationDetails.meal === 'Yes' ||
+                    reservationDetails.mealPreselected ||
+                    reservationDetails.meal?.preselected
+                      ? '✓ Yes'
+                      : '✗ No'}
                   </Badge>
                 </div>
                 <div>
                   <Label className="text-sm font-medium text-gray-500">Total Amount</Label>
                   <p className="text-gray-900 font-semibold">
-                    {reservationDetails.totalAmount || reservationDetails.amount || reservationDetails.payment?.amount
+                    {reservationDetails.totalAmount ||
+                    reservationDetails.amount ||
+                    reservationDetails.payment?.amount
                       ? `₦${Number(reservationDetails.totalAmount || reservationDetails.amount || reservationDetails.payment?.amount || 0).toLocaleString()}`
-                      : "N/A"}
+                      : 'N/A'}
                   </p>
                 </div>
               </div>
@@ -1249,19 +1412,30 @@ export default function UserManagement() {
               <div className="grid grid-cols-2 gap-6">
                 <div>
                   <Label className="text-sm font-medium text-gray-500">Customer Name</Label>
-                  <p className="text-gray-900">{reservationDetails.customer || reservationDetails.customerName || reservationDetails.user?.name || "N/A"}</p>
+                  <p className="text-gray-900">
+                    {reservationDetails.customer ||
+                      reservationDetails.customerName ||
+                      reservationDetails.user?.name ||
+                      'N/A'}
+                  </p>
                 </div>
                 <div>
                   <Label className="text-sm font-medium text-gray-500">Customer Email</Label>
-                  <p className="text-gray-900">{reservationDetails.customerEmail || reservationDetails.user?.email || "N/A"}</p>
+                  <p className="text-gray-900">
+                    {reservationDetails.customerEmail || reservationDetails.user?.email || 'N/A'}
+                  </p>
                 </div>
                 <div>
                   <Label className="text-sm font-medium text-gray-500">Customer Phone</Label>
-                  <p className="text-gray-900">{reservationDetails.customerPhone || reservationDetails.user?.phone || "N/A"}</p>
+                  <p className="text-gray-900">
+                    {reservationDetails.customerPhone || reservationDetails.user?.phone || 'N/A'}
+                  </p>
                 </div>
                 <div>
                   <Label className="text-sm font-medium text-gray-500">Vendor</Label>
-                  <p className="text-gray-900">{reservationDetails.vendor?.name || reservationDetails.vendorName || "N/A"}</p>
+                  <p className="text-gray-900">
+                    {reservationDetails.vendor?.name || reservationDetails.vendorName || 'N/A'}
+                  </p>
                 </div>
               </div>
 
@@ -1291,13 +1465,17 @@ export default function UserManagement() {
                 <div>
                   <Label className="text-sm font-medium text-gray-500">Created At</Label>
                   <p className="text-gray-900">
-                    {reservationDetails.createdAt ? new Date(reservationDetails.createdAt).toLocaleString() : "N/A"}
+                    {reservationDetails.createdAt
+                      ? new Date(reservationDetails.createdAt).toLocaleString()
+                      : 'N/A'}
                   </p>
                 </div>
                 <div>
                   <Label className="text-sm font-medium text-gray-500">Last Updated</Label>
                   <p className="text-gray-900">
-                    {reservationDetails.updatedAt ? new Date(reservationDetails.updatedAt).toLocaleString() : "N/A"}
+                    {reservationDetails.updatedAt
+                      ? new Date(reservationDetails.updatedAt).toLocaleString()
+                      : 'N/A'}
                   </p>
                 </div>
               </div>
@@ -1306,10 +1484,34 @@ export default function UserManagement() {
             <p className="text-center text-gray-500">No reservation details available.</p>
           )}
           <DialogFooter>
-            <Button variant="outline" onClick={() => setReservationDetailsOpen(false)}>Close</Button>
+            <Button variant="outline" onClick={() => setReservationDetailsOpen(false)}>
+              Close
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Replaces the old boilerplate Dialog tree perfectly */}
+      <ConfirmationDialog
+        open={statusDialogOpen}
+        onOpenChange={setStatusDialogOpen}
+        variant={pendingTargetStatus === 'suspended' ? 'danger' : 'success'}
+        title={
+          pendingTargetStatus === 'suspended'
+            ? 'Confirm Suspend Account'
+            : 'Confirm Reactivate Account'
+        }
+        confirmationMsg={
+          pendingTargetStatus === 'suspended'
+            ? `Are you sure you want to suspend ${statusTargetUser?.name || statusTargetUser?.email || 'this user'}? This action can be reversed later by reactivating the account.`
+            : `Are you sure you want to reactivate ${statusTargetUser?.name || statusTargetUser?.email || 'this user'}? This will grant them immediate system access.`
+        }
+        onConfirm={confirmStatusChangeAction}
+        onCancel={() => {
+          setStatusDialogOpen(false);
+          setStatusTargetUser(null);
+        }}
+      />
     </div>
   );
 }

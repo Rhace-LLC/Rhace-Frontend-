@@ -1,16 +1,13 @@
-"use client";
-import React from "react";
-import { Button } from "../../ui/button";
-import { ArrowLeft } from "lucide-react";
-import { useReservations } from "@/contexts/restaurant/ReservationContext";
-import { useNavigate } from "react-router";
+'use client';
+import React from 'react';
+import { Button } from '../../ui/button';
+import { ArrowLeft } from 'lucide-react';
+import { useReservations } from '@/contexts/restaurant/ReservationContext';
+import { useNavigate } from 'react-router';
 
-const ReservationHeader = ({
-  title,
-  index,
-}) => {
+const ReservationHeader = ({ title, index }) => {
   const { setPage } = useReservations();
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   return (
     <div className="bg-white border-b hidden md:block">
       <div className="max-w-4xl mx-auto px-4 py-4">
@@ -24,7 +21,7 @@ const ReservationHeader = ({
                 if (index === 2) {
                   setPage(0);
                 } else {
-                  navigate(-1)
+                  navigate(-1);
                 }
               }}
             >
@@ -38,9 +35,7 @@ const ReservationHeader = ({
               {[...Array(4)].map((_, i) => (
                 <div
                   key={i}
-                  className={`w-8 h-1 rounded ${
-                    i < index ? "bg-blue-500" : "bg-gray-200"
-                  }`}
+                  className={`w-8 h-1 rounded ${i < index ? 'bg-blue-500' : 'bg-gray-200'}`}
                 ></div>
               ))}
             </div>

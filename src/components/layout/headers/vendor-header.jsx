@@ -6,18 +6,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import {
-  LogOut,
-  Settings,
-  User as UserIcon,
-} from 'lucide-react';
+import { LogOut, Settings, User as UserIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { logoutAsync } from '@/redux/slices/authSlice';
 import { useNavigate } from 'react-router-dom';
 
 const Header = ({ onMenuClick }) => {
-
   const [loading, setLoading] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -27,10 +22,9 @@ const Header = ({ onMenuClick }) => {
 
   useEffect(() => {
     try {
-if (vendor) {
+      if (vendor) {
         setProfile(vendor);
       } else {
-
         setProfile(null);
       }
     } catch (error) {
@@ -110,7 +104,11 @@ if (vendor) {
             className="flex items-center space-x-3 p-2 hover:bg-gray-100 rounded-lg transition-colors"
           >
             {profile?.logo ? (
-              <img src={profile.logo} alt="Vendor Logo" className="w-9 h-9 rounded-full object-cover ring-2 ring-gray-200" />
+              <img
+                src={profile.logo}
+                alt="Vendor Logo"
+                className="w-9 h-9 rounded-full object-cover ring-2 ring-gray-200"
+              />
             ) : (
               <div className="w-9 h-9 bg-gradient-to-br from-teal-500 to-blue-600 rounded-full flex items-center justify-center ring-2 ring-gray-200">
                 <UserIcon className="w-5 h-5 text-white" />
@@ -120,11 +118,11 @@ if (vendor) {
               <div className="text-sm font-semibold text-gray-900 line-clamp-1 max-w-32">
                 {profile?.businessName ?? 'Vendor'}
               </div>
-              <div className="text-xs text-gray-500 capitalize">
-                {profile?.vendorType ?? ''}
-              </div>
+              <div className="text-xs text-gray-500 capitalize">{profile?.vendorType ?? ''}</div>
             </div>
-            <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
+            <ChevronDown
+              className={`w-4 h-4 text-gray-500 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`}
+            />
           </button>
 
           {/* Dropdown Menu */}
@@ -133,7 +131,11 @@ if (vendor) {
               <div className="px-4 py-3 border-b border-gray-100">
                 <div className="flex items-center space-x-3">
                   {profile?.logo ? (
-                    <img src={profile.logo} alt="Vendor Logo" className="w-10 h-10 rounded-full object-cover" />
+                    <img
+                      src={profile.logo}
+                      alt="Vendor Logo"
+                      className="w-10 h-10 rounded-full object-cover"
+                    />
                   ) : (
                     <div className="w-10 h-10 bg-gradient-to-br from-teal-500 to-blue-600 rounded-full flex items-center justify-center">
                       <UserIcon className="w-6 h-6 text-white" />

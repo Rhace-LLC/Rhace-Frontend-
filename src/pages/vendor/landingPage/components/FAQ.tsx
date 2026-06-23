@@ -150,40 +150,39 @@
 //   );
 // }
 
-
-import { useState } from "react";
-import { motion } from "framer-motion";
+import { useState } from 'react';
+import { motion } from 'framer-motion';
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/components/ui/accordion";
+} from '@/components/ui/accordion';
 
 const faqs = [
   {
-    id: "item-1",
-    question: "How do vendors receive reservations?",
+    id: 'item-1',
+    question: 'How do vendors receive reservations?',
     answer:
-      "Reservations made by users automatically appear in your dashboard in real time. The moment a guest books, you see it — no delays, no manual syncing.",
+      'Reservations made by users automatically appear in your dashboard in real time. The moment a guest books, you see it — no delays, no manual syncing.',
   },
   {
-    id: "item-2",
-    question: "Can I track my payments?",
+    id: 'item-2',
+    question: 'Can I track my payments?',
     answer:
-      "Yes. The dashboard shows completed payments, pending payments, and partially paid reservations — all in one place so you always know exactly where your money stands.",
+      'Yes. The dashboard shows completed payments, pending payments, and partially paid reservations — all in one place so you always know exactly where your money stands.',
   },
   {
-    id: "item-3",
-    question: "Can I manage multiple types of inventory?",
+    id: 'item-3',
+    question: 'Can I manage multiple types of inventory?',
     answer:
-      "Yes. You can manage hotel rooms, restaurant menus, club tables, and drinks from one unified dashboard. Everything is organized by category so nothing gets mixed up.",
+      'Yes. You can manage hotel rooms, restaurant menus, club tables, and drinks from one unified dashboard. Everything is organized by category so nothing gets mixed up.',
   },
   {
-    id: "item-4",
-    question: "Do I need technical knowledge to use the dashboard?",
+    id: 'item-4',
+    question: 'Do I need technical knowledge to use the dashboard?',
     answer:
-      "No. The dashboard is designed to be simple and intuitive for hospitality businesses. If you can use a smartphone, you can run your business on Rhace.",
+      'No. The dashboard is designed to be simple and intuitive for hospitality businesses. If you can use a smartphone, you can run your business on Rhace.',
   },
 ];
 
@@ -193,17 +192,16 @@ export function FAQ() {
   return (
     <section id="faq" className="py-20 px-4 sm:px-6 lg:px-8 bg-white">
       <div className="max-w-3xl mx-auto">
-
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-80px" }}
+          viewport={{ once: true, margin: '-80px' }}
           transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
           className="mb-14 space-y-3 text-center"
         >
           <h2 className="text-4xl font-bold text-gray-950 tracking-tight">
-            Frequently asked <span style={{ color: "#014d43" }}>questions</span>
+            Frequently asked <span style={{ color: '#014d43' }}>questions</span>
           </h2>
           <p className="text-base text-gray-400 font-light">
             Everything you need to know before getting started.
@@ -230,13 +228,10 @@ export function FAQ() {
                 ease: [0.22, 1, 0.36, 1],
               }}
             >
-              <AccordionItem
-                value={faq.id}
-                className="border border-gray-200 rounded-lg"
-              >
+              <AccordionItem value={faq.id} className="border border-gray-200 rounded-lg">
                 <AccordionTrigger
                   className={`py-5 px-5 text-left text-base font-semibold tracking-tight ${
-                    openItem === faq.id ? "text-[#014d43]" : "text-gray-900"
+                    openItem === faq.id ? 'text-[#014d43]' : 'text-gray-900'
                   }`}
                 >
                   {faq.question}
@@ -257,7 +252,7 @@ export function FAQ() {
           transition={{ duration: 0.5, delay: 0.4 }}
           className="mt-10 text-sm text-gray-400 font-light text-center"
         >
-          Still have questions?{" "}
+          Still have questions?{' '}
           <a
             href="mailto:support@rhace.com"
             className="font-medium hover:underline text-[#014d43] transition-all"
@@ -265,7 +260,6 @@ export function FAQ() {
             Contact support →
           </a>
         </motion.p>
-
       </div>
     </section>
   );

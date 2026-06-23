@@ -33,7 +33,7 @@ export const saveAuthToken = (token, isVendor = false) => {
   localStorage.setItem(key, token);
 };
 
-// Clear all auth tokens and redirect  
+// Clear all auth tokens and redirect
 export const clearAuth = () => {
   localStorage.removeItem('token');
   localStorage.removeItem('vendor_token');
@@ -44,19 +44,19 @@ export const clearAuth = () => {
 // Ensure token is valid before API call
 export const ensureValidToken = async () => {
   const token = getAuthToken();
-  
+
   if (!token) {
     clearAuth();
     return null;
   }
-  
+
   if (isTokenExpired(token)) {
     // Token expired - attempt refresh (future: implement refresh endpoint)
     toast.warning('Session expired. Redirecting to login...');
     clearAuth();
     return null;
   }
-  
+
   return token;
 };
 
@@ -65,7 +65,7 @@ export const validateCallbackToken = () => {
   if (hasValidToken()) {
     return true;
   }
-  
+
   toast.info('Please wait while we validate your session...');
   return false;
 };
@@ -74,7 +74,7 @@ export const validateCallbackToken = () => {
 export const AuthStatus = {
   VALID: 'valid',
   EXPIRED: 'expired',
-  MISSING: 'missing'
+  MISSING: 'missing',
 };
 
 export const getAuthStatus = () => {
@@ -83,4 +83,3 @@ export const getAuthStatus = () => {
   if (isTokenExpired(token)) return AuthStatus.EXPIRED;
   return AuthStatus.VALID;
 };
-

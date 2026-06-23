@@ -213,12 +213,12 @@
 
 // export default BookingsPage;
 
-import BookingCard from "@/components/BookingCard";
-import Footer from "@/components/Footer";
-import Header from "@/components/user/Header";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { SvgIcon, SvgIcon2, SvgIcon3 } from "@/public/icons/icons";
-import { userService } from "@/services/user.service";
+import BookingCard from '@/components/BookingCard';
+import Footer from '@/components/Footer';
+import Header from '@/components/user/Header';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { SvgIcon, SvgIcon2, SvgIcon3 } from '@/public/icons/icons';
+import { userService } from '@/services/user.service';
 import {
   ArrowLeft,
   MoreVertical,
@@ -229,27 +229,21 @@ import {
   X,
   Calendar,
   Building2,
-} from "lucide-react";
-import { useEffect, useState, useRef } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { toast } from "react-toastify";
-import { useNavigate } from "react-router-dom";
-import { logout } from "@/redux/slices/authSlice";
+} from 'lucide-react';
+import { useEffect, useState, useRef } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
+import { logout } from '@/redux/slices/authSlice';
 
-import {
-  CalendarClock,
-  ChevronDown,
-  ChevronUp,
-  Home,
-  User,
-} from "lucide-react";
+import { CalendarClock, ChevronDown, ChevronUp, Home, User } from 'lucide-react';
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 const normaliseType = (type) => {
-  if (!type) return "";
+  if (!type) return '';
   const t = type.toLowerCase();
-  if (t.includes("hotel")) return "Hotel";
-  if (t.includes("restaurant")) return "Restaurant";
-  if (t.includes("club")) return "Club";
+  if (t.includes('hotel')) return 'Hotel';
+  if (t.includes('restaurant')) return 'Restaurant';
+  if (t.includes('club')) return 'Club';
   return type;
 };
 
@@ -259,11 +253,11 @@ const getBookingDate = (booking) => {
 };
 
 const formatDateShort = (dateStr) => {
-  if (!dateStr) return "";
-  return new Date(dateStr).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
+  if (!dateStr) return '';
+  return new Date(dateStr).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
   });
 };
 
@@ -357,9 +351,7 @@ function EmptyState({ type, isFiltered }) {
         <div className="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center mb-5">
           <Search className="w-8 h-8 text-gray-400" />
         </div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">
-          No results found
-        </h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-2">No results found</h3>
         <p className="text-gray-500 max-w-xs leading-relaxed text-sm">
           Try a different vendor name, type, or date.
         </p>
@@ -369,30 +361,25 @@ function EmptyState({ type, isFiltered }) {
   return (
     <div className="flex flex-col items-center justify-center py-20 px-4 text-center">
       <div className="w-24 h-24 rounded-full bg-teal-50 flex items-center justify-center mb-6">
-        {type === "upcoming" ? (
+        {type === 'upcoming' ? (
           <Search className="w-10 h-10 text-teal-600" />
         ) : (
           <CalendarX className="w-10 h-10 text-gray-400" />
         )}
       </div>
-      {type === "upcoming" ? (
+      {type === 'upcoming' ? (
         <>
-          <h3 className="text-xl font-semibold text-gray-900 mb-2">
-            Your next adventure awaits
-          </h3>
+          <h3 className="text-xl font-semibold text-gray-900 mb-2">Your next adventure awaits</h3>
           <p className="text-gray-500 max-w-xs mb-6 leading-relaxed">
-            You have no upcoming bookings. Thousands of hotels, restaurants &
-            clubs are ready for you.
+            You have no upcoming bookings. Thousands of hotels, restaurants & clubs are ready for
+            you.
           </p>
         </>
       ) : (
         <>
-          <h3 className="text-xl font-semibold text-gray-900 mb-2">
-            No past trips yet
-          </h3>
+          <h3 className="text-xl font-semibold text-gray-900 mb-2">No past trips yet</h3>
           <p className="text-gray-500 max-w-xs leading-relaxed">
-            Once you complete a stay, it'll show up here. Start building your
-            travel memories!
+            Once you complete a stay, it'll show up here. Start building your travel memories!
           </p>
         </>
       )}
@@ -403,22 +390,20 @@ function EmptyState({ type, isFiltered }) {
 // ─── Search Panel ─────────────────────────────────────────────────────────────
 
 function buildSuggestions(bookings) {
-  const names = [
-    ...new Set(bookings.map((b) => b.vendor?.businessName).filter(Boolean)),
-  ].map((n) => ({ label: n, kind: "vendor", value: n }));
+  const names = [...new Set(bookings.map((b) => b.vendor?.businessName).filter(Boolean))].map(
+    (n) => ({ label: n, kind: 'vendor', value: n })
+  );
 
   const types = [
-    ...new Set(
-      bookings.map((b) => normaliseType(b.reservationType)).filter(Boolean),
-    ),
-  ].map((t) => ({ label: t, kind: "type", value: t }));
+    ...new Set(bookings.map((b) => normaliseType(b.reservationType)).filter(Boolean)),
+  ].map((t) => ({ label: t, kind: 'type', value: t }));
 
   return [...names, ...types];
 }
 
 // Icon shown in the suggestion row
 function SuggestionRowIcon({ kind, label }) {
-  if (kind === "type") {
+  if (kind === 'type') {
     // Use your custom SVG icons for Hotel/Restaurant/Club
     return (
       <span className="flex items-center justify-center">
@@ -441,9 +426,7 @@ function SearchPanel({ query, onQueryChange, onClose, allBookings, onApply }) {
 
   const filtered =
     query.trim().length > 0
-      ? suggestions
-          .filter((s) => s.label.toLowerCase().includes(query.toLowerCase()))
-          .slice(0, 7)
+      ? suggestions.filter((s) => s.label.toLowerCase().includes(query.toLowerCase())).slice(0, 7)
       : suggestions.slice(0, 7);
 
   const highlight = (text) => {
@@ -453,9 +436,7 @@ function SearchPanel({ query, onQueryChange, onClose, allBookings, onApply }) {
     return (
       <>
         {text.slice(0, idx)}
-        <span className="font-semibold text-[#0A6C6D]">
-          {text.slice(idx, idx + query.length)}
-        </span>
+        <span className="font-semibold text-[#0A6C6D]">{text.slice(idx, idx + query.length)}</span>
         {text.slice(idx + query.length)}
       </>
     );
@@ -480,7 +461,7 @@ function SearchPanel({ query, onQueryChange, onClose, allBookings, onApply }) {
         />
         {query && (
           <button
-            onClick={() => onQueryChange("")}
+            onClick={() => onQueryChange('')}
             className="text-gray-400 hover:text-gray-600 transition-colors"
           >
             <X className="w-4 h-4" />
@@ -513,9 +494,7 @@ function SearchPanel({ query, onQueryChange, onClose, allBookings, onApply }) {
                 <SuggestionRowIcon kind={s.kind} label={s.label} />
               </span>
               {/* Name only — no sub-label */}
-              <span className="text-sm text-gray-800">
-                {highlight(s.label)}
-              </span>
+              <span className="text-sm text-gray-800">{highlight(s.label)}</span>
             </button>
           ))}
         </div>
@@ -526,7 +505,7 @@ function SearchPanel({ query, onQueryChange, onClose, allBookings, onApply }) {
 
 // ─── Filter Panel ─────────────────────────────────────────────────────────────
 
-const RESERVATION_TYPES = ["All", "Hotel", "Restaurant", "Club"];
+const RESERVATION_TYPES = ['All', 'Hotel', 'Restaurant', 'Club'];
 
 function FilterPanel({
   typeFilter,
@@ -537,7 +516,7 @@ function FilterPanel({
   onDateTo,
   onReset,
 }) {
-  const hasActive = typeFilter !== "All" || dateFrom || dateTo;
+  const hasActive = typeFilter !== 'All' || dateFrom || dateTo;
 
   return (
     <div className="px-4 sm:px-6 py-4 border-b border-gray-200 bg-gray-50 space-y-4 cards-enter">
@@ -555,14 +534,12 @@ function FilterPanel({
                 onClick={() => onTypeChange(t)}
                 className={`flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium border transition-colors duration-150 ${
                   isActive
-                    ? "bg-[#0A6C6D] text-white border-[#0A6C6D]"
-                    : "bg-white text-gray-600 border-gray-200 hover:border-[#0A6C6D] hover:text-[#0A6C6D]"
+                    ? 'bg-[#0A6C6D] text-white border-[#0A6C6D]'
+                    : 'bg-white text-gray-600 border-gray-200 hover:border-[#0A6C6D] hover:text-[#0A6C6D]'
                 }`}
               >
-                {t !== "All" && (
-                  <span
-                    className={`flex items-center ${isActive ? "[&_svg]:text-black" : ""}`}
-                  >
+                {t !== 'All' && (
+                  <span className={`flex items-center ${isActive ? '[&_svg]:text-black' : ''}`}>
                     {/* {TYPE_ICON[t]} */}
                   </span>
                 )}
@@ -616,8 +593,8 @@ function FilterPanel({
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 function BookingsPage() {
-  const [activeTab, setActiveTab] = useState("upcoming");
-  const [topTab, setTopTab] = useState("bookings");
+  const [activeTab, setActiveTab] = useState('upcoming');
+  const [topTab, setTopTab] = useState('bookings');
   const [bookings, setBookings] = useState({});
   const user = useSelector((state) => state.auth.user);
   const [isLoading, setIsLoading] = useState(true);
@@ -627,20 +604,19 @@ function BookingsPage() {
   const dropdownRef = useRef(null);
   const dispatch = useDispatch();
   const [profile, setProfile] = useState(null);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [searchVendor, setSearchVendor] = useState("");
-  const [searchType, setSearchType] = useState("");
-  const [typeFilter, setTypeFilter] = useState("All");
-  const [dateFrom, setDateFrom] = useState("");
-  const [dateTo, setDateTo] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchVendor, setSearchVendor] = useState('');
+  const [searchType, setSearchType] = useState('');
+  const [typeFilter, setTypeFilter] = useState('All');
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
   const [showSearch, setShowSearch] = useState(false);
   const [showFilter, setShowFilter] = useState(false);
 
   const upcomingBookings = bookings.upcoming ?? [];
   const pastBookings = bookings.past ?? [];
   const allBookings = [...upcomingBookings, ...pastBookings];
-  const rawBookings =
-    activeTab === "upcoming" ? upcomingBookings : pastBookings;
+  const rawBookings = activeTab === 'upcoming' ? upcomingBookings : pastBookings;
 
   const handleCancel = async (id) => {
     try {
@@ -648,31 +624,31 @@ function BookingsPage() {
       if (res.success) {
         setBookings((prev) => {
           const updated = { ...prev };
-          ["upcoming", "past"].forEach((key) => {
+          ['upcoming', 'past'].forEach((key) => {
             updated[key] = updated[key].map((b) =>
-              b._id === id ? { ...b, reservationStatus: "Cancelled" } : b,
+              b._id === id ? { ...b, reservationStatus: 'Cancelled' } : b
             );
           });
           return updated;
         });
-        toast.success("Booking cancelled successfully");
+        toast.success('Booking cancelled successfully');
       } else {
-        toast.error(res.message || "Failed to cancel booking");
+        toast.error(res.message || 'Failed to cancel booking');
       }
     } catch (err) {
       console.log(err);
-      toast.error("Failed to cancel booking");
+      toast.error('Failed to cancel booking');
     }
   };
 
   const handleSuggestionApply = (suggestion) => {
     setSearchQuery(suggestion.label);
-    if (suggestion.kind === "vendor") {
+    if (suggestion.kind === 'vendor') {
       setSearchVendor(suggestion.value);
-      setSearchType("");
-    } else if (suggestion.kind === "type") {
+      setSearchType('');
+    } else if (suggestion.kind === 'type') {
       setSearchType(suggestion.value);
-      setSearchVendor("");
+      setSearchVendor('');
       setTypeFilter(suggestion.value);
     }
   };
@@ -680,73 +656,58 @@ function BookingsPage() {
   const handleQueryChange = (val) => {
     setSearchQuery(val);
     if (!val) {
-      setSearchVendor("");
-      setSearchType("");
+      setSearchVendor('');
+      setSearchType('');
     }
   };
 
   const handleCloseSearch = () => {
     setShowSearch(false);
-    setSearchQuery("");
-    setSearchVendor("");
-    setSearchType("");
+    setSearchQuery('');
+    setSearchVendor('');
+    setSearchType('');
   };
 
   const displayBookings = rawBookings.filter((booking) => {
-    const vendorName = booking.vendor?.businessName?.toLowerCase() ?? "";
-    const matchesVendor =
-      !searchVendor || vendorName === searchVendor.toLowerCase();
-    const q =
-      !searchVendor && !searchType ? searchQuery.toLowerCase().trim() : "";
+    const vendorName = booking.vendor?.businessName?.toLowerCase() ?? '';
+    const matchesVendor = !searchVendor || vendorName === searchVendor.toLowerCase();
+    const q = !searchVendor && !searchType ? searchQuery.toLowerCase().trim() : '';
     const matchesFreeText =
       !q ||
       vendorName.includes(q) ||
       normaliseType(booking.reservationType).toLowerCase().includes(q);
-    const effectiveType =
-      searchType || (typeFilter !== "All" ? typeFilter : "");
+    const effectiveType = searchType || (typeFilter !== 'All' ? typeFilter : '');
     const matchesType =
       !effectiveType ||
-      normaliseType(booking.reservationType).toLowerCase() ===
-        effectiveType.toLowerCase();
+      normaliseType(booking.reservationType).toLowerCase() === effectiveType.toLowerCase();
     const bookingDate = getBookingDate(booking);
-    const matchesFrom =
-      !dateFrom || (bookingDate && bookingDate >= new Date(dateFrom));
-    const matchesTo =
-      !dateTo || (bookingDate && bookingDate <= new Date(dateTo + "T23:59:59"));
-    return (
-      matchesVendor &&
-      matchesFreeText &&
-      matchesType &&
-      matchesFrom &&
-      matchesTo
-    );
+    const matchesFrom = !dateFrom || (bookingDate && bookingDate >= new Date(dateFrom));
+    const matchesTo = !dateTo || (bookingDate && bookingDate <= new Date(dateTo + 'T23:59:59'));
+    return matchesVendor && matchesFreeText && matchesType && matchesFrom && matchesTo;
   });
 
   const isFiltered =
-    searchQuery.trim() !== "" ||
-    typeFilter !== "All" ||
-    dateFrom !== "" ||
-    dateTo !== "";
+    searchQuery.trim() !== '' || typeFilter !== 'All' || dateFrom !== '' || dateTo !== '';
 
   const activeFilterCount = [
-    searchQuery.trim() !== "",
-    typeFilter !== "All",
-    dateFrom !== "" || dateTo !== "",
+    searchQuery.trim() !== '',
+    typeFilter !== 'All',
+    dateFrom !== '' || dateTo !== '',
   ].filter(Boolean).length;
 
   const resetFilters = () => {
-    setTypeFilter("All");
-    setDateFrom("");
-    setDateTo("");
+    setTypeFilter('All');
+    setDateFrom('');
+    setDateTo('');
   };
 
   useEffect(() => {
-    setSearchQuery("");
-    setSearchVendor("");
-    setSearchType("");
-    setTypeFilter("All");
-    setDateFrom("");
-    setDateTo("");
+    setSearchQuery('');
+    setSearchVendor('');
+    setSearchType('');
+    setTypeFilter('All');
+    setDateFrom('');
+    setDateTo('');
     setShowSearch(false);
     setShowFilter(false);
   }, [activeTab]);
@@ -762,7 +723,7 @@ function BookingsPage() {
         setBookings(res.data);
       } catch (err) {
         console.log(err);
-        toast.error("Failed to fetch bookings");
+        toast.error('Failed to fetch bookings');
       } finally {
         setIsLoading(false);
       }
@@ -787,7 +748,7 @@ function BookingsPage() {
   }, [user]);
 
   const handleLogout = async () => {
-    console.log("Attempting to logout");
+    console.log('Attempting to logout');
     dispatch(logout());
     setProfile(null);
   };
@@ -798,28 +759,28 @@ function BookingsPage() {
         setIsMenuOpen(false);
       }
     };
-    if (isMenuOpen) document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    if (isMenuOpen) document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isMenuOpen]);
 
   const footer = [
     {
-      title: "Home",
+      title: 'Home',
       icon: <Home />,
-      link: "/",
+      link: '/',
     },
     {
-      title: "Moments",
+      title: 'Moments',
       icon: <CalendarClock />,
-      link: "/bookings",
+      link: '/bookings',
     },
     {
-      title: "Search",
+      title: 'Search',
       icon: <Search />,
-      link: "/search",
+      link: '/search',
     },
     {
-      title: "Profile",
+      title: 'Profile',
       icon: (
         <div className="relative text-gray-700" ref={dropdownRef}>
           <button
@@ -885,17 +846,17 @@ function BookingsPage() {
         {/* Back + Title */}
         <div className="mb-10 flex items-center gap-3 text-gray-900">
           <button
-            onClick={() => navigate("/")}
+            onClick={() => navigate('/')}
             className="group flex items-center gap-3 p-3 rounded-full border text-gray-900 transition-colors"
           >
             <ArrowLeft className="size-4 transition-transform shrink-0 duration-200 group-hover:-translate-x-1" />
           </button>
-            <div>
-              <h1 className="text-sm sm:text-base font-semibold tracking-tight">
-                Reservations History
-              </h1>
-              <p className="text-xs sm:text-sm text-gray-400">View past and upcoming Reservations</p>
-            </div>
+          <div>
+            <h1 className="text-sm sm:text-base font-semibold tracking-tight">
+              Reservations History
+            </h1>
+            <p className="text-xs sm:text-sm text-gray-400">View past and upcoming Reservations</p>
+          </div>
         </div>
 
         {isLoading ? (
@@ -907,7 +868,7 @@ function BookingsPage() {
               value={topTab}
               onValueChange={(value) => {
                 setTopTab(value);
-                setActiveTab(value === "bookings" ? "upcoming" : "past");
+                setActiveTab(value === 'bookings' ? 'upcoming' : 'past');
               }}
               className="mb-6 flex justify-center items-center"
             >
@@ -940,19 +901,19 @@ function BookingsPage() {
                 <div className="flex items-center justify-between px-4 sm:px-6">
                   <div className="flex items-center gap-6 overflow-x-auto">
                     <button
-                      onClick={() => setActiveTab("upcoming")}
+                      onClick={() => setActiveTab('upcoming')}
                       className={`flex items-center gap-2 pb-4 pt-4 px-2 border-b-2 transition-colors duration-200 whitespace-nowrap ${
-                        activeTab === "upcoming"
-                          ? "border-[#0A6C6D] text-[#0A6C6D]"
-                          : "border-transparent text-gray-600 hover:text-gray-900"
+                        activeTab === 'upcoming'
+                          ? 'border-[#0A6C6D] text-[#0A6C6D]'
+                          : 'border-transparent text-gray-600 hover:text-gray-900'
                       }`}
                     >
                       <span className="font-medium">Upcoming Bookings</span>
                       <span
                         className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                          activeTab === "upcoming"
-                            ? "bg-gray-100 text-[#0A6C6D]"
-                            : "bg-gray-100 text-gray-700"
+                          activeTab === 'upcoming'
+                            ? 'bg-gray-100 text-[#0A6C6D]'
+                            : 'bg-gray-100 text-gray-700'
                         }`}
                       >
                         {upcomingBookings.length}
@@ -960,19 +921,19 @@ function BookingsPage() {
                     </button>
 
                     <button
-                      onClick={() => setActiveTab("past")}
+                      onClick={() => setActiveTab('past')}
                       className={`flex items-center gap-2 pb-4 pt-2 px-2 border-b-2 transition-colors duration-200 whitespace-nowrap ${
-                        activeTab === "past"
-                          ? "border-[#0A6C6D] text-[#0A6C6D]"
-                          : "border-transparent text-gray-600 hover:text-gray-900"
+                        activeTab === 'past'
+                          ? 'border-[#0A6C6D] text-[#0A6C6D]'
+                          : 'border-transparent text-gray-600 hover:text-gray-900'
                       }`}
                     >
                       <span className="font-medium">Past Bookings</span>
                       <span
                         className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                          activeTab === "past"
-                            ? "bg-gray-100 text-[#0A6C6D]"
-                            : "bg-gray-100 text-gray-700"
+                          activeTab === 'past'
+                            ? 'bg-gray-100 text-[#0A6C6D]'
+                            : 'bg-gray-100 text-gray-700'
                         }`}
                       >
                         {pastBookings.length}
@@ -992,8 +953,8 @@ function BookingsPage() {
                       }}
                       className={`p-2 rounded-lg transition-colors ${
                         showSearch || searchQuery
-                          ? "bg-teal-50 text-[#0A6C6D]"
-                          : "hover:bg-gray-100 text-gray-600"
+                          ? 'bg-teal-50 text-[#0A6C6D]'
+                          : 'hover:bg-gray-100 text-gray-600'
                       }`}
                     >
                       <Search className="w-5 h-5" />
@@ -1006,14 +967,12 @@ function BookingsPage() {
                       }}
                       className={`relative flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
                         showFilter || activeFilterCount > 0
-                          ? "bg-teal-50 text-[#0A6C6D]"
-                          : "hover:bg-gray-100 text-gray-600"
+                          ? 'bg-teal-50 text-[#0A6C6D]'
+                          : 'hover:bg-gray-100 text-gray-600'
                       }`}
                     >
                       <SlidersHorizontal className="w-5 h-5" />
-                      <span className="hidden sm:inline text-sm font-medium">
-                        Filter
-                      </span>
+                      <span className="hidden sm:inline text-sm font-medium">Filter</span>
                       {activeFilterCount > 0 && (
                         <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#0A6C6D] text-white text-[10px] font-bold rounded-full flex items-center justify-center">
                           {activeFilterCount}
@@ -1054,16 +1013,16 @@ function BookingsPage() {
                       <Search className="w-3 h-3" /> {searchQuery}
                       <button
                         onClick={() => {
-                          setSearchQuery("");
-                          setSearchVendor("");
-                          setSearchType("");
+                          setSearchQuery('');
+                          setSearchVendor('');
+                          setSearchType('');
                         }}
                       >
                         <X className="w-3 h-3" />
                       </button>
                     </span>
                   )}
-                  {typeFilter !== "All" && (
+                  {typeFilter !== 'All' && (
                     <span className="flex items-center gap-1.5 px-3 py-1 bg-teal-50 text-[#0A6C6D] text-xs font-medium rounded-full border border-teal-200">
                       <span className="flex items-center [&_svg]:w-3 [&_svg]:h-3">
                         {TYPE_ICON[typeFilter]}
@@ -1071,9 +1030,9 @@ function BookingsPage() {
                       {typeFilter}
                       <button
                         onClick={() => {
-                          setTypeFilter("All");
-                          setSearchType("");
-                          if (searchType) setSearchQuery("");
+                          setTypeFilter('All');
+                          setSearchType('');
+                          if (searchType) setSearchQuery('');
                         }}
                       >
                         <X className="w-3 h-3" />
@@ -1083,12 +1042,12 @@ function BookingsPage() {
                   {(dateFrom || dateTo) && (
                     <span className="flex items-center gap-1.5 px-3 py-1 bg-teal-50 text-[#0A6C6D] text-xs font-medium rounded-full border border-teal-200">
                       <Calendar className="w-3 h-3" />
-                      {dateFrom ? formatDateShort(dateFrom) : "…"} →{" "}
-                      {dateTo ? formatDateShort(dateTo) : "…"}
+                      {dateFrom ? formatDateShort(dateFrom) : '…'} →{' '}
+                      {dateTo ? formatDateShort(dateTo) : '…'}
                       <button
                         onClick={() => {
-                          setDateFrom("");
-                          setDateTo("");
+                          setDateFrom('');
+                          setDateTo('');
                         }}
                       >
                         <X className="w-3 h-3" />
@@ -1111,9 +1070,9 @@ function BookingsPage() {
                       <BookingCard
                         key={booking._id}
                         booking={booking}
-                        onEdit={(_id) => console.log("Edit", _id)}
+                        onEdit={(_id) => console.log('Edit', _id)}
                         onCancel={async (id) => {
-                          console.log("Cancel", id);
+                          console.log('Cancel', id);
                           await handleCancel(id);
                         }}
                         // onDelete={handleDelete}
@@ -1127,7 +1086,7 @@ function BookingsPage() {
         )}
       </div>
 
-      <div className={`${profile && "hidden"} md:block`}>
+      <div className={`${profile && 'hidden'} md:block`}>
         <Footer />
       </div>
       {profile && (

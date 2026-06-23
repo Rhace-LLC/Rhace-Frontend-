@@ -1,57 +1,61 @@
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
-import { Eye, EyeOff, Loader2 } from "lucide-react"
-import GoogleIcon from "@/public/auth/google.svg";
-import { toast } from "react-toastify"
-import { useNavigate, useSearchParams } from "react-router"
-import { authService } from "@/services/auth.service"
-import logo from "../../../public/images/Rhace-11.png"
-import { useGoogleLogin } from "@react-oauth/google"
-import { useDispatch } from "react-redux"
-import { setUser } from "@/redux/slices/authSlice"
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
+import { Eye, EyeOff, Loader2 } from 'lucide-react';
+import GoogleIcon from '@/public/auth/google.svg';
+import { toast } from 'react-toastify';
+import { useNavigate, useSearchParams } from 'react-router';
+import { authService } from '@/services/auth.service';
+import logo from '../../../public/images/Rhace-11.png';
+import { useGoogleLogin } from '@react-oauth/google';
+import { useDispatch } from 'react-redux';
+import { setUser } from '@/redux/slices/authSlice';
 
 const getCurrentYear = () => new Date().getFullYear();
 
 const Signup = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const [showPassword, setShowPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const [isLoading, setIsloading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isLoading, setIsloading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-  })
+    firstName: '',
+    lastName: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+  });
   const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-  })
+    firstName: '',
+    lastName: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+  });
   const [searchParams] = useSearchParams();
-  const redirectTo = searchParams.get("redirect") || "/";
+  const redirectTo = searchParams.get('redirect') || '/';
 
   const handleRegister = async () => {
     try {
-      if (!formValidation()) return
-      setError({ email: "", password: "", firstName: "", lastName: "", confirmPassword: "" })
-      setIsloading(true)
-      await authService.register(formData)
-      toast.success("Congratulations! Next: verify your email")
-      navigate(`/auth/user/otp?email=${formData.email}`, { replace: true });
+      if (!formValidation()) return;
+      setError({ email: '', password: '', firstName: '', lastName: '', confirmPassword: '' });
+      setIsloading(true);
+      await authService.register(formData);
+      toast.success('Congratulations! Next: verify your email');
+      // FIX: Keep the structural URL layout raw, and ONLY encode the raw dynamic email variable
+      const safeEmail = encodeURIComponent(formData.email);
+
+      // Ensure the path starts with an absolute / so it navigates from the domain root
+      navigate(`/auth/user/otp?email=${safeEmail}`);
     } catch (err) {
-      toast.error(err.response?.data.message)
+      toast.error(err.response?.data.message);
     } finally {
-      setIsloading(false)
+      setIsloading(false);
     }
-  }
+  };
 
   const handleGoogleRegister = useGoogleLogin({
     flow: 'auth-code',
@@ -61,72 +65,67 @@ const Signup = () => {
         const code = tokenResponse.code;
         const user = await authService.googleRegister(code);
         dispatch(setUser(user?.user));
-        toast.success("Congratulations!")
+        toast.success('Congratulations!');
         navigate(redirectTo, { replace: true });
       } catch (error) {
-        console.error("Google login failed:", error);
-        toast.error("Google login failed. Please try again.");
+        console.error('Google login failed:', error);
+        toast.error('Google login failed. Please try again.');
       } finally {
         setGoogleLoading(false);
       }
     },
-    onError: error => console.log('Login Failed:', error)
+    onError: (error) => console.log('Login Failed:', error),
   });
 
   const getPasswordStrength = (password) => {
-    let strength = 0
-    if (password.length >= 8) strength++
-    if (/[A-Z]/.test(password)) strength++
-    if (/[a-z]/.test(password)) strength++
-    if (/[0-9]/.test(password)) strength++
-    if (/[^A-Za-z0-9]/.test(password)) strength++
-    if (password.length >= 12) strength++
-    return strength
-  }
+    let strength = 0;
+    if (password.length >= 8) strength++;
+    if (/[A-Z]/.test(password)) strength++;
+    if (/[a-z]/.test(password)) strength++;
+    if (/[0-9]/.test(password)) strength++;
+    if (/[^A-Za-z0-9]/.test(password)) strength++;
+    if (password.length >= 12) strength++;
+    return strength;
+  };
 
-  const strength = getPasswordStrength(formData.password)
+  const strength = getPasswordStrength(formData.password);
 
   const formValidation = () => {
     if (!formData.firstName) {
-      setError((p) => ({ ...p, firstName: "First Name is required." }))
-      return false
+      setError((p) => ({ ...p, firstName: 'First Name is required.' }));
+      return false;
     }
     if (!formData.lastName) {
-      setError((p) => ({ ...p, lastName: "Last Name is required." }))
-      return false
+      setError((p) => ({ ...p, lastName: 'Last Name is required.' }));
+      return false;
     }
     if (!formData.email) {
-      setError((p) => ({ ...p, email: "Email is required." }))
-      return false
+      setError((p) => ({ ...p, email: 'Email is required.' }));
+      return false;
     }
     if (!formData.password) {
-      setError((p) => ({ ...p, password: "Password is required." }))
-      return false
+      setError((p) => ({ ...p, password: 'Password is required.' }));
+      return false;
     }
     if (formData.password.length < 8) {
-      setError((p) => ({ ...p, password: "Password must be at least 8 characters." }))
-      return false
+      setError((p) => ({ ...p, password: 'Password must be at least 8 characters.' }));
+      return false;
     }
     if (formData.password !== formData.confirmPassword) {
-      setError((p) => ({ ...p, confirmPassword: "Passwords do not match." }))
-      return false
+      setError((p) => ({ ...p, confirmPassword: 'Passwords do not match.' }));
+      return false;
     }
-    return true
-  }
+    return true;
+  };
 
-  const handleInputChange = (field, value) =>
-    setFormData((prev) => ({ ...prev, [field]: value }))
+  const handleInputChange = (field, value) => setFormData((prev) => ({ ...prev, [field]: value }));
 
   return (
     <div className="w-full min-h-screen flex flex-col items-center justify-center bg-gray-50 px-4 py-8 relative">
       {/*  Logo — positioned responsively outside the card */}
       <div className="absolute top-6 left-4 sm:left-10 flex items-center gap-sm:top-[8%] sm:-translate-y-1/2">
         <a href="/" className="cursor-pointer">
-          <img
-            src={logo}
-            alt="Rhace Logo"
-            className="w-20 h-20 object-contain"
-          />
+          <img src={logo} alt="Rhace Logo" className="w-20 h-20 object-contain" />
         </a>
       </div>
 
@@ -134,7 +133,7 @@ const Signup = () => {
       <Card className="w-full max-w-md bg-white shadow-md rounded-2xl border border-gray-100 mt-16 sm:mt-24">
         <CardHeader className="text-left pb-4">
           <h1 className="text-2xl font-semibold text-gray-900">Create an Account</h1>
-          <p className="text-sm text-gray-600 mt-1 mb-[-7px]">
+          <p className="text-sm text-gray-600 mt-1 -mb-1.75]">
             Join now to streamline your experience from day one.
           </p>
         </CardHeader>
@@ -150,7 +149,7 @@ const Signup = () => {
               type="text"
               placeholder="First name"
               value={formData.firstName}
-              onChange={(e) => handleInputChange("firstName", e.target.value)}
+              onChange={(e) => handleInputChange('firstName', e.target.value)}
               className="w-full h-10 sm:h-12 rounded-md border-gray-100 bg-gray-100 
                         text-black text-sm placeholder-[#a0a3a8]
                         focus:outline-none focus:border-[#0A6C6D] focus:ring-1 focus:ring-[#0A6C6D]
@@ -169,7 +168,7 @@ const Signup = () => {
               type="text"
               placeholder="Last name"
               value={formData.lastName}
-              onChange={(e) => handleInputChange("lastName", e.target.value)}
+              onChange={(e) => handleInputChange('lastName', e.target.value)}
               className="w-full h-10 sm:h-12 rounded-md border-gray-100 bg-gray-100 
                         text-black text-sm placeholder-[#a0a3a8]
                         focus:outline-none focus:border-[#0A6C6D] focus:ring-1 focus:ring-[#0A6C6D]
@@ -188,7 +187,7 @@ const Signup = () => {
               type="email"
               placeholder="Enter your email address"
               value={formData.email}
-              onChange={(e) => handleInputChange("email", e.target.value)}
+              onChange={(e) => handleInputChange('email', e.target.value)}
               className="w-full h-10 sm:h-12 rounded-md border-gray-100 bg-gray-100 
                         text-black text-sm placeholder-[#a0a3a8]
                         focus:outline-none focus:border-[#0A6C6D] focus:ring-1 focus:ring-[#0A6C6D]
@@ -205,10 +204,10 @@ const Signup = () => {
             <div className="relative">
               <input
                 id="password"
-                type={showPassword ? "text" : "password"}
+                type={showPassword ? 'text' : 'password'}
                 placeholder="********"
                 value={formData.password}
-                onChange={(e) => handleInputChange("password", e.target.value)}
+                onChange={(e) => handleInputChange('password', e.target.value)}
                 className="w-full h-10 sm:h-12 rounded-md border-gray-100 bg-gray-100 
                         text-black text-sm placeholder-[#a0a3a8]
                         focus:outline-none focus:border-[#0A6C6D] focus:ring-1 focus:ring-[#0A6C6D]
@@ -233,10 +232,10 @@ const Signup = () => {
             <div className="relative">
               <input
                 id="confirmPassword"
-                type={showConfirmPassword ? "text" : "password"}
+                type={showConfirmPassword ? 'text' : 'password'}
                 placeholder="********"
                 value={formData.confirmPassword}
-                onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
+                onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
                 className="w-full h-10 sm:h-12 rounded-md border-gray-100 bg-gray-100 
                         text-black text-sm placeholder-[#a0a3a8]
                         focus:outline-none focus:border-[#0A6C6D] focus:ring-1 focus:ring-[#0A6C6D]
@@ -250,14 +249,16 @@ const Signup = () => {
                 {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>
             </div>
-            {error.confirmPassword && <p className="text-sm text-red-600 mt-1">{error.confirmPassword}</p>}
+            {error.confirmPassword && (
+              <p className="text-sm text-red-600 mt-1">{error.confirmPassword}</p>
+            )}
           </div>
 
           {/* Password Strength Meter */}
           {formData.password && <PasswordStrengthMeter strength={strength} />}
 
           {/* Submit */}
-          <Button
+          <button
             disabled={
               !formData.firstName ||
               !formData.lastName ||
@@ -274,9 +275,9 @@ const Signup = () => {
                 Loading <Loader2 className="animate-spin" />
               </span>
             ) : (
-              "Register"
+              'Register'
             )}
-          </Button>
+          </button>
 
           {/* OR Divider */}
           <div className="flex items-center my-2">
@@ -294,58 +295,58 @@ const Signup = () => {
           >
             {/* Google Icon */}
             <img src={GoogleIcon} alt="Google" className="h-5 w-5" />
-            {googleLoading ? <Loader2 className="animate-spin h-4 w-4 text-gray-600" /> :
+            {googleLoading ? (
+              <Loader2 className="animate-spin h-4 w-4 text-gray-600" />
+            ) : (
               <span className="text-sm text-gray-700 font-medium">Continue with Google</span>
-            }
+            )}
           </button>
 
           <p className="text-sm text-center text-[#0A6C6D] hover:text-[#074f55] transition-all font-light">
-            Already Have An Account?{" "}
+            Already Have An Account?{' '}
             <a href="/auth/user/login" className="text-[#0a646d] hover:underline font-medium">
               Sign In
             </a>
           </p>
         </CardContent>
 
-        <CardFooter />
+        <CardFooter className="" />
       </Card>
 
       {/* Footer */}
       <footer className="text-xs text-gray-500 mt-6 text-center px-4">
         <p>
-          Copyright © {getCurrentYear()} Rhace Enterprises LTD. •{" "}
+          Copyright © {getCurrentYear()} Rhace Enterprises LTD. •{' '}
           <a href="#" className="hover:underline">
             Privacy Policy
           </a>
         </p>
       </footer>
     </div>
-  )
-}
+  );
+};
 
-export default Signup
+export default Signup;
 
 // Password strength meter
 export const PasswordStrengthMeter = ({ strength }) => {
   const getStrengthLabel = (score) => {
-    if (score <= 2) return "Weak"
-    if (score <= 4) return "Medium"
-    return "Strong"
-  }
+    if (score <= 2) return 'Weak';
+    if (score <= 4) return 'Medium';
+    return 'Strong';
+  };
 
   const getStrengthColor = (score) => {
-    if (score <= 2) return "bg-red-600"
-    if (score <= 4) return "bg-yellow-600"
-    return "bg-green-600"
-  }
+    if (score <= 2) return 'bg-red-600';
+    if (score <= 4) return 'bg-yellow-600';
+    return 'bg-green-600';
+  };
 
   return (
     <div className="flex flex-col space-y-2 mt-2">
       <div className="flex items-center">
         <div className={`h-2 w-full rounded ${getStrengthColor(strength)}`} />
-        <span className="ml-2 text-sm font-medium text-gray-700">
-          {getStrengthLabel(strength)}
-        </span>
+        <span className="ml-2 text-sm font-medium text-gray-700">{getStrengthLabel(strength)}</span>
       </div>
       <div className="flex flex-col text-xs text-gray-500 space-y-0.5">
         <span>Password must be at least 8 characters long</span>
@@ -355,5 +356,5 @@ export const PasswordStrengthMeter = ({ strength }) => {
         <span>Longer passwords are stronger</span>
       </div>
     </div>
-  )
-}
+  );
+};

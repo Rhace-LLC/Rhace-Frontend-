@@ -1,18 +1,18 @@
-import api from "@/lib/axios";
+import api from '@/lib/axios';
 
 class PaymentService {
   async getPayments() {
-    const res = await api.get("/payments");
+    const res = await api.get('/payments');
     return res.data;
   }
 
   async getPaymentStats() {
-    const res = await api.get("/payments/stats");
+    const res = await api.get('/payments/stats');
     return res.data;
   }
 
   async getKpis() {
-    const res = await api.get("/dashboard/kpis");
+    const res = await api.get('/dashboard/kpis');
     return res.data;
   }
 
@@ -21,7 +21,7 @@ class PaymentService {
     return res.data;
   }
 
-async getPaymentInfo() {
+  async getPaymentInfo() {
     const vendorId = localStorage.getItem('vendorId');
     if (!vendorId) {
       throw new Error('Vendor ID missing. Please log in again.');
@@ -31,17 +31,17 @@ async getPaymentInfo() {
   }
 
   async verifyPayment(reference) {
-    const res = await api.post("/payments/verify", { reference });
+    const res = await api.post('/payments/verify', { reference });
     return res.data;
   }
 
   async initializePayment(bookingData) {
-    const response = await api.post("/payments/initialize", bookingData);
+    const response = await api.post('/payments/initialize', bookingData);
     return response.data;
   }
 
   async completeReservation(trxref) {
-    const response = await api.post("/bookings/complete-payment", {
+    const response = await api.post('/bookings/complete-payment', {
       trxref,
     });
     return response.data;

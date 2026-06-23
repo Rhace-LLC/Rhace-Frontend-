@@ -1,14 +1,14 @@
-import { useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { toast } from "react-toastify";
-import axios from "axios";
-import { authService } from "@/services/auth.service";
-import { setVendor } from "@/redux/slices/authSlice";
-import DashboardLayout from "@/components/layout/DashboardLayout";
-import { BusinessLogo } from "../settings/part/BusinessInfo";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Card } from "@/components/ui/card";
+import { useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { toast } from 'react-toastify';
+import axios from 'axios';
+import { authService } from '@/services/auth.service';
+import { setVendor } from '@/redux/slices/authSlice';
+import DashboardLayout from '@/components/layout/DashboardLayout';
+import { BusinessLogo } from '../settings/part/BusinessInfo';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Card } from '@/components/ui/card';
 import {
   Building2,
   Globe,
@@ -21,7 +21,7 @@ import {
   Image,
   Trash2,
   Upload,
-} from "lucide-react";
+} from 'lucide-react';
 
 const HotelProfile = () => {
   const vendor = useSelector((state) => state.auth.vendor);
@@ -41,22 +41,22 @@ const HotelProfile = () => {
     const file = files[0];
     if (!file) return;
 
-    setUploadingIndex("new");
+    setUploadingIndex('new');
     try {
       const form = new FormData();
-      form.append("file", file);
-      form.append("upload_preset", UPLOAD_PRESET);
+      form.append('file', file);
+      form.append('upload_preset', UPLOAD_PRESET);
       const response = await axios.post(
         `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
         form
       );
       const imageUrl = response.data.secure_url;
       const currentImages = formData.profileImages || [];
-      updateField("profileImages", [...currentImages, imageUrl]);
-      toast.success("Image uploaded successfully");
+      updateField('profileImages', [...currentImages, imageUrl]);
+      toast.success('Image uploaded successfully');
     } catch (error) {
-      console.error("Upload failed:", error);
-      toast.error("Failed to upload image");
+      console.error('Upload failed:', error);
+      toast.error('Failed to upload image');
     } finally {
       setUploadingIndex(null);
     }
@@ -65,7 +65,7 @@ const HotelProfile = () => {
   const removeImage = (index) => {
     const currentImages = formData.profileImages || [];
     const updated = currentImages.filter((_, i) => i !== index);
-    updateField("profileImages", updated);
+    updateField('profileImages', updated);
   };
 
   const handleSubmit = async () => {
@@ -73,15 +73,15 @@ const HotelProfile = () => {
     try {
       const vendorId = vendor?._id || vendor?.id;
       if (!vendorId) {
-        toast.error("Vendor ID not found. Please re-login.");
+        toast.error('Vendor ID not found. Please re-login.');
         return;
       }
       const user = await authService.vendorUpdate(formData, vendorId);
       dispatch(setVendor(user?.vendor));
-      toast.success("Profile updated successfully!");
+      toast.success('Profile updated successfully!');
     } catch (error) {
-      console.error("Error updating profile:", error);
-      toast.error("Failed to update profile. Please try again.");
+      console.error('Error updating profile:', error);
+      toast.error('Failed to update profile. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -89,7 +89,7 @@ const HotelProfile = () => {
 
   const handleReset = () => {
     setFormData(vendor);
-    toast.info("Changes have been reset");
+    toast.info('Changes have been reset');
   };
 
   return (
@@ -119,10 +119,7 @@ const HotelProfile = () => {
                 Brand Identity
               </h3>
             </div>
-            <BusinessLogo
-              value={formData.logo}
-              onChange={(value) => updateField("logo", value)}
-            />
+            <BusinessLogo value={formData.logo} onChange={(value) => updateField('logo', value)} />
           </div>
 
           <div className="grid gap-6">
@@ -136,9 +133,7 @@ const HotelProfile = () => {
                     </div>
                     Gallery Images
                   </h2>
-                  <div className="text-xs text-slate-400 font-mono">
-                    Customer-facing photos
-                  </div>
+                  <div className="text-xs text-slate-400 font-mono">Customer-facing photos</div>
                 </div>
 
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -163,14 +158,12 @@ const HotelProfile = () => {
 
                   {/* Upload new image */}
                   <label className="aspect-[4/3] rounded-xl border-2 border-dashed border-slate-300 bg-slate-50/50 flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-blue-400 hover:bg-blue-50/30 transition-all duration-200">
-                    {uploadingIndex === "new" ? (
+                    {uploadingIndex === 'new' ? (
                       <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
                     ) : (
                       <>
                         <Upload className="w-6 h-6 text-slate-400" />
-                        <span className="text-xs text-slate-500 font-medium">
-                          Add Photo
-                        </span>
+                        <span className="text-xs text-slate-500 font-medium">Add Photo</span>
                       </>
                     )}
                     <input
@@ -178,14 +171,13 @@ const HotelProfile = () => {
                       accept="image/*"
                       className="hidden"
                       disabled={uploadingIndex !== null}
-                      onChange={(e) =>
-                        e.target.files && handleImageUpload(e.target.files)
-                      }
+                      onChange={(e) => e.target.files && handleImageUpload(e.target.files)}
                     />
                   </label>
                 </div>
                 <p className="text-xs text-slate-400">
-                  Upload high-quality photos of your hotel to showcase to customers. Recommended: 1200×800px.
+                  Upload high-quality photos of your hotel to showcase to customers. Recommended:
+                  1200×800px.
                 </p>
               </div>
             </Card>
@@ -200,23 +192,21 @@ const HotelProfile = () => {
                     </div>
                     Public Information
                   </h2>
-                  <div className="text-xs text-slate-400 font-mono">
-                    Shown on your listing
-                  </div>
+                  <div className="text-xs text-slate-400 font-mono">Shown on your listing</div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <Input
                     label="Hotel Name"
                     value={formData.businessName}
-                    onChange={(e) => updateField("businessName", e.target.value)}
+                    onChange={(e) => updateField('businessName', e.target.value)}
                     className="focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
                   />
                   <Input
                     label="Phone Number"
                     icon={Phone}
                     value={formData.phone}
-                    onChange={(e) => updateField("phone", e.target.value)}
+                    onChange={(e) => updateField('phone', e.target.value)}
                     className="focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
                   />
                 </div>
@@ -226,7 +216,7 @@ const HotelProfile = () => {
                   icon={Globe}
                   placeholder="https://yourhotel.com"
                   value={formData.website}
-                  onChange={(e) => updateField("website", e.target.value)}
+                  onChange={(e) => updateField('website', e.target.value)}
                   className="focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
                 />
 
@@ -235,7 +225,7 @@ const HotelProfile = () => {
                     label="Hotel Description"
                     placeholder="Describe your hotel's unique features, ambiance, and what makes it special..."
                     value={formData.businessDescription}
-                    onChange={(e) => updateField("businessDescription", e.target.value)}
+                    onChange={(e) => updateField('businessDescription', e.target.value)}
                     className="focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all min-h-[100px]"
                   />
                   <Textarea
@@ -243,7 +233,7 @@ const HotelProfile = () => {
                     icon={MapPin}
                     placeholder="Enter your hotel's complete address..."
                     value={formData.address}
-                    onChange={(e) => updateField("address", e.target.value)}
+                    onChange={(e) => updateField('address', e.target.value)}
                     className="focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
                   />
                 </div>

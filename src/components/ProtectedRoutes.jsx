@@ -40,14 +40,14 @@ export default function ProtectedRoute() {
 
   const isAuthenticated = vendor || admin || hasValidToken;
 
-const authorized = () => {
+  const authorized = () => {
     console.log('🔍 ProtectedRoute DEBUG - vendor:', vendor);
     console.log('🔍 Path:', location.pathname);
     const path = location.pathname;
 
     if (admin) {
       console.log('✅ Admin authorized');
-      return path.startsWith("/dashboard/admin");
+      return path.startsWith('/dashboard/admin');
     }
 
     if (!vendor) {
@@ -56,15 +56,15 @@ const authorized = () => {
     }
 
     // Always allow dashboard if onboarded, flexible type matching
-    if (vendor.isOnboarded !== false) { 
+    if (vendor.isOnboarded !== false) {
       console.log('✅ Vendor onboarded, allowing dashboard access');
       return path.startsWith('/dashboard');
     }
 
     console.log('Redirecting to onboarding - isOnboarded:', vendor.isOnboarded);
-    return path.startsWith("/auth/vendor/onboarding");
-  }
-const isAuthorized = authorized();
+    return path.startsWith('/auth/vendor/onboarding');
+  };
+  const isAuthorized = authorized();
   if (isCheckingAuth) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-50">
@@ -74,7 +74,7 @@ const isAuthorized = authorized();
   }
 
   if (!isAuthenticated) {
-    if (location.pathname.startsWith("/dashboard/admin")) {
+    if (location.pathname.startsWith('/dashboard/admin')) {
       return <Navigate to="/auth/admin/login" replace />;
     }
     return <Navigate to="/auth/vendor/login" replace />;
@@ -85,11 +85,11 @@ const isAuthorized = authorized();
       return <Navigate to="/dashboard/admin" replace />;
     }
     if (vendor && !vendor.isOnboarded) {
-        return <Navigate to="/auth/vendor/onboarding" replace />;
+      return <Navigate to="/auth/vendor/onboarding" replace />;
     }
     if (vendor) {
-        // Redirect to their correct dashboard if they try to access a wrong one
-        return <Navigate to={`/dashboard/${vendor.vendorType}`} replace />;
+      // Redirect to their correct dashboard if they try to access a wrong one
+      return <Navigate to={`/dashboard/${vendor.vendorType}`} replace />;
     }
     // Fallback if something is wrong
     return <Navigate to="/auth/vendor/login" replace />;

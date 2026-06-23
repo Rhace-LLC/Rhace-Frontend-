@@ -1,37 +1,40 @@
-import { Check, Mail, Clock } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { useNavigate, useParams } from "react-router";
+import { Check, Mail, Clock } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { useNavigate, useParams } from 'react-router';
 // import { RestaurantBooking } from "@/lib/api";
-import { useEffect, useState } from "react";
-import { userService } from "@/services/user.service";
-import { toast } from "react-toastify";
-import UniversalLoader from "@/components/user/ui/LogoLoader";
+import { useEffect, useState } from 'react';
+import { userService } from '@/services/user.service';
+import { toast } from 'react-toastify';
+import UniversalLoader from '@/components/user/ui/LogoLoader';
 
 export default function CompletedPage() {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   const { id } = useParams();
   const [data, setData] = useState([]);
-  const [isLoading, setIsLoading] = useState(true)
-  const categories = isLoading ? [] : data.menus ? [...new Set(data.menus.map((meal) => meal.menu.category))] : [];
+  const [isLoading, setIsLoading] = useState(true);
+  const categories = isLoading
+    ? []
+    : data.menus
+      ? [...new Set(data.menus.map((meal) => meal.menu.category))]
+      : [];
 
   useEffect(() => {
     const fetchReservation = async () => {
       try {
-
         const res = await userService.fetchReservations({ bookingId: id });
-        setData(res.data[0])
+        setData(res.data[0]);
       } catch (err) {
-        toast.error("Error Fetching Reservation")
+        toast.error('Error Fetching Reservation');
         console.log(err);
       } finally {
-        setIsLoading(false)
+        setIsLoading(false);
       }
-    }
-    fetchReservation()
-  }, [id])
+    };
+    fetchReservation();
+  }, [id]);
 
   if (isLoading) {
-    return <UniversalLoader fullscreen />
+    return <UniversalLoader fullscreen />;
   }
 
   return (
@@ -52,16 +55,13 @@ export default function CompletedPage() {
             Reservation Completed Successfully
           </h1>
           <p className="text-[#6B7280] text-sm">
-            Thank you for completing your reservation process, we look forward
-            to seeing you
+            Thank you for completing your reservation process, we look forward to seeing you
           </p>
         </div>
 
         {/* Reservation Details */}
         <div className="bg-white rounded-2xl border border-gray-200 mb-6">
-          <h2 className="text-lg font-semibold text-[#111827] py-4 px-5">
-            Reservation Details
-          </h2>
+          <h2 className="text-lg font-semibold text-[#111827] py-4 px-5">Reservation Details</h2>
 
           {/* HR tag after Reservation Details */}
           <hr className="border-gray-200 mb-4" />
@@ -70,15 +70,13 @@ export default function CompletedPage() {
             <div>
               <p className="text-sm text-gray-600 mb-1">Restaurant</p>
               <p className="text-base font-medium text-gray-900 mb-1">
-                {data.vendor.businessName || "hey"}
+                {data.vendor.businessName || 'hey'}
               </p>
               <p className="text-sm text-gray-600">{data.location}</p>
             </div>
             <div>
               <p className="text-sm text-gray-600 mb-1">Reservation ID</p>
-              <p className="font-medium text-gray-900">
-                #{data._id.slice(0, 8).toUpperCase()}
-              </p>
+              <p className="font-medium text-gray-900">#{data._id.slice(0, 8).toUpperCase()}</p>
             </div>
           </div>
 
@@ -87,12 +85,11 @@ export default function CompletedPage() {
               <p className="text-sm text-gray-600 mb-1">Date & Time</p>
               <p className="font-medium text-gray-900">
                 {new Date(data.date).toLocaleDateString(undefined, {
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                })}{" "}
-                •{" "}
-                {data.time}
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                })}{' '}
+                • {data.time}
               </p>
             </div>
             <div>
@@ -105,33 +102,19 @@ export default function CompletedPage() {
         {/* Meal Selection */}
         {data.menus && data.menus.length > 0 && (
           <div className="bg-white rounded-2xl border p-5 space-y-4 border-gray-200 mb-6">
-            <h2 className="text-lg font-semibold text-[#111827]">
-              Your Meal Selection
-            </h2>
+            <h2 className="text-lg font-semibold text-[#111827]">Your Meal Selection</h2>
             <div className="space-y-6">
               {categories.map((category, i) => (
-                <div
-                  key={i}
-                  className="border border-[#E5E7EB] bg-[#F9FAFB] rounded-xl"
-                >
-                  <h3 className="text-sm font-medium px-5 py-3 border-b">
-                    {category}
-                  </h3>
+                <div key={i} className="border border-[#E5E7EB] bg-[#F9FAFB] rounded-xl">
+                  <h3 className="text-sm font-medium px-5 py-3 border-b">{category}</h3>
                   <div className="space-y-4 py-4 px-5">
                     {data.menus
                       .filter((meal) => meal.menu.category === category)
                       .map((meal, index) => (
-                        <div
-                          key={index}
-                          className="flex justify-between items-center "
-                        >
+                        <div key={index} className="flex justify-between items-center ">
                           <div>
-                            <p className="font-medium text-[#111827]">
-                              {meal.menu.name}
-                            </p>
-                            <p className="text-sm text-[#606368]">
-                              {meal.specialRequest}
-                            </p>
+                            <p className="font-medium text-[#111827]">{meal.menu.name}</p>
+                            <p className="text-sm text-[#606368]">{meal.specialRequest}</p>
                           </div>
                           <div className="bg-[#E9EBF3] text-sm text-[#111827] font-medium px-3 py-2 rounded-lg">
                             Qty: {meal.quantity}
@@ -159,7 +142,7 @@ export default function CompletedPage() {
                       fill="#E0B300"
                     />
                   </g>
-                </svg>{" "}
+                </svg>{' '}
                 Special Request: {data.specialRequest}
               </div>
             )}
@@ -172,8 +155,7 @@ export default function CompletedPage() {
             <div className="flex items-start gap-3">
               <Mail className="w-5 h-5 text-[#0A6C6D] mt-0.5 shrink-0" />
               <p className="text-sm">
-                You will receive a confirmation email with your reservation
-                details
+                You will receive a confirmation email with your reservation details
               </p>
             </div>
 

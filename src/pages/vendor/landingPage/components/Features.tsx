@@ -64,7 +64,7 @@
 //   return (
 //     <section id="features" className="py-20 px-4 sm:px-6 lg:px-8 bg-gray-50">
 //       <div className="max-w-7xl mx-auto">
-//         <motion.div 
+//         <motion.div
 //           initial={{ opacity: 0, y: 30 }}
 //           whileInView={{ opacity: 1, y: 0 }}
 //           viewport={{ once: true, margin: "-100px" }}
@@ -82,8 +82,8 @@
 //             Manage every aspect of your business from one powerful, intuitive dashboard.
 //           </p>
 //         </motion.div>
-        
-//         <motion.div 
+
+//         <motion.div
 //           variants={containerVariants}
 //           initial="hidden"
 //           whileInView="visible"
@@ -97,7 +97,7 @@
 //               whileHover={{ y: -8, transition: { duration: 0.3 } }}
 //               className="bg-white p-8 rounded-2xl hover:shadow-xl transition-shadow border border-gray-100"
 //             >
-//               <motion.div 
+//               <motion.div
 //                 className={`w-12 h-12 ${feature.color} rounded-xl flex items-center justify-center mb-5`}
 //                 whileHover={{ rotate: 360, scale: 1.1 }}
 //                 transition={{ duration: 0.6 }}
@@ -114,9 +114,9 @@
 //   );
 // }
 
-import { motion, useScroll, useTransform } from "framer-motion";
-import { CheckCircle } from "lucide-react";
-import { useRef } from "react";
+import { motion, useScroll, useTransform } from 'framer-motion';
+import { CheckCircle } from 'lucide-react';
+import { useRef } from 'react';
 
 // 👇 Drop your images here when ready
 // import reservationsImg from "../../assets/reservations.png";
@@ -125,11 +125,11 @@ import { useRef } from "react";
 // import analyticsImg from "../../assets/analytics.png";
 // import policiesImg from "../../assets/policies.png";
 
-const reservationsImg = "";
-const inventoryImg    = "";
-const paymentsImg     = "";
-const analyticsImg    = "";
-const policiesImg     = "";
+const reservationsImg = '';
+const inventoryImg = '';
+const paymentsImg = '';
+const analyticsImg = '';
+const policiesImg = '';
 
 type Feature = {
   tag: string;
@@ -142,47 +142,47 @@ type Feature = {
 
 const features: Feature[] = [
   {
-    tag: "Reservations",
-    title: "Real-Time Reservation Tracking",
+    tag: 'Reservations',
+    title: 'Real-Time Reservation Tracking',
     description:
-      "See every reservation as it happens. Instantly view room bookings, restaurant tables, and club reservations made by users on the platform in real time.",
-    bullets: ["Live booking feed", "Multi-property support", "Instant notifications"],
+      'See every reservation as it happens. Instantly view room bookings, restaurant tables, and club reservations made by users on the platform in real time.',
+    bullets: ['Live booking feed', 'Multi-property support', 'Instant notifications'],
     image: reservationsImg,
     reverse: false,
   },
   {
-    tag: "Inventory",
-    title: "Manage Your Inventory Effortlessly",
+    tag: 'Inventory',
+    title: 'Manage Your Inventory Effortlessly',
     description:
-      "Upload and manage rooms, drinks, tables, or menu items in seconds. Keep your offerings organized and available for users to book anytime.",
-    bullets: ["Bulk item uploads", "Real-time availability", "Category management"],
+      'Upload and manage rooms, drinks, tables, or menu items in seconds. Keep your offerings organized and available for users to book anytime.',
+    bullets: ['Bulk item uploads', 'Real-time availability', 'Category management'],
     image: inventoryImg,
     reverse: true,
   },
   {
-    tag: "Payments",
-    title: "Track Payments and Revenue",
+    tag: 'Payments',
+    title: 'Track Payments and Revenue',
     description:
-      "Monitor completed payments, pending payments, and partially paid reservations. Know exactly how much revenue your business is generating and what the platform owes you.",
-    bullets: ["Payment status tracking", "Revenue breakdown", "Payout management"],
+      'Monitor completed payments, pending payments, and partially paid reservations. Know exactly how much revenue your business is generating and what the platform owes you.',
+    bullets: ['Payment status tracking', 'Revenue breakdown', 'Payout management'],
     image: paymentsImg,
     reverse: false,
   },
   {
-    tag: "Analytics",
-    title: "Powerful Performance Analytics",
+    tag: 'Analytics',
+    title: 'Powerful Performance Analytics',
     description:
-      "Identify your best-performing rooms, drinks, meals, or tables with real-time analytics designed to help hospitality businesses maximize revenue.",
-    bullets: ["Top performer insights", "Trend charts", "Revenue forecasts"],
+      'Identify your best-performing rooms, drinks, meals, or tables with real-time analytics designed to help hospitality businesses maximize revenue.',
+    bullets: ['Top performer insights', 'Trend charts', 'Revenue forecasts'],
     image: analyticsImg,
     reverse: true,
   },
   {
-    tag: "Settings",
-    title: "Flexible Business Policies",
+    tag: 'Settings',
+    title: 'Flexible Business Policies',
     description:
-      "Create custom policies for reservations, cancellations, and payments while managing all business settings from one centralized dashboard.",
-    bullets: ["Custom cancellation rules", "Payment terms", "Business hour controls"],
+      'Create custom policies for reservations, cancellations, and payments while managing all business settings from one centralized dashboard.',
+    bullets: ['Custom cancellation rules', 'Payment terms', 'Business hour controls'],
     image: policiesImg,
     reverse: false,
   },
@@ -192,16 +192,12 @@ function FeatureBlock({ feature, index }: { feature: Feature; index: number }) {
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: ref,
-    offset: ["start end", "center center"],
+    offset: ['start end', 'center center'],
   });
 
-  const imageX = useTransform(
-    scrollYProgress,
-    [0, 1],
-    [feature.reverse ? -40 : 40, 0]
-  );
+  const imageX = useTransform(scrollYProgress, [0, 1], [feature.reverse ? -40 : 40, 0]);
   const imageOpacity = useTransform(scrollYProgress, [0, 0.6], [0, 1]);
-  const imageScale   = useTransform(scrollYProgress, [0, 1], [0.96, 1]);
+  const imageScale = useTransform(scrollYProgress, [0, 1], [0.96, 1]);
 
   const isEven = index % 2 === 0;
 
@@ -211,16 +207,16 @@ function FeatureBlock({ feature, index }: { feature: Feature; index: number }) {
       {index < features.length - 1 && (
         <div
           className="absolute left-1/2 -bottom-14 w-px h-14 -translate-x-1/2 hidden lg:block"
-          style={{ background: "linear-gradient(to bottom, rgba(1,77,67,0.15), transparent)" }}
+          style={{ background: 'linear-gradient(to bottom, rgba(1,77,67,0.15), transparent)' }}
         />
       )}
 
       <motion.div
         initial={{ opacity: 0, y: 60 }}
         whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: "-60px" }}
+        viewport={{ once: true, margin: '-60px' }}
         transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
-        className={`flex flex-col ${feature.reverse ? "lg:flex-row-reverse" : "lg:flex-row"} items-center gap-12 lg:gap-20`}
+        className={`flex flex-col ${feature.reverse ? 'lg:flex-row-reverse' : 'lg:flex-row'} items-center gap-12 lg:gap-20`}
       >
         {/* ── Text ── */}
         <div className="flex-1 space-y-6">
@@ -232,15 +228,15 @@ function FeatureBlock({ feature, index }: { feature: Feature; index: number }) {
             transition={{ duration: 0.5, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
             className="flex items-center gap-3"
           >
-            <span className="text-3xl font-black" style={{ color: "rgba(1,77,67,0.12)" }}>
-              {String(index + 1).padStart(2, "0")}
+            <span className="text-3xl font-black" style={{ color: 'rgba(1,77,67,0.12)' }}>
+              {String(index + 1).padStart(2, '0')}
             </span>
             <span
               className="inline-flex items-center gap-1.5 text-xs font-semibold tracking-widest uppercase px-3 py-1 rounded-full border"
               style={{
-                color: "#014d43",
-                backgroundColor: "rgba(1,77,67,0.06)",
-                borderColor: "rgba(1,77,67,0.15)",
+                color: '#014d43',
+                backgroundColor: 'rgba(1,77,67,0.06)',
+                borderColor: 'rgba(1,77,67,0.15)',
               }}
             >
               <span className="w-1.5 h-1.5 rounded-full bg-current" />
@@ -286,11 +282,11 @@ function FeatureBlock({ feature, index }: { feature: Feature; index: number }) {
                 key={b}
                 variants={{
                   hidden: { opacity: 0, x: -12 },
-                  visible: { opacity: 1, x: 0, transition: { duration: 0.4, ease: "easeOut" } },
+                  visible: { opacity: 1, x: 0, transition: { duration: 0.4, ease: 'easeOut' } },
                 }}
                 className="flex items-center gap-3 text-sm text-gray-700 font-medium"
               >
-                <CheckCircle className="w-4 h-4 flex-shrink-0" style={{ color: "#014d43" }} />
+                <CheckCircle className="w-4 h-4 flex-shrink-0" style={{ color: '#014d43' }} />
                 {b}
               </motion.li>
             ))}
@@ -308,21 +304,21 @@ function FeatureBlock({ feature, index }: { feature: Feature; index: number }) {
               className="absolute -inset-6 rounded-3xl blur-3xl opacity-30 pointer-events-none"
               style={{
                 background: isEven
-                  ? "radial-gradient(ellipse at 60% 60%, rgba(1,77,67,0.18) 0%, transparent 70%)"
-                  : "radial-gradient(ellipse at 40% 60%, rgba(1,107,92,0.15) 0%, transparent 70%)",
+                  ? 'radial-gradient(ellipse at 60% 60%, rgba(1,77,67,0.18) 0%, transparent 70%)'
+                  : 'radial-gradient(ellipse at 40% 60%, rgba(1,107,92,0.15) 0%, transparent 70%)',
               }}
             />
 
             {/* Outer glass frame */}
             <motion.div
               whileHover={{ y: -6, scale: 1.01 }}
-              transition={{ duration: 0.35, ease: "easeOut" }}
+              transition={{ duration: 0.35, ease: 'easeOut' }}
               className="relative rounded-[22px] p-3 w-full"
               style={{
-                background: "rgba(255,255,255,0.7)",
-                backdropFilter: "blur(24px)",
-                WebkitBackdropFilter: "blur(24px)",
-                border: "1.5px solid rgba(255,255,255,0.95)",
+                background: 'rgba(255,255,255,0.7)',
+                backdropFilter: 'blur(24px)',
+                WebkitBackdropFilter: 'blur(24px)',
+                border: '1.5px solid rgba(255,255,255,0.95)',
                 boxShadow: `
                   0 0 0 1px rgba(1,77,67,0.06),
                   0 4px 12px -2px rgba(0,0,0,0.04),
@@ -334,14 +330,14 @@ function FeatureBlock({ feature, index }: { feature: Feature; index: number }) {
               {/* Inner card */}
               <div
                 className="rounded-[14px] overflow-hidden"
-                style={{ border: "1px solid rgba(1,77,67,0.07)" }}
+                style={{ border: '1px solid rgba(1,77,67,0.07)' }}
               >
                 {/* Browser chrome */}
                 <div
                   className="px-4 py-2.5 flex items-center gap-2"
                   style={{
-                    background: "rgba(248,250,252,0.98)",
-                    borderBottom: "1px solid rgba(0,0,0,0.05)",
+                    background: 'rgba(248,250,252,0.98)',
+                    borderBottom: '1px solid rgba(0,0,0,0.05)',
                   }}
                 >
                   <div className="flex gap-1.5">
@@ -352,7 +348,10 @@ function FeatureBlock({ feature, index }: { feature: Feature; index: number }) {
                   <div className="flex-1 mx-3">
                     <div
                       className="rounded-md px-3 py-0.5 text-xs text-gray-400 text-center w-full max-w-[180px] mx-auto"
-                      style={{ background: "rgba(255,255,255,0.9)", border: "1px solid rgba(0,0,0,0.05)" }}
+                      style={{
+                        background: 'rgba(255,255,255,0.9)',
+                        border: '1px solid rgba(0,0,0,0.05)',
+                      }}
                     >
                       dashboard.rhace.com
                     </div>
@@ -366,15 +365,20 @@ function FeatureBlock({ feature, index }: { feature: Feature; index: number }) {
                   <div
                     className="w-full flex flex-col items-center justify-center gap-2"
                     style={{
-                      height: "300px",
-                      background: "linear-gradient(135deg, #f8fafa 0%, #f0f7f6 100%)",
+                      height: '300px',
+                      background: 'linear-gradient(135deg, #f8fafa 0%, #f0f7f6 100%)',
                     }}
                   >
-                    <div className="w-10 h-10 rounded-2xl flex items-center justify-center"
-                      style={{ background: "rgba(1,77,67,0.08)" }}>
-                      <div className="w-4 h-4 rounded" style={{ background: "rgba(1,77,67,0.3)" }} />
+                    <div
+                      className="w-10 h-10 rounded-2xl flex items-center justify-center"
+                      style={{ background: 'rgba(1,77,67,0.08)' }}
+                    >
+                      <div
+                        className="w-4 h-4 rounded"
+                        style={{ background: 'rgba(1,77,67,0.3)' }}
+                      />
                     </div>
-                    <p className="text-xs font-medium" style={{ color: "rgba(1,77,67,0.3)" }}>
+                    <p className="text-xs font-medium" style={{ color: 'rgba(1,77,67,0.3)' }}>
                       {feature.tag} screenshot
                     </p>
                   </div>
@@ -392,12 +396,11 @@ export function Features() {
   return (
     <section id="features" className="py-28 px-4 sm:px-6 lg:px-8 bg-white">
       <div className="max-w-7xl mx-auto">
-
         {/* Section header */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-80px" }}
+          viewport={{ once: true, margin: '-80px' }}
           transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
           className="text-center mb-28 space-y-5"
         >
@@ -410,16 +413,28 @@ export function Features() {
             }}
           >
             {/* <span className="w-1.5 h-1.5 rounded-full bg-current" /> */}
-            {/* Dashboard Features */}
-          {/* </span> */} 
+          {/* Dashboard Features */}
+          {/* </span> */}
 
           <h2 className="text-4xl lg:text-5xl font-bold text-gray-950 tracking-tight">
-            Everything in Your{" "}
-            <span className="relative inline-block" style={{ color: "#014d43" }}>
+            Everything in Your{' '}
+            <span className="relative inline-block" style={{ color: '#014d43' }}>
               Dashboard
-              <svg className="absolute -bottom-1 left-0 w-full" height="4" viewBox="0 0 200 4" fill="none" preserveAspectRatio="none">
-                <path d="M0 2 Q50 0 100 2 Q150 4 200 2"
-                  stroke="#014d43" strokeWidth="2.5" strokeLinecap="round" fill="none" opacity="0.3" />
+              <svg
+                className="absolute -bottom-1 left-0 w-full"
+                height="4"
+                viewBox="0 0 200 4"
+                fill="none"
+                preserveAspectRatio="none"
+              >
+                <path
+                  d="M0 2 Q50 0 100 2 Q150 4 200 2"
+                  stroke="#014d43"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  fill="none"
+                  opacity="0.3"
+                />
               </svg>
             </span>
           </h2>
@@ -435,7 +450,6 @@ export function Features() {
             <FeatureBlock key={feature.tag} feature={feature} index={index} />
           ))}
         </div>
-
       </div>
     </section>
   );

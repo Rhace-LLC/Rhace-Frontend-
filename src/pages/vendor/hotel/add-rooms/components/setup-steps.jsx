@@ -1,18 +1,18 @@
-import { Amenity, Plate, SvgIcon4 } from "@/public/icons/icons";
-import { Check } from "lucide-react";
+import { Amenity, Plate, SvgIcon4 } from '@/public/icons/icons';
+import { Check } from 'lucide-react';
 
 export function SetupSteps({ currentStep }) {
   const steps = [
-    { id: 1, title: "Room Configuration", icon: <SvgIcon4 /> },
+    { id: 1, title: 'Room Configuration', icon: <SvgIcon4 /> },
     {
       id: 2,
-      title: "Amenities",
-      icon: <Plate color={currentStep === 2 ? "#fff" : "#606368"} />,
+      title: 'Amenities',
+      icon: <Plate color={currentStep === 2 ? '#fff' : '#606368'} />,
     },
     {
       id: 3,
-      title: "Confirm",
-      icon: <Amenity color={currentStep === 3 ? "#fff" : "#606368"} />,
+      title: 'Confirm',
+      icon: <Amenity color={currentStep === 3 ? '#fff' : '#606368'} />,
     },
   ];
 
@@ -25,25 +25,21 @@ export function SetupSteps({ currentStep }) {
               <div
                 className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium ${
                   step.id === currentStep
-                    ? "bg-teal-600 text-white"
+                    ? 'bg-teal-600 text-white'
                     : step.id < currentStep
-                      ? "bg-teal-600 text-white"
-                      : "bg-gray-200 text-gray-600"
+                      ? 'bg-teal-600 text-white'
+                      : 'bg-gray-200 text-gray-600'
                 }`}
               >
-                {step.id < currentStep ? (
-                  <Check className="h-5 w-5" />
-                ) : (
-                  step.icon
-                )}
+                {step.id < currentStep ? <Check className="h-5 w-5" /> : step.icon}
               </div>
               <span
                 className={`mt-2 text-sm ${
                   step.id === currentStep
-                    ? "text-teal-600 font-medium"
+                    ? 'text-teal-600 font-medium'
                     : step.id < currentStep
-                      ? "text-gray-900"
-                      : "text-gray-500"
+                      ? 'text-gray-900'
+                      : 'text-gray-500'
                 }`}
               >
                 {step.title}
@@ -52,7 +48,7 @@ export function SetupSteps({ currentStep }) {
             {index < steps.length - 1 && (
               <div
                 className={`w-16 h-0.5 mx-4 ${
-                  step.id < currentStep ? "bg-teal-600" : "bg-gray-200"
+                  step.id < currentStep ? 'bg-teal-600' : 'bg-gray-200'
                 }`}
               />
             )}

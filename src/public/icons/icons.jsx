@@ -1,11 +1,5 @@
 const FoodIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="18"
-    height="16"
-    fill="none"
-    viewBox="0 0 18 16"
-  >
+  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="16" fill="none" viewBox="0 0 18 16">
     <path
       fill="#fff"
       fillRule="evenodd"
@@ -15,13 +9,7 @@ const FoodIcon = () => (
   </svg>
 );
 const Breakfast = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="20"
-    height="20"
-    fill="none"
-    viewBox="0 0 20 20"
-  >
+  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 20 20">
     <path
       fill="#606368"
       fillRule="evenodd"
@@ -32,13 +20,7 @@ const Breakfast = () => (
 );
 
 const Car = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="17"
-    height="15"
-    fill="none"
-    viewBox="0 0 17 15"
-  >
+  <svg xmlns="http://www.w3.org/2000/svg" width="17" height="15" fill="none" viewBox="0 0 17 15">
     <path
       fill="#606368"
       fillRule="evenodd"
@@ -49,13 +31,7 @@ const Car = () => (
 );
 
 const City = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="17"
-    height="15"
-    fill="none"
-    viewBox="0 0 17 15"
-  >
+  <svg xmlns="http://www.w3.org/2000/svg" width="17" height="15" fill="none" viewBox="0 0 17 15">
     <path
       fill="#606368"
       fillRule="evenodd"
@@ -80,13 +56,7 @@ const City = () => (
 // );
 
 const TwinBed = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="17"
-    height="12"
-    fill="none"
-    viewBox="0 0 17 12"
-  >
+  <svg xmlns="http://www.w3.org/2000/svg" width="17" height="12" fill="none" viewBox="0 0 17 12">
     <path
       fill="#606368"
       fillRule="evenodd"
@@ -96,13 +66,7 @@ const TwinBed = () => (
   </svg>
 );
 const Edit = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="16"
-    height="16"
-    fill="none"
-    viewBox="0 0 16 16"
-  >
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16">
     <path
       fill="#606368"
       fillRule="evenodd"
@@ -111,14 +75,8 @@ const Edit = () => (
     ></path>
   </svg>
 );
-const Plate = ({ color = "#fff" }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="21"
-    height="20"
-    fill="none"
-    viewBox="0 0 21 20"
-  >
+const Plate = ({ color = '#fff' }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="21" height="20" fill="none" viewBox="0 0 21 20">
     <g clipPath="url(#clip0_2583_379)">
       <path
         fill={color}
@@ -135,14 +93,8 @@ const Plate = ({ color = "#fff" }) => (
   </svg>
 );
 
-const Amenity = ({ color = "#fff" }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="17"
-    height="16"
-    fill="none"
-    viewBox="0 0 17 16"
-  >
+const Amenity = ({ color = '#fff' }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="17" height="16" fill="none" viewBox="0 0 17 16">
     <path
       fill={color}
       d="m7.906 1.93.256-.107C10.537.766 12.895.792 14.438.993l.341.048.31.052.278.055.242.052c.72.165 1.17.78 1.22 1.443l.005.125v9.654c0 .855-.814 1.417-1.578 1.241l-.233-.051-.271-.052-.304-.05q-.256-.039-.514-.066l-.377-.033c-1.236-.087-2.845 0-4.463.658l-.255.108c-2.192.976-4.37 1.029-5.906.873l-.37-.042-.342-.05-.31-.052-.143-.027-.375-.079c-.721-.165-1.171-.78-1.221-1.443l-.005-.124V3.578c0-.855.813-1.418 1.577-1.241l.234.051.27.052.305.05c1.28.192 3.31.272 5.353-.56M8.5 4.668a3.333 3.333 0 1 0 0 6.666 3.333 3.333 0 0 0 0-6.666m0 1.666a1.667 1.667 0 1 1 0 3.334 1.667 1.667 0 0 1 0-3.334"
@@ -151,13 +103,7 @@ const Amenity = ({ color = "#fff" }) => (
 );
 
 const DashBoardIcon = ({ className }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="18"
-    height="17"
-    fill="none"
-    viewBox="0 0 18 17"
-  >
+  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="17" fill="none" viewBox="0 0 18 17">
     <path
       fill="currentColor"
       className={className}
@@ -167,13 +113,7 @@ const DashBoardIcon = ({ className }) => (
 );
 
 const BookingsIcon = ({ className }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="16"
-    height="16"
-    fill="none"
-    viewBox="0 0 16 16"
-  >
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16">
     <path
       fill="currentColor"
       className={className}
@@ -182,14 +122,8 @@ const BookingsIcon = ({ className }) => (
   </svg>
 );
 
-const PrepaidIcon = ({ colors = "#06CD02" }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="20"
-    height="16"
-    fill="none"
-    viewBox="0 0 20 16"
-  >
+const PrepaidIcon = ({ colors = '#06CD02' }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="16" fill="none" viewBox="0 0 20 16">
     <path
       fill={colors}
       fillRule="evenodd"
@@ -199,14 +133,8 @@ const PrepaidIcon = ({ colors = "#06CD02" }) => (
   </svg>
 );
 
-const GuestsIcon = ({ colors = "#CD16C3" }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="22"
-    height="17"
-    fill="none"
-    viewBox="0 0 22 17"
-  >
+const GuestsIcon = ({ colors = '#CD16C3' }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="22" height="17" fill="none" viewBox="0 0 22 17">
     <path
       fill={colors}
       d="M11 9c1.873 0 3.57.62 4.815 1.487 1.183.825 2.185 2.051 2.185 3.37 0 .724-.309 1.324-.796 1.77-.458.421-1.056.694-1.672.88C14.301 16.88 12.68 17 11 17s-3.301-.12-4.532-.493c-.616-.186-1.214-.459-1.673-.88C4.31 15.182 4 14.582 4 13.858c0-1.319 1.002-2.545 2.185-3.37C7.43 9.62 9.127 9 11 9m7 1c1.044 0 1.992.345 2.693.833.64.447 1.307 1.19 1.307 2.096 0 .517-.225.946-.56 1.253-.306.281-.684.446-1.029.55-.47.142-1.025.215-1.601.247.122-.345.19-.72.19-1.122 0-1.535-.959-2.839-2.032-3.744A4.8 4.8 0 0 1 18 10M4 10q.537.002 1.032.113C3.96 11.018 3 12.322 3 13.857c0 .402.068.777.19 1.122-.576-.032-1.13-.105-1.601-.247-.345-.104-.723-.269-1.03-.55A1.68 1.68 0 0 1 0 12.93c0-.905.666-1.649 1.307-2.096A4.76 4.76 0 0 1 4 10m13.5-6a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5m-13 0a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5M11 0a4 4 0 1 1 0 8 4 4 0 0 1 0-8"
@@ -214,14 +142,8 @@ const GuestsIcon = ({ colors = "#CD16C3" }) => (
   </svg>
 );
 
-const PendingPaymentIcon = ({ colors = "#E1B505" }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="20"
-    height="18"
-    fill="none"
-    viewBox="0 0 20 18"
-  >
+const PendingPaymentIcon = ({ colors = '#E1B505' }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="18" fill="none" viewBox="0 0 20 18">
     <path
       fill={colors}
       d="m9.287 1.717.307-.13C12.444.319 15.274.35 17.125.591l.41.058.372.063.333.065.29.063c.864.198 1.404.937 1.464 1.731l.006.15v11.585c0 1.027-.976 1.701-1.893 1.49l-.28-.062-.325-.062-.365-.06q-.307-.046-.616-.079l-.453-.04c-1.483-.104-3.414.001-5.355.79l-.307.13c-2.63 1.17-5.244 1.234-7.087 1.047l-.444-.05-.41-.06-.372-.063-.172-.032-.45-.095c-.865-.198-1.405-.937-1.465-1.731L0 15.279V3.694c0-1.027.976-1.702 1.893-1.49l.28.062.325.062.365.06c1.536.23 3.972.326 6.424-.671M10 5a4 4 0 1 0 0 8 4 4 0 0 0 0-8m0 2a2 2 0 1 1 0 4 2 2 0 0 1 0-4"
@@ -230,13 +152,7 @@ const PendingPaymentIcon = ({ colors = "#E1B505" }) => (
 );
 
 const MenuIcon = ({ className }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="16"
-    height="16"
-    fill="none"
-    viewBox="0 0 16 16"
-  >
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16">
     <path
       fill="currentColor"
       className={className}
@@ -247,13 +163,7 @@ const MenuIcon = ({ className }) => (
   </svg>
 );
 const BranchesIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="18"
-    height="17"
-    fill="none"
-    viewBox="0 0 18 17"
-  >
+  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="17" fill="none" viewBox="0 0 18 17">
     <path
       fill="#E5E7EB"
       d="M1.5 14.833h.834V4.3a1.25 1.25 0 0 1 .855-1.186L9.855.893A1.25 1.25 0 0 1 11.5 2.078v12.755h.834V7.325a.416.416 0 0 1 .498-.408l1.83.366a1.25 1.25 0 0 1 1.005 1.225v6.325h.833a.833.833 0 0 1 0 1.667h-15a.834.834 0 0 1 0-1.667"
@@ -262,13 +172,7 @@ const BranchesIcon = () => (
 );
 
 const PaymentIcon = ({ className }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="20"
-    height="20"
-    fill="none"
-    viewBox="0 0 20 20"
-  >
+  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 20 20">
     <g clipPath="url(#clip0_2580_791)">
       <path
         fill="currentColor"
@@ -285,28 +189,16 @@ const PaymentIcon = ({ className }) => (
 );
 
 const UsersIcon = ({ color }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="20"
-    height="15"
-    fill="none"
-    viewBox="0 0 20 15"
-  >
+  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="15" fill="none" viewBox="0 0 20 15">
     <path
-      fill={color || "#E5E7EB"}
+      fill={color || '#E5E7EB'}
       d="M10 8a7.1 7.1 0 0 1 4.012 1.24c.986.687 1.821 1.708 1.821 2.807 0 .604-.257 1.104-.663 1.476-.382.35-.88.578-1.393.733-1.026.31-2.377.41-3.777.41s-2.75-.1-3.777-.41c-.513-.155-1.011-.383-1.394-.733a1.96 1.96 0 0 1-.662-1.475c0-1.099.835-2.12 1.82-2.808A7.1 7.1 0 0 1 10 8m5.833.833c.87 0 1.66.288 2.245.694.533.373 1.089.992 1.089 1.747 0 .431-.188.789-.467 1.044-.255.235-.57.372-.857.459-.392.118-.855.179-1.335.206.102-.288.159-.6.159-.936 0-1.279-.8-2.365-1.694-3.12q.425-.093.86-.094m-11.666 0q.447.002.86.095c-.894.754-1.694 1.84-1.694 3.12 0 .335.057.647.159.934-.48-.026-.942-.087-1.334-.205-.288-.087-.603-.224-.859-.459a1.4 1.4 0 0 1-.466-1.043c0-.754.555-1.374 1.09-1.747a3.96 3.96 0 0 1 2.244-.695m11.25-5a2.083 2.083 0 1 1 0 4.167 2.083 2.083 0 0 1 0-4.167m-10.834 0a2.083 2.083 0 1 1 0 4.167 2.083 2.083 0 0 1 0-4.167M10 .5a3.333 3.333 0 1 1 0 6.666A3.333 3.333 0 0 1 10 .5"
     ></path>
   </svg>
 );
 
 const PeopleIcon = ({ className }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="20"
-    height="15"
-    fill="none"
-    viewBox="0 0 20 15"
-  >
+  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="15" fill="none" viewBox="0 0 20 15">
     <path
       fill="currentColor"
       className={className}
@@ -338,12 +230,7 @@ const SettingsIcon = ({ className }) => (
   </svg>
 );
 const HeartIcon = ({ className }) => (
-  <svg
-    width="23"
-    height="21"
-    viewBox="0 0 23 21"
-    xmlns="http://www.w3.org/2000/svg"
-  >
+  <svg width="23" height="21" viewBox="0 0 23 21" xmlns="http://www.w3.org/2000/svg">
     <path
       d="M0.5 7.44317C0.5 3.73255 2.88004 0.5 6.748 0.5C8.90729 0.5 10.4 1.60967 11.5 3.27647C12.6 1.60967 14.0927 0.5 16.252 0.5C20.1199 0.5 22.5 3.73255 22.5 7.44317C22.5 13.9009 16.6058 17.9199 11.5 20.5C6.39423 17.9199 0.5 13.9009 0.5 7.44317Z"
       fill="currentColor"
@@ -355,13 +242,7 @@ const HeartIcon = ({ className }) => (
 );
 
 const SvgIcon4 = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="18"
-    height="16"
-    fill="none"
-    viewBox="0 0 18 16"
-  >
+  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="16" fill="none" viewBox="0 0 18 16">
     <path
       fill="#fff"
       fillRule="evenodd"
@@ -372,13 +253,7 @@ const SvgIcon4 = () => (
 );
 
 const RhaceIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="32"
-    height="32"
-    fill="none"
-    viewBox="0 0 32 32"
-  >
+  <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="none" viewBox="0 0 32 32">
     <circle cx="16" cy="16" r="15" fill="#fff" stroke="#000" strokeWidth="1" />
     <text
       x="16"
@@ -395,13 +270,7 @@ const RhaceIcon = () => (
 );
 
 const Amenities = ({ className }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="20"
-    height="20"
-    fill="none"
-    viewBox="0 0 20 20"
-  >
+  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 20 20">
     <path
       fill="currentColor"
       className={className}
@@ -411,13 +280,7 @@ const Amenities = ({ className }) => (
 );
 
 const LogoutIcon = ({ className }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="20"
-    height="20"
-    fill="none"
-    viewBox="0 0 20 20"
-  >
+  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 20 20">
     <path
       fill="currentColor"
       className={className}
@@ -427,15 +290,9 @@ const LogoutIcon = ({ className }) => (
 );
 
 const SvgIcon = ({ isActive }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="16"
-    height="16"
-    fill="none"
-    viewBox="0 0 16 16"
-  >
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16">
     <path
-      fill={isActive ? "#111827" : "#ffffff"}
+      fill={isActive ? '#111827' : '#ffffff'}
       fillRule="evenodd"
       d="M5.5 1.333A.833.833 0 0 1 6.333.5h3.334a.833.833 0 0 1 0 1.667h-.834v.862c4.534.409 7.509 5.11 5.775 9.447a.83.83 0 0 1-.775.524H2.167a.83.83 0 0 1-.774-.524c-1.735-4.337 1.24-9.038 5.774-9.447v-.862h-.834a.833.833 0 0 1-.833-.834m2.308 3.334c-3.521 0-5.986 3.377-5.047 6.666h10.478c.94-3.289-1.526-6.666-5.047-6.666zm-7.308 10a.833.833 0 0 1 .833-.834h13.334a.833.833 0 0 1 0 1.667H1.333a.833.833 0 0 1-.833-.833"
       clipRule="evenodd"
@@ -444,15 +301,9 @@ const SvgIcon = ({ isActive }) => (
 );
 
 const SvgIcon2 = ({ isActive }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="18"
-    height="18"
-    fill="none"
-    viewBox="0 0 18 18"
-  >
+  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 18 18">
     <path
-      fill={isActive ? "#111827" : "#ffffff"}
+      fill={isActive ? '#111827' : '#ffffff'}
       fillRule="evenodd"
       d="M7.96.83a1.67 1.67 0 0 0-1.384.153l-3.433 2.06a1.67 1.67 0 0 0-.81 1.429v11.195H1.5a.833.833 0 0 0 0 1.666h15a.833.833 0 1 0 0-1.666h-.833V4.6a1.67 1.67 0 0 0-1.14-1.58zM14 15.668V4.6L8.167 2.657v13.01zM6.5 2.972 4 4.472v11.195h2.5z"
       clipRule="evenodd"
@@ -461,15 +312,9 @@ const SvgIcon2 = ({ isActive }) => (
 );
 
 const SvgIcon3 = ({ isActive }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="14"
-    height="18"
-    viewBox="0 0 14 18"
-    fill="none"
-  >
+  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="18" viewBox="0 0 14 18" fill="none">
     <path
-      fill={isActive ? "#111827" : "#ffffff"}
+      fill={isActive ? '#111827' : '#ffffff'}
       fillRule="evenodd"
       d="M11.1666 0.666992C11.8296 0.666992 12.4655 0.930384 12.9344 1.39923C13.4032 1.86807 13.6666 2.50395 13.6666 3.16699V14.8337C13.6666 15.4967 13.4032 16.1326 12.9344 16.6014C12.4655 17.0703 11.8296 17.3337 11.1666 17.3337H2.83325C2.17021 17.3337 1.53433 17.0703 1.06549 16.6014C0.596644 16.1326 0.333252 15.4967 0.333252 14.8337V3.16699C0.333252 2.50395 0.596644 1.86807 1.06549 1.39923C1.53433 0.930384 2.17021 0.666992 2.83325 0.666992H11.1666ZM11.1666 2.33366H2.83325C2.61224 2.33366 2.40028 2.42146 2.244 2.57774C2.08772 2.73402 1.99992 2.94598 1.99992 3.16699V14.8337C1.99992 15.0547 2.08772 15.2666 2.244 15.4229C2.40028 15.5792 2.61224 15.667 2.83325 15.667H11.1666C11.3876 15.667 11.5996 15.5792 11.7558 15.4229C11.9121 15.2666 11.9999 15.0547 11.9999 14.8337V3.16699C11.9999 2.94598 11.9121 2.73402 11.7558 2.57774C11.5996 2.42146 11.3876 2.33366 11.1666 2.33366ZM6.99992 7.33366C7.88397 7.33366 8.73182 7.68485 9.35694 8.30997C9.98206 8.93509 10.3333 9.78294 10.3333 10.667C10.3333 11.551 9.98206 12.3989 9.35694 13.024C8.73182 13.6491 7.88397 14.0003 6.99992 14.0003C6.11586 14.0003 5.26802 13.6491 4.6429 13.024C4.01777 12.3989 3.66659 11.551 3.66659 10.667C3.66659 9.78294 4.01777 8.93509 4.6429 8.30997C5.26802 7.68485 6.11586 7.33366 6.99992 7.33366ZM6.99992 9.00033C6.55789 9.00033 6.13397 9.17592 5.82141 9.48848C5.50885 9.80104 5.33325 10.225 5.33325 10.667C5.33325 11.109 5.50885 11.5329 5.82141 11.8455C6.13397 12.1581 6.55789 12.3337 6.99992 12.3337C7.44195 12.3337 7.86587 12.1581 8.17843 11.8455C8.49099 11.5329 8.66658 11.109 8.66658 10.667C8.66658 10.225 8.49099 9.80104 8.17843 9.48848C7.86587 9.17592 7.44195 9.00033 6.99992 9.00033ZM6.99992 4.00033C7.33144 4.00033 7.64938 4.13202 7.8838 4.36644C8.11822 4.60086 8.24992 4.9188 8.24992 5.25033C8.24992 5.58185 8.11822 5.89979 7.8838 6.13421C7.64938 6.36863 7.33144 6.50033 6.99992 6.50033C6.6684 6.50033 6.35046 6.36863 6.11603 6.13421C5.88161 5.89979 5.74992 5.58185 5.74992 5.25033C5.74992 4.9188 5.88161 4.60086 6.11603 4.36644C6.35046 4.13202 6.6684 4.00033 6.99992 4.00033Z"
       clipRule="evenodd"
@@ -477,14 +322,8 @@ const SvgIcon3 = ({ isActive }) => (
   </svg>
 );
 
-const Plates = ({ color = "#000" }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="20"
-    height="20"
-    fill="none"
-    viewBox="0 0 20 20"
-  >
+const Plates = ({ color = '#000' }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 20 20">
     <path
       fill={color}
       d="M10 2C5.582 2 2 5.582 2 10s3.582 8 8 8 8-3.582 8-8-3.582-8-8-8zm0 14c-3.314 0-6-2.686-6-6s2.686-6 6-6 6 2.686 6 6-2.686 6-6 6z"

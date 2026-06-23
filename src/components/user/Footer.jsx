@@ -1,4 +1,4 @@
-import { FiMail, FiMapPin, FiPhone } from "react-icons/fi";
+import { FiMail, FiMapPin, FiPhone } from 'react-icons/fi';
 
 const Footer = () => {
   return (
@@ -11,9 +11,7 @@ const Footer = () => {
             <a href="/" className="flex items-center space-x-3 mb-4">
               {/* small blue dot */}
               <span className="w-6 h-6 bg-blue-400 rounded-full inline-block" />
-              <span className="text-gray-900 text-xl font-bold leading-relaxed">
-                Bookies
-              </span>
+              <span className="text-gray-900 text-xl font-bold leading-relaxed">Bookies</span>
             </a>
             <p className="text-gray-900 text-base font-normal leading-normal">
               Making restaurant reservations simple and enjoyable
@@ -53,9 +51,7 @@ const Footer = () => {
 
           {/* Quick Links */}
           <div>
-            <h3 className="text-lg font-semibold leading-snug mb-4">
-              Quick Links
-            </h3>
+            <h3 className="text-lg font-semibold leading-snug mb-4">Quick Links</h3>
             <ul className="space-y-2 text-gray-600">
               <li>
                 <a
@@ -103,8 +99,8 @@ const Footer = () => {
                 <FiMail className="mr-2" /> Kapadoccia@gmail.com
               </li>
               <li className="flex items-start">
-                <FiMapPin className="mt-1 mr-2" /> 16, Idowu Taylor Street,
-                Victoria Island 101241 Nigeria
+                <FiMapPin className="mt-1 mr-2" /> 16, Idowu Taylor Street, Victoria Island 101241
+                Nigeria
               </li>
             </ul>
           </div>

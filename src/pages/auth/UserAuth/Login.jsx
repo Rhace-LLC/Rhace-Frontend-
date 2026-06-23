@@ -1,21 +1,16 @@
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-} from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import GoogleIcon from "@/public/auth/google.svg";
-import { setUser } from "@/redux/slices/authSlice";
-import { authService } from "@/services/auth.service";
-import { useGoogleLogin } from "@react-oauth/google";
-import { Eye, EyeOff, Loader2 } from "lucide-react";
-import { useState } from "react";
-import { useDispatch } from "react-redux";
-import { useNavigate, useSearchParams } from "react-router";
-import { toast } from "react-toastify";
-import logo from "../../../public/images/Rhace-11.png";
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import GoogleIcon from '@/public/auth/google.svg';
+import { setUser } from '@/redux/slices/authSlice';
+import { authService } from '@/services/auth.service';
+import { useGoogleLogin } from '@react-oauth/google';
+import { Eye, EyeOff, Loader2 } from 'lucide-react';
+import { useState } from 'react';
+import { useDispatch } from 'react-redux';
+import { useNavigate, useSearchParams } from 'react-router';
+import { toast } from 'react-toastify';
+import logo from '../../../public/images/Rhace-11.png';
 
 const getCurrentYear = () => new Date().getFullYear();
 
@@ -26,63 +21,64 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState({
-    email: "",
-    password: "",
+    email: '',
+    password: '',
   });
   const [formData, setFormData] = useState({
-    email: "",
-    password: "",
+    email: '',
+    password: '',
   });
 
   const handleGoogleLogin = useGoogleLogin({
-    flow: "auth-code",
+    flow: 'auth-code',
     onSuccess: async (tokenResponse) => {
       try {
         setGoogleLoading(true);
         const code = tokenResponse.code;
         const user = await authService.googleLogin(code);
         dispatch(setUser(user?.user));
-        toast.success("Welcome back!");
+        toast.success('Welcome back!');
         navigate(redirectTo, { replace: true });
       } catch (error) {
-        console.error("Google login failed:", error);
-        toast.error(
-          error.response.data.message || "Error logging in with Google",
-        );
+        console.error('Google login failed:', error);
+        toast.error(error.response.data.message || 'Error logging in with Google');
       } finally {
         setGoogleLoading(false);
       }
     },
-    onError: (error) => console.log("Login Failed:", error),
+    onError: (error) => console.log('Login Failed:', error),
   });
 
   const [searchParams] = useSearchParams();
-  const redirectTo = searchParams.get("redirect") || "/";
+  const redirectTo = searchParams.get('redirect') || '/';
 
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
       if (!formValidation()) return;
 
-      setError({ email: "", password: "" });
+      setError({ email: '', password: '' });
       setIsloading(true);
       const user = await authService.login(formData.email, formData.password);
       dispatch(setUser(user?.user));
-      toast.success("Welcome back!");
+      toast.success('Welcome back!');
       navigate(redirectTo, { replace: true });
     } catch (err) {
-      console.log(err, "LOGIN ERROR");
+      console.log(err, 'LOGIN ERROR');
 
-  const message =
-    err?.response?.data?.message || "Invalid email or password";
+      const message = err?.response?.data?.message || 'Invalid email or password';
 
-  toast.error(message);
+      toast.error(message);
 
       if (
-        err.response.data.message ===
-        "Please verify your email with the OTP sent to your inbox."
+        err.response.data.message === 'Please verify your email with the OTP sent to your inbox.'
       ) {
-        navigate(`/auth/user/otp?email=${formData.email}`);
+        // FIX: Keep the structural URL layout raw, and ONLY encode the raw dynamic email variable
+        const safeEmail = encodeURIComponent(formData.email);
+        authService.vendorResendOTP(formData.email); // Trigger OTP resend to ensure email is sent before navigation
+
+        // Ensure the path starts with an absolute / so it navigates from the domain root
+        navigate(`/auth/user/otp?email=${safeEmail}`);
       }
     } finally {
       setIsloading(false);
@@ -91,17 +87,17 @@ const Login = () => {
 
   const formValidation = () => {
     if (!formData.email) {
-      setError((prev) => ({ ...prev, email: "Email is required." }));
+      setError((prev) => ({ ...prev, email: 'Email is required.' }));
       return false;
     }
     if (!formData.password) {
-      setError((prev) => ({ ...prev, password: "Password is required." }));
+      setError((prev) => ({ ...prev, password: 'Password is required.' }));
       return false;
     }
     if (formData.password.length < 6) {
       setError((prev) => ({
         ...prev,
-        password: "Password must be at least 6 characters.",
+        password: 'Password must be at least 6 characters.',
       }));
       return false;
     }
@@ -117,11 +113,7 @@ const Login = () => {
       {/* Logo — positioned outside the card */}
       <div className="absolute top-6 left-4 sm:left-10 flex items-center gap-2 sm:top-[8%] sm:-translate-y-1/2">
         <a href="/" className="cursor-pointer">
-          <img
-            src={logo}
-            alt="Rhace Logo"
-            className="w-20 h-20 object-contain"
-          />
+          <img src={logo} alt="Rhace Logo" className="w-20 h-20 object-contain" />
         </a>
       </div>
 
@@ -129,9 +121,7 @@ const Login = () => {
       <Card className="w-full max-w-md bg-white shadow-md rounded-2xl border border-gray-100 mt-16 sm:mt-24">
         <form onSubmit={handleLogin}>
           <CardHeader className="text-left pb-4">
-            <h1 className="text-2xl font-semibold text-gray-900">
-              Welcome Back
-            </h1>
+            <h1 className="text-2xl font-semibold text-gray-900">Welcome Back</h1>
             <p className="text-sm text-gray-600 mt-1 mb-[-7px]">
               We're glad to see you again. Please log in to your account.
             </p>
@@ -140,10 +130,7 @@ const Login = () => {
           <CardContent className="space-y-4">
             {/* Email */}
             <div>
-              <Label
-                htmlFor="email"
-                className="text-sm font-medium text-gray-700"
-              >
+              <Label htmlFor="email" className="text-sm font-medium text-gray-700">
                 Email
               </Label>
               <input
@@ -151,34 +138,27 @@ const Login = () => {
                 type="email"
                 placeholder="Enter your email address"
                 value={formData.email}
-                onChange={(e) => handleInputChange("email", e.target.value)}
+                onChange={(e) => handleInputChange('email', e.target.value)}
                 className="w-full h-10 sm:h-12 rounded-md border-gray-100 bg-gray-100 
                         text-black text-sm placeholder-[#a0a3a8]
                         focus:outline-none focus:border-[#0A6C6D] focus:ring-1 focus:ring-[#0A6C6D]
                         hover:border-[#0A6C6D] transition-all duration-300 ease-in-out pl-3"
               />
-              {error.email && (
-                <p className="text-sm text-red-600 mt-1">{error.email}</p>
-              )}
+              {error.email && <p className="text-sm text-red-600 mt-1">{error.email}</p>}
             </div>
 
             {/* Password */}
             <div>
-              <Label
-                htmlFor="password"
-                className="text-sm font-medium text-gray-700"
-              >
+              <Label htmlFor="password" className="text-sm font-medium text-gray-700">
                 Password
               </Label>
               <div className="relative">
                 <input
                   id="password"
-                  type={showPassword ? "text" : "password"}
+                  type={showPassword ? 'text' : 'password'}
                   placeholder="********"
                   value={formData.password}
-                  onChange={(e) =>
-                    handleInputChange("password", e.target.value)
-                  }
+                  onChange={(e) => handleInputChange('password', e.target.value)}
                   className="w-full h-10 sm:h-12 rounded-md border-gray-100 bg-gray-100 
                           text-black text-sm placeholder-[#a0a3a8]
                           focus:outline-none focus:border-[#0A6C6D] focus:ring-1 focus:ring-[#0A6C6D]
@@ -192,9 +172,7 @@ const Login = () => {
                   {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
-              {error.password && (
-                <p className="text-sm text-red-600 mt-1">{error.password}</p>
-              )}
+              {error.password && <p className="text-sm text-red-600 mt-1">{error.password}</p>}
             </div>
 
             {/* Forgot Password */}
@@ -209,6 +187,8 @@ const Login = () => {
 
             {/* Submit */}
             <Button
+              variant="default"
+              size={'sm'}
               disabled={!formData.email || !formData.password || isLoading}
               // onClick={handleLogin}
               className="w-full py-6 rounded-md bg-[#0A6C6D] text-white text-sm font-light transition-transform duration-200 hover:shadow-lg hover:bg-[#0A6C6D]"
@@ -218,7 +198,7 @@ const Login = () => {
                   Loading <Loader2 className="animate-spin" />
                 </span>
               ) : (
-                "Login"
+                'Login'
               )}
             </Button>
 
@@ -241,31 +221,26 @@ const Login = () => {
               {googleLoading ? (
                 <Loader2 className="animate-spin h-4 w-4 text-gray-600" />
               ) : (
-                <span className="text-sm text-gray-700 font-medium">
-                  Continue with Google
-                </span>
+                <span className="text-sm text-gray-700 font-medium">Continue with Google</span>
               )}
             </button>
 
             <p className="text-sm text-center text-[#0A6C6D] hover:text-[#074f55] transition-all font-light">
-              Don’t Have An Account?{" "}
-              <a
-                href="/auth/user/signup"
-                className="text-[#0a646d] hover:underline font-medium"
-              >
+              Don’t Have An Account?{' '}
+              <a href="/auth/user/signup" className="text-[#0a646d] hover:underline font-medium">
                 Sign Up
               </a>
             </p>
           </CardContent>
 
-          <CardFooter />
+          <CardFooter className={''} />
         </form>
       </Card>
 
       {/* Footer */}
       <footer className="text-xs text-gray-500 mt-6 text-center px-4">
         <p>
-          Copyright © {getCurrentYear()} Rhace Enterprises LTD. •{" "}
+          Copyright © {getCurrentYear()} Rhace Enterprises LTD. •{' '}
           <a href="#" className="hover:underline">
             Privacy Policy
           </a>
@@ -276,4 +251,3 @@ const Login = () => {
 };
 
 export default Login;
-

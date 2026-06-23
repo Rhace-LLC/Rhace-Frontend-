@@ -1,11 +1,11 @@
-"use client";
-import ReservationDetails from "@/components/user/club/ReservationDetails";
-import { useReservations } from "@/contexts/club/ReservationContext";
-import React, { useEffect } from "react";
-import ReservationSummary from "../../../components/user/club/ReservationSummary";
-import { useLocation, useParams } from "react-router";
-import { userService } from "@/services/user.service";
-import { clubService } from "@/services/club.service";
+'use client';
+import ReservationDetails from '@/components/user/club/ReservationDetails';
+import { useReservations } from '@/contexts/club/ReservationContext';
+import React, { useEffect } from 'react';
+import ReservationSummary from '../../../components/user/club/ReservationSummary';
+import { useLocation, useParams } from 'react-router';
+import { userService } from '@/services/user.service';
+import { clubService } from '@/services/club.service';
 
 function useSearchParams() {
   return new URLSearchParams(useLocation().search);
@@ -29,17 +29,16 @@ const Reservation = () => {
   const { id } = useParams();
   const { page } = useReservations();
   const searchParams = useSearchParams();
-  const dates = searchParams.get("date");
-  const times = searchParams.get("time");
-  const guestss = searchParams.get("guests");
-  const tables = searchParams.get("table");
+  const dates = searchParams.get('date');
+  const times = searchParams.get('time');
+  const guestss = searchParams.get('guests');
+  const tables = searchParams.get('table');
   const searchQuery = {
-    date: dates ?? "",
-    time: times ?? "",
-    guests: guestss ?? "",
-    table: tables ?? "",
-  }
-
+    date: dates ?? '',
+    time: times ?? '',
+    guests: guestss ?? '',
+    table: tables ?? '',
+  };
 
   const fetchVendor = async () => {
     try {
@@ -47,7 +46,7 @@ const Reservation = () => {
       const res = await userService.getVendor(id);
       setVendor(res.data);
     } catch (error) {
-      console.error("Error fetching vendor:", error);
+      console.error('Error fetching vendor:', error);
     } finally {
       setLoading(false);
     }
@@ -56,12 +55,14 @@ const Reservation = () => {
     try {
       setComboLoading(true);
       const res = await clubService.getBottleSet(id);
-      console.log(res)
-      setComboItems(res.bottleSets.map((item) => {
-        return { ...item, quantity: 0 }
-      }));
+      console.log(res);
+      setComboItems(
+        res.bottleSets.map((item) => {
+          return { ...item, quantity: 0 };
+        })
+      );
     } catch (error) {
-      console.error("Error fetching vendor:", error);
+      console.error('Error fetching vendor:', error);
     } finally {
       setComboLoading(false);
     }
@@ -70,12 +71,14 @@ const Reservation = () => {
     try {
       setBottlesLoading(true);
       const res = await clubService.getDrinks(id);
-      console.log(res)
-      setBottleItems(res.drinks.map((item) => {
-        return { ...item, quantity: 0 }
-      }));
+      console.log(res);
+      setBottleItems(
+        res.drinks.map((item) => {
+          return { ...item, quantity: 0 };
+        })
+      );
     } catch (error) {
-      console.error("Error fetching vendor:", error);
+      console.error('Error fetching vendor:', error);
     } finally {
       setBottlesLoading(false);
     }
@@ -84,13 +87,15 @@ const Reservation = () => {
     try {
       setTableLoading(true);
       const res = await clubService.getTables(id);
-      setTable(res.tables.map((item) => ({
-        ...item,
-        quantity: item._id === searchQuery.table ? 1 : 0,
-        selected: item._id === searchQuery.table,
-      })));
+      setTable(
+        res.tables.map((item) => ({
+          ...item,
+          quantity: item._id === searchQuery.table ? 1 : 0,
+          selected: item._id === searchQuery.table,
+        }))
+      );
     } catch (error) {
-      console.error("Error fetching tables:", error);
+      console.error('Error fetching tables:', error);
     } finally {
       setTableLoading(false);
     }
@@ -106,7 +111,15 @@ const Reservation = () => {
     setGuestCount(searchQuery.guests);
   }, []);
 
-  return <div className="">{page === 1 ? <ReservationSummary id={id} /> : <ReservationDetails id={id} searchQuery={searchQuery} />}</div>;
+  return (
+    <div className="">
+      {page === 1 ? (
+        <ReservationSummary id={id} />
+      ) : (
+        <ReservationDetails id={id} searchQuery={searchQuery} />
+      )}
+    </div>
+  );
 };
 
 export default Reservation;

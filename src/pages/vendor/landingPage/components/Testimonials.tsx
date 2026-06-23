@@ -5,19 +5,22 @@ const testimonials = [
   {
     name: 'Sarah Mitchell',
     role: 'Hotel Manager, Grand Plaza',
-    content: 'The dashboard makes managing our hotel so simple. From uploading room services to tracking reservations and staff schedules - everything is seamless. Our efficiency increased by 40%.',
+    content:
+      'The dashboard makes managing our hotel so simple. From uploading room services to tracking reservations and staff schedules - everything is seamless. Our efficiency increased by 40%.',
     rating: 5,
   },
   {
     name: 'Marcus Chen',
     role: 'Restaurant Owner, Bistro 21',
-    content: 'Uploading our menu and drinks was incredibly easy. The table reservation system and payment tracking have transformed how we operate. Best decision we ever made!',
+    content:
+      'Uploading our menu and drinks was incredibly easy. The table reservation system and payment tracking have transformed how we operate. Best decision we ever made!',
     rating: 5,
   },
   {
     name: 'Elena Rodriguez',
     role: 'Club Director, Velvet Lounge',
-    content: 'Managing events, staff shifts, and payments from one dashboard is a game-changer. Rhace handles everything perfectly. I can\'t imagine going back to our old system.',
+    content:
+      "Managing events, staff shifts, and payments from one dashboard is a game-changer. Rhace handles everything perfectly. I can't imagine going back to our old system.",
     rating: 5,
   },
 ];
@@ -38,7 +41,7 @@ const cardVariants = {
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.6, ease: "easeOut" },
+    transition: { duration: 0.6, ease: 'easeOut' },
   },
 };
 
@@ -46,7 +49,7 @@ export function Testimonials() {
   return (
     <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-teal-50 to-blue-50">
       <div className="max-w-7xl mx-auto">
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -57,16 +60,15 @@ export function Testimonials() {
             Testimonials
           </div>
           <h2 className="text-4xl lg:text-5xl text-gray-900">
-            Loved by Businesses{' '}
-            <span className="text-teal-600">Everywhere</span>
+            Loved by Businesses <span className="text-teal-600">Everywhere</span>
           </h2>
         </motion.div>
-        
-        <motion.div 
+
+        <motion.div
           variants={containerVariants}
           initial="hidden"
           whileInView="visible"
-          viewport={{ once: true, margin: "-100px" }}
+          viewport={{ once: true, margin: '-100px' }}
           className="grid md:grid-cols-3 gap-8"
         >
           {testimonials.map((testimonial, index) => (

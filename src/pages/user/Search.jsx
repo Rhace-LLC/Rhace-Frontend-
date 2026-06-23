@@ -1,32 +1,32 @@
-import { useEffect, useState } from "react";
-import Footer from "@/components/Footer";
+import { useEffect, useState } from 'react';
+import Footer from '@/components/Footer';
 
-import { useSearchLocation } from "@/hooks/useSearchLocations.jsx";
-import { useSearchState }    from "@/hooks/useSearchState";
-import { SearchHeader }      from "@/components/SearchHeader";
-import { DiscoveryHome }     from "@/components/DiscoveryHome";
-import { SearchResults }     from "@/components/SearchResults";
-import { FilterDrawer, DesktopFilterSidebar } from "@/components/FilterDrawer";
+import { useSearchLocation } from '@/hooks/useSearchLocations.jsx';
+import { useSearchState } from '@/hooks/useSearchState';
+import { SearchHeader } from '@/components/SearchHeader';
+import { DiscoveryHome } from '@/components/DiscoveryHome';
+import { SearchResults } from '@/components/SearchResults';
+import { FilterDrawer, DesktopFilterSidebar } from '@/components/FilterDrawer';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 
 // Strip trailing "s" from plural type names coming from URL/tabs
 // e.g. "restaurants" → "restaurant", "hotels" → "hotel", "clubs" → "club"
 const normalizeType = (type) => {
-  if (!type) return "";
+  if (!type) return '';
   const MAP = {
-    restaurants: "restaurant",
-    hotels: "hotel",
-    clubs: "club",
-    restaurant: "restaurant",
-    hotel: "hotel",
-    club: "club",
+    restaurants: 'restaurant',
+    hotels: 'hotel',
+    clubs: 'club',
+    restaurant: 'restaurant',
+    hotel: 'hotel',
+    club: 'club',
   };
-  return MAP[type.toLowerCase()] || type.replace(/s$/, "");
+  return MAP[type.toLowerCase()] || type.replace(/s$/, '');
 };
 
 const SearchPage = () => {
   const locationState = useSearchLocation();
-  const searchState   = useSearchState(locationState.location);
+  const searchState = useSearchState(locationState.location);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -34,12 +34,12 @@ const SearchPage = () => {
   // Normalise the ?type= param on mount and whenever it changes
   // e.g. /search?type=restaurants → /search?type=restaurant
   useEffect(() => {
-    const rawType = searchParams.get("type");
+    const rawType = searchParams.get('type');
     if (!rawType) return;
     const clean = normalizeType(rawType);
     if (clean !== rawType) {
       const next = new URLSearchParams(searchParams);
-      next.set("type", clean);
+      next.set('type', clean);
       setSearchParams(next, { replace: true });
     }
   }, [searchParams, setSearchParams]);
@@ -50,17 +50,17 @@ const SearchPage = () => {
     const type = normalizeType(rawType);
     const next = new URLSearchParams(searchParams);
     if (type) {
-      next.set("type", type);
+      next.set('type', type);
     } else {
-      next.delete("type");
+      next.delete('type');
     }
-    next.set("page", "1");
+    next.set('page', '1');
     setSearchParams(next);
   };
 
   // Override updateFilter so that type values are always normalised
   const updateFilterSafe = (key, value) => {
-    if (key === "type") {
+    if (key === 'type') {
       searchState.updateFilter(key, normalizeType(value));
     } else {
       searchState.updateFilter(key, value);
@@ -68,22 +68,22 @@ const SearchPage = () => {
   };
 
   const searchBarProps = {
-    inputValue:        searchState.inputValue,
-    setInputValue:     searchState.setInputValue,
-    isFocused:         searchState.isFocused,
-    setIsFocused:      searchState.setIsFocused,
-    inputRef:          searchState.inputRef,
-    submitSearch:      searchState.submitSearch,
-    showDropdown:      searchState.showDropdown,
-    showRecent:        searchState.showRecent,
-    showTrending:      searchState.showTrending,
-    showSuggestions:   searchState.showSuggestions,
-    recentSearches:    searchState.recentSearches,
+    inputValue: searchState.inputValue,
+    setInputValue: searchState.setInputValue,
+    isFocused: searchState.isFocused,
+    setIsFocused: searchState.setIsFocused,
+    inputRef: searchState.inputRef,
+    submitSearch: searchState.submitSearch,
+    showDropdown: searchState.showDropdown,
+    showRecent: searchState.showRecent,
+    showTrending: searchState.showTrending,
+    showSuggestions: searchState.showSuggestions,
+    recentSearches: searchState.recentSearches,
     setRecentSearches: searchState.setRecentSearches,
-    trending:          searchState.trending,
-    isTrendLoading:    searchState.isTrendLoading,
-    suggestions:       searchState.suggestions,
-    isSugLoading:      searchState.isSugLoading,
+    trending: searchState.trending,
+    isTrendLoading: searchState.isTrendLoading,
+    suggestions: searchState.suggestions,
+    isSugLoading: searchState.isSugLoading,
   };
 
   return (
@@ -124,7 +124,7 @@ const SearchPage = () => {
           updateFilter={updateFilterSafe}
           submitSearch={searchState.submitSearch}
           inputRef={searchState.inputRef}
-          activeType={normalizeType(searchState.filters.type || "")}
+          activeType={normalizeType(searchState.filters.type || '')}
           recentSearches={searchState.recentSearches}
         />
       )}

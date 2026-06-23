@@ -1,15 +1,33 @@
 // HotelSettings.tsx
-import DashboardLayout from "@/components/layout/DashboardLayout";
-import TagInput from "@/components/TagInput";
-import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Building2, Clock, DollarSign, Globe, Phone, Tag, Save, RotateCcw, Hotel, MapPin, Briefcase, Coffee, Wifi, ParkingCircle, Dog, Users, Ban } from "lucide-react";
-import { useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { toast } from "react-toastify";
-import { authService } from "@/services/auth.service";
-import { setVendor } from "@/redux/slices/authSlice";
+import DashboardLayout from '@/components/layout/DashboardLayout';
+import TagInput from '@/components/TagInput';
+import { Card } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Building2,
+  Clock,
+  DollarSign,
+  Globe,
+  Phone,
+  Tag,
+  Save,
+  RotateCcw,
+  Hotel,
+  MapPin,
+  Briefcase,
+  Coffee,
+  Wifi,
+  ParkingCircle,
+  Dog,
+  Users,
+  Ban,
+} from 'lucide-react';
+import { useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { toast } from 'react-toastify';
+import { authService } from '@/services/auth.service';
+import { setVendor } from '@/redux/slices/authSlice';
 
 const HotelSettings = () => {
   const vendor = useSelector((state) => state.auth.vendor);
@@ -26,10 +44,10 @@ const HotelSettings = () => {
     try {
       const user = await authService.vendorUpdate(formData);
       dispatch(setVendor(user?.vendor));
-      toast.success("Successfully updated hotel settings!");
+      toast.success('Successfully updated hotel settings!');
     } catch (error) {
-      console.error("Error updating settings:", error);
-      toast.error("Failed to update settings. Please try again.");
+      console.error('Error updating settings:', error);
+      toast.error('Failed to update settings. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -37,7 +55,7 @@ const HotelSettings = () => {
 
   const handleReset = () => {
     setFormData(vendor);
-    toast.info("Changes have been reset");
+    toast.info('Changes have been reset');
   };
 
   return (
@@ -71,23 +89,21 @@ const HotelSettings = () => {
                     </div>
                     Business Information
                   </h2>
-                  <div className="text-xs text-slate-400 font-mono">
-                    Hotel details
-                  </div>
+                  <div className="text-xs text-slate-400 font-mono">Hotel details</div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <Input
                     label="Hotel Name"
                     value={formData.businessName}
-                    onChange={(e) => updateField("businessName", e.target.value)}
+                    onChange={(e) => updateField('businessName', e.target.value)}
                     className="focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
                   />
                   <Input
                     label="Phone Number"
                     icon={Phone}
                     value={formData.phone}
-                    onChange={(e) => updateField("phone", e.target.value)}
+                    onChange={(e) => updateField('phone', e.target.value)}
                     className="focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
                   />
                 </div>
@@ -97,7 +113,7 @@ const HotelSettings = () => {
                   icon={Globe}
                   placeholder="https://yourhotel.com"
                   value={formData.website}
-                  onChange={(e) => updateField("website", e.target.value)}
+                  onChange={(e) => updateField('website', e.target.value)}
                   className="focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
                 />
 
@@ -106,7 +122,7 @@ const HotelSettings = () => {
                     label="Hotel Description"
                     placeholder="Describe your hotel's unique features, ambiance, and what makes it special..."
                     value={formData.businessDescription}
-                    onChange={(e) => updateField("businessDescription", e.target.value)}
+                    onChange={(e) => updateField('businessDescription', e.target.value)}
                     className="focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all min-h-[100px]"
                   />
                   <Textarea
@@ -114,7 +130,7 @@ const HotelSettings = () => {
                     icon={MapPin}
                     placeholder="Enter your hotel's complete address..."
                     value={formData.address}
-                    onChange={(e) => updateField("address", e.target.value)}
+                    onChange={(e) => updateField('address', e.target.value)}
                     className="focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
                   />
                 </div>
@@ -131,9 +147,7 @@ const HotelSettings = () => {
                     </div>
                     Amenities & Services
                   </h2>
-                  <div className="text-xs text-slate-400 font-mono">
-                    Guest experience
-                  </div>
+                  <div className="text-xs text-slate-400 font-mono">Guest experience</div>
                 </div>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div className="flex items-center gap-2 p-3 bg-slate-50 rounded-xl border border-slate-100">
@@ -169,25 +183,21 @@ const HotelSettings = () => {
                     </div>
                     Pricing & Offers
                   </h2>
-                  <div className="text-xs text-slate-400 font-mono">
-                    Revenue settings
-                  </div>
+                  <div className="text-xs text-slate-400 font-mono">Revenue settings</div>
                 </div>
                 <div className="space-y-6">
                   <Input
                     type="number"
                     label="Starting Price Per Night (₦)"
                     value={formData.priceRange}
-                    onChange={(e) =>
-                      updateField("priceRange", Number(e.target.value))
-                    }
+                    onChange={(e) => updateField('priceRange', Number(e.target.value))}
                     className="focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
                   />
                   <Input
                     label="Special Offers"
                     placeholder="e.g., Weekend discount, Free breakfast, Early bird special"
                     value={formData.offer}
-                    onChange={(e) => updateField("offer", e.target.value)}
+                    onChange={(e) => updateField('offer', e.target.value)}
                     className="focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
                   />
                 </div>
@@ -204,17 +214,15 @@ const HotelSettings = () => {
                     </div>
                     Hotel Policies
                   </h2>
-                  <div className="text-xs text-slate-400 font-mono">
-                    Booking rules
-                  </div>
+                  <div className="text-xs text-slate-400 font-mono">Booking rules</div>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-slate-700">Check-In Time</label>
                     <input
                       type="time"
-                      value={formData.checkInTime || "14:00"}
-                      onChange={(e) => updateField("checkInTime", e.target.value)}
+                      value={formData.checkInTime || '14:00'}
+                      onChange={(e) => updateField('checkInTime', e.target.value)}
                       className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
                     />
                   </div>
@@ -222,8 +230,8 @@ const HotelSettings = () => {
                     <label className="text-sm font-medium text-slate-700">Check-Out Time</label>
                     <input
                       type="time"
-                      value={formData.checkOutTime || "12:00"}
-                      onChange={(e) => updateField("checkOutTime", e.target.value)}
+                      value={formData.checkOutTime || '12:00'}
+                      onChange={(e) => updateField('checkOutTime', e.target.value)}
                       className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
                     />
                   </div>
@@ -231,16 +239,18 @@ const HotelSettings = () => {
                 <Textarea
                   label="Cancellation Policy"
                   placeholder="Describe your cancellation policy, deadlines, fees, etc."
-                  value={formData.cancellationPolicy || ""}
-                  onChange={(e) => updateField("cancellationPolicy", e.target.value)}
+                  value={formData.cancellationPolicy || ''}
+                  onChange={(e) => updateField('cancellationPolicy', e.target.value)}
                   className="focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all min-h-[80px]"
                 />
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <label className="flex items-center gap-2 p-3 bg-slate-50 rounded-xl border border-slate-100 cursor-pointer hover:bg-slate-100 transition-colors">
                     <input
                       type="checkbox"
-                      checked={formData.petPolicy !== "no"}
-                      onChange={(e) => updateField("petPolicy", e.target.checked ? "allowed" : "no")}
+                      checked={formData.petPolicy !== 'no'}
+                      onChange={(e) =>
+                        updateField('petPolicy', e.target.checked ? 'allowed' : 'no')
+                      }
                       className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
                     />
                     <Dog className="w-4 h-4 text-blue-600" />
@@ -249,8 +259,10 @@ const HotelSettings = () => {
                   <label className="flex items-center gap-2 p-3 bg-slate-50 rounded-xl border border-slate-100 cursor-pointer hover:bg-slate-100 transition-colors">
                     <input
                       type="checkbox"
-                      checked={formData.smokingPolicy === "allowed"}
-                      onChange={(e) => updateField("smokingPolicy", e.target.checked ? "allowed" : "no")}
+                      checked={formData.smokingPolicy === 'allowed'}
+                      onChange={(e) =>
+                        updateField('smokingPolicy', e.target.checked ? 'allowed' : 'no')
+                      }
                       className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
                     />
                     <Ban className="w-4 h-4 text-blue-600" />
@@ -259,8 +271,10 @@ const HotelSettings = () => {
                   <label className="flex items-center gap-2 p-3 bg-slate-50 rounded-xl border border-slate-100 cursor-pointer hover:bg-slate-100 transition-colors">
                     <input
                       type="checkbox"
-                      checked={formData.childrenPolicy !== "no"}
-                      onChange={(e) => updateField("childrenPolicy", e.target.checked ? "allowed" : "no")}
+                      checked={formData.childrenPolicy !== 'no'}
+                      onChange={(e) =>
+                        updateField('childrenPolicy', e.target.checked ? 'allowed' : 'no')
+                      }
                       className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
                     />
                     <Users className="w-4 h-4 text-blue-600" />

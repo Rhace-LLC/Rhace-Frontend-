@@ -1,23 +1,20 @@
-import { ArrowLeft, MapPin, Star } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Textarea } from "@/components/ui/textarea";
-import { useReservations } from "@/contexts/restaurant/ReservationContext";
-import ReservationHeader from "./ReservationHeader";
-import { TimePicker } from "../ui/timepicker";
-import { toast } from "react-toastify";
-import { useEffect, useState } from "react";
-import DatePicker from "../ui/datepicker";
-import { GuestPicker } from "../ui/guestpicker";
-import { useNavigate } from "react-router";
-import { userService } from "@/services/user.service";
-import UniversalLoader from "../ui/LogoLoader";
+import { ArrowLeft, MapPin, Star } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Textarea } from '@/components/ui/textarea';
+import { useReservations } from '@/contexts/restaurant/ReservationContext';
+import ReservationHeader from './ReservationHeader';
+import { TimePicker } from '../ui/timepicker';
+import { toast } from 'react-toastify';
+import { useEffect, useState } from 'react';
+import DatePicker from '../ui/datepicker';
+import { GuestPicker } from '../ui/guestpicker';
+import { useNavigate } from 'react-router';
+import { userService } from '@/services/user.service';
+import UniversalLoader from '../ui/LogoLoader';
 
-export default function ReservationDetails({
-  id,
-  searchQuery,
-}) {
+export default function ReservationDetails({ id, searchQuery }) {
   const {
     selectedOccasion,
     setSelectedOccasion,
@@ -44,7 +41,7 @@ export default function ReservationDetails({
       const response = await userService.getVendor(id);
       setVendor(response.data);
     } catch (error) {
-      console.error("Error fetching vendor:", error);
+      console.error('Error fetching vendor:', error);
     } finally {
       setLoading(false);
     }
@@ -61,31 +58,29 @@ export default function ReservationDetails({
 
   const preferences = [
     {
-      name: "Indoor",
-      value: "indoor",
+      name: 'Indoor',
+      value: 'indoor',
     },
     {
-      name: "Outdoor",
-      value: "outdoor",
+      name: 'Outdoor',
+      value: 'outdoor',
     },
     {
-      name: "No Preference",
-      value: "no-preference",
+      name: 'No Preference',
+      value: 'no-preference',
     },
   ];
 
   const handleContinue = () => {
     if (!date || !seatingPreference || !guestCount || !time) {
-      toast.error("Fill the required field");
+      toast.error('Fill the required field');
       return;
     }
     setPage(1);
   };
 
   if (loading) {
-    return (
-      <UniversalLoader fullscreen />
-    );
+    return <UniversalLoader fullscreen />;
   }
 
   return (
@@ -121,28 +116,27 @@ export default function ReservationDetails({
           <div className="flex gap-4">
             <div className="relative size-16 md:w-32 md:h-24 rounded-2xl overflow-hidden shrink-0">
               <img
-                src={vendor?.profileImages?.[0] || "/hero-bg.png"}
+                src={vendor?.profileImages?.[0] || '/hero-bg.png'}
                 alt="Restaurant interior"
                 className="object-cover size-full"
               />
             </div>
             <div className="flex-1">
               <h2 className="text-sm md:text-xl font-semibold mb-2">
-                {vendor?.businessName || "Restaurant Name"}
+                {vendor?.businessName || 'Restaurant Name'}
               </h2>
               <div className="flex items-start gap-1 text-gray-600 mb-2">
                 <div>
                   <MapPin className="h-4 w-4" />
                 </div>
                 <span className="text-[12px] md:text-sm truncate w-[210px] sm:w-full">
-                  {vendor?.address || "123 Main St, City, Country"}
+                  {vendor?.address || '123 Main St, City, Country'}
                 </span>
               </div>
               <div className="flex items-center gap-1">
                 <Star className="h-4 w-4 fill-[#F0AE02] text-[#F0AE02]" />
                 <span className="text-[12px] md:text-sm font-medium">
-                  {vendor?.rating || "4.8"} (
-                  {vendor?.reviews.toLocaleString() || "1,000"} reviews)
+                  {vendor?.rating || '4.8'} ({vendor?.reviews.toLocaleString() || '1,000'} reviews)
                 </span>
               </div>
             </div>
@@ -154,35 +148,47 @@ export default function ReservationDetails({
               <h3 className="text-lg font-semibold">Reservation Details</h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4">
-              <DatePicker value={date} onChange={setDate} edit/>
-              <TimePicker value={time} onChange={setTime} edit
-                              slot={[
-                  '09:00 AM','09:30 AM',
-                  '10:00 AM','10:30 AM',
-                  '11:00 AM','11:30 AM',
-                  '12:00 PM','12:30 PM',
-                  '01:00 PM','01:30 PM',
-                  '02:00 PM','02:30 PM',
-                  '03:00 PM','03:30 PM',
-                  '04:00 PM','04:30 PM',
-                  '05:00 PM','05:30 PM',
-                  '06:00 PM','06:30 PM',
-                  '07:00 PM','07:30 PM',
-                  '08:00 PM','08:30 PM',
+              <DatePicker value={date} onChange={setDate} edit />
+              <TimePicker
+                value={time}
+                onChange={setTime}
+                edit
+                slot={[
+                  '09:00 AM',
+                  '09:30 AM',
+                  '10:00 AM',
+                  '10:30 AM',
+                  '11:00 AM',
+                  '11:30 AM',
+                  '12:00 PM',
+                  '12:30 PM',
+                  '01:00 PM',
+                  '01:30 PM',
+                  '02:00 PM',
+                  '02:30 PM',
+                  '03:00 PM',
+                  '03:30 PM',
+                  '04:00 PM',
+                  '04:30 PM',
+                  '05:00 PM',
+                  '05:30 PM',
+                  '06:00 PM',
+                  '06:30 PM',
+                  '07:00 PM',
+                  '07:30 PM',
+                  '08:00 PM',
+                  '08:30 PM',
                 ]}
               />
-              <GuestPicker value={guestCount} onChange={setGuestCount} edit/>
+              <GuestPicker value={guestCount} onChange={setGuestCount} edit />
             </div>
           </div>
         </div>
         <div className="mb-6">
           <div className="mb-6 hidden md:block">
-            <h3 className="text-lg font-semibold mb-2">
-              Let&apos;s Plan For Your Visit
-            </h3>
+            <h3 className="text-lg font-semibold mb-2">Let&apos;s Plan For Your Visit</h3>
             <p className="text-sm text-gray-600">
-              Kindly provide answers to the question below to enable us serve
-              you better
+              Kindly provide answers to the question below to enable us serve you better
             </p>
           </div>
 
@@ -192,9 +198,7 @@ export default function ReservationDetails({
             </div>
             <div className="p-4 space-y-6">
               <div>
-                <Label className="text-sm font-medium mb-3 block">
-                  Special Occasion?
-                </Label>
+                <Label className="text-sm font-medium mb-3 block">Special Occasion?</Label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
                   {occasions.map((occasion) => (
                     <button
@@ -202,8 +206,8 @@ export default function ReservationDetails({
                       onClick={() => setSelectedOccasion(occasion)}
                       className={`p-3 text-sm border rounded-xl bg-[#F9FAFB] cursor-pointer transition-colors ${
                         selectedOccasion === occasion
-                          ? "border-[#0A6C6D] text-[#0A6C6D]"
-                          : "border-[#E5E7EB]  hover:border-[#d7d9dd] text-[#606368]"
+                          ? 'border-[#0A6C6D] text-[#0A6C6D]'
+                          : 'border-[#E5E7EB]  hover:border-[#d7d9dd] text-[#606368]'
                       }`}
                     >
                       {occasion}
@@ -212,20 +216,11 @@ export default function ReservationDetails({
                 </div>
               </div>
               <div className="mb-6">
-                <Label className="text-sm font-medium mb-3 block">
-                  Seating Preference
-                </Label>
-                <RadioGroup
-                  value={seatingPreference}
-                  onValueChange={setSeatingPreference}
-                >
+                <Label className="text-sm font-medium mb-3 block">Seating Preference</Label>
+                <RadioGroup value={seatingPreference} onValueChange={setSeatingPreference}>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                     {preferences.map((preference, i) => (
-                      <Label
-                        key={i}
-                        htmlFor={preference.value}
-                        className="text-sm cursor-pointer"
-                      >
+                      <Label key={i} htmlFor={preference.value} className="text-sm cursor-pointer">
                         <div className="flex items-center w-full gap-2 p-3 border bg-[#F9FAFB] border-[#E5E7EB] rounded-xl">
                           <RadioGroupItem
                             className="border-[#0A6C6D]"
@@ -240,10 +235,7 @@ export default function ReservationDetails({
                 </RadioGroup>
               </div>
               <div className="relative">
-                <Label
-                  htmlFor="special-request"
-                  className="text-sm font-medium mb-2 block"
-                >
+                <Label htmlFor="special-request" className="text-sm font-medium mb-2 block">
                   Special Request (Optional)
                 </Label>
                 <Textarea

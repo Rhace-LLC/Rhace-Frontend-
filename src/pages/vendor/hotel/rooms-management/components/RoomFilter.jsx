@@ -1,51 +1,39 @@
-import { Search, ChevronDown, SlidersHorizontal, X } from "lucide-react";
-import { useState, forwardRef, useImperativeHandle } from "react";
-import ViewToggle from "./ViewToggle";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Search, ChevronDown, SlidersHorizontal, X } from 'lucide-react';
+import { useState, forwardRef, useImperativeHandle } from 'react';
+import ViewToggle from './ViewToggle';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 const RoomFilter = forwardRef(({ onFilterChange, view, setView }, ref) => {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('all');
   const [showAdvancedFilter, setShowAdvancedFilter] = useState(false);
   const [categoryDropdownOpen, setCategoryDropdownOpen] = useState(false);
 
   // Advanced filter states
-  const [priceRange, setPriceRange] = useState({ min: "", max: "" });
-  const [capacityFilter, setCapacityFilter] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
+  const [priceRange, setPriceRange] = useState({ min: '', max: '' });
+  const [capacityFilter, setCapacityFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
   const [selectedAmenities, setSelectedAmenities] = useState([]);
 
   const categories = [
-    { value: "all", label: "All Category" },
-    { value: "standard", label: "Standard Rooms" },
-    { value: "deluxe", label: "Deluxe Rooms" },
-    { value: "suite", label: "Suite Rooms" },
-    { value: "penthouse", label: "Penthouse" },
+    { value: 'all', label: 'All Category' },
+    { value: 'standard', label: 'Standard Rooms' },
+    { value: 'deluxe', label: 'Deluxe Rooms' },
+    { value: 'suite', label: 'Suite Rooms' },
+    { value: 'penthouse', label: 'Penthouse' },
   ];
 
-  const amenitiesList = [
-    "WiFi",
-    "AC",
-    "TV",
-    "Mini Bar",
-    "Sea View",
-    "Balcony",
-    "Kitchen",
-  ];
+  const amenitiesList = ['WiFi', 'AC', 'TV', 'Mini Bar', 'Sea View', 'Balcony', 'Kitchen'];
 
   const applyFilters = (updates = {}) => {
     const filters = {
       search: updates.search !== undefined ? updates.search : searchTerm,
-      category:
-        updates.category !== undefined ? updates.category : selectedCategory,
-      priceRange:
-        updates.priceRange !== undefined ? updates.priceRange : priceRange,
-      capacity:
-        updates.capacity !== undefined ? updates.capacity : capacityFilter,
+      category: updates.category !== undefined ? updates.category : selectedCategory,
+      priceRange: updates.priceRange !== undefined ? updates.priceRange : priceRange,
+      capacity: updates.capacity !== undefined ? updates.capacity : capacityFilter,
       status: updates.status !== undefined ? updates.status : statusFilter,
-      amenities:
-        updates.amenities !== undefined ? updates.amenities : selectedAmenities,
+      amenities: updates.amenities !== undefined ? updates.amenities : selectedAmenities,
     };
     onFilterChange?.(filters);
   };
@@ -74,17 +62,17 @@ const RoomFilter = forwardRef(({ onFilterChange, view, setView }, ref) => {
   };
 
   const resetAdvancedFilters = () => {
-    setPriceRange({ min: "", max: "" });
-    setCapacityFilter("");
-    setStatusFilter("all");
+    setPriceRange({ min: '', max: '' });
+    setCapacityFilter('');
+    setStatusFilter('all');
     setSelectedAmenities([]);
 
     const resetFilters = {
       search: searchTerm,
       category: selectedCategory,
-      priceRange: { min: "", max: "" },
-      capacity: "",
-      status: "all",
+      priceRange: { min: '', max: '' },
+      capacity: '',
+      status: 'all',
       amenities: [],
     };
     onFilterChange?.(resetFilters);
@@ -92,19 +80,19 @@ const RoomFilter = forwardRef(({ onFilterChange, view, setView }, ref) => {
 
   // Reset all filters function
   const resetAllFilters = () => {
-    setSearchTerm("");
-    setSelectedCategory("all");
-    setPriceRange({ min: "", max: "" });
-    setCapacityFilter("");
-    setStatusFilter("all");
+    setSearchTerm('');
+    setSelectedCategory('all');
+    setPriceRange({ min: '', max: '' });
+    setCapacityFilter('');
+    setStatusFilter('all');
     setSelectedAmenities([]);
 
     const resetFilters = {
-      search: "",
-      category: "all",
-      priceRange: { min: "", max: "" },
-      capacity: "",
-      status: "all",
+      search: '',
+      category: 'all',
+      priceRange: { min: '', max: '' },
+      capacity: '',
+      status: 'all',
       amenities: [],
     };
     onFilterChange?.(resetFilters);
@@ -117,12 +105,12 @@ const RoomFilter = forwardRef(({ onFilterChange, view, setView }, ref) => {
 
   // Check if any filters are active
   const hasActiveFilters =
-    searchTerm !== "" ||
-    selectedCategory !== "all" ||
-    priceRange.min !== "" ||
-    priceRange.max !== "" ||
-    capacityFilter !== "" ||
-    statusFilter !== "all" ||
+    searchTerm !== '' ||
+    selectedCategory !== 'all' ||
+    priceRange.min !== '' ||
+    priceRange.max !== '' ||
+    capacityFilter !== '' ||
+    statusFilter !== 'all' ||
     selectedAmenities.length > 0;
 
   return (
@@ -143,7 +131,7 @@ const RoomFilter = forwardRef(({ onFilterChange, view, setView }, ref) => {
           />
           {searchTerm && (
             <button
-              onClick={() => handleSearch("")}
+              onClick={() => handleSearch('')}
               className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
             >
               <X size={16} />
@@ -177,8 +165,8 @@ const RoomFilter = forwardRef(({ onFilterChange, view, setView }, ref) => {
                       onClick={() => handleCategoryChange(cat.value)}
                       className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors ${
                         selectedCategory === cat.value
-                          ? "bg-teal-50 text-teal-600"
-                          : "text-gray-700"
+                          ? 'bg-teal-50 text-teal-600'
+                          : 'text-gray-700'
                       }`}
                     >
                       {cat.label}
@@ -194,8 +182,8 @@ const RoomFilter = forwardRef(({ onFilterChange, view, setView }, ref) => {
             onClick={() => setShowAdvancedFilter(!showAdvancedFilter)}
             className={`px-4 -3 border rounded-lg flex items-center gap-2 transition-colors ${
               showAdvancedFilter
-                ? "bg-teal-50 border-teal-200 text-teal-600"
-                : "bg-white border-gray-200 text-gray-700 hover:bg-gray-50"
+                ? 'bg-teal-50 border-teal-200 text-teal-600'
+                : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
             }`}
           >
             <SlidersHorizontal size={18} />
@@ -223,26 +211,20 @@ const RoomFilter = forwardRef(({ onFilterChange, view, setView }, ref) => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {/* Price Range */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Price Range
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Price Range</label>
               <div className="flex gap-2">
                 <input
                   type="number"
                   placeholder="Min"
                   value={priceRange.min}
-                  onChange={(e) =>
-                    setPriceRange({ ...priceRange, min: e.target.value })
-                  }
+                  onChange={(e) => setPriceRange({ ...priceRange, min: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
                 />
                 <input
                   type="number"
                   placeholder="Max"
                   value={priceRange.max}
-                  onChange={(e) =>
-                    setPriceRange({ ...priceRange, max: e.target.value })
-                  }
+                  onChange={(e) => setPriceRange({ ...priceRange, max: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
                 />
               </div>
@@ -250,9 +232,7 @@ const RoomFilter = forwardRef(({ onFilterChange, view, setView }, ref) => {
 
             {/* Capacity */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Min Capacity
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Min Capacity</label>
               <input
                 type="number"
                 placeholder="Number of guests"
@@ -264,9 +244,7 @@ const RoomFilter = forwardRef(({ onFilterChange, view, setView }, ref) => {
 
             {/* Status */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Status
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
@@ -281,9 +259,7 @@ const RoomFilter = forwardRef(({ onFilterChange, view, setView }, ref) => {
 
             {/* Amenities */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Amenities
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Amenities</label>
               <div className="flex flex-wrap gap-2">
                 {amenitiesList.map((amenity) => (
                   <button
@@ -291,8 +267,8 @@ const RoomFilter = forwardRef(({ onFilterChange, view, setView }, ref) => {
                     onClick={() => toggleAmenity(amenity)}
                     className={`px-3 py-1 text-xs rounded-full border transition-colors ${
                       selectedAmenities.includes(amenity)
-                        ? "bg-teal-50 border-teal-200 text-teal-600"
-                        : "bg-white border-gray-200 text-gray-600 hover:border-gray-300"
+                        ? 'bg-teal-50 border-teal-200 text-teal-600'
+                        : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300'
                     }`}
                   >
                     {amenity}
@@ -323,6 +299,6 @@ const RoomFilter = forwardRef(({ onFilterChange, view, setView }, ref) => {
   );
 });
 
-RoomFilter.displayName = "RoomFilter";
+RoomFilter.displayName = 'RoomFilter';
 
 export default RoomFilter;

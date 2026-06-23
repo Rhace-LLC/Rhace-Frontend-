@@ -1,10 +1,8 @@
-import { Table } from "@/public/icons/icons";
-import { Calendar } from "lucide-react";
-import React from "react";
+import { Table } from '@/public/icons/icons';
+import { Calendar } from 'lucide-react';
+import React from 'react';
 
-export default function RestauranAvalableSlot({
-  openingTime, closingTime, availableSlots
-}) {
+export default function RestauranAvalableSlot({ openingTime, closingTime, availableSlots }) {
   const convertTo12Hour = (time) => {
     if (!time) return '';
     const [hours, minutes] = time.split(':');
@@ -33,13 +31,13 @@ export default function RestauranAvalableSlot({
         </div>
         <div className="space-y-1">
           <p className="text-xs">Opening Hours</p>
-          <p className="font-semibold text-sm">{convertTo12Hour(openingTime)} - {convertTo12Hour(closingTime)} Daily</p>
+          <p className="font-semibold text-sm">
+            {convertTo12Hour(openingTime)} - {convertTo12Hour(closingTime)} Daily
+          </p>
         </div>
       </div>
       <div className="max-w-4xl w-full">
-        <h2 className="text-gray-800 mb-6">
-          Check out available reservation slots for today
-        </h2>
+        <h2 className="text-gray-800 mb-6">Check out available reservation slots for today</h2>
 
         <div className="flex flex-wrap gap-4">
           {availableSlots.map((slot) => (

@@ -1,14 +1,14 @@
-import HeroImage from "@/components/auth/HeroImage";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { authService } from "@/services/auth.service";
-import { Loader2 } from "lucide-react";
-import { useState } from "react";
-import { toast } from "react-toastify";
-import ForgotImage from "../../../public/auth/forgot.svg";
+import HeroImage from '@/components/auth/HeroImage';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { authService } from '@/services/auth.service';
+import { Loader2 } from 'lucide-react';
+import { useState } from 'react';
+import { toast } from 'react-toastify';
+import ForgotImage from '../../../public/auth/forgot.svg';
 
 const ForgotPassword = () => {
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState('');
   const [isLoading, setIsloading] = useState(false);
 
   const handleSubmit = async () => {
@@ -16,9 +16,9 @@ const ForgotPassword = () => {
     try {
       setIsloading(true);
       await authService.vendorForgotPassword(email);
-      toast.success("A reset password link has been sent to your Email");
+      toast.success('A reset password link has been sent to your Email');
     } catch (err) {
-      const message = err?.response?.data?.message || "User not found";
+      const message = err?.response?.data?.message || 'User not found';
 
       toast.error(message);
     } finally {
@@ -39,12 +39,9 @@ const ForgotPassword = () => {
           </CardHeader>
           <CardContent className="space-y-8">
             <div className="text-center space-y-4">
-              <h1 className="text-2xl font-semibold text-gray-900">
-                Forgot Your Password?
-              </h1>
+              <h1 className="text-2xl font-semibold text-gray-900">Forgot Your Password?</h1>
               <p className="text-gray-600 text-sm leading-relaxed">
-                Enter your registered email below to receive password reset
-                instructions.
+                Enter your registered email below to receive password reset instructions.
               </p>
             </div>
             <div className="space-y-6">
@@ -71,11 +68,11 @@ const ForgotPassword = () => {
               >
                 {isLoading ? (
                   <>
-                    {" "}
+                    {' '}
                     Loading <Loader2 className="animate-spin" />
                   </>
                 ) : (
-                  "Send"
+                  'Send'
                 )}
               </Button>
             </div>

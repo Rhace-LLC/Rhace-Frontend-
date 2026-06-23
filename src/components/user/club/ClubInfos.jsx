@@ -1,17 +1,10 @@
-"use client";
+'use client';
 
-import { useState, useRef, useEffect } from "react";
-import { ChevronDown, ChevronUp } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { useState, useRef, useEffect } from 'react';
+import { ChevronDown, ChevronUp } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
-const ClubInfos = ({
-  address,
-  openingTime,
-  closingTime,
-  dressCode,
-  desc,
-  ageLimit,
-}) => {
+const ClubInfos = ({ address, openingTime, closingTime, dressCode, desc, ageLimit }) => {
   const [showMore, setShowMore] = useState(false);
   const [isOverflowing, setIsOverflowing] = useState(false);
   const contentRef = useRef(null);
@@ -22,7 +15,7 @@ const ClubInfos = ({
     }
   }, []);
 
-    const convertTo12Hour = (time) => {
+  const convertTo12Hour = (time) => {
     if (!time) return '';
     const [hours, minutes] = time.split(':');
     const hour = parseInt(hours);
@@ -52,7 +45,9 @@ const ClubInfos = ({
           </div>
           <div className="space-y-1">
             <p className="text-xs">Opening Hours</p>
-            <p className="font-semibold text-sm">{convertTo12Hour(openingTime)} - {convertTo12Hour(closingTime)} Daily</p>
+            <p className="font-semibold text-sm">
+              {convertTo12Hour(openingTime)} - {convertTo12Hour(closingTime)} Daily
+            </p>
           </div>
         </div>
         <div className="bg-[#C8FAFF] rounded-xl border border-[#49EDFF] flex flex-col sm:flex-row sm:items-center p-4 sm:p-3 gap-4">
@@ -98,7 +93,7 @@ const ClubInfos = ({
           </div>
           <div className="space-y-1">
             <p className="text-xs">Dress Code</p>
-            <p className="font-semibold text-sm">{dressCode.join(", ")}</p>
+            <p className="font-semibold text-sm">{dressCode.join(', ')}</p>
           </div>
         </div>
         <div className="bg-[#EBE1FF] rounded-xl border border-[#C0A1FF] flex flex-col sm:flex-row sm:items-center p-4 sm:p-3 gap-4">
@@ -121,9 +116,7 @@ const ClubInfos = ({
           </div>
           <div className="space-y-1">
             <p className="text-xs">Age Limit</p>
-            <p className="font-semibold text-sm">
-            {ageLimit}
-            </p>
+            <p className="font-semibold text-sm">{ageLimit}</p>
           </div>
         </div>
       </div>
@@ -132,12 +125,12 @@ const ClubInfos = ({
         <div
           ref={contentRef}
           className={cn(
-            "transition-all overflow-hidden ml-3",
-            showMore ? "max-h-[5000px]" : "max-h-[90px]"
+            'transition-all overflow-hidden ml-3',
+            showMore ? 'max-h-[5000px]' : 'max-h-[90px]'
           )}
         >
           <p className="text-gray-700 text-sm leading-relaxed">
-            {desc.split("  ").map((part, idx) => (
+            {desc.split('  ').map((part, idx) => (
               <span key={idx}>{part}</span>
             ))}
           </p>
@@ -147,7 +140,7 @@ const ClubInfos = ({
             className="mt-2 flex items-center gap-1 text-sm text-[#0A6C6D] hover:underline cursor-pointer"
             onClick={() => setShowMore((prev) => !prev)}
           >
-            {showMore ? "Show less" : "Show more"}
+            {showMore ? 'Show less' : 'Show more'}
             {showMore ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
           </button>
         )}

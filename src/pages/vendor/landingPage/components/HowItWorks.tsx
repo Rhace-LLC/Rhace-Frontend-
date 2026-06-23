@@ -98,40 +98,39 @@
 //   );
 // }
 
-
-import { motion, useScroll, useTransform, useInView } from "framer-motion";
-import { useRef } from "react";
+import { motion, useScroll, useTransform, useInView } from 'framer-motion';
+import { useRef } from 'react';
 
 const steps = [
   {
-    number: "01",
-    tag: "Account",
-    title: "Create Your Vendor Account",
+    number: '01',
+    tag: 'Account',
+    title: 'Create Your Vendor Account',
     description:
-      "Sign up and gain access to your vendor dashboard in minutes. No technical setup, no lengthy onboarding.",
-    detail: "Quick verification · Instant dashboard access · Works for hotels, restaurants & clubs",
+      'Sign up and gain access to your vendor dashboard in minutes. No technical setup, no lengthy onboarding.',
+    detail: 'Quick verification · Instant dashboard access · Works for hotels, restaurants & clubs',
   },
   {
-    number: "02",
-    tag: "Inventory",
-    title: "Upload Your Inventory",
+    number: '02',
+    tag: 'Inventory',
+    title: 'Upload Your Inventory',
     description:
-      "Add your rooms, drinks, tables, or menu items so users can discover and reserve them anytime.",
-    detail: "Rooms · Tables · Menu items · Set pricing & availability",
+      'Add your rooms, drinks, tables, or menu items so users can discover and reserve them anytime.',
+    detail: 'Rooms · Tables · Menu items · Set pricing & availability',
   },
   {
-    number: "03",
-    tag: "Go Live",
-    title: "Start Receiving Reservations",
+    number: '03',
+    tag: 'Go Live',
+    title: 'Start Receiving Reservations',
     description:
       "Users book directly through the platform. Every reservation lands in your dashboard the moment it's made.",
-    detail: "Live feed · Instant notifications · Full booking control",
+    detail: 'Live feed · Instant notifications · Full booking control',
   },
 ];
 
-function StepCard({ step, index }: { step: typeof steps[0]; index: number }) {
+function StepCard({ step, index }: { step: (typeof steps)[0]; index: number }) {
   const ref = useRef<HTMLDivElement>(null);
-  const isInView = useInView(ref, { once: true, margin: "-80px" });
+  const isInView = useInView(ref, { once: true, margin: '-80px' });
 
   const isEven = index % 2 === 0;
 
@@ -142,15 +141,15 @@ function StepCard({ step, index }: { step: typeof steps[0]; index: number }) {
       animate={isInView ? { opacity: 1, y: 0 } : {}}
       transition={{ duration: 0.7, delay: index * 0.15, ease: [0.22, 1, 0.36, 1] }}
       className="relative flex flex-col"
-      style={{ marginTop: isEven ? "0px" : "80px" }}
+      style={{ marginTop: isEven ? '0px' : '80px' }}
     >
       {/* Giant number — floats behind */}
       <div
         className="absolute -top-10 -left-4 text-[9rem] font-black leading-none select-none pointer-events-none z-0"
         style={{
-          color: "transparent",
-          WebkitTextStroke: "1.5px rgba(1,77,67,0.1)",
-          fontVariantNumeric: "tabular-nums",
+          color: 'transparent',
+          WebkitTextStroke: '1.5px rgba(1,77,67,0.1)',
+          fontVariantNumeric: 'tabular-nums',
         }}
       >
         {step.number}
@@ -160,30 +159,35 @@ function StepCard({ step, index }: { step: typeof steps[0]; index: number }) {
       <div
         className="relative z-10 rounded-[20px] p-7 flex flex-col gap-4 mt-14 group"
         style={{
-          background: index === 1
-            ? "linear-gradient(135deg, #014d43 0%, #02695c 100%)"
-            : "rgba(255,255,255,0.95)",
-          border: index === 1
-            ? "1.5px solid rgba(255,255,255,0.12)"
-            : "1.5px solid rgba(1,77,67,0.08)",
-          boxShadow: index === 1
-            ? "0 24px 64px -12px rgba(1,77,67,0.45), 0 0 0 1px rgba(1,77,67,0.3)"
-            : "0 4px 12px -2px rgba(0,0,0,0.04), 0 20px 48px -8px rgba(1,77,67,0.08), 0 0 0 1px rgba(1,77,67,0.05)",
+          background:
+            index === 1
+              ? 'linear-gradient(135deg, #014d43 0%, #02695c 100%)'
+              : 'rgba(255,255,255,0.95)',
+          border:
+            index === 1 ? '1.5px solid rgba(255,255,255,0.12)' : '1.5px solid rgba(1,77,67,0.08)',
+          boxShadow:
+            index === 1
+              ? '0 24px 64px -12px rgba(1,77,67,0.45), 0 0 0 1px rgba(1,77,67,0.3)'
+              : '0 4px 12px -2px rgba(0,0,0,0.04), 0 20px 48px -8px rgba(1,77,67,0.08), 0 0 0 1px rgba(1,77,67,0.05)',
         }}
       >
         {/* Top row */}
         <div className="flex items-center justify-between">
           <span
             className="inline-flex items-center gap-1.5 text-[10px] font-semibold tracking-widest uppercase px-2.5 py-1 rounded-full border"
-            style={index === 1 ? {
-              color: "rgba(255,255,255,0.7)",
-              backgroundColor: "rgba(255,255,255,0.1)",
-              borderColor: "rgba(255,255,255,0.15)",
-            } : {
-              color: "#014d43",
-              backgroundColor: "rgba(1,77,67,0.06)",
-              borderColor: "rgba(1,77,67,0.15)",
-            }}
+            style={
+              index === 1
+                ? {
+                    color: 'rgba(255,255,255,0.7)',
+                    backgroundColor: 'rgba(255,255,255,0.1)',
+                    borderColor: 'rgba(255,255,255,0.15)',
+                  }
+                : {
+                    color: '#014d43',
+                    backgroundColor: 'rgba(1,77,67,0.06)',
+                    borderColor: 'rgba(1,77,67,0.15)',
+                  }
+            }
           >
             <span className="w-1 h-1 rounded-full bg-current" />
             {step.tag}
@@ -192,13 +196,17 @@ function StepCard({ step, index }: { step: typeof steps[0]; index: number }) {
           {/* Step dot */}
           <div
             className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold"
-            style={index === 1 ? {
-              background: "rgba(255,255,255,0.15)",
-              color: "rgba(255,255,255,0.9)",
-            } : {
-              background: "rgba(1,77,67,0.08)",
-              color: "#014d43",
-            }}
+            style={
+              index === 1
+                ? {
+                    background: 'rgba(255,255,255,0.15)',
+                    color: 'rgba(255,255,255,0.9)',
+                  }
+                : {
+                    background: 'rgba(1,77,67,0.08)',
+                    color: '#014d43',
+                  }
+            }
           >
             {step.number}
           </div>
@@ -207,7 +215,7 @@ function StepCard({ step, index }: { step: typeof steps[0]; index: number }) {
         {/* Title */}
         <h3
           className="text-xl font-bold tracking-tight leading-snug"
-          style={{ color: index === 1 ? "rgba(255,255,255,0.95)" : "#0a0a0a" }}
+          style={{ color: index === 1 ? 'rgba(255,255,255,0.95)' : '#0a0a0a' }}
         >
           {step.title}
         </h3>
@@ -215,7 +223,7 @@ function StepCard({ step, index }: { step: typeof steps[0]; index: number }) {
         {/* Description */}
         <p
           className="text-sm font-light leading-relaxed"
-          style={{ color: index === 1 ? "rgba(255,255,255,0.55)" : "#9ca3af" }}
+          style={{ color: index === 1 ? 'rgba(255,255,255,0.55)' : '#9ca3af' }}
         >
           {step.description}
         </p>
@@ -223,22 +231,26 @@ function StepCard({ step, index }: { step: typeof steps[0]; index: number }) {
         {/* Divider */}
         <div
           className="w-full h-px"
-          style={{ background: index === 1 ? "rgba(255,255,255,0.1)" : "rgba(1,77,67,0.07)" }}
+          style={{ background: index === 1 ? 'rgba(255,255,255,0.1)' : 'rgba(1,77,67,0.07)' }}
         />
 
         {/* Detail chips */}
         <div className="flex flex-wrap gap-2">
-          {step.detail.split(" · ").map((d) => (
+          {step.detail.split(' · ').map((d) => (
             <span
               key={d}
               className="text-[11px] font-medium px-2.5 py-1 rounded-full"
-              style={index === 1 ? {
-                background: "rgba(255,255,255,0.1)",
-                color: "rgba(255,255,255,0.65)",
-              } : {
-                background: "rgba(1,77,67,0.06)",
-                color: "#014d43",
-              }}
+              style={
+                index === 1
+                  ? {
+                      background: 'rgba(255,255,255,0.1)',
+                      color: 'rgba(255,255,255,0.65)',
+                    }
+                  : {
+                      background: 'rgba(1,77,67,0.06)',
+                      color: '#014d43',
+                    }
+              }
             >
               {d}
             </span>
@@ -250,7 +262,7 @@ function StepCard({ step, index }: { step: typeof steps[0]; index: number }) {
           <div
             className="absolute inset-0 rounded-[20px] opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
             style={{
-              background: "linear-gradient(135deg, rgba(255,255,255,0.05) 0%, transparent 60%)",
+              background: 'linear-gradient(135deg, rgba(255,255,255,0.05) 0%, transparent 60%)',
             }}
           />
         )}
@@ -260,16 +272,16 @@ function StepCard({ step, index }: { step: typeof steps[0]; index: number }) {
       <motion.div
         initial={{ scale: 0 }}
         animate={isInView ? { scale: 1 } : {}}
-        transition={{ duration: 0.4, delay: index * 0.15 + 0.3, ease: "backOut" }}
+        transition={{ duration: 0.4, delay: index * 0.15 + 0.3, ease: 'backOut' }}
         className="absolute left-1/2 -translate-x-1/2 z-20"
-        style={{ top: isEven ? "calc(100% + 24px)" : "-40px" }}
+        style={{ top: isEven ? 'calc(100% + 24px)' : '-40px' }}
       >
         <div
           className="w-4 h-4 rounded-full border-2"
           style={{
-            background: index === 1 ? "#014d43" : "white",
-            borderColor: "#014d43",
-            boxShadow: index === 1 ? "0 0 0 4px rgba(1,77,67,0.15)" : "none",
+            background: index === 1 ? '#014d43' : 'white',
+            borderColor: '#014d43',
+            boxShadow: index === 1 ? '0 0 0 4px rgba(1,77,67,0.15)' : 'none',
           }}
         />
       </motion.div>
@@ -281,55 +293,57 @@ export function HowItWorks() {
   const lineRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: lineRef,
-    offset: ["start center", "end center"],
+    offset: ['start center', 'end center'],
   });
   const lineScaleX = useTransform(scrollYProgress, [0, 1], [0, 1]);
 
   return (
-    <section id="how-it-works" className="py-28 px-4 sm:px-6 lg:px-8 overflow-hidden"
-      style={{ background: "#f7faf9" }}
+    <section
+      id="how-it-works"
+      className="py-28 px-4 sm:px-6 lg:px-8 overflow-hidden"
+      style={{ background: '#f7faf9' }}
     >
       <div className="max-w-6xl mx-auto">
-
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-80px" }}
+          viewport={{ once: true, margin: '-80px' }}
           transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
           className="mb-24 space-y-4"
         >
           {/* Asymmetric — left aligned for contrast */}
-          <p className="text-xs font-semibold tracking-widest uppercase"
-            style={{ color: "rgba(1,77,67,0.5)" }}>
+          <p
+            className="text-xs font-semibold tracking-widest uppercase"
+            style={{ color: 'rgba(1,77,67,0.5)' }}
+          >
             How it works
           </p>
           <h2 className="text-4xl lg:text-6xl font-bold text-gray-950 tracking-tight leading-none max-w-xl">
-            Three steps to{" "}
-            <span
-              className="italic font-light"
-              style={{ color: "#014d43" }}
-            >
+            Three steps to{' '}
+            <span className="italic font-light" style={{ color: '#014d43' }}>
               going live.
             </span>
           </h2>
           <p className="text-lg text-gray-400 max-w-md font-light leading-relaxed">
-            No technical setup. No lengthy onboarding.<br />
+            No technical setup. No lengthy onboarding.
+            <br />
             List your business and start earning.
           </p>
         </motion.div>
 
         {/* Timeline container */}
         <div ref={lineRef} className="relative">
-
           {/* Horizontal progress line — desktop only */}
-          <div className="hidden lg:block absolute top-[calc(50%-1px)] left-0 right-0 h-px"
-            style={{ background: "rgba(1,77,67,0.1)", top: "280px" }}>
+          <div
+            className="hidden lg:block absolute top-[calc(50%-1px)] left-0 right-0 h-px"
+            style={{ background: 'rgba(1,77,67,0.1)', top: '280px' }}
+          >
             <motion.div
               className="h-full origin-left"
               style={{
                 scaleX: lineScaleX,
-                background: "linear-gradient(to right, rgba(1,77,67,0.5), rgba(1,77,67,0.2))",
+                background: 'linear-gradient(to right, rgba(1,77,67,0.5), rgba(1,77,67,0.2))',
               }}
             />
           </div>
@@ -350,20 +364,18 @@ export function HowItWorks() {
           transition={{ duration: 0.5, delay: 0.4 }}
           className="mt-24 flex items-center gap-4"
         >
-          <div className="h-px flex-1 max-w-[80px]"
-            style={{ background: "rgba(1,77,67,0.15)" }} />
+          <div className="h-px flex-1 max-w-[80px]" style={{ background: 'rgba(1,77,67,0.15)' }} />
           <p className="text-sm text-gray-400 font-light">
-            Ready to get started?{" "}
-            <span 
-              className="font-medium cursor-pointer" 
-              style={{ color: "#014d43" }}
-              onClick={() => window.location.href = "/auth/vendor/signup"}
+            Ready to get started?{' '}
+            <span
+              className="font-medium cursor-pointer"
+              style={{ color: '#014d43' }}
+              onClick={() => (window.location.href = '/auth/vendor/signup')}
             >
               Create your account →
             </span>
           </p>
         </motion.div>
-
       </div>
     </section>
   );

@@ -1,28 +1,36 @@
-"use client";
+'use client';
 
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { advanceBookingOptions, cancellationTypes, checkInTimes, freeCancellationOptions } from '@/types/booking-policy';
+import {
+  advanceBookingOptions,
+  cancellationTypes,
+  checkInTimes,
+  freeCancellationOptions,
+} from '@/types/booking-policy';
 import { Info } from 'lucide-react';
 
-
-
-
-export function BookingPolicyForm ({ onSubmit, formData, setFormData }) {
+export function BookingPolicyForm({ onSubmit, formData, setFormData }) {
   const handleInputChange = (field, value) => {
-    setFormData(prev => ({ ...(prev ?? {}), [field]: value }));
+    setFormData((prev) => ({ ...(prev ?? {}), [field]: value }));
   };
 
   const handlePaymentOptionChange = (option, checked) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...(prev ?? {}),
       paymentOptions: {
         ...(prev?.paymentOptions ?? {}),
-        [option]: !!checked
-      }
+        [option]: !!checked,
+      },
     }));
   };
 
@@ -43,7 +51,6 @@ export function BookingPolicyForm ({ onSubmit, formData, setFormData }) {
   return (
     <div className=" ">
       <form onSubmit={handleSubmit} className="p-">
-
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Left Column - Booking Window Rules */}
           <div className="space-y-6">
@@ -56,13 +63,18 @@ export function BookingPolicyForm ({ onSubmit, formData, setFormData }) {
                   <Label htmlFor="checkInTime" className="text-sm font-medium text-gray-700">
                     Check-In Time*
                   </Label>
-                  <Select value={fd.checkInTime ?? ""} onValueChange={(value) => handleInputChange('checkInTime', value)}>
+                  <Select
+                    value={fd.checkInTime ?? ''}
+                    onValueChange={(value) => handleInputChange('checkInTime', value)}
+                  >
                     <SelectTrigger className="w-full">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
                       {checkInTimes.map((time) => (
-                        <SelectItem key={time} value={time}>{time}</SelectItem>
+                        <SelectItem key={time} value={time}>
+                          {time}
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -96,11 +108,11 @@ export function BookingPolicyForm ({ onSubmit, formData, setFormData }) {
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-gray-600">Must book at least</span>
                   <Select
-                    value={String(fd.advanceBookingHours ?? "")}
+                    value={String(fd.advanceBookingHours ?? '')}
                     onValueChange={(value) => handleInputChange('advanceBookingHours', value)}
                   >
                     <SelectTrigger className="w-20">
-                      <SelectValue  />
+                      <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
                       {advanceBookingOptions.map((option) => (
@@ -121,11 +133,9 @@ export function BookingPolicyForm ({ onSubmit, formData, setFormData }) {
 
               {/* Cancellation Type */}
               <div className="space-y-2">
-                <Label className="text-sm font-medium text-gray-700">
-                  Cancellation Type
-                </Label>
+                <Label className="text-sm font-medium text-gray-700">Cancellation Type</Label>
                 <Select
-                  value={fd.cancellationType ?? ""}
+                  value={fd.cancellationType ?? ''}
                   onValueChange={(value) => handleInputChange('cancellationType', value)}
                 >
                   <SelectTrigger className="w-full">
@@ -152,8 +162,13 @@ export function BookingPolicyForm ({ onSubmit, formData, setFormData }) {
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-gray-600">Free cancellation up to</span>
                   <Select
-                    value={String(fd.freeCancellationHours ?? "")}
-                    onValueChange={(value) => handleInputChange('freeCancellationHours', value === "" ? undefined : parseInt(value))}
+                    value={String(fd.freeCancellationHours ?? '')}
+                    onValueChange={(value) =>
+                      handleInputChange(
+                        'freeCancellationHours',
+                        value === '' ? undefined : parseInt(value)
+                      )
+                    }
                   >
                     <SelectTrigger className="w-20">
                       <SelectValue />
@@ -177,7 +192,7 @@ export function BookingPolicyForm ({ onSubmit, formData, setFormData }) {
                 </Label>
                 <Textarea
                   placeholder="Add any additional details about your cancellation policy"
-                  value={fd.customPolicyNote ?? ""}
+                  value={fd.customPolicyNote ?? ''}
                   onChange={(e) => handleInputChange('customPolicyNote', e.target.value)}
                   className="w-full min-h-[120px] resize-none"
                 />
@@ -194,9 +209,7 @@ export function BookingPolicyForm ({ onSubmit, formData, setFormData }) {
             {/* Payment Options */}
             <div className="space-y-4">
               <div className="flex items-center gap-2">
-                <Label className="text-sm font-medium text-gray-700">
-                  Payment Options*
-                </Label>
+                <Label className="text-sm font-medium text-gray-700">Payment Options*</Label>
                 <Info className="h-4 w-4 text-gray-400" />
               </div>
 
@@ -205,7 +218,9 @@ export function BookingPolicyForm ({ onSubmit, formData, setFormData }) {
                   <Checkbox
                     id="fullPayment"
                     checked={!!paymentOptions.fullPaymentRequired}
-                    onCheckedChange={(checked) => handlePaymentOptionChange('fullPaymentRequired', checked)}
+                    onCheckedChange={(checked) =>
+                      handlePaymentOptionChange('fullPaymentRequired', checked)
+                    }
                   />
                   <Label htmlFor="fullPayment" className="text-sm text-gray-700">
                     Full Payment Required
@@ -216,7 +231,9 @@ export function BookingPolicyForm ({ onSubmit, formData, setFormData }) {
                   <Checkbox
                     id="partPayment"
                     checked={!!paymentOptions.allowPartPayment}
-                    onCheckedChange={(checked) => handlePaymentOptionChange('allowPartPayment', checked)}
+                    onCheckedChange={(checked) =>
+                      handlePaymentOptionChange('allowPartPayment', checked)
+                    }
                   />
                   <Label htmlFor="partPayment" className="text-sm text-gray-700">
                     Allow Part Payment
@@ -244,7 +261,7 @@ export function BookingPolicyForm ({ onSubmit, formData, setFormData }) {
               </Label>
               <Textarea
                 placeholder="Add any additional details about your cancellation policy"
-                value={fd.paymentInstructions ?? ""}
+                value={fd.paymentInstructions ?? ''}
                 onChange={(e) => handleInputChange('paymentInstructions', e.target.value)}
                 className="w-full min-h-[120px] resize-none"
               />

@@ -6,7 +6,7 @@ import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router';
 import { toast } from 'react-toastify';
 
-export function FavoriteButton({ vendor, className = "" }) {
+export function FavoriteButton({ vendor, className = '' }) {
   const { isFavorite, toggleFavorite } = useFavorites();
   const user = useSelector((state) => state.auth.user);
   const navigate = useNavigate();
@@ -17,7 +17,7 @@ export function FavoriteButton({ vendor, className = "" }) {
     e.stopPropagation();
 
     if (!user) {
-      toast.info("Please log in to save favorites");
+      toast.info('Please log in to save favorites');
       navigate('/auth/user/login');
       return;
     }
@@ -26,7 +26,7 @@ export function FavoriteButton({ vendor, className = "" }) {
       name: vendor.name,
       image: vendor.image || vendor.logo,
       type: vendor.type || vendor.vendorType,
-      vendor: vendor
+      vendor: vendor,
     });
   };
 
@@ -35,7 +35,7 @@ export function FavoriteButton({ vendor, className = "" }) {
       onClick={handleClick}
       className={`relative transition-colors ${className}`}
       whileTap={{ scale: 0.85 }}
-      aria-label={isFav ? "Remove from favorites" : "Add to favorites"}
+      aria-label={isFav ? 'Remove from favorites' : 'Add to favorites'}
     >
       {/* Heart Icon with fill animation */}
       <motion.div
@@ -46,10 +46,9 @@ export function FavoriteButton({ vendor, className = "" }) {
         transition={{ duration: 0.3 }}
       >
         <HeartIcon
-          className={`w-6 h-6 transition-all duration-200 ${isFav
-            ? 'fill-red-500 text-red-500'
-            : 'text-gray-400 fill-white hover:text-red-500'
-            }`}
+          className={`w-6 h-6 transition-all duration-200 ${
+            isFav ? 'fill-red-500 text-red-500' : 'text-gray-400 fill-white hover:text-red-500'
+          }`}
         />
       </motion.div>
 
@@ -80,7 +79,7 @@ export function FavoriteButton({ vendor, className = "" }) {
   );
 }
 
-export function FavoriteButton2({ vendor, className = "" }) {
+export function FavoriteButton2({ vendor, className = '' }) {
   const { isFavorite, toggleFavorite } = useFavorites();
   const user = useSelector((state) => state.auth.user);
   const navigate = useNavigate();
@@ -91,7 +90,7 @@ export function FavoriteButton2({ vendor, className = "" }) {
     e.stopPropagation();
 
     if (!user) {
-      toast.info("Please log in to save favorites");
+      toast.info('Please log in to save favorites');
       navigate('/auth/user/login');
       return;
     }
@@ -100,7 +99,7 @@ export function FavoriteButton2({ vendor, className = "" }) {
       name: vendor.name,
       image: vendor.image || vendor.logo,
       type: vendor.type || vendor.vendorType,
-      vendor: vendor
+      vendor: vendor,
     });
   };
 
@@ -109,7 +108,7 @@ export function FavoriteButton2({ vendor, className = "" }) {
       onClick={handleClick}
       className={`relative transition-colors size-10 rounded-xl bg-white text-black hover:bg-gray-50 flex justify-center border border-[#E5E7EB] items-center gap-2 ${className}`}
       whileTap={{ scale: 0.85 }}
-      aria-label={isFav ? "Remove from favorites" : "Add to favorites"}
+      aria-label={isFav ? 'Remove from favorites' : 'Add to favorites'}
     >
       {/* Heart Icon with fill animation */}
       <motion.div
@@ -123,10 +122,9 @@ export function FavoriteButton2({ vendor, className = "" }) {
           width="20"
           height="20"
           viewBox="0 0 20 20"
-          className={`w-6 h-6 transition-all duration-200 ${isFav
-            ? 'fill-red-500 text-red-500'
-            : 'text-[#111827] hover:text-red-500'
-            }`}
+          className={`w-6 h-6 transition-all duration-200 ${
+            isFav ? 'fill-red-500 text-red-500' : 'text-[#111827] hover:text-red-500'
+          }`}
           fill="currentColor"
           xmlns="http://www.w3.org/2000/svg"
         >
@@ -172,7 +170,7 @@ export function FavoriteButton2({ vendor, className = "" }) {
   );
 }
 
-export function FavoriteButton3({ vendor, className = "" }) {
+export function FavoriteButton3({ vendor, className = '' }) {
   const { isFavorite, toggleFavorite } = useFavorites();
   const user = useSelector((state) => state.auth.user);
   const navigate = useNavigate();
@@ -183,7 +181,7 @@ export function FavoriteButton3({ vendor, className = "" }) {
     e.stopPropagation();
 
     if (!user) {
-      toast.info("Please log in to save favorites");
+      toast.info('Please log in to save favorites');
       navigate('/auth/user/login');
       return;
     }
@@ -192,7 +190,7 @@ export function FavoriteButton3({ vendor, className = "" }) {
       name: vendor.name,
       image: vendor.image || vendor.logo,
       type: vendor.type || vendor.vendorType,
-      vendor: vendor
+      vendor: vendor,
     });
   };
 
@@ -201,7 +199,7 @@ export function FavoriteButton3({ vendor, className = "" }) {
       onClick={handleClick}
       className={`relative cursor-pointer border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50 flex items-center justify-center gap-2 whitespace-nowrap rounded-xl text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive h-9 px-4 py-2 has-[>svg]:px-3 ${className}`}
       whileTap={{ scale: 0.85 }}
-      aria-label={isFav ? "Remove from favorites" : "Add to favorites"}
+      aria-label={isFav ? 'Remove from favorites' : 'Add to favorites'}
     >
       {/* Heart Icon with fill animation */}
       <motion.div
@@ -211,13 +209,13 @@ export function FavoriteButton3({ vendor, className = "" }) {
         }}
         transition={{ duration: 0.3 }}
       >
-        <Heart className={`w-6 h-6 transition-all duration-200 text-[#111827] ${isFav
-          ? 'fill-red-500'
-          : ' hover:text-red-500'
-          }`} />
+        <Heart
+          className={`w-6 h-6 transition-all duration-200 text-[#111827] ${
+            isFav ? 'fill-red-500' : ' hover:text-red-500'
+          }`}
+        />
       </motion.div>
       Save
-
       {/* Particle burst effect on like */}
       {isFav && (
         <motion.div

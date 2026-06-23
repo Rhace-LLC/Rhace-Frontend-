@@ -1,55 +1,93 @@
-import { useEffect, useState } from "react";
-import { Plus, Upload, SlidersHorizontal, ChevronDown, MoreVertical, Eye, UserX, KeyRound, Star, Calendar, Mail, Phone, MapPin, Building, CreditCard, Globe, Clock, DollarSign, FileText, Award, CheckCircle, XCircle, AlertCircle, Shield } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import { Separator } from "@/components/ui/separator";
-import { Badge } from "@/components/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox";
+import { useEffect, useState } from 'react';
+import {
+  Plus,
+  Upload,
+  SlidersHorizontal,
+  ChevronDown,
+  MoreVertical,
+  Eye,
+  UserX,
+  KeyRound,
+  Star,
+  Calendar,
+  Mail,
+  Phone,
+  MapPin,
+  Building,
+  CreditCard,
+  Globe,
+  Clock,
+  DollarSign,
+  CheckCircle,
+  XCircle,
+  Shield,
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
+import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+} from '@/components/ui/dropdown-menu';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
-import { getVendors, getVendorById, updateVendorStatus, deleteVendor, exportVendors, getUsers, getVendorStats, getTopVendors, getReservations } from "@/services/admin.service";
-import { toast } from "react-toastify";
-import { useWebSocket } from "@/contexts/WebSocketContext";
+} from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
+import {
+  getVendors,
+  getVendorById,
+  updateVendorStatus,
+  deleteVendor,
+  exportVendors,
+  getUsers,
+  getVendorStats,
+  getTopVendors,
+  getReservations,
+  updateVendor,
+} from '@/services/admin.service';
+import { toast } from 'react-toastify';
+import { useWebSocket } from '@/contexts/WebSocketContext';
 
 const extractArray = (p) => {
   if (Array.isArray(p)) return p;
   const candidates = [
-    p?.data, p?.items, p?.results, p?.docs, p?.rows, p?.vendors, p?.list,
-    p?.data?.data, p?.data?.items, p?.data?.results, p?.data?.docs, p?.data?.rows, p?.data?.vendors,
+    p?.data,
+    p?.items,
+    p?.results,
+    p?.docs,
+    p?.rows,
+    p?.vendors,
+    p?.list,
+    p?.data?.data,
+    p?.data?.items,
+    p?.data?.results,
+    p?.data?.docs,
+    p?.data?.rows,
+    p?.data?.vendors,
   ];
   for (const c of candidates) if (Array.isArray(c)) return c;
   return [];
 };
 
 export default function Vendors() {
-  const [activeTab, setActiveTab] = useState("All");
-  const tabs = ["All", "Active", "Inactive", "Pending"];
+  const [activeTab, setActiveTab] = useState('All');
+  const tabs = ['All', 'Active', 'Inactive', 'Pending'];
   const [vendors, setVendors] = useState([]);
   const [filteredVendors, setFilteredVendors] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
   const [dateRange, setDateRange] = useState({ from: null, to: null });
-  const [filters, setFilters] = useState({ status: "", category: "" });
+  const [filters, setFilters] = useState({ status: '', category: '' });
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [hideTabs, setHideTabs] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
@@ -66,30 +104,9 @@ export default function Vendors() {
     total: 0,
     active: 0,
     inactive: 0,
-    pending: 0,
-    suspended: 0
+    suspended: 0,
   });
   const { subscribe, unsubscribe, sendMessage } = useWebSocket();
-
-  const calculateStatsFromVendors = (vendorList) => {
-    const stats = {
-      total: vendorList.length,
-      active: 0,
-      inactive: 0,
-      pending: 0,
-      suspended: 0
-    };
-
-    vendorList.forEach(vendor => {
-      const status = vendor.status || 'Active';
-      if (status === 'Active') stats.active++;
-      else if (status === 'Inactive') stats.inactive++;
-      else if (status === 'Pending') stats.pending++;
-      else if (status === 'Suspended') stats.suspended++;
-    });
-
-    return stats;
-  };
 
   const loadStats = async () => {
     try {
@@ -97,22 +114,28 @@ export default function Vendors() {
       const statsData = statsRes?.data;
 
       // Only use API data if it contains meaningful values (not all zeros)
-      if (statsData && typeof statsData === 'object' &&
-          (statsData.total > 0 || statsData.active > 0 || statsData.inactive > 0 || statsData.pending > 0 || statsData.suspended > 0)) {
+      if (
+        statsData &&
+        typeof statsData === 'object' &&
+        (statsData.total > 0 ||
+          statsData.active > 0 ||
+          statsData.inactive > 0 ||
+          statsData.pending > 0 ||
+          statsData.suspended > 0)
+      ) {
         setStats({
           total: statsData.total || 0,
           active: statsData.active || 0,
           inactive: statsData.inactive || 0,
-          pending: statsData.pending || 0,
-          suspended: statsData.suspended || 0
+          suspended: statsData.suspended || 0,
         });
         setTotalVendors(statsData.total || 0);
       } else {
         // API returned empty/invalid data, keep current calculated stats
-        console.warn("API stats empty or invalid, keeping current stats");
+        console.warn('API stats empty or invalid, keeping current stats');
       }
     } catch (e) {
-      console.error("Failed to load stats from API, keeping current stats", e);
+      console.error('Failed to load stats from API, keeping current stats', e);
       // Don't override with calculated stats here, let the useEffect handle it
     }
   };
@@ -120,49 +143,66 @@ export default function Vendors() {
   const loadVendors = async () => {
     setLoading(true);
     try {
+      console.log('=== [DEBUG] Starting loadVendors ===');
+
       // Fetch current page vendors and all reservations in parallel
       const [vendorsRes, reservationsRes] = await Promise.all([
         getVendors({ page: currentPage, limit: 20 }),
-        getReservations({ limit: 1000 }).catch(() => ({ data: [] })) // Fetch all reservations with high limit
+        getReservations({ limit: 1000 }).catch(() => ({ data: [] })), // Fetch all reservations with high limit
       ]);
 
       const payload = vendorsRes?.data;
       const list = extractArray(payload);
       const reservationsData = extractArray(reservationsRes?.data);
 
+      console.log(`=== [DEBUG] API Payload Received. Found ${list.length} raw vendors. ===`);
+
       // Create a map of vendor reservation counts from all reservations
       const vendorReservationsMap = {};
-      reservationsData.forEach(reservation => {
+      reservationsData.forEach((reservation) => {
         const vendorId = reservation.vendorId || reservation.vendor?.id || reservation.vendor?._id;
         if (vendorId) {
           vendorReservationsMap[vendorId] = (vendorReservationsMap[vendorId] || 0) + 1;
         }
       });
 
-
-
       // Process vendors to set status based on last seen (active by default, inactive after 1 month)
       const oneMonthAgo = new Date();
       oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
-      const processedVendors = list.map(vendor => {
-        const lastSeen = vendor.lastSeen || vendor.lastActivity || vendor.updatedAt;
-        const lastSeenDate = lastSeen ? new Date(lastSeen) : null;
-        vendor.status = lastSeenDate ? (lastSeenDate > oneMonthAgo ? 'Active' : 'Inactive') : 'Active';
+
+      console.log(
+        `=== [DEBUG] Status Calculation Cutoff Date (1 Month Ago): ${oneMonthAgo.toISOString()} ===`
+      );
+
+      // Process vendors using the backend database as the absolute source of truth
+      const processedVendors = list.map((vendor) => {
+        // Normalize capitalization for UI components (e.g., "pending" -> "Pending", "suspended" -> "Suspended")
+        if (vendor.status) {
+          const statusLower = vendor.status.toLowerCase();
+          if (statusLower === 'active') vendor.status = 'Active';
+          else if (statusLower === 'suspended') vendor.status = 'Suspended';
+          else if (statusLower === 'pending') vendor.status = 'Pending';
+        } else {
+          vendor.status = 'Pending'; // Safe fallback if completely missing from DB
+        }
+
         // Use reservation count from all reservations data
         vendor.reservations = vendorReservationsMap[vendor.id || vendor._id] || 0;
         return vendor;
       });
 
+      console.log('=== [DEBUG] Final Processed Vendors State ===', processedVendors);
+
       setVendors(processedVendors);
       setTotalPages(payload?.totalPages || 1);
       // Set totalVendors from the API response total, fallback to list length
       setTotalVendors(payload?.total || processedVendors.length);
-
     } catch (e) {
-      console.error("Failed to load vendors", e);
+      console.error('=== [DEBUG] Failed to load vendors ===', e);
       setVendors([]);
     } finally {
       setLoading(false);
+      console.log('=== [DEBUG] loadVendors Process Completed ===');
     }
   };
 
@@ -175,7 +215,8 @@ export default function Vendors() {
           if (v.id === updatedVendor.id || v._id === updatedVendor.id) {
             // Merge existing vendor data with updated data to preserve fields not included in update
             // Ensure contact person fields are properly updated
-            const updatedContactPerson = updatedVendor.contactPerson || updatedVendor.contactName || updatedVendor.ownerName;
+            const updatedContactPerson =
+              updatedVendor.contactPerson || updatedVendor.contactName || updatedVendor.ownerName;
             const mergedVendor = { ...v, ...updatedVendor, reservations: v.reservations };
             if (updatedContactPerson) {
               mergedVendor.contactPerson = updatedContactPerson;
@@ -210,7 +251,7 @@ export default function Vendors() {
       if (reservation.vendorId) {
         setVendors((prev) =>
           prev.map((v) =>
-            (v.id === reservation.vendorId || v._id === reservation.vendorId)
+            v.id === reservation.vendorId || v._id === reservation.vendorId
               ? { ...v, reservations: (v.reservations || 0) + 1 }
               : v
           )
@@ -228,7 +269,7 @@ export default function Vendors() {
       if (reservation.vendorId) {
         setVendors((prev) =>
           prev.map((v) =>
-            (v.id === reservation.vendorId || v._id === reservation.vendorId)
+            v.id === reservation.vendorId || v._id === reservation.vendorId
               ? { ...v, reservations: Math.max(0, (v.reservations || 0) - 1) }
               : v
           )
@@ -236,46 +277,51 @@ export default function Vendors() {
       }
     };
 
-    subscribe("vendor-updated", handleVendorUpdate);
-    subscribe("vendor-created", handleVendorCreate);
-    subscribe("vendor-deleted", handleVendorDelete);
-    subscribe("reservation-created", handleReservationCreated);
-    subscribe("reservation-updated", handleReservationUpdated);
-    subscribe("reservation-deleted", handleReservationDeleted);
+    subscribe('vendor-updated', handleVendorUpdate);
+    subscribe('vendor-created', handleVendorCreate);
+    subscribe('vendor-deleted', handleVendorDelete);
+    subscribe('reservation-created', handleReservationCreated);
+    subscribe('reservation-updated', handleReservationUpdated);
+    subscribe('reservation-deleted', handleReservationDeleted);
 
     return () => {
-      unsubscribe("vendor-updated");
-      unsubscribe("vendor-created");
-      unsubscribe("vendor-deleted");
-      unsubscribe("reservation-created");
-      unsubscribe("reservation-updated");
-      unsubscribe("reservation-deleted");
+      unsubscribe('vendor-updated');
+      unsubscribe('vendor-created');
+      unsubscribe('vendor-deleted');
+      unsubscribe('reservation-created');
+      unsubscribe('reservation-updated');
+      unsubscribe('reservation-deleted');
     };
   }, []);
 
   const applyFilters = () => {
     let filtered = [...vendors];
     if (searchQuery) {
-      filtered = filtered.filter(vendor =>
-        (vendor.businessName || vendor.name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (vendor.email || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (vendor.contactPerson || vendor.contactName || vendor.ownerName || "").toLowerCase().includes(searchQuery.toLowerCase())
+      filtered = filtered.filter(
+        (vendor) =>
+          (vendor.businessName || vendor.name || '')
+            .toLowerCase()
+            .includes(searchQuery.toLowerCase()) ||
+          (vendor.email || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+          (vendor.contactPerson || vendor.contactName || vendor.ownerName || '')
+            .toLowerCase()
+            .includes(searchQuery.toLowerCase())
       );
     }
-    if (activeTab !== "All") {
-      filtered = filtered.filter(vendor => (vendor.status || "").toString() === activeTab);
+    if (activeTab !== 'All') {
+      filtered = filtered.filter((vendor) => (vendor.status || '').toString() === activeTab);
     }
     if (dateRange.from && dateRange.to) {
-      filtered = filtered.filter(vendor => {
+      filtered = filtered.filter((vendor) => {
         const vendorDate = new Date(vendor.createdAt);
         return vendorDate >= dateRange.from && vendorDate <= dateRange.to;
       });
     }
     if (filters.status) {
-      filtered = filtered.filter(vendor => (vendor.status || "").toString() === filters.status);
+      filtered = filtered.filter((vendor) => (vendor.status || '').toString() === filters.status);
     }
     if (filters.category) {
-      filtered = filtered.filter(vendor => vendor.category === filters.category);
+      filtered = filtered.filter((vendor) => vendor.category === filters.category);
     }
     setFilteredVendors(filtered);
   };
@@ -283,21 +329,59 @@ export default function Vendors() {
   useEffect(() => {
     applyFilters();
   }, [vendors, searchQuery, activeTab, dateRange, filters]);
+  const calculateStatsFromVendors = (vendorList) => {
+    const stats = {
+      total: 0,
+      active: 0,
+      inactive: 0,
+      suspended: 0,
+    };
 
-  // Recalculate stats whenever vendors change
+    if (!Array.isArray(vendorList)) return stats;
+
+    stats.total = vendorList.length;
+
+    vendorList.forEach((vendor) => {
+      // Convert status to lowercase to completely bypass any casing mismatches
+      const status = vendor?.status ? vendor.status.toLowerCase() : 'pending';
+
+      if (status === 'active') {
+        stats.active++;
+      } else if (status === 'inactive' || status === 'pending') {
+        // Regularized: both 'inactive' and 'pending' map under the inactive state
+        stats.inactive++;
+      } else if (status === 'suspended') {
+        stats.suspended++;
+      } else {
+        // Safe fallback if an unexpected status string somehow slips in
+        stats.inactive++;
+      }
+    });
+
+    return stats;
+  };
+
+  // Place this inside your React component
   useEffect(() => {
-    if (vendors.length > 0) {
-      const calculatedStats = calculateStatsFromVendors(vendors);
-      setStats(calculatedStats);
-      setTotalVendors(calculatedStats.total);
-    }
-  }, [vendors]);
+    const initializeStats = async () => {
+      // 1. Calculate an immediate fallback baseline if local vendor arrays exist
+      if (Array.isArray(vendors) && vendors.length > 0) {
+        const computedFallback = calculateStatsFromVendors(vendors);
+        setStats(computedFallback);
 
+        setTotalVendors(computedFallback.total);
+      }
 
+      // 2. Query the live API for precise server-side metrics
+      await loadStats();
+    };
+
+    initializeStats();
+  }, [vendors]); // Re-calculates state dependencies accurately if the core vendors list updates
 
   const handleExport = async () => {
     try {
-      const response = await exportVendors({ status: activeTab !== "All" ? activeTab : undefined });
+      const response = await exportVendors({ status: activeTab !== 'All' ? activeTab : undefined });
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;
@@ -306,8 +390,10 @@ export default function Vendors() {
       link.click();
       link.remove();
     } catch (e) {
-      console.error("Failed to export vendors", e);
-      alert("Failed to export vendors");
+      const msg =
+        e?.response?.data?.message || e?.response?.data.error || 'Failed to export vendors';
+      console.error('Failed to export vendors', e);
+      toast.error(msg);
     }
   };
 
@@ -326,15 +412,21 @@ export default function Vendors() {
       const data = response.data.data || response.data;
 
       // Check if we got a valid vendor object
-      if (typeof data === 'string' || !data || (typeof data === 'object' && !data.businessName && !data.name && !data.email)) {
-        throw new Error('Invalid vendor data received from server. The API may be returning a welcome message instead of vendor data.');
+      if (
+        typeof data === 'string' ||
+        !data ||
+        (typeof data === 'object' && !data.businessName && !data.name && !data.email)
+      ) {
+        throw new Error(
+          'Invalid vendor data received from server. The API may be returning a welcome message instead of vendor data.'
+        );
       }
 
       // Include the reservation count from the vendor list data
       setVendorDetails({ ...data, reservations: vendor.reservations || 0 });
     } catch (e) {
-      console.error("Failed to load vendor details", e);
-      const errorMessage = e.message || "Failed to load vendor details";
+      console.error('Failed to load vendor details', e);
+      const errorMessage = e.message || 'Failed to load vendor details';
       setDetailsError(errorMessage);
       toast.error(errorMessage);
       // Keep dialog open to show error
@@ -349,14 +441,15 @@ export default function Vendors() {
   };
 
   const handleDelete = async (vendor) => {
-    if (!window.confirm(`Are you sure you want to delete ${vendor.businessName || vendor.name}?`)) return;
+    if (!window.confirm(`Are you sure you want to delete ${vendor.businessName || vendor.name}?`))
+      return;
     try {
       await deleteVendor(vendor.id || vendor._id);
-      toast.success("Vendor deleted successfully");
+      toast.success('Vendor deleted successfully');
       // The WebSocket will handle the real-time update
     } catch (e) {
-      console.error("Failed to delete vendor", e);
-      toast.error("Failed to delete vendor");
+      console.error('Failed to delete vendor', e);
+      toast.error('Failed to delete vendor');
     }
   };
 
@@ -376,23 +469,23 @@ export default function Vendors() {
         profileImages: vendor.profileImages,
         percentageCharge: vendor.percentageCharge,
         status: vendor.status,
-        isVisible: vendor.isVisible
+        isVisible: vendor.isVisible,
       };
 
       // Remove undefined values
-      Object.keys(allowedUpdates).forEach(key =>
-        allowedUpdates[key] === undefined && delete allowedUpdates[key]
+      Object.keys(allowedUpdates).forEach(
+        (key) => allowedUpdates[key] === undefined && delete allowedUpdates[key]
       );
 
       await updateVendor(vendor.id || vendor._id, allowedUpdates);
-      toast.success("Vendor updated successfully");
+      toast.success('Vendor updated successfully');
       setEditOpen(false);
       setEditingVendor(null);
       // Trigger real-time update by reloading vendors
       loadVendors();
     } catch (e) {
-      console.error("Failed to update vendor", e);
-      toast.error("Failed to update vendor");
+      console.error('Failed to update vendor', e);
+      toast.error('Failed to update vendor');
     }
   };
 
@@ -403,14 +496,12 @@ export default function Vendors() {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold tracking-tight text-gray-900">Vendor Management</h1>
-            <p className="text-gray-600 mt-2">Manage and monitor all vendor accounts in your system</p>
+            <p className="text-gray-600 mt-2">
+              Manage and monitor all vendor accounts in your system
+            </p>
           </div>
           <div className="flex items-center gap-3">
-            <Button variant="outline" size="sm" onClick={() => setHideTabs(!hideTabs)}>
-              <SlidersHorizontal className="w-4 h-4 mr-2" />
-              Hide tabs
-            </Button>
-            <Button variant="outline" size="sm" onClick={handleExport}>
+            <Button className="" variant="outline" size="sm" onClick={handleExport}>
               <Upload className="w-4 h-4 mr-2" />
               Export
             </Button>
@@ -455,7 +546,9 @@ export default function Vendors() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-amber-700">Inactive Vendors</p>
-                <p className="text-3xl font-bold text-gray-900">{stats.inactive.toLocaleString()}</p>
+                <p className="text-3xl font-bold text-gray-900">
+                  {stats.inactive.toLocaleString()}
+                </p>
               </div>
               <div className="h-12 w-12 rounded-lg bg-white flex items-center justify-center shadow-sm">
                 <XCircle className="h-6 w-6 text-amber-600" />
@@ -470,7 +563,9 @@ export default function Vendors() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-rose-700">Suspended Vendors</p>
-                <p className="text-3xl font-bold text-gray-900">{stats.suspended.toLocaleString()}</p>
+                <p className="text-3xl font-bold text-gray-900">
+                  {stats.suspended.toLocaleString()}
+                </p>
               </div>
               <div className="h-12 w-12 rounded-lg bg-white flex items-center justify-center shadow-sm">
                 <Shield className="h-6 w-6 text-rose-600" />
@@ -490,9 +585,7 @@ export default function Vendors() {
                   key={tab}
                   onClick={() => setActiveTab(tab)}
                   className={`px-4 py-2 text-sm rounded-md transition-colors ${
-                    activeTab === tab
-                      ? "bg-accent text-accent-foreground"
-                      : "hover:bg-accent/50"
+                    activeTab === tab ? 'bg-accent text-accent-foreground' : 'hover:bg-accent/50'
                   }`}
                 >
                   {tab}
@@ -504,16 +597,10 @@ export default function Vendors() {
           <div className="flex gap-2">
             <Input
               placeholder="Search by name or email"
-              className="w-64"
+              className="w-64 border border-gray-200 rounded-md h-12"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
-            <Button variant="outline" size="sm" onClick={() => setShowFilterModal(true)}>
-              Filter by date <ChevronDown className="w-4 h-4 ml-2" />
-            </Button>
-            <Button variant="outline" size="sm" onClick={() => setShowFilterModal(true)}>
-              Advanced filter <SlidersHorizontal className="w-4 h-4 ml-2" />
-            </Button>
           </div>
         </div>
 
@@ -523,82 +610,127 @@ export default function Vendors() {
             <thead>
               <tr className="border-b">
                 <th className="text-left p-3 text-sm font-medium text-muted-foreground">
-                  <Checkbox />
+                  <Checkbox className="" />
                 </th>
                 <th className="text-left p-3 text-sm font-medium text-muted-foreground">Vendor</th>
-                <th className="text-left p-3 text-sm font-medium text-muted-foreground">Contact Person</th>
-                <th className="text-left p-3 text-sm font-medium text-muted-foreground">Branches</th>
-                <th className="text-left p-3 text-sm font-medium text-muted-foreground">Reservations</th>
+                <th className="text-left p-3 text-sm font-medium text-muted-foreground">
+                  Contact Person
+                </th>
+                <th className="text-left p-3 text-sm font-medium text-muted-foreground">
+                  Branches
+                </th>
+                <th className="text-left p-3 text-sm font-medium text-muted-foreground">
+                  Reservations
+                </th>
                 <th className="text-left p-3 text-sm font-medium text-muted-foreground">Status</th>
-                <th className="text-left p-3 text-sm font-medium text-muted-foreground">Date Joined</th>
+                <th className="text-left p-3 text-sm font-medium text-muted-foreground">
+                  Date Joined
+                </th>
                 <th className="text-left p-3 text-sm font-medium text-muted-foreground"></th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
                 <tr>
-                  <td className="p-3 text-sm text-muted-foreground" colSpan={8}>Loading vendors...</td>
+                  <td className="p-3 text-sm text-muted-foreground" colSpan={8}>
+                    Loading vendors...
+                  </td>
                 </tr>
               ) : vendors.length === 0 ? (
                 <tr>
-                  <td className="p-3 text-sm text-muted-foreground" colSpan={8}>No vendors found.</td>
-                </tr>
-              ) : filteredVendors.map((vendor, i) => (
-                <tr key={vendor.id || vendor._id} className="border-b hover:bg-accent/50 transition-colors">
-                  <td className="p-3">
-                    <Checkbox />
-                  </td>
-                  <td className="p-3">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-gradient-to-br from-primary/20 to-primary/10 rounded-full flex items-center justify-center">
-                        <span className="text-sm font-semibold text-primary">{vendor.businessName?.charAt(0) || 'V'}</span>
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium">{String(vendor.businessName || vendor.name || "-")}</p>
-                        <p className="text-xs text-muted-foreground">{String(vendor.category || vendor.type || "")}</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="p-3">
-                    <p className="text-sm">{vendor.contactPerson || vendor.contactName || vendor.ownerName || "-"}</p>
-                  </td>
-                  <td className="p-3">
-                    <p className="text-sm">{vendor.branches || 1}</p>
-                  </td>
-                  <td className="p-3">
-                    <p className="text-sm">{vendor.reservations || 0}</p>
-                  </td>
-                  <td className="p-3">
-                    <Badge variant={vendor.status === "Active" ? "default" : "outline"} className={vendor.status === "Active" ? "bg-green-100 text-green-800" : ""}>
-                      {vendor.status || "Inactive"}
-                    </Badge>
-                  </td>
-                  <td className="p-3">
-                    <p className="text-sm">{new Date(vendor.createdAt).toLocaleDateString()}</p>
-                  </td>
-                  <td className="p-3">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="hover:bg-accent">
-                          <MoreVertical className="w-4 h-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => handleViewDetails(vendor)} className="cursor-pointer">
-                          <Eye className="w-4 h-4 mr-2" />
-                          View details
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleEdit(vendor)} className="cursor-pointer">
-                          Edit
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleDelete(vendor)} className="cursor-pointer text-destructive">
-                          Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                  <td className="p-3 text-sm text-muted-foreground" colSpan={8}>
+                    No vendors found.
                   </td>
                 </tr>
-              ))}
+              ) : (
+                filteredVendors.map((vendor, i) => (
+                  <tr
+                    key={vendor.id || vendor._id}
+                    className="border-b hover:bg-accent/50 transition-colors"
+                  >
+                    <td className="p-3">
+                      <Checkbox className="" />
+                    </td>
+                    <td className="p-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-gradient-to-br from-primary/20 to-primary/10 rounded-full flex items-center justify-center">
+                          <span className="text-sm font-semibold text-primary">
+                            {vendor.businessName?.charAt(0) || 'V'}
+                          </span>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium">
+                            {String(vendor.businessName || vendor.name || '-')}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {String(vendor.category || vendor.type || '')}
+                          </p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="p-3">
+                      <p className="text-sm">
+                        {vendor.contactPerson || vendor.contactName || vendor.ownerName || '-'}
+                      </p>
+                    </td>
+                    <td className="p-3">
+                      <p className="text-sm">{vendor.branches || 1}</p>
+                    </td>
+                    <td className="p-3">
+                      <p className="text-sm">{vendor.reservations || 0}</p>
+                    </td>
+                    <td className="p-3">
+                      <Badge
+                        variant="outline"
+                        className={
+                          vendor.status === 'Active'
+                            ? 'bg-green-100 text-green-800 border-green-200'
+                            : vendor.status === 'Suspended'
+                              ? 'bg-red-100 text-red-800 border-red-200'
+                              : 'bg-yellow-100 text-yellow-800 border-yellow-200'
+                        }
+                      >
+                        {vendor.status || 'Pending'}
+                      </Badge>
+                    </td>
+                    <td className="p-3">
+                      <p className="text-sm">
+                        {vendor.createdAt ? new Date(vendor.createdAt).toLocaleDateString() : '-'}
+                      </p>
+                    </td>
+                    <td className="p-3">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="hover:bg-accent">
+                            <MoreVertical className="w-4 h-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent className="" align="end">
+                          <DropdownMenuItem
+                            onClick={() => handleViewDetails(vendor)}
+                            className="cursor-pointer"
+                          >
+                            <Eye className="w-4 h-4 mr-2" />
+                            View details
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => handleEdit(vendor)}
+                            className="cursor-pointer"
+                          >
+                            Edit
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => handleDelete(vendor)}
+                            className="cursor-pointer text-destructive"
+                          >
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
@@ -613,67 +745,104 @@ export default function Vendors() {
             <div className="text-center py-8">
               <div className="text-sm text-muted-foreground">No vendors found.</div>
             </div>
-          ) : filteredVendors.map((vendor, i) => (
-            <Card key={vendor.id || vendor._id} className="p-4 hover:shadow-md transition-shadow">
-              <div className="flex items-start justify-between">
-                <div className="flex items-center gap-3 flex-1">
-                  <Checkbox />
-                  <div className="w-12 h-12 bg-gradient-to-br from-primary/20 to-primary/10 rounded-full flex items-center justify-center">
-                    <span className="text-sm font-semibold text-primary">{vendor.businessName?.charAt(0) || 'V'}</span>
+          ) : (
+            filteredVendors.map((vendor, i) => (
+              <Card
+                key={vendor.id || vendor._id}
+                className="p-4 hover:shadow-md transition-shadow overflow-hidden"
+              >
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-3 flex-1">
+                    <Checkbox className="" />
+                    <div className="w-12 h-12 bg-gradient-to-br from-primary/20 to-primary/10 rounded-full flex items-center justify-center">
+                      <span className="text-sm font-semibold text-primary">
+                        {vendor.businessName?.charAt(0) || 'V'}
+                      </span>
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium">
+                        {String(vendor.businessName || vendor.name || '-')}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {String(vendor.category || vendor.type || '')}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {vendor.contactPerson || vendor.contactName || vendor.ownerName || '-'}
+                      </p>
+                    </div>
                   </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium">{String(vendor.businessName || vendor.name || "-")}</p>
-                    <p className="text-xs text-muted-foreground">{String(vendor.category || vendor.type || "")}</p>
-                    <p className="text-xs text-muted-foreground mt-1">{vendor.contactPerson || vendor.contactName || vendor.ownerName || "-"}</p>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" className="hover:bg-accent">
+                        <MoreVertical className="w-4 h-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="" align="end">
+                      <DropdownMenuItem
+                        onClick={() => handleViewDetails(vendor)}
+                        className="cursor-pointer"
+                      >
+                        <Eye className="w-4 h-4 mr-2" />
+                        View details
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => handleEdit(vendor)}
+                        className="cursor-pointer"
+                      >
+                        Edit
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => handleDelete(vendor)}
+                        className="cursor-pointer text-destructive"
+                      >
+                        Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+                <div className="flex items-center justify-between mt-4 pt-4 border-t">
+                  <div className="flex items-center gap-4">
+                    <Badge
+                      variant="outline"
+                      className={
+                        vendor.status === 'Active'
+                          ? 'bg-green-100 text-green-800 border-green-200'
+                          : vendor.status === 'Suspended'
+                            ? 'bg-red-100 text-red-800 border-red-200'
+                            : 'bg-yellow-100 text-yellow-800 border-yellow-200'
+                      }
+                    >
+                      {vendor.status || 'Pending'}
+                    </Badge>
+                    <p className="text-xs text-muted-foreground">
+                      {vendor.createdAt ? new Date(vendor.createdAt).toLocaleDateString() : '-'}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xs text-muted-foreground">
+                      Branches: {vendor.branches || 1}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Reservations: {vendor.reservations || 0}
+                    </p>
                   </div>
                 </div>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="hover:bg-accent">
-                      <MoreVertical className="w-4 h-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => handleViewDetails(vendor)} className="cursor-pointer">
-                      <Eye className="w-4 h-4 mr-2" />
-                      View details
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleEdit(vendor)} className="cursor-pointer">
-                      Edit
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleDelete(vendor)} className="cursor-pointer text-destructive">
-                      Delete
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-              <div className="flex items-center justify-between mt-4 pt-4 border-t">
-                <div className="flex items-center gap-4">
-                  <Badge variant={vendor.status === "Active" ? "default" : "outline"} className={vendor.status === "Active" ? "bg-green-100 text-green-800" : ""}>
-                    {vendor.status || "Inactive"}
-                  </Badge>
-                  <p className="text-xs text-muted-foreground">{new Date(vendor.createdAt).toLocaleDateString()}</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-xs text-muted-foreground">Branches: {vendor.branches || 1}</p>
-                  <p className="text-xs text-muted-foreground">
-                  Reservations: {vendor.reservations || 0}
-                  </p>
-                </div>
-              </div>
-            </Card>
-          ))}
+              </Card>
+            ))
+          )}
         </div>
 
         <div className="flex items-center justify-between mt-4">
-          <p className="text-sm text-muted-foreground">Page {currentPage} of {totalPages}</p>
+          <p className="text-sm text-muted-foreground">
+            Page {currentPage} of {totalPages}
+          </p>
           <div className="flex gap-1">
             {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
               <button
                 key={page}
                 onClick={() => setCurrentPage(page)}
                 className={`w-8 h-8 text-sm rounded ${
-                  page === currentPage ? "bg-primary text-primary-foreground" : "hover:bg-accent"
+                  page === currentPage ? 'bg-primary text-primary-foreground' : 'hover:bg-accent'
                 }`}
               >
                 {page}
@@ -685,7 +854,7 @@ export default function Vendors() {
 
       <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
         <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
+          <DialogHeader className="">
             <DialogTitle className="flex items-center gap-2">
               <Eye className="w-5 h-5" />
               Vendor Details
@@ -702,18 +871,21 @@ export default function Vendors() {
               <div className="flex items-center gap-4">
                 <div className="w-16 h-16 bg-accent rounded-full flex items-center justify-center">
                   <span className="text-xl font-semibold">
-                    {(vendorDetails.businessName || vendorDetails.name || "V").charAt(0)}
+                    {(vendorDetails.businessName || vendorDetails.name || 'V').charAt(0)}
                   </span>
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold">
-                    {String(vendorDetails.businessName || vendorDetails.name || "Unknown Vendor")}
+                    {String(vendorDetails.businessName || vendorDetails.name || 'Unknown Vendor')}
                   </h3>
                   <p className="text-sm text-muted-foreground">
-                    {String(vendorDetails.category || vendorDetails.type || "No category")}
+                    {String(vendorDetails.category || vendorDetails.type || 'No category')}
                   </p>
-                  <Badge variant={vendorDetails.status === "Active" ? "default" : "outline"} className="mt-1">
-                    {vendorDetails.status || "Inactive"}
+                  <Badge
+                    variant={vendorDetails.status === 'Active' ? 'default' : 'outline'}
+                    className="mt-1"
+                  >
+                    {vendorDetails.status || 'Inactive'}
                   </Badge>
                 </div>
               </div>
@@ -729,33 +901,36 @@ export default function Vendors() {
                     <div className="flex items-center gap-2">
                       <UserX className="w-4 h-4 text-muted-foreground" />
                       <span className="text-sm">
-                        {String(vendorDetails.contactPerson || vendorDetails.contactName || vendorDetails.ownerName || "Not specified")}
+                        {String(
+                          vendorDetails.contactPerson ||
+                            vendorDetails.contactName ||
+                            vendorDetails.ownerName ||
+                            'Not specified'
+                        )}
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
                       <Mail className="w-4 h-4 text-muted-foreground" />
                       <span className="text-sm">
-                        {String(vendorDetails.email || "Not provided")}
+                        {String(vendorDetails.email || 'Not provided')}
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
                       <Phone className="w-4 h-4 text-muted-foreground" />
                       <span className="text-sm">
-                        {String(vendorDetails.phone || "Not provided")}
+                        {String(vendorDetails.phone || 'Not provided')}
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
                       <MapPin className="w-4 h-4 text-muted-foreground" />
                       <span className="text-sm">
-                        {String(vendorDetails.address || "Not provided")}
+                        {String(vendorDetails.address || 'Not provided')}
                       </span>
                     </div>
                     {vendorDetails.website && (
                       <div className="flex items-center gap-2">
                         <Globe className="w-4 h-4 text-muted-foreground" />
-                        <span className="text-sm">
-                          {String(vendorDetails.website)}
-                        </span>
+                        <span className="text-sm">{String(vendorDetails.website)}</span>
                       </div>
                     )}
                   </div>
@@ -782,13 +957,16 @@ export default function Vendors() {
                     <div className="flex items-center gap-2">
                       <Calendar className="w-4 h-4 text-muted-foreground" />
                       <span className="text-sm">
-                        Joined {vendorDetails.createdAt ? new Date(vendorDetails.createdAt).toLocaleDateString() : "Unknown"}
+                        Joined{' '}
+                        {vendorDetails.createdAt
+                          ? new Date(vendorDetails.createdAt).toLocaleDateString()
+                          : 'Unknown'}
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
                       <KeyRound className="w-4 h-4 text-muted-foreground" />
                       <span className="text-sm">
-                        ID: {vendorDetails.id || vendorDetails._id || "Unknown"}
+                        ID: {vendorDetails.id || vendorDetails._id || 'Unknown'}
                       </span>
                     </div>
                   </div>
@@ -804,14 +982,17 @@ export default function Vendors() {
                   <div className="flex items-center gap-2">
                     <Clock className="w-4 h-4 text-muted-foreground" />
                     <span className="text-sm">
-                      {String(vendorDetails.operatingHours || vendorDetails.hours || "")}
+                      {String(vendorDetails.operatingHours || vendorDetails.hours || '')}
                     </span>
                   </div>
                 </div>
               )}
 
               {/* Payment Information */}
-              {(vendorDetails.paymentMethods || vendorDetails.paymentDetails || vendorDetails.accountNumber || vendorDetails.bankDetails) && (
+              {(vendorDetails.paymentMethods ||
+                vendorDetails.paymentDetails ||
+                vendorDetails.accountNumber ||
+                vendorDetails.bankDetails) && (
                 <div className="space-y-4">
                   <h4 className="font-medium text-sm text-muted-foreground uppercase tracking-wide">
                     Payment Information
@@ -821,7 +1002,10 @@ export default function Vendors() {
                       <div className="flex items-center gap-2">
                         <CreditCard className="w-4 h-4 text-muted-foreground" />
                         <span className="text-sm">
-                          Methods: {Array.isArray(vendorDetails.paymentMethods) ? vendorDetails.paymentMethods.join(", ") : vendorDetails.paymentMethods}
+                          Methods:{' '}
+                          {Array.isArray(vendorDetails.paymentMethods)
+                            ? vendorDetails.paymentMethods.join(', ')
+                            : vendorDetails.paymentMethods}
                         </span>
                       </div>
                     )}
@@ -829,16 +1013,21 @@ export default function Vendors() {
                     {vendorDetails.accountNumber && (
                       <div className="flex items-center gap-2">
                         <DollarSign className="w-4 h-4 text-muted-foreground" />
-                        <span className="text-sm">
-                          Account: {vendorDetails.accountNumber}
-                        </span>
+                        <span className="text-sm">Account: {vendorDetails.accountNumber}</span>
                       </div>
                     )}
                     {vendorDetails.bankDetails && (
                       <div className="flex items-center gap-2">
                         <Building className="w-4 h-4 text-muted-foreground" />
                         <span className="text-sm">
-                          Bank: {String(vendorDetails.bankDetails?.bankName || (typeof vendorDetails.bankDetails === 'object' ? JSON.stringify(vendorDetails.bankDetails) : vendorDetails.bankDetails) || 'Bank details available')}
+                          Bank:{' '}
+                          {String(
+                            vendorDetails.bankDetails?.bankName ||
+                              (typeof vendorDetails.bankDetails === 'object'
+                                ? JSON.stringify(vendorDetails.bankDetails)
+                                : vendorDetails.bankDetails) ||
+                              'Bank details available'
+                          )}
                         </span>
                       </div>
                     )}
@@ -909,19 +1098,9 @@ export default function Vendors() {
                   <h4 className="font-medium text-sm text-muted-foreground uppercase tracking-wide">
                     Description
                   </h4>
-                  <p className="text-sm">{String(vendorDetails.description || "")}</p>
+                  <p className="text-sm">{String(vendorDetails.description || '')}</p>
                 </div>
               )}
-
-              {/* Raw JSON for debugging */}
-              <details className="mt-6">
-                <summary className="cursor-pointer text-sm font-medium text-muted-foreground">
-                  Raw Data (JSON)
-                </summary>
-                <pre className="mt-2 text-xs bg-muted p-3 rounded overflow-x-auto">
-                  {JSON.stringify(vendorDetails, null, 2)}
-                </pre>
-              </details>
             </div>
           ) : (
             <div className="flex items-center justify-center py-8">
@@ -933,56 +1112,85 @@ export default function Vendors() {
 
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
         <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Edit Vendor</DialogTitle>
+          <DialogHeader className="">
+            <DialogTitle className="">Edit Vendor</DialogTitle>
           </DialogHeader>
           {editingVendor && (
             <div className="space-y-6">
               {/* Basic Information */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="businessName">Business Name</Label>
+                  <Label className="" htmlFor="businessName">
+                    Business Name
+                  </Label>
                   <Input
+                    className=""
                     id="businessName"
-                    value={editingVendor.businessName || editingVendor.name || ""}
-                    onChange={(e) => setEditingVendor({ ...editingVendor, businessName: e.target.value })}
+                    value={editingVendor.businessName || editingVendor.name || ''}
+                    onChange={(e) =>
+                      setEditingVendor({ ...editingVendor, businessName: e.target.value })
+                    }
                     placeholder="Enter business name"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="contactPerson">Contact Person</Label>
+                  <Label className="" htmlFor="contactPerson">
+                    Contact Person
+                  </Label>
                   <Input
+                    className=""
+                    type="text"
                     id="contactPerson"
-                    value={editingVendor.contactPerson || editingVendor.contactName || editingVendor.ownerName || ""}
-                    onChange={(e) => setEditingVendor({ ...editingVendor, contactPerson: e.target.value })}
+                    value={
+                      editingVendor.contactPerson ||
+                      editingVendor.contactName ||
+                      editingVendor.ownerName ||
+                      ''
+                    }
+                    onChange={(e) =>
+                      setEditingVendor({ ...editingVendor, contactPerson: e.target.value })
+                    }
                     placeholder="Enter contact person name"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
+                  <Label className="" htmlFor="email">
+                    Email
+                  </Label>
                   <Input
+                    className=""
                     id="email"
                     type="email"
-                    value={editingVendor.email || ""}
+                    value={editingVendor.email || ''}
                     onChange={(e) => setEditingVendor({ ...editingVendor, email: e.target.value })}
                     placeholder="Enter email address"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="phone">Phone</Label>
+                  <Label className="" htmlFor="phone">
+                    Phone
+                  </Label>
                   <Input
+                    className=""
                     id="phone"
-                    value={editingVendor.phone || ""}
+                    type="tel"
+                    value={editingVendor.phone || ''}
                     onChange={(e) => setEditingVendor({ ...editingVendor, phone: e.target.value })}
                     placeholder="Enter phone number"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="website">Website</Label>
+                  <Label className="" htmlFor="website">
+                    Website
+                  </Label>
                   <Input
+                    className=""
                     id="website"
-                    value={editingVendor.website || ""}
-                    onChange={(e) => setEditingVendor({ ...editingVendor, website: e.target.value })}
+                    type="url"
+                    value={editingVendor.website || ''}
+                    onChange={(e) =>
+                      setEditingVendor({ ...editingVendor, website: e.target.value })
+                    }
                     placeholder="Enter website URL"
                   />
                 </div>
@@ -990,10 +1198,14 @@ export default function Vendors() {
 
               {/* Address */}
               <div className="space-y-2">
-                <Label htmlFor="address">Address</Label>
+                <Label className="" htmlFor="address">
+                  Address
+                </Label>
                 <Input
+                  className=""
                   id="address"
-                  value={editingVendor.address || ""}
+                  type="text"
+                  value={editingVendor.address || ''}
                   onChange={(e) => setEditingVendor({ ...editingVendor, address: e.target.value })}
                   placeholder="Enter business address"
                 />
@@ -1001,13 +1213,17 @@ export default function Vendors() {
 
               {/* Business Description */}
               <div className="space-y-2">
-                <Label htmlFor="businessDescription">Business Description</Label>
+                <Label className="" htmlFor="businessDescription">
+                  Business Description
+                </Label>
                 <textarea
                   id="businessDescription"
                   className="w-full p-3 border rounded-md resize-none"
                   rows={3}
-                  value={editingVendor.businessDescription || ""}
-                  onChange={(e) => setEditingVendor({ ...editingVendor, businessDescription: e.target.value })}
+                  value={editingVendor.businessDescription || ''}
+                  onChange={(e) =>
+                    setEditingVendor({ ...editingVendor, businessDescription: e.target.value })
+                  }
                   placeholder="Enter business description"
                 />
               </div>
@@ -1015,10 +1231,14 @@ export default function Vendors() {
               {/* Category and Status */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="vendorTypeCategory">Category</Label>
+                  <Label className="" htmlFor="vendorTypeCategory">
+                    Category
+                  </Label>
                   <Select
-                    value={editingVendor.vendorTypeCategory || editingVendor.category || ""}
-                    onValueChange={(value) => setEditingVendor({ ...editingVendor, vendorTypeCategory: value })}
+                    value={editingVendor.vendorTypeCategory || editingVendor.category || ''}
+                    onValueChange={(value) =>
+                      setEditingVendor({ ...editingVendor, vendorTypeCategory: value })
+                    }
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select category" />
@@ -1033,9 +1253,11 @@ export default function Vendors() {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="status">Status</Label>
+                  <Label className="" htmlFor="status">
+                    Status
+                  </Label>
                   <Select
-                    value={editingVendor.status || "Inactive"}
+                    value={editingVendor.status || 'Inactive'}
                     onValueChange={(value) => setEditingVendor({ ...editingVendor, status: value })}
                   >
                     <SelectTrigger>
@@ -1054,10 +1276,14 @@ export default function Vendors() {
               {/* Pricing and Visibility */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="priceRange">Price Range</Label>
+                  <Label className="" htmlFor="priceRange">
+                    Price Range
+                  </Label>
                   <Select
-                    value={editingVendor.priceRange || ""}
-                    onValueChange={(value) => setEditingVendor({ ...editingVendor, priceRange: value })}
+                    value={editingVendor.priceRange || ''}
+                    onValueChange={(value) =>
+                      setEditingVendor({ ...editingVendor, priceRange: value })
+                    }
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select price range" />
@@ -1071,14 +1297,22 @@ export default function Vendors() {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="percentageCharge">Commission (%)</Label>
+                  <Label className="" htmlFor="percentageCharge">
+                    Commission (%)
+                  </Label>
                   <Input
+                    className=""
                     id="percentageCharge"
                     type="number"
                     min="0"
                     max="100"
-                    value={editingVendor.percentageCharge || ""}
-                    onChange={(e) => setEditingVendor({ ...editingVendor, percentageCharge: parseFloat(e.target.value) || 0 })}
+                    value={editingVendor.percentageCharge || ''}
+                    onChange={(e) =>
+                      setEditingVendor({
+                        ...editingVendor,
+                        percentageCharge: parseFloat(e.target.value) || 0,
+                      })
+                    }
                     placeholder="Enter commission percentage"
                   />
                 </div>
@@ -1090,10 +1324,14 @@ export default function Vendors() {
                   type="checkbox"
                   id="isVisible"
                   checked={editingVendor.isVisible !== false}
-                  onChange={(e) => setEditingVendor({ ...editingVendor, isVisible: e.target.checked })}
+                  onChange={(e) =>
+                    setEditingVendor({ ...editingVendor, isVisible: e.target.checked })
+                  }
                   className="rounded"
                 />
-                <Label htmlFor="isVisible">Visible to customers</Label>
+                <Label className="" htmlFor="isVisible">
+                  Visible to customers
+                </Label>
               </div>
 
               {/* Action Buttons */}
@@ -1109,53 +1347,6 @@ export default function Vendors() {
           )}
         </DialogContent>
       </Dialog>
-
-      <Dialog open={showFilterModal} onOpenChange={setShowFilterModal}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Filter Vendors</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <label className="text-sm font-medium">Status</label>
-              <select
-                className="w-full mt-1 p-2 border rounded"
-                value={filters.status}
-                onChange={(e) => setFilters({ ...filters, status: e.target.value })}
-              >
-                <option value="">All</option>
-                <option value="Active">Active</option>
-                <option value="Inactive">Inactive</option>
-                <option value="Pending">Pending</option>
-                <option value="Suspended">Suspended</option>
-              </select>
-            </div>
-            <div>
-              <label className="text-sm font-medium">Category</label>
-              <select
-                className="w-full mt-1 p-2 border rounded"
-                value={filters.category}
-                onChange={(e) => setFilters({ ...filters, category: e.target.value })}
-              >
-                <option value="">All</option>
-                <option value="Restaurant">Restaurant</option>
-                <option value="Hotel">Hotel</option>
-                <option value="Service">Service</option>
-                <option value="Retail">Retail</option>
-              </select>
-            </div>
-          </div>
-          <div className="flex justify-end gap-2 mt-4">
-            <Button variant="outline" onClick={() => setShowFilterModal(false)}>
-              Cancel
-            </Button>
-            <Button onClick={() => setShowFilterModal(false)}>
-              Apply
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
-

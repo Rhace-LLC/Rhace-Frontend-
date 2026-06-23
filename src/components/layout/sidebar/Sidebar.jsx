@@ -1,20 +1,20 @@
-import { logout, logoutAsync } from "@/redux/slices/authSlice";
-import { Menu, Search, X } from "lucide-react";
-import { useDispatch } from "react-redux";
-import { useLocation, useNavigate } from "react-router-dom";
-import { ClubList, HotelList, RestaurantList } from "./SideMenuList";
-import logo from "@/public/images/Rhace-09.png";
+import { useState } from 'react';
+import { logoutAsync } from '@/redux/slices/authSlice';
+import { Menu, Search, X } from 'lucide-react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { ClubList, HotelList, RestaurantList } from './SideMenuList';
+import { ConfirmationDialog } from '@/components/ConfirmationDialog';
 
 // Hook to get current menu configuration
 const useMenuConfig = (businessType) => {
   const location = useLocation();
 
   const getMenuList = () => {
-    return businessType === "hotel"
+    return businessType === 'hotel'
       ? HotelList
-      : businessType === "restaurant"
+      : businessType === 'restaurant'
         ? RestaurantList
-        : businessType === "club"
+        : businessType === 'club'
           ? ClubList
           : ClubList;
   };
@@ -42,47 +42,60 @@ const useMenuConfig = (businessType) => {
 const Sidebar = ({ isOpen, onClose, onNavigate, type }) => {
   const { menuItems, bottomItems } = useMenuConfig(type);
   const navigate = useNavigate();
-  const dispatch = useDispatch();
 
+  // 1. Add state to track if the confirmation dialog is open
+  const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false);
+  const [pendingLogoutItem, setPendingLogoutItem] = useState(null);
+
+  // 2. The core logout execution logic
+  const executeLogout = (item) => {
+    console.log('Sidebar: logging out verified');
+    logoutAsync();
+
+    setTimeout(() => {
+      navigate('/auth/vendor/login');
+    }, 500);
+
+    if (onNavigate) onNavigate(item.path);
+    if (onClose && window.innerWidth < 1024) onClose();
+  };
+
+  // 3. Your modified click handler
   const handleItemClick = (item) => {
-    if (item.label === "Logout") {
-      console.log("Sidebar: logging out");
-      dispatch(logoutAsync());
-      setTimeout(() => {
-        navigate("/auth/vendor/login");
-      }, 500);
-      if (onNavigate) onNavigate(item.path);
-      if (onClose && window.innerWidth < 1024) onClose();
+    if (item.label === 'Logout') {
+      // Don't log out yet! Just save the item context and open the modal
+      setPendingLogoutItem(item);
+      setIsLogoutDialogOpen(true);
       return;
     }
 
+    // Standard non-logout navigation
     if (onNavigate) {
       onNavigate(item.path);
     }
-    // Close mobile sidebar after navigation
     if (onClose && window.innerWidth < 1024) {
       onClose();
     }
   };
 
   const getBusinessName = () => {
-    return type === "hotel"
-      ? "Hotel 1 - HQ"
-      : type === "restaurant"
-        ? "Restaurant 1 - HQ"
-        : "Club 1 - HQ";
+    return type === 'hotel'
+      ? 'Hotel 1 - HQ'
+      : type === 'restaurant'
+        ? 'Restaurant 1 - HQ'
+        : 'Club 1 - HQ';
   };
 
   return (
     <>
       {/* Desktop Sidebar */}
-        <div className="hidden lg:flex lg:shrink-0">
-          <div className="flex flex-col w-64 bg-emerald-950 text-white">
-            {/* Logo */}
+      <div className="hidden lg:flex lg:shrink-0">
+        <div className="flex flex-col w-64 bg-emerald-950 text-white">
+          {/* Logo */}
           <div className="flex items-center h-16 px-4">
             <div className="flex items-center">
               <img
-                src={logo}
+                src={'/images/Rhace-09.png'}
                 alt="Rhace Logo"
                 className="w-20 h-20 object-contain"
               />
@@ -104,10 +117,11 @@ const Sidebar = ({ isOpen, onClose, onNavigate, type }) => {
                 onClick={() => {
                   handleItemClick(item);
                 }}
-                className={`w-[90%] flex items-center pl-7 py-2 gap-3 rounded-tr-[36px] rounded-br-[36px] text-left transition-colors duration-200 ${location.pathname === item.path
-                  ? "bg-teal-700 text-white shadow-[0px_1px_3px_0px_rgba(122,122,122,0.10)]"
-                  : "text-teal-100 hover:bg-teal-700 hover:text-white"
-                  }`}
+                className={`w-[90%] flex items-center pl-7 py-2 gap-3 rounded-tr-[36px] rounded-br-[36px] text-left transition-colors duration-200 ${
+                  location.pathname === item.path
+                    ? 'bg-teal-700 text-white shadow-[0px_1px_3px_0px_rgba(122,122,122,0.10)]'
+                    : 'text-teal-100 hover:bg-teal-700 hover:text-white'
+                }`}
               >
                 <item.icon className="w-5 h-5" />
                 {item.label}
@@ -121,10 +135,11 @@ const Sidebar = ({ isOpen, onClose, onNavigate, type }) => {
               <button
                 key={item.label}
                 onClick={() => handleItemClick(item)}
-                className={`w-[90%] flex items-center pl-7 py-2 rounded-tr-[36px] rounded-br-[36px] text-left gap-3 transition-colors duration-200 ${item.active
-                  ? "bg-teal-700 text-white shadow-[0px_1px_3px_0px_rgba(122,122,122,0.10)]"
-                  : "text-teal-100 hover:bg-teal-700 hover:text-white"
-                  }`}
+                className={`w-[90%] flex items-center pl-7 py-2 rounded-tr-[36px] rounded-br-[36px] text-left gap-3 transition-colors duration-200 ${
+                  item.active
+                    ? 'bg-teal-700 text-white shadow-[0px_1px_3px_0px_rgba(122,122,122,0.10)]'
+                    : 'text-teal-100 hover:bg-teal-700 hover:text-white'
+                }`}
               >
                 <item.icon className="w-5 h-5 " />
                 {item.label}
@@ -146,29 +161,29 @@ const Sidebar = ({ isOpen, onClose, onNavigate, type }) => {
               onClick={() => {
                 handleItemClick(item);
               }}
-              className={`p-3 rounded-full ${location.pathname === item.path
-                ? "bg-teal-700 text-white"
-                : "text-[#606368] hover:bg-teal-700 hover:text-white"
-                }`}
+              className={`p-3 rounded-full ${
+                location.pathname === item.path
+                  ? 'bg-teal-700 text-white'
+                  : 'text-[#606368] hover:bg-teal-700 hover:text-white'
+              }`}
             >
               <item.icon className="w-5 shrink-0 h-5" />
             </button>
           ))}
-            <button
-              onClick={() => {
-                
-              }}
-              className={`p-3 rounded-full text-[#606368] hover:bg-teal-700 hover:text-white`}
-            >
-              <Menu className="w-5 shrink-0 h-5" />
-            </button>
+          <button
+            onClick={() => {}}
+            className={`p-3 rounded-full text-[#606368] hover:bg-teal-700 hover:text-white`}
+          >
+            <Menu className="w-5 shrink-0 h-5" />
+          </button>
         </nav>
       </div>
 
       {/* Mobile Sidebar */}
       <div
-        className={`fixed inset-y-0 left-0 z-30 w-64 bg-teal-800 text-white transform transition-transform duration-300 ease-in-out lg:hidden ${isOpen ? "translate-x-0" : "-translate-x-full"
-          }`}
+        className={`fixed inset-y-0 left-0 z-30 w-64 bg-teal-800 text-white transform transition-transform duration-300 ease-in-out lg:hidden ${
+          isOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
       >
         {/* Mobile Logo with close button */}
         <div className="flex items-center justify-between h-16 px-4 bg-teal-900">
@@ -178,19 +193,14 @@ const Sidebar = ({ isOpen, onClose, onNavigate, type }) => {
             </div>
             <span className="text-xl font-bold">Rhace</span>
           </div>
-          <button
-            onClick={onClose}
-            className="text-white hover:bg-teal-700 p-1 rounded"
-          >
+          <button onClick={onClose} className="text-white hover:bg-teal-700 p-1 rounded">
             <X className="w-6 h-6" />
           </button>
         </div>
 
         {/* Business selector */}
         <div className="px-4 py-3 border-b border-teal-700">
-          <div className="bg-teal-700 px-3 py-2 rounded text-sm">
-            {getBusinessName()}
-          </div>
+          <div className="bg-teal-700 px-3 py-2 rounded text-sm">{getBusinessName()}</div>
         </div>
 
         {/* Navigation */}
@@ -199,10 +209,11 @@ const Sidebar = ({ isOpen, onClose, onNavigate, type }) => {
             <button
               key={item.label}
               onClick={() => handleItemClick(item)}
-              className={`w-full flex items-center px-3 py-2 rounded-lg text-left transition-colors duration-200 ${item.active
-                ? "bg-teal-700 text-white"
-                : "text-teal-100 hover:bg-teal-700 hover:text-white"
-                }`}
+              className={`w-full flex items-center px-3 py-2 rounded-lg text-left transition-colors duration-200 ${
+                item.active
+                  ? 'bg-teal-700 text-white'
+                  : 'text-teal-100 hover:bg-teal-700 hover:text-white'
+              }`}
             >
               <item.icon className="w-5 h-5 mr-3" />
               {item.label}
@@ -216,10 +227,11 @@ const Sidebar = ({ isOpen, onClose, onNavigate, type }) => {
             <button
               key={item.label}
               onClick={() => handleItemClick(item)}
-              className={`w-full flex items-center px-3 py-2 rounded-lg text-left transition-colors duration-200 ${item.active
-                ? "bg-teal-700 text-white"
-                : "text-teal-100 hover:bg-teal-700 hover:text-white"
-                }`}
+              className={`w-full flex items-center px-3 py-2 rounded-lg text-left transition-colors duration-200 ${
+                item.active
+                  ? 'bg-teal-700 text-white'
+                  : 'text-teal-100 hover:bg-teal-700 hover:text-white'
+              }`}
             >
               <item.icon className="w-5 h-5 mr-3" />
               {item.label}
@@ -227,6 +239,23 @@ const Sidebar = ({ isOpen, onClose, onNavigate, type }) => {
           ))}
         </div>
       </div>
+      {/* 4. Add the confirmation dialog markup */}
+      <ConfirmationDialog
+        open={isLogoutDialogOpen}
+        onOpenChange={setIsLogoutDialogOpen}
+        variant="danger" // "danger" or "warning" fits logout well
+        title="Confirm Logout"
+        confirmationMsg="Are you sure you want to log out of your vendor account?"
+        onConfirm={() => {
+          if (pendingLogoutItem) {
+            executeLogout(pendingLogoutItem);
+          }
+        }}
+        onCancel={() => {
+          console.log('Logout aborted');
+          setPendingLogoutItem(null);
+        }}
+      />
     </>
   );
 };

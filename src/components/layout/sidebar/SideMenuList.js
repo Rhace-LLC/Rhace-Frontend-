@@ -1,4 +1,5 @@
-import  { UsersIcon,
+import {
+  UsersIcon,
   DashBoardIcon,
   BranchesIcon,
   BookingsIcon,
@@ -7,54 +8,53 @@ import  { UsersIcon,
   SettingsIcon,
   LogoutIcon,
   MenuIcon,
-  PeopleIcon,
   RhaceIcon,
-} from "../../../public/icons/icons";
+} from '../../../public/icons/icons';
 
 export { RhaceIcon };
 
 export const AdminList = {
   topItems: [
     {
-      label: "Dashboard",
-      path: "/dashboard/admin",
+      label: 'Dashboard',
+      path: '/dashboard/admin',
       icon: DashBoardIcon,
     },
     {
-      label: "Vendors",
-      path: "/dashboard/admin/vendors",
+      label: 'Vendors',
+      path: '/dashboard/admin/vendors',
       icon: BranchesIcon,
     },
     {
-      label: "Users",
-      path: "/dashboard/admin/users",
+      label: 'Users',
+      path: '/dashboard/admin/users',
       icon: UsersIcon,
     },
     {
-      label: "Reservations",
-      path: "/dashboard/admin/reservations",
+      label: 'Reservations',
+      path: '/dashboard/admin/reservations',
       icon: BookingsIcon,
     },
     {
-      label: "Payments",
-      path: "/dashboard/admin/payments",
+      label: 'Payments',
+      path: '/dashboard/admin/payments',
       icon: PaymentIcon,
     },
     {
-      label: "Reports",
-      path: "/dashboard/admin/reports",
+      label: 'Reports',
+      path: '/dashboard/admin/reports',
       icon: Amenities,
     },
   ],
   bottomItems: [
     {
-      label: "Settings",
-      path: "/dashboard/admin/settings",
+      label: 'Settings',
+      path: '/dashboard/admin/settings',
       icon: SettingsIcon,
     },
     {
-      label: "Logout",
-      path: "#logout",
+      label: 'Logout',
+      path: '#logout',
       icon: LogoutIcon,
     },
   ],
@@ -63,35 +63,35 @@ export const AdminList = {
 export const ClubList = {
   topItems: [
     {
-      label: "Dashboard",
-      path: "/dashboard/club",
+      label: 'Dashboard',
+      path: '/dashboard/club',
       icon: DashBoardIcon,
     },
     {
-      label: "Reservations",
-      path: "/dashboard/club/reservations",
+      label: 'Reservations',
+      path: '/dashboard/club/reservations',
       icon: BookingsIcon,
     },
-        {
-      label: "Drink Menu",
-      path: "/dashboard/club/drinks",
+    {
+      label: 'Drink Menu',
+      path: '/dashboard/club/drinks',
       icon: MenuIcon,
     },
     {
-      label: "Payments",
-      path: "/dashboard/club/payments",
+      label: 'Payments',
+      path: '/dashboard/club/payments',
       icon: PaymentIcon,
     },
   ],
   bottomItems: [
     {
-      label: "Settings",
-      path: "/dashboard/club/settings",
+      label: 'Settings',
+      path: '/dashboard/club/settings',
       icon: SettingsIcon,
     },
     {
-      label: "Logout",
-      path: "#logout",
+      label: 'Logout',
+      path: '#logout',
       icon: LogoutIcon,
     },
   ],
@@ -100,35 +100,35 @@ export const ClubList = {
 export const HotelList = {
   topItems: [
     {
-      label: "Dashboard",
-      path: "/dashboard/hotel",
+      label: 'Dashboard',
+      path: '/dashboard/hotel',
       icon: DashBoardIcon,
     },
     {
-      label: "Bookings",
-      path: "/dashboard/hotel/bookings",
+      label: 'Bookings',
+      path: '/dashboard/hotel/bookings',
       icon: BookingsIcon,
     },
     {
-      label: "Rooms Management",
-      path: "/dashboard/hotel/rooms",
+      label: 'Rooms Management',
+      path: '/dashboard/hotel/rooms',
       icon: BranchesIcon,
     },
     {
-      label: "Payments",
-      path: "/dashboard/hotel/payments",
+      label: 'Payments',
+      path: '/dashboard/hotel/payments',
       icon: PaymentIcon,
     },
-    ],
+  ],
   bottomItems: [
     {
-      label: "Settings",
-      path: "/dashboard/hotel/settings",
+      label: 'Settings',
+      path: '/dashboard/hotel/settings',
       icon: SettingsIcon,
     },
     {
-      label: "Logout",
-      path: "#logout",
+      label: 'Logout',
+      path: '#logout',
       icon: LogoutIcon,
     },
   ],
@@ -137,35 +137,35 @@ export const HotelList = {
 export const RestaurantList = {
   topItems: [
     {
-      label: "Dashboard",
-      path: "/dashboard/restaurant",
+      label: 'Dashboard',
+      path: '/dashboard/restaurant',
       icon: DashBoardIcon,
     },
     {
-      label: "Reservations",
-      path: "/dashboard/restaurant/reservation",
+      label: 'Reservations',
+      path: '/dashboard/restaurant/reservation',
       icon: BookingsIcon,
     },
     {
-      label: "Menu Management",
-      path: "/dashboard/restaurant/menu",
+      label: 'Menu Management',
+      path: '/dashboard/restaurant/menu',
       icon: MenuIcon,
     },
     {
-      label: "Payments",
-      path: "/dashboard/restaurant/payments",
+      label: 'Payments',
+      path: '/dashboard/restaurant/payments',
       icon: PaymentIcon,
     },
   ],
   bottomItems: [
     {
-      label: "Settings",
-      path: "/dashboard/restaurant/settings",
+      label: 'Settings',
+      path: '/dashboard/restaurant/settings',
       icon: SettingsIcon,
     },
     {
-      label: "Logout",
-      path: "#logout",
+      label: 'Logout',
+      path: '#logout',
       icon: LogoutIcon,
     },
   ],

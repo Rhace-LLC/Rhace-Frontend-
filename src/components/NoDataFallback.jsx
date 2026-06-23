@@ -2,8 +2,8 @@ import React from 'react';
 import { PackageOpen } from 'lucide-react';
 
 const NoDataFallback = ({
-  title = "No Data Available",
-  message = "There’s nothing to show here yet.",
+  title = 'No Data Available',
+  message = 'There’s nothing to show here yet.',
   actionLabel,
   onAction,
 }) => {

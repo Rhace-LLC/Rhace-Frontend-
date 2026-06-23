@@ -1,6 +1,6 @@
-import DashboardLayout from "@/components/layout/DashboardLayout";
-import React, { useEffect, useState } from "react";
-import DashboardButton from "@/components/dashboard/ui/DashboardButton";
+import DashboardLayout from '@/components/layout/DashboardLayout';
+import React, { useEffect, useState } from 'react';
+import DashboardButton from '@/components/dashboard/ui/DashboardButton';
 import {
   Add,
   ArrowsRight,
@@ -21,8 +21,8 @@ import {
   Phone,
   Printer,
   XCircle,
-} from "@/components/dashboard/ui/svg";
-import { StatCard } from "@/components/dashboard/stats/mainStats";
+} from '@/components/dashboard/ui/svg';
+import { StatCard } from '@/components/dashboard/stats/mainStats';
 import {
   // ColumnDef,
   // ColumnFiltersState,
@@ -34,7 +34,7 @@ import {
   // SortingState,
   useReactTable,
   // VisibilityState,
-} from "@tanstack/react-table";
+} from '@tanstack/react-table';
 import {
   ArrowUpDown,
   Check,
@@ -45,10 +45,10 @@ import {
   MoreVertical,
   Search,
   XIcon,
-} from "lucide-react";
+} from 'lucide-react';
 
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -57,8 +57,8 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
+} from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
 import {
   Table,
   TableBody,
@@ -66,7 +66,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from '@/components/ui/table';
 import {
   Pagination,
   PaginationContent,
@@ -75,23 +75,23 @@ import {
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
-} from "@/components/ui/pagination";
-import { useNavigate } from "react-router";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { menuService } from "@/services/menu.service";
-import { toast } from "react-toastify";
-import { Switch } from "@/components/ui/switch";
-import { useSelector } from "react-redux";
-import UniversalLoader from "@/components/user/ui/LogoLoader";
+} from '@/components/ui/pagination';
+import { useNavigate } from 'react-router';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { menuService } from '@/services/menu.service';
+import { toast } from 'react-toastify';
+import { Switch } from '@/components/ui/switch';
+import { useSelector } from 'react-redux';
+import UniversalLoader from '@/components/user/ui/LogoLoader';
 
-const categories = ["All Menu", "All Menu Items"];
+const categories = ['All Menu', 'All Menu Items'];
 
 const MenuDashboard = () => {
   const [sorting, setSorting] = useState([]);
   const [columnFilters, setColumnFilters] = useState([]);
   const [columnVisibility, setColumnVisibility] = useState({});
   const [rowSelection, setRowSelection] = useState({});
-  const [activeCategory, setActiveCategory] = useState("All Menu");
+  const [activeCategory, setActiveCategory] = useState('All Menu');
   const [menus, setMenus] = useState([]);
   const [menuItems, setMenuItems] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -105,12 +105,12 @@ const MenuDashboard = () => {
 
   const menuColumns = [
     {
-      id: "select",
+      id: 'select',
       header: ({ table }) => (
         <Checkbox
           checked={
             table.getIsAllPageRowsSelected() ||
-            (table.getIsSomePageRowsSelected() && "indeterminate")
+            (table.getIsSomePageRowsSelected() && 'indeterminate')
           }
           onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
           aria-label="Select all"
@@ -128,79 +128,66 @@ const MenuDashboard = () => {
       enableHiding: false,
     },
     {
-      accessorKey: "image",
-      header: "Image",
+      accessorKey: 'image',
+      header: 'Image',
       cell: ({ row }) => {
         const m = row.original;
         return (
           <div className="rounded-full overflow-hidden relative size-9">
-            <img
-              src={m.coverImage}
-              alt={m.name}
-              className="size-full object-cover"
-            />
+            <img src={m.coverImage} alt={m.name} className="size-full object-cover" />
           </div>
         );
       },
     },
     {
-      accessorKey: "menu_name",
-      header: "Menu Name",
+      accessorKey: 'menu_name',
+      header: 'Menu Name',
       cell: ({ row }) => {
         const m = row.original;
-        return (
-          <span className="text-[#111827] font-medium text-sm">{m.name}</span>
-        );
+        return <span className="text-[#111827] font-medium text-sm">{m.name}</span>;
       },
     },
     {
-      accessorKey: "price",
-      header: "Price",
+      accessorKey: 'price',
+      header: 'Price',
       cell: ({ row }) => (
-        <span className="text-[#111827] font-medium text-sm">
-          ₦{row.getValue("price")}
-        </span>
+        <span className="text-[#111827] font-medium text-sm">₦{row.getValue('price')}</span>
       ),
     },
     {
-      accessorKey: "meal_type",
-      header: "Meal Type",
+      accessorKey: 'meal_type',
+      header: 'Meal Type',
       cell: ({ row }) => {
         const m = row.original;
-        return <div>{m.menuType.join(", ")}</div>;
+        return <div>{m.menuType.join(', ')}</div>;
       },
     },
     {
-      accessorKey: "meal_times",
-      header: "Meal Times",
+      accessorKey: 'meal_times',
+      header: 'Meal Times',
       cell: ({ row }) => {
         const m = row.original;
-        return <div>{m.mealTimes.join(", ")}</div>;
+        return <div>{m.mealTimes.join(', ')}</div>;
       },
     },
     {
-      accessorKey: "items",
-      header: "Items",
+      accessorKey: 'items',
+      header: 'Items',
       cell: ({ row }) => (
-        <span className="text-[#111827] font-medium text-sm">
-          {row.getValue("items").length}
-        </span>
+        <span className="text-[#111827] font-medium text-sm">{row.getValue('items').length}</span>
       ),
     },
     {
-      accessorKey: "tags",
-      header: "Tags",
+      accessorKey: 'tags',
+      header: 'Tags',
       cell: ({ row }) => {
         return (
           <div className="flex gap-1">
             {row
-              .getValue("tags")
+              .getValue('tags')
               .slice(0, 3)
               .map((tag, i) => (
-                <div
-                  key={i}
-                  className="text-xs bg-[#E6F2F2] text-[#0A6C6D] px-2 py-1 rounded-full"
-                >
+                <div key={i} className="text-xs bg-[#E6F2F2] text-[#0A6C6D] px-2 py-1 rounded-full">
                   {tag}
                 </div>
               ))}
@@ -210,25 +197,23 @@ const MenuDashboard = () => {
     },
 
     {
-      accessorKey: "status",
-      header: "Status",
+      accessorKey: 'status',
+      header: 'Status',
       cell: ({ row }) => {
         const rowId = row.original._id; // or whatever uniquely identifies the row
 
         const handleToggle = (checked) => {
           setMenus((prev) =>
             prev.map((item) =>
-              item._id === rowId
-                ? { ...item, status: checked ? "active" : "inactive" }
-                : item,
-            ),
+              item._id === rowId ? { ...item, status: checked ? 'active' : 'inactive' } : item
+            )
           );
         };
 
         return (
           <div className="flex gap-1">
             <Switch
-              checked={row.getValue("status") === "active"}
+              checked={row.getValue('status') === 'active'}
               onCheckedChange={handleToggle}
               aria-label="Toggle status"
             />
@@ -237,7 +222,7 @@ const MenuDashboard = () => {
       },
     },
     {
-      id: "actions",
+      id: 'actions',
       enableHiding: false,
       cell: () => {
         // const payment = row.original
@@ -290,12 +275,12 @@ const MenuDashboard = () => {
 
   const menuItemColumns = [
     {
-      id: "select",
+      id: 'select',
       header: ({ table }) => (
         <Checkbox
           checked={
             table.getIsAllPageRowsSelected() ||
-            (table.getIsSomePageRowsSelected() && "indeterminate")
+            (table.getIsSomePageRowsSelected() && 'indeterminate')
           }
           onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
           aria-label="Select all"
@@ -313,77 +298,67 @@ const MenuDashboard = () => {
       enableHiding: false,
     },
     {
-      accessorKey: "image",
-      header: "Image",
+      accessorKey: 'image',
+      header: 'Image',
       cell: ({ row }) => {
         const m = row.original;
         return (
           <div className="rounded-full overflow-hidden relative size-9">
-            <img
-              src={m.coverImage}
-              alt={m.name}
-              className="size-full object-cover"
-            />
+            <img src={m.coverImage} alt={m.name} className="size-full object-cover" />
           </div>
         );
       },
     },
     {
-      accessorKey: "menu_name",
-      header: "Menu Name",
+      accessorKey: 'menu_name',
+      header: 'Menu Name',
       cell: ({ row }) => {
         const m = row.original;
-        return (
-          <span className="text-[#111827] font-medium text-sm">{m.name}</span>
-        );
+        return <span className="text-[#111827] font-medium text-sm">{m.name}</span>;
       },
     },
     {
-      accessorKey: "price",
-      header: "Price",
+      accessorKey: 'price',
+      header: 'Price',
       cell: ({ row }) => (
-        <span className="text-[#111827] font-medium text-sm">
-          ₦{row.getValue("price")}
-        </span>
+        <span className="text-[#111827] font-medium text-sm">₦{row.getValue('price')}</span>
       ),
     },
     {
-      accessorKey: "category",
-      header: "Category",
+      accessorKey: 'category',
+      header: 'Category',
       cell: ({ row }) => (
-        <span className="text-[#111827] font-medium text-sm">
-          {row.getValue("category")}
-        </span>
+        <span className="text-[#111827] font-medium text-sm">{row.getValue('category')}</span>
       ),
     },
     {
-      accessorKey: "menu_assigned",
-      header: "Menu Assigned",
+      accessorKey: 'menu_assigned',
+      header: 'Menu Assigned',
       cell: ({ row }) => {
         const m = row.original;
         const menuAssigned = menus
           .filter((i) => m.assignedMenus && m.assignedMenus.includes(i._id))
           .map((i) => i.name);
-        return <div>{menuAssigned.join(", ")}</div>;
+        return <div>{menuAssigned.join(', ')}</div>;
       },
     },
     {
-      accessorKey: "meal_times",
-      header: "Meal Times",
+      accessorKey: 'meal_times',
+      header: 'Meal Times',
       cell: ({ row }) => {
         const m = row.original;
-        return <div>{m.mealTimes.join(", ")}</div>;
+        return <div>{m.mealTimes.join(', ')}</div>;
       },
     },
     {
-      accessorKey: "tags",
-      header: "Tags",
+      accessorKey: 'tags',
+      header: 'Tags',
       cell: ({ row }) => {
         return (
           <div className="flex gap-1 items-center">
             <div className="flex gap-2">
               {row
-                .getValue("tags")
+                .getValue('tags')
                 .slice(0, 3)
                 .map((tag, i) => (
                   <div
@@ -394,33 +369,31 @@ const MenuDashboard = () => {
                   </div>
                 ))}
             </div>
-            {row.getValue("tags").length > 3 && (
-              <span>+{row.getValue("tags").length - 3} more</span>
+            {row.getValue('tags').length > 3 && (
+              <span>+{row.getValue('tags').length - 3} more</span>
             )}
           </div>
         );
       },
     },
     {
-      accessorKey: "status",
-      header: "Status",
+      accessorKey: 'status',
+      header: 'Status',
       cell: ({ row }) => {
         const rowId = row.original._id; // or whatever uniquely identifies the row
 
         const handleToggle = (checked) => {
           setMenuItems((prev) =>
             prev.map((item) =>
-              item._id === rowId
-                ? { ...item, status: checked ? "active" : "inactive" }
-                : item,
-            ),
+              item._id === rowId ? { ...item, status: checked ? 'active' : 'inactive' } : item
+            )
           );
         };
 
         return (
           <div className="flex gap-1">
             <Switch
-              checked={row.getValue("status") === "active"}
+              checked={row.getValue('status') === 'active'}
               onCheckedChange={handleToggle}
               aria-label="Toggle status"
             />
@@ -429,7 +402,7 @@ const MenuDashboard = () => {
       },
     },
     {
-      id: "actions",
+      id: 'actions',
       enableHiding: false,
       cell: () => {
         // const payment = row.original
@@ -480,21 +453,19 @@ const MenuDashboard = () => {
     },
   ];
 
-  const data = activeCategory === "All Menu Items" ? menuItems : menus;
-  const columns =
-    activeCategory === "All Menu Items" ? menuItemColumns : menuColumns;
+  const data = activeCategory === 'All Menu Items' ? menuItems : menus;
+  const columns = activeCategory === 'All Menu Items' ? menuItemColumns : menuColumns;
 
   const handleDelete = async (id, type) => {
-    if (!window.confirm("Are you sure you want to delete this menu item?"))
-      return;
+    if (!window.confirm('Are you sure you want to delete this menu item?')) return;
 
     try {
       await menuService.deleteMenu(id, type);
-      alert("Item deleted successfully!");
+      alert('Item deleted successfully!');
       setShowPopup({ display: false, details: {} });
     } catch (error) {
-      console.error("Delete failed:", error);
-      alert("Failed to delete item.");
+      console.error('Delete failed:', error);
+      alert('Failed to delete item.');
     }
   };
 
@@ -506,7 +477,7 @@ const MenuDashboard = () => {
         setMenus(items.menus);
       } catch (error) {
         console.error(error);
-        toast.error("Failed to fetch menus");
+        toast.error('Failed to fetch menus');
       } finally {
         setIsLoading(false);
       }
@@ -518,7 +489,7 @@ const MenuDashboard = () => {
         setMenuItems(items.menuItems);
       } catch (error) {
         console.error(error);
-        toast.error("Failed to fetch menu items");
+        toast.error('Failed to fetch menu items');
       } finally {
         setIsLoading(false);
       }
@@ -556,21 +527,15 @@ const MenuDashboard = () => {
             <div className="md:flex hidden justify-between items-center">
               <h2 className="text-[#111827] font-semibold">Menu Management</h2>
               <div className="flex gap-6">
+                <DashboardButton variant="secondary" text="Export" icon={<Export />} />
                 <DashboardButton
-                  variant="secondary"
-                  text="Export"
-                  icon={<Export />}
-                />
-                <DashboardButton
-                  onClick={() =>
-                    navigate("/dashboard/restaurant/menu/item/new")
-                  }
+                  onClick={() => navigate('/dashboard/restaurant/menu/item/new')}
                   variant="secondary"
                   text="Add Menu Item"
                   icon={<Add fill="#000" />}
                 />
                 <DashboardButton
-                  onClick={() => navigate("/dashboard/restaurant/menu/new")}
+                  onClick={() => navigate('/dashboard/restaurant/menu/new')}
                   variant="primary"
                   text="Add Menu"
                   icon={<Add fill="#fff" />}
@@ -585,7 +550,7 @@ const MenuDashboard = () => {
                       {categories.map((category, i) => (
                         <div
                           onClick={() => setActiveCategory(category)}
-                          className={`p-2 text-xs md:text-sm rounded-lg border font-medium cursor-pointer ${category === activeCategory ? "border-[#B3D1D2] bg-[#E7F0F0] text-[#111827] " : "border-transparent text-[#606368]"}`}
+                          className={`p-2 text-xs md:text-sm rounded-lg border font-medium cursor-pointer ${category === activeCategory ? 'border-[#B3D1D2] bg-[#E7F0F0] text-[#111827] ' : 'border-transparent text-[#606368]'}`}
                           key={i}
                         >
                           {category}
@@ -597,13 +562,9 @@ const MenuDashboard = () => {
                         <Search className="absolute left-2 text-[#606368] size-5" />
                         <Input
                           placeholder="Search by guest name or ID"
-                          value={
-                            table.getColumn("name")?.getFilterValue() ?? ""
-                          }
+                          value={table.getColumn('name')?.getFilterValue() ?? ''}
                           onChange={(event) =>
-                            table
-                              .getColumn("name")
-                              ?.setFilterValue(event.target.value)
+                            table.getColumn('name')?.setFilterValue(event.target.value)
                           }
                           className="max-w-sm pl-10 border-[#DAE9E9] "
                         />
@@ -611,10 +572,7 @@ const MenuDashboard = () => {
                       <div className="md:flex gap-2 h-full hidden">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button
-                              variant="outline"
-                              className="ml-auto text-[#606368]"
-                            >
+                            <Button variant="outline" className="ml-auto text-[#606368]">
                               All Category <ChevronDown />
                             </Button>
                           </DropdownMenuTrigger>
@@ -628,9 +586,7 @@ const MenuDashboard = () => {
                                     key={column.id}
                                     className="capitalize"
                                     checked={column.getIsVisible()}
-                                    onCheckedChange={(value) =>
-                                      column.toggleVisibility(!!value)
-                                    }
+                                    onCheckedChange={(value) => column.toggleVisibility(!!value)}
                                   >
                                     {column.id}
                                   </DropdownMenuCheckboxItem>
@@ -640,10 +596,7 @@ const MenuDashboard = () => {
                         </DropdownMenu>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button
-                              variant="outline"
-                              className="ml-auto text-[#606368]"
-                            >
+                            <Button variant="outline" className="ml-auto text-[#606368]">
                               Advanced filter <Filter2 fill="black" />
                             </Button>
                           </DropdownMenuTrigger>
@@ -657,9 +610,7 @@ const MenuDashboard = () => {
                                     key={column.id}
                                     className="capitalize"
                                     checked={column.getIsVisible()}
-                                    onCheckedChange={(value) =>
-                                      column.toggleVisibility(!!value)
-                                    }
+                                    onCheckedChange={(value) => column.toggleVisibility(!!value)}
                                   >
                                     {column.id}
                                   </DropdownMenuCheckboxItem>
@@ -697,7 +648,7 @@ const MenuDashboard = () => {
                                       ? null
                                       : flexRender(
                                           header.column.columnDef.header,
-                                          header.getContext(),
+                                          header.getContext()
                                         )}
                                   </TableHead>
                                 );
@@ -708,26 +659,17 @@ const MenuDashboard = () => {
                         <TableBody>
                           {table.getRowModel().rows?.length ? (
                             table.getRowModel().rows.map((row) => (
-                              <TableRow
-                                key={row.id}
-                                data-state={row.getIsSelected() && "selected"}
-                              >
+                              <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'}>
                                 {row.getVisibleCells().map((cell) => (
                                   <TableCell key={cell.id}>
-                                    {flexRender(
-                                      cell.column.columnDef.cell,
-                                      cell.getContext(),
-                                    )}
+                                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
                                   </TableCell>
                                 ))}
                               </TableRow>
                             ))
                           ) : (
                             <TableRow>
-                              <TableCell
-                                colSpan={columns.length}
-                                className="h-24 text-center"
-                              >
+                              <TableCell colSpan={columns.length} className="h-24 text-center">
                                 No results.
                               </TableCell>
                             </TableRow>
@@ -740,19 +682,16 @@ const MenuDashboard = () => {
                     <div className="grid md:grid-cols-3 gap-6 lg:grid-cols-4">
                       {data &&
                         data.map((item, i) => (
-                          <div
-                            key={i}
-                            className="p-1 bg-white border rounded-xl h-full"
-                          >
+                          <div key={i} className="p-1 bg-white border rounded-xl h-full">
                             <div className="relative rounded-xl h-[178px] overflow-hidden">
                               <img
                                 src={item.coverImage}
-                                alt={item.name || "N/A"}
+                                alt={item.name || 'N/A'}
                                 className="size-full object-cover hover:scale-105 transition-transform duration-200"
                               />
                             </div>
                             <div className="p-2">
-                              {activeCategory === "All Menu Items" ? (
+                              {activeCategory === 'All Menu Items' ? (
                                 <div className="space-y-2">
                                   <div className="flex justify-between w-full">
                                     <span>{item.name}</span>
@@ -769,9 +708,7 @@ const MenuDashboard = () => {
                                       View Menu
                                     </button>
                                   </div>
-                                  <div className="text-sm">
-                                    {item.description}
-                                  </div>
+                                  <div className="text-sm">{item.description}</div>
                                 </div>
                               ) : (
                                 <div className="space-y-2">
@@ -790,13 +727,11 @@ const MenuDashboard = () => {
                                     </button>
                                   </div>
                                   <div className="text-sm">
-                                    <span>Menu Item:</span>{" "}
-                                    {item.menuType.join(", ")}
+                                    <span>Menu Item:</span> {item.menuType.join(', ')}
                                   </div>
                                   <div className="flex items-center justify-between w-full">
                                     <span>
-                                      {item.items.length}{" "}
-                                      {item.items.length > 0 ? "items" : "item"}
+                                      {item.items.length} {item.items.length > 0 ? 'items' : 'item'}
                                     </span>
                                     <span>Updated {item.date} ago</span>
                                   </div>
@@ -828,7 +763,7 @@ const MenuDashboard = () => {
           <div className="absolute hidden md:flex bottom-0 border-t border-[#E5E7EB] left-0 right-0 bg-white">
             <div className="flex items-center w-full px-8 justify-between space-x-2 py-4">
               <div className="text-muted-foreground text-sm">
-                Page {table.getFilteredSelectedRowModel().rows.length} of{" "}
+                Page {table.getFilteredSelectedRowModel().rows.length} of{' '}
                 {table.getFilteredRowModel().rows.length}
               </div>
               <div className="flex">
@@ -885,9 +820,7 @@ const MenuDashboard = () => {
               <div className="bg-gray-50 px-4 max-w-4xl mx-auto rounded-lg my-10 py-6 md:px-6 md:py-8">
                 <div className="max-w-4xl mx-auto">
                   <div className="bg-white rounded-2xl border border-gray-200 mb-6">
-                    <h2 className="text-lg font-semibold text-[#111827] py-4 px-5">
-                      Menu Details
-                    </h2>
+                    <h2 className="text-lg font-semibold text-[#111827] py-4 px-5">Menu Details</h2>
 
                     <hr className="border-gray-200 mb-4" />
                     <div className="p-5">
@@ -904,29 +837,21 @@ const MenuDashboard = () => {
                       <div>
                         <ul className="divide-y divide-gray-100">
                           <li className="flex justify-between py-2">
-                            <span className="text-gray-700 font-medium">
-                              Name
-                            </span>
+                            <span className="text-gray-700 font-medium">Name</span>
                             <span className="text-gray-900 font-semibold">
                               {showPopup.details.name}
                             </span>
                           </li>
                           <li className="flex justify-between py-2">
-                            <span className="text-gray-700 font-medium">
-                              Price
-                            </span>
+                            <span className="text-gray-700 font-medium">Price</span>
                             <span className="text-gray-900 font-semibold">
                               ₦{showPopup.details.price?.toLocaleString()}
                             </span>
                           </li>
                           {showPopup.details.description && (
                             <li className="py-2">
-                              <span className="text-gray-700 font-medium block">
-                                Description
-                              </span>
-                              <p className="text-gray-600 mt-1">
-                                {showPopup.details.description}
-                              </p>
+                              <span className="text-gray-700 font-medium block">Description</span>
+                              <p className="text-gray-600 mt-1">{showPopup.details.description}</p>
                             </li>
                           )}
                         </ul>
@@ -935,62 +860,57 @@ const MenuDashboard = () => {
                       <div className="mt-4 space-y-2 text-sm text-gray-700">
                         {showPopup.details.category && (
                           <p>
-                            <span className="font-medium">Category:</span>{" "}
+                            <span className="font-medium">Category:</span>{' '}
                             {showPopup.details.category}
                           </p>
                         )}
                         {showPopup.details.menuType && (
                           <p>
-                            <span className="font-medium">Menu Type:</span>{" "}
+                            <span className="font-medium">Menu Type:</span>{' '}
                             {Array.isArray(showPopup.details.menuType)
-                              ? showPopup.details.menuType.join(", ")
+                              ? showPopup.details.menuType.join(', ')
                               : showPopup.details.menuType}
                           </p>
                         )}
                         {showPopup.details.mealTimes && (
                           <p>
-                            <span className="font-medium">Meal Times:</span>{" "}
-                            {showPopup.details.mealTimes.join(", ")}
+                            <span className="font-medium">Meal Times:</span>{' '}
+                            {showPopup.details.mealTimes.join(', ')}
                           </p>
                         )}
                         {showPopup.details.tags?.length > 0 && (
                           <p>
-                            <span className="font-medium">Tags:</span>{" "}
-                            {showPopup.details.tags.join(", ")}
+                            <span className="font-medium">Tags:</span>{' '}
+                            {showPopup.details.tags.join(', ')}
                           </p>
                         )}
                         {showPopup.details.status && (
                           <p>
-                            <span className="font-medium">Status:</span>{" "}
-                            {showPopup.details.status}
+                            <span className="font-medium">Status:</span> {showPopup.details.status}
                           </p>
                         )}
                         {showPopup.details.published !== undefined && (
                           <p>
-                            <span className="font-medium">Published:</span>{" "}
-                            {showPopup.details.published ? "Yes" : "No"}
+                            <span className="font-medium">Published:</span>{' '}
+                            {showPopup.details.published ? 'Yes' : 'No'}
                           </p>
                         )}
                         {showPopup.details.addOns !== undefined && (
                           <p>
-                            <span className="font-medium">Add-ons:</span>{" "}
-                            {showPopup.details.addOns
-                              ? "Available"
-                              : "Not available"}
+                            <span className="font-medium">Add-ons:</span>{' '}
+                            {showPopup.details.addOns ? 'Available' : 'Not available'}
                           </p>
                         )}
                         {showPopup.details.availability !== undefined && (
                           <p>
-                            <span className="font-medium">Availability:</span>{" "}
-                            {showPopup.details.availability
-                              ? "Available"
-                              : "Unavailable"}
+                            <span className="font-medium">Availability:</span>{' '}
+                            {showPopup.details.availability ? 'Available' : 'Unavailable'}
                           </p>
                         )}
                         {showPopup.details.discount && (
                           <p>
-                            <span className="font-medium">Discount Price:</span>{" "}
-                            ₦{showPopup.details.discountPrice?.toLocaleString()}
+                            <span className="font-medium">Discount Price:</span> ₦
+                            {showPopup.details.discountPrice?.toLocaleString()}
                           </p>
                         )}
                       </div>
@@ -999,10 +919,7 @@ const MenuDashboard = () => {
                         <Button
                           variant="destructive"
                           onClick={() =>
-                            handleDelete(
-                              showPopup.details._id,
-                              showPopup.item ? "item" : "menu",
-                            )
+                            handleDelete(showPopup.details._id, showPopup.item ? 'item' : 'menu')
                           }
                           className="flex-1 h-10 text-sm rounded-xl font-medium px-6 bg-red-600 text-white hover:bg-red-700"
                         >

@@ -1,31 +1,30 @@
-"use client";
-import Footer from "@/components/Footer";
-import StarRating from "@/components/ui/starrating";
-import Header from "@/components/user/Header";
-import HotelBookingPopup from "@/components/user/hotel/BookiingPopup";
-import HotelBookingForm from "@/components/user/hotel/BookingForm";
-import Images from "@/components/user/ui/Image";
-import Images2 from "@/components/user/ui/Image2";
-import UniversalLoader from "@/components/user/ui/LogoLoader";
-import MapComponent from "@/components/user/ui/mapComponent";
-import HotelSaveCopy from "@/components/user/ui/SaveCopy";
-import { hotelService } from "@/services/hotel.service";
-import { userService } from "@/services/user.service";
-import { Mail, MapPin, Phone } from "lucide-react";
-import { useEffect, useState } from "react";
-import { useLocation, useParams } from "react-router";
-import HotelInfo from "../../../components/user/hotel/HotelInfo";
-import { TableGridTwo } from "@/components/TableGridRecommendations";
-
+'use client';
+import Footer from '@/components/Footer';
+import StarRating from '@/components/ui/starrating';
+import Header from '@/components/user/Header';
+import HotelBookingPopup from '@/components/user/hotel/BookiingPopup';
+import HotelBookingForm from '@/components/user/hotel/BookingForm';
+import Images from '@/components/user/ui/Image';
+import Images2 from '@/components/user/ui/Image2';
+import UniversalLoader from '@/components/user/ui/LogoLoader';
+import MapComponent from '@/components/user/ui/mapComponent';
+import HotelSaveCopy from '@/components/user/ui/SaveCopy';
+import { hotelService } from '@/services/hotel.service';
+import { userService } from '@/services/user.service';
+import { Mail, MapPin, Phone } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { useLocation, useParams } from 'react-router';
+import HotelInfo from '../../../components/user/hotel/HotelInfo';
+import { TableGridTwo } from '@/components/TableGridRecommendations';
 
 const HotelsPage = () => {
   const location = useLocation();
-  const section = location.hash ? location.hash.substring(1) : "details";
-    const [activeTab, setActiveTab] = useState(section);
+  const section = location.hash ? location.hash.substring(1) : 'details';
+  const [activeTab, setActiveTab] = useState(section);
 
   const { id } = useParams();
   const [hotel, setHotel] = useState({});
-      const [recommendations, setRecommendations] = useState([]);
+  const [recommendations, setRecommendations] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [show, setShow] = useState(false);
   const [rooms, setRooms] = useState(null);
@@ -37,7 +36,7 @@ const HotelsPage = () => {
         const res = await userService.getVendor(id);
         console.log(res);
         setHotel(res.data);
-        setRecommendations(res.recommendations)
+        setRecommendations(res.recommendations);
       } catch (error) {
         console.error(error);
       } finally {
@@ -56,8 +55,7 @@ const HotelsPage = () => {
     fetchRooms();
   }, []);
 
-  if (isLoading || !rooms)
-    return <UniversalLoader fullscreen type="vendor-page" />;
+  if (isLoading || !rooms) return <UniversalLoader fullscreen type="vendor-page" />;
   return (
     <>
       <div className="hidden md:block">
@@ -69,16 +67,13 @@ const HotelsPage = () => {
             <div className="col-span-2">
               <div className="w-full space-y-6">
                 <div className="flex md:gap-2">
-                  <Images
-                    images={hotel?.profileImages ?? []}
-                    name={hotel.businessName}
-                  />
+                  <Images images={hotel?.profileImages ?? []} name={hotel.businessName} />
                   <Images2
                     vendor={hotel}
                     images={hotel?.profileImages ?? []}
                     name={hotel.businessName}
                   />
-                  {activeTab === "rooms" && (
+                  {activeTab === 'rooms' && (
                     <div className="hidden md:block">
                       <HotelBookingForm
                         selectedRooms={selectedRooms}
@@ -93,24 +88,18 @@ const HotelsPage = () => {
                   <div className="flex flex-col md:flex-row md:justify-between md:items-cente w-full gap-4">
                     <div className="flex justify-between gap-2 items-center pt-2 md:pt-0 px-4 md:px-0">
                       <h1 className="text-2xl text-[#111827] font-semibold">
-                        {hotel.businessName}{" "}
-                      </h1>{" "}
+                        {hotel.businessName}{' '}
+                      </h1>{' '}
                       <span className="px-2 py-0.5 rounded-full border border-[#37703F] bg-[#D1FAE5] text-xs text-[#37703F]">
-                        {" "}
+                        {' '}
                         Open
                       </span>
                     </div>
                     <HotelSaveCopy type="hotels" vendor={hotel} id={id} />
                   </div>
                   <div className="md:flex hidden gap-1 items-center text-xs">
-                    <StarRating
-                      size={16}
-                      rating={Number(hotel.rating)}
-                      readOnly
-                    />
-                    <span className="font-semibold text-lg">
-                      {hotel.rating}
-                    </span>
+                    <StarRating size={16} rating={Number(hotel.rating)} readOnly />
+                    <span className="font-semibold text-lg">{hotel.rating}</span>
                     <span className="text-gray-600">
                       ({hotel.reviews.toLocaleString()} reviews)
                     </span>
@@ -118,7 +107,7 @@ const HotelsPage = () => {
                 </div>
               </div>
             </div>
-            <div className={activeTab === "rooms" ? "w-full" : "col-span-2"}>
+            <div className={activeTab === 'rooms' ? 'w-full' : 'col-span-2'}>
               {/* Pass activeTab and setActiveTab to HotelInfo */}
               <HotelInfo
                 id={id}
@@ -134,7 +123,7 @@ const HotelsPage = () => {
           </div>
           {/* Hide the right column when activeTab is "rooms" */}
 
-          {activeTab !== "rooms" && (
+          {activeTab !== 'rooms' && (
             <div className="space-y-8 px-4 md:px-0">
               <div className="hidden md:block">
                 <HotelBookingForm
@@ -158,9 +147,7 @@ const HotelsPage = () => {
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-gray-900 mb-1">
-                    Contact Information
-                  </h3>
+                  <h3 className="font-semibold text-gray-900 mb-1">Contact Information</h3>
                   <div className="flex items-center gap-2">
                     <Phone className="w-5 h-5 text-black mt-1" />
                     <a href={`tel:${hotel.phone}`} className="hover:underline">
@@ -169,10 +156,7 @@ const HotelsPage = () => {
                   </div>
                   <div className="flex items-center gap-2 mt-2">
                     <Mail className="w-5 h-5 text-black mt-1" />
-                    <a
-                      href={`mailto:${hotel.email}`}
-                      className="hover:underline"
-                    >
+                    <a href={`mailto:${hotel.email}`} className="hover:underline">
                       {hotel.email}
                     </a>
                   </div>
@@ -190,6 +174,7 @@ const HotelsPage = () => {
             </div>
           )}
         </div>
+
         <HotelBookingPopup
           activeTab={activeTab}
           setActiveTab={setActiveTab}

@@ -1,5 +1,5 @@
 const MapComponent = ({ address }) => {
-  const encoded = encodeURIComponent(address || "Lagos, Nigeria")
+  const encoded = encodeURIComponent(address || 'Lagos, Nigeria');
 
   return (
     <div className="relative w-full h-64 sm:h-80 bg-gray-300 rounded-xl overflow-hidden border">
@@ -12,7 +12,7 @@ const MapComponent = ({ address }) => {
         referrerPolicy="no-referrer-when-downgrade"
       />
     </div>
-  )
-}
+  );
+};
 
-export default MapComponent
+export default MapComponent;

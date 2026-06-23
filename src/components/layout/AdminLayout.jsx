@@ -9,7 +9,11 @@ const AdminLayout = () => {
 
   return (
     <div className="flex h-dvh bg-white">
-      <AdminSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} onNavigate={navigate} />
+      <AdminSidebar
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+        onNavigate={navigate}
+      />
 
       <div className="flex-1 flex flex-col relative overflow-hidden">
         <AdminHeader onMenuClick={() => setSidebarOpen(true)} />

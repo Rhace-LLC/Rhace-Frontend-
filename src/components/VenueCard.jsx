@@ -1,9 +1,9 @@
-import { useNavigate } from "react-router-dom";
-import { FaStar } from "react-icons/fa6";
-import { FiMapPin } from "react-icons/fi";
-import { FavoriteButton } from "@/components/user/ui/favoritebutton";
-import { TYPE_CONFIG, PRICE_LABELS, PRICE_DESC } from "../utils/constants";
-import { ArrowUpRight, Clock } from "lucide-react";
+import { useNavigate } from 'react-router-dom';
+import { FaStar } from 'react-icons/fa6';
+import { FiMapPin } from 'react-icons/fi';
+import { FavoriteButton } from '@/components/user/ui/favoritebutton';
+import { TYPE_CONFIG, PRICE_LABELS, PRICE_DESC } from '../utils/constants';
+import { ArrowUpRight, Clock } from 'lucide-react';
 
 // ── Existing grid card (kept for SearchResults) ────────────────────────────────
 export const VenueCard = ({ vendor, activeType }) => {
@@ -13,9 +13,9 @@ export const VenueCard = ({ vendor, activeType }) => {
   const photo = vendor.profileImages?.[0];
 
   const tags =
-    type === "restaurant"
+    type === 'restaurant'
       ? vendor.cuisines || []
-      : type === "club"
+      : type === 'club'
         ? vendor.musicGenres || vendor.categories || []
         : (vendor.amenities || []).slice(0, 3);
 
@@ -35,7 +35,7 @@ export const VenueCard = ({ vendor, activeType }) => {
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-gray-200">
             <span className="text-2xl font-bold text-gray-400">
-              {vendor.businessName?.[0]?.toUpperCase() || "?"}
+              {vendor.businessName?.[0]?.toUpperCase() || '?'}
             </span>
           </div>
         )}
@@ -55,21 +55,16 @@ export const VenueCard = ({ vendor, activeType }) => {
               {vendor.businessName}
             </h3>
 
-            {vendor.vendorTypeCategory &&
-              vendor.vendorTypeCategory !== "General" && (
-                <p className="text-xs text-gray-400 capitalize">
-                  {vendor.vendorTypeCategory}
-                </p>
-              )}
+            {vendor.vendorTypeCategory && vendor.vendorTypeCategory !== 'General' && (
+              <p className="text-xs text-gray-400 capitalize">{vendor.vendorTypeCategory}</p>
+            )}
           </div>
 
           {/* Rating */}
           {vendor.rating > 0 && (
             <div className="flex items-center gap-1 shrink-0">
               <FaStar className="w-3 h-3 text-amber-400" />
-              <span className="text-xs font-medium">
-                {vendor.rating.toFixed(1)}
-              </span>
+              <span className="text-xs font-medium">{vendor.rating.toFixed(1)}</span>
             </div>
           )}
         </div>
@@ -79,8 +74,8 @@ export const VenueCard = ({ vendor, activeType }) => {
           <div className="flex flex-wrap gap-1 mt-1">
             {tags.slice(0, 3).map((tag, i) => (
               <span key={i} className="text-[10px] text-gray-500 capitalize">
-                {tag.replace(/-/g, " ")}
-                {i < Math.min(tags.length, 3) - 1 && ","}
+                {tag.replace(/-/g, ' ')}
+                {i < Math.min(tags.length, 3) - 1 && ','}
               </span>
             ))}
           </div>
@@ -88,15 +83,13 @@ export const VenueCard = ({ vendor, activeType }) => {
 
         {/* Description */}
         <p className="text-xs text-gray-500 mt-1 line-clamp-2">
-          {vendor.description || "Discover great experiences at this location."}
+          {vendor.description || 'Discover great experiences at this location.'}
         </p>
 
         {/* Location */}
         <div className="flex items-center gap-1 text-gray-500 text-xs">
           <FiMapPin className="w-3 h-3 shrink-0" />
-          <span className="line-clamp-1">
-            {vendor.address || "Location not set"}
-          </span>
+          <span className="line-clamp-1">{vendor.address || 'Location not set'}</span>
         </div>
         {/* Bottom row */}
         <div className="flex items-center justify-between mt-auto pt-2">
@@ -127,9 +120,9 @@ export const DiscoveryListCard = ({ vendor, activeType, navigate: nav }) => {
   const isClosed = vendor.isOpen === false;
 
   const tags =
-    type === "restaurant"
+    type === 'restaurant'
       ? vendor.cuisines || []
-      : type === "club"
+      : type === 'club'
         ? vendor.musicGenres || vendor.categories || []
         : (vendor.amenities || []).slice(0, 2);
 
@@ -138,25 +131,20 @@ export const DiscoveryListCard = ({ vendor, activeType, navigate: nav }) => {
     vendor.businessDescription ||
     vendor.shortDescription ||
     (tags.length
-      ? tags.slice(0, 3).join(", ")
-      : type === "restaurant"
-        ? "Dine in experience"
-        : type === "hotel"
-          ? "Comfortable accommodations"
-          : "Night entertainment");
+      ? tags.slice(0, 3).join(', ')
+      : type === 'restaurant'
+        ? 'Dine in experience'
+        : type === 'hotel'
+          ? 'Comfortable accommodations'
+          : 'Night entertainment');
 
-  const ctaLabel =
-    type === "hotel"
-      ? "Book Stay"
-      : type === "club"
-        ? "Book now"
-        : "Reserve now";
+  const ctaLabel = type === 'hotel' ? 'Book Stay' : type === 'club' ? 'Book now' : 'Reserve now';
 
   const handleClick = () => navigate(`/${cfg.path}/${vendor._id}`);
 
   return (
     <div
-      className={`flex items-center gap-3 py-3.5 hover:bg-gray-50/80 transition-colors duration-150 ${isClosed ? "opacity-60" : ""}`}
+      className={`flex items-center gap-3 py-3.5 hover:bg-gray-50/80 transition-colors duration-150 ${isClosed ? 'opacity-60' : ''}`}
     >
       {/* Thumbnail */}
       <div
@@ -177,17 +165,13 @@ export const DiscoveryListCard = ({ vendor, activeType, navigate: nav }) => {
               background: `hsl(${((vendor.businessName?.charCodeAt(0) || 65) * 5) % 360}, 60%, 50%)`,
             }}
           >
-            {vendor.businessName?.[0]?.toUpperCase() || "?"}
+            {vendor.businessName?.[0]?.toUpperCase() || '?'}
           </div>
         )}
       </div>
 
       {/* Info */}
-      <div
-        className="flex-1 min-w-0"
-        onClick={handleClick}
-        style={{ cursor: "pointer" }}
-      >
+      <div className="flex-1 min-w-0" onClick={handleClick} style={{ cursor: 'pointer' }}>
         <div className="flex items-start gap-1">
           <h3 className="font-bold text-gray-900 text-sm leading-tight line-clamp-1 flex-1">
             {vendor.businessName}
@@ -201,15 +185,13 @@ export const DiscoveryListCard = ({ vendor, activeType, navigate: nav }) => {
 
         {/* Rating row */}
         <div className="flex items-center gap-2 mt-0.5">
-            <div className="flex items-center gap-0.5">
-              <FaStar className="w-2.5 h-2.5 text-amber-400" />
-              <span className="text-xs font-semibold text-gray-800">
-                {vendor.rating.toFixed(1)}
-              </span>
-                <span className="text-[10px] text-gray-400 ml-0.5">
-                  ({vendor.reviews?.toLocaleString()})
-                </span >
-            </div>
+          <div className="flex items-center gap-0.5">
+            <FaStar className="w-2.5 h-2.5 text-amber-400" />
+            <span className="text-xs font-semibold text-gray-800">{vendor.rating.toFixed(1)}</span>
+            <span className="text-[10px] text-gray-400 ml-0.5">
+              ({vendor.reviews?.toLocaleString()})
+            </span>
+          </div>
           {vendor.deliveryTime && (
             <>
               <span className="text-gray-200 text-xs">·</span>
@@ -224,9 +206,7 @@ export const DiscoveryListCard = ({ vendor, activeType, navigate: nav }) => {
         {/* Description / tags */}
         <p className="text-[11px] text-gray-400 mt-0.5 line-clamp-1 capitalize leading-tight">
           {isClosed ? (
-            <span className="text-red-400 font-medium">
-              Closed until tomorrow
-            </span>
+            <span className="text-red-400 font-medium">Closed until tomorrow</span>
           ) : (
             description
           )}
@@ -235,9 +215,7 @@ export const DiscoveryListCard = ({ vendor, activeType, navigate: nav }) => {
         {/* Address */}
         <div className="flex items-center gap-0.5 mt-0.5 text-[10px] text-gray-400">
           <FiMapPin className="w-2.5 h-2.5 shrink-0" />
-          <span className="line-clamp-1">
-            {vendor.address || "Location not set"}
-          </span>
+          <span className="line-clamp-1">{vendor.address || 'Location not set'}</span>
         </div>
       </div>
 
@@ -261,13 +239,11 @@ export const DiscoveryListCard = ({ vendor, activeType, navigate: nav }) => {
 
 // ── Skeleton loading card (grid) ───────────────────────────────────────────────
 const shimmerStyle = {
-  background: "linear-gradient(90deg,#f0f0f0 25%,#e4e4e4 50%,#f0f0f0 75%)",
-  backgroundSize: "200% 100%",
-  animation: "shimmer 1.4s ease-in-out infinite",
+  background: 'linear-gradient(90deg,#f0f0f0 25%,#e4e4e4 50%,#f0f0f0 75%)',
+  backgroundSize: '200% 100%',
+  animation: 'shimmer 1.4s ease-in-out infinite',
 };
-const Shimmer = ({ className = "" }) => (
-  <div className={className} style={shimmerStyle} />
-);
+const Shimmer = ({ className = '' }) => <div className={className} style={shimmerStyle} />;
 
 export const SkeletonCard = () => (
   <div className="bg-white rounded-xl overflow-hidden shadow-sm">

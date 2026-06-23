@@ -37,7 +37,7 @@ const VendorDashboard = () => {
   if (loading || !reservationStats) {
     return (
       <DashboardLayout type={vendor.vendorType} section="dashboard" settings={false}>
-        <UniversalLoader type='dashboard-1' />
+        <UniversalLoader type="dashboard-1" />
       </DashboardLayout>
     );
   }
@@ -83,10 +83,8 @@ const VendorDashboard = () => {
 
   return (
     <DashboardLayout type={vendor.vendorType} section="dashboard" settings={false}>
-
       <div className="bg-gray-50 p-4 lg:p-6">
         <div className="max-w-7xl mx-auto space-y-6">
-
           {/* Header */}
           <div className="flex items-center justify-between">
             <div>
@@ -140,7 +138,6 @@ const VendorDashboard = () => {
 
           {/* Main Content Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
             {/* Today's Reservations */}
             <div className="bg-white rounded-lg border border-gray-200">
               <div className="p-5 border-b border-gray-200 flex items-center justify-between">
@@ -154,55 +151,61 @@ const VendorDashboard = () => {
                 </a>
               </div>
               <div className="p-5 space-y-3">
-                {reservationStats.todaysReservations.length > 0
-                  ? reservationStats.todaysReservations.slice(0, 5).map((reservation) => (
-                      <div
-                        key={reservation._id}
-                        className="flex items-center justify-between hover:bg-gray-50 p-2 rounded-lg transition-colors"
-                      >
-                        <div className="flex items-center flex-1">
-                          <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center mr-3">
-                            <User className="w-5 h-5 text-gray-600" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="font-medium text-gray-900">{reservation.customerName}</p>
-                            <p className="text-xs text-gray-500">ID: #{reservation._id.slice(0, 8)}...</p>
-                          </div>
+                {reservationStats.todaysReservations.length > 0 ? (
+                  reservationStats.todaysReservations.slice(0, 5).map((reservation) => (
+                    <div
+                      key={reservation._id}
+                      className="flex items-center justify-between hover:bg-gray-50 p-2 rounded-lg transition-colors"
+                    >
+                      <div className="flex items-center flex-1">
+                        <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center mr-3">
+                          <User className="w-5 h-5 text-gray-600" />
                         </div>
-                        <div className="flex items-center gap-4">
-                          <div className="text-right">
-                            <p className="text-sm text-gray-900">{formatDate(reservation.createdAt)}</p>
-                            <p className="text-xs text-gray-500">Time: {formatTime(reservation.createdAt)}</p>
-                          </div>
-                          <div className="text-center min-w-[70px]">
-                            <p className="text-sm font-medium text-gray-900">
-                              {reservation.guests} Guests
-                            </p>
-                          </div>
-                          <div className="min-w-[90px]">
-                            <span
-                              className={`inline-block px-3 py-1 text-xs font-medium rounded ${
-                                reservation.reservationStatus === 'Upcoming'
-                                  ? 'bg-teal-50 text-teal-700'
-                                  : reservation.reservationStatus === 'Completed'
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-gray-900">{reservation.customerName}</p>
+                          <p className="text-xs text-gray-500">
+                            ID: #{reservation._id.slice(0, 8)}...
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <div className="text-right">
+                          <p className="text-sm text-gray-900">
+                            {formatDate(reservation.createdAt)}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            Time: {formatTime(reservation.createdAt)}
+                          </p>
+                        </div>
+                        <div className="text-center min-w-[70px]">
+                          <p className="text-sm font-medium text-gray-900">
+                            {reservation.guests} Guests
+                          </p>
+                        </div>
+                        <div className="min-w-[90px]">
+                          <span
+                            className={`inline-block px-3 py-1 text-xs font-medium rounded ${
+                              reservation.reservationStatus === 'Upcoming'
+                                ? 'bg-teal-50 text-teal-700'
+                                : reservation.reservationStatus === 'Completed'
                                   ? 'bg-green-50 text-green-700'
                                   : 'bg-gray-50 text-gray-700'
-                              }`}
-                            >
-                              {reservation.reservationStatus}
-                            </span>
-                          </div>
+                            }`}
+                          >
+                            {reservation.reservationStatus}
+                          </span>
                         </div>
                       </div>
-                    ))
-                  : (
-                    <div className="w-full h-[336px] flex items-center justify-center">
-                      <div className="flex items-center flex-col gap-2">
-                        <ListX className="size-6 text-gray-400" />
-                        <p className="text-gray-500 text-sm">No Reservations for today</p>
-                      </div>
                     </div>
-                  )}
+                  ))
+                ) : (
+                  <div className="w-full h-[336px] flex items-center justify-center">
+                    <div className="flex items-center flex-col gap-2">
+                      <ListX className="size-6 text-gray-400" />
+                      <p className="text-gray-500 text-sm">No Reservations for today</p>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -244,19 +247,16 @@ const VendorDashboard = () => {
                   </div>
                 </div>
                 <p className="text-3xl font-bold text-gray-900 mb-1">{trendTotal}</p>
-                <p className={`text-sm mb-6 flex items-center ${trendChange >= 0 ? 'text-green-600' : 'text-red-500'}`}>
+                <p
+                  className={`text-sm mb-6 flex items-center ${trendChange >= 0 ? 'text-green-600' : 'text-red-500'}`}
+                >
                   <span className="mr-1">{trendChange >= 0 ? '↑' : '↓'}</span>
                   {Math.abs(trendChange)}% vs last {timeFilter === 'Weekly' ? 'week' : 'month'}
                 </p>
                 <ChartContainer config={chartConfig}>
                   <BarChart accessibilityLayer data={chartData}>
                     <CartesianGrid vertical={false} />
-                    <XAxis
-                      dataKey="day"
-                      tickLine={false}
-                      tickMargin={10}
-                      axisLine={false}
-                    />
+                    <XAxis dataKey="day" tickLine={false} tickMargin={10} axisLine={false} />
                     <ChartTooltip content={<ChartTooltipContent hideLabel />} />
                     <Bar dataKey="lastWeek" stackId="a" fill="#0A6C6D" radius={[0, 0, 0, 0]} />
                     <Bar dataKey="thisWeek" stackId="a" fill="#60A5FA" radius={[10, 10, 0, 0]} />
@@ -268,7 +268,6 @@ const VendorDashboard = () => {
 
           {/* Bottom Section */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
             {/* Customer Frequency */}
             <div className="bg-white rounded-lg border border-gray-200">
               <div className="p-5 border-b border-gray-200 flex items-center justify-between">
@@ -304,21 +303,40 @@ const VendorDashboard = () => {
                     <>
                       <div className="relative w-48 h-48 mb-4">
                         <svg className="w-full h-full -rotate-90">
-                          <circle cx="96" cy="96" r="70" fill="none" stroke="#E5E7EB" strokeWidth="24" />
                           <circle
-                            cx="96" cy="96" r="70" fill="none" stroke="#14b8a6" strokeWidth="24"
+                            cx="96"
+                            cy="96"
+                            r="70"
+                            fill="none"
+                            stroke="#E5E7EB"
+                            strokeWidth="24"
+                          />
+                          <circle
+                            cx="96"
+                            cy="96"
+                            r="70"
+                            fill="none"
+                            stroke="#14b8a6"
+                            strokeWidth="24"
                             strokeDasharray={`${newSeg.dashArray} ${newSeg.circumference}`}
                             strokeDashoffset={0}
                           />
                           <circle
-                            cx="96" cy="96" r="70" fill="none" stroke="#fbbf24" strokeWidth="24"
+                            cx="96"
+                            cy="96"
+                            r="70"
+                            fill="none"
+                            stroke="#fbbf24"
+                            strokeWidth="24"
                             strokeDasharray={`${retSeg.dashArray} ${retSeg.circumference}`}
-                            strokeDashoffset={-(newSeg.dashArray)}
+                            strokeDashoffset={-newSeg.dashArray}
                           />
                         </svg>
                         <div className="absolute inset-0 flex flex-col items-center justify-center">
                           <p className="text-xs text-gray-500 mb-1">Total Customers</p>
-                          <p className="text-2xl font-bold text-gray-900">{total.toLocaleString()}</p>
+                          <p className="text-2xl font-bold text-gray-900">
+                            {total.toLocaleString()}
+                          </p>
                         </div>
                       </div>
                       <div className="flex flex-col items-start gap-2">
@@ -334,7 +352,9 @@ const VendorDashboard = () => {
                             <div className="w-3 h-3 bg-yellow-400 rounded-full mr-2" />
                             <span className="text-sm text-gray-600">{retPct}%</span>
                           </div>
-                          <span className="text-sm text-gray-900 font-medium">Returning Customers</span>
+                          <span className="text-sm text-gray-900 font-medium">
+                            Returning Customers
+                          </span>
                         </div>
                       </div>
                     </>
@@ -373,9 +393,12 @@ const VendorDashboard = () => {
                       <p className="text-2xl font-bold text-gray-900">
                         ₦{revenueData.total.toLocaleString('en-NG', { minimumFractionDigits: 2 })}
                       </p>
-                      <p className={`text-sm flex items-center ${revenueData.change >= 0 ? 'text-green-600' : 'text-red-500'}`}>
+                      <p
+                        className={`text-sm flex items-center ${revenueData.change >= 0 ? 'text-green-600' : 'text-red-500'}`}
+                      >
                         <span className="mr-1">{revenueData.change >= 0 ? '↑' : '↓'}</span>
-                        {Math.abs(revenueData.change).toFixed(1)}% vs last {revenueFilter === 'Weekly' ? 'week' : 'month'}
+                        {Math.abs(revenueData.change).toFixed(1)}% vs last{' '}
+                        {revenueFilter === 'Weekly' ? 'week' : 'month'}
                       </p>
                     </div>
                     <div className="flex h-3 rounded-full overflow-hidden mb-4">
@@ -390,7 +413,10 @@ const VendorDashboard = () => {
                     </div>
                     <div className="space-y-2">
                       {revenueData.items.map((item, i) => (
-                        <div key={i} className="flex items-center justify-between text-sm hover:bg-gray-50 p-1 rounded transition-colors">
+                        <div
+                          key={i}
+                          className="flex items-center justify-between text-sm hover:bg-gray-50 p-1 rounded transition-colors"
+                        >
                           <div className="flex items-center">
                             <div className={`w-3 h-3 rounded-sm ${item.color} mr-2`} />
                             <span className="text-gray-900 font-medium">{item.category}</span>
@@ -437,7 +463,14 @@ const VendorDashboard = () => {
                   <>
                     <div className="relative w-48 h-48 mb-4">
                       <svg className="w-full h-full -rotate-90">
-                        <circle cx="96" cy="96" r="70" fill="none" stroke="#E5E7EB" strokeWidth="24" />
+                        <circle
+                          cx="96"
+                          cy="96"
+                          r="70"
+                          fill="none"
+                          stroke="#E5E7EB"
+                          strokeWidth="24"
+                        />
                         {sourceData.sources.map((source, i) => {
                           const precedingCount = sourceData.sources
                             .slice(0, i)
@@ -447,11 +480,14 @@ const VendorDashboard = () => {
                           return (
                             <circle
                               key={i}
-                              cx="96" cy="96" r="70" fill="none"
+                              cx="96"
+                              cy="96"
+                              r="70"
+                              fill="none"
                               stroke={SOURCE_COLORS[i]}
                               strokeWidth="24"
                               strokeDasharray={`${seg.dashArray} ${seg.circumference}`}
-                              strokeDashoffset={-(prevSeg.dashArray)}
+                              strokeDashoffset={-prevSeg.dashArray}
                             />
                           );
                         })}
@@ -463,7 +499,10 @@ const VendorDashboard = () => {
                     </div>
                     <div className="space-y-2 w-full">
                       {sourceData.sources.map((source, i) => (
-                        <div key={i} className="flex items-center justify-between hover:bg-gray-50 p-1 rounded transition-colors">
+                        <div
+                          key={i}
+                          className="flex items-center justify-between hover:bg-gray-50 p-1 rounded transition-colors"
+                        >
                           <div className="flex items-center">
                             <div
                               className="w-3 h-3 rounded-full mr-2"
@@ -481,7 +520,6 @@ const VendorDashboard = () => {
                 )}
               </div>
             </div>
-
           </div>
         </div>
       </div>

@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from 'react-router-dom';
 import {
   ArrowUpRight,
   TrendingUp,
@@ -10,10 +10,10 @@ import {
   Utensils,
   Hotel,
   Music,
-} from "lucide-react";
-import { TYPE_CONFIG } from "../utils/constants";
-import { DiscoveryListCard, DiscoverySkeletonList } from "./VenueCard";
-import { FoodIcon } from "@/public/icons/icons";
+} from 'lucide-react';
+import { TYPE_CONFIG } from '../utils/constants';
+import { DiscoveryListCard, DiscoverySkeletonList } from './VenueCard';
+import { FoodIcon } from '@/public/icons/icons';
 
 // ── Recent searches pill row ───────────────────────────────────────────────────
 const RecentSearchPills = ({ recentSearches = [], onSearch }) => {
@@ -50,12 +50,8 @@ const SectionHeading = ({ icon, title, subtitle, action, onAction }) => (
         {icon}
       </div> */}
       <div>
-        <h3 className="text-sm sm:text-base font-black text-gray-900 leading-none">
-          {title}
-        </h3>
-        {subtitle && (
-          <p className="text-[11px] text-gray-400 mt-0.5">{subtitle}</p>
-        )}
+        <h3 className="text-sm sm:text-base font-black text-gray-900 leading-none">{title}</h3>
+        {subtitle && <p className="text-[11px] text-gray-400 mt-0.5">{subtitle}</p>}
       </div>
     </div>
     {action && (
@@ -73,14 +69,7 @@ const SectionHeading = ({ icon, title, subtitle, action, onAction }) => (
 const ListDivider = () => <div className="border-t border-gray-300 mx-4" />;
 
 // ── Card list section (up to 8 items) ─────────────────────────────────────────
-const CardSection = ({
-  vendors = [],
-  isLoading,
-  type,
-  skeletonCount = 4,
-  onAction,
-  navigate,
-}) => {
+const CardSection = ({ vendors = [], isLoading, type, skeletonCount = 4, onAction, navigate }) => {
   if (isLoading) {
     return (
       <div className="bg-white rounded-2xl  border-gray-100 overflow-hidden">
@@ -94,11 +83,7 @@ const CardSection = ({
     );
   }
   if (!vendors.length)
-    return (
-      <p className="text-sm text-gray-400 py-6 text-center">
-        No listings available yet.
-      </p>
-    );
+    return <p className="text-sm text-gray-400 py-6 text-center">No listings available yet.</p>;
 
   const sliced = vendors.slice(0, 8);
 
@@ -116,14 +101,14 @@ const CardSection = ({
 
 // ── Type filter chips ──────────────────────────────────────────────────────────
 const TYPE_TABS = [
-  { val: "", label: "All", icon: <Zap className="w-3.5 h-3.5" /> },
+  { val: '', label: 'All', icon: <Zap className="w-3.5 h-3.5" /> },
   {
-    val: "restaurant",
-    label: "Restaurants",
+    val: 'restaurant',
+    label: 'Restaurants',
     icon: <FoodIcon className="w-3.5 h-3.5" />,
   },
-  { val: "hotel", label: "Hotels", icon: <Hotel className="w-3.5 h-3.5" /> },
-  { val: "club", label: "Clubs", icon: <Music className="w-3.5 h-3.5" /> },
+  { val: 'hotel', label: 'Hotels', icon: <Hotel className="w-3.5 h-3.5" /> },
+  { val: 'club', label: 'Clubs', icon: <Music className="w-3.5 h-3.5" /> },
 ];
 
 // ── Main discovery home ────────────────────────────────────────────────────────
@@ -134,50 +119,35 @@ export const DiscoveryHome = ({
   updateFilter,
   submitSearch,
   inputRef,
-  activeType = "",
+  activeType = '',
   recentSearches = [],
 }) => {
   const navigate = useNavigate();
-  const {
-    nearby = [],
-    topRated = [],
-    restaurants = [],
-    hotels = [],
-    clubs = [],
-  } = discovery;
+  const { nearby = [], topRated = [], restaurants = [], hotels = [], clubs = [] } = discovery;
 
   // Which sections to show based on activeType
   const showAll = !activeType;
-  const showRestaurants =
-    showAll || activeType === "restaurant";
-  const showHotels = showAll || activeType === "hotel";
-  const showClubs = showAll || activeType === "club";
+  const showRestaurants = showAll || activeType === 'restaurant';
+  const showHotels = showAll || activeType === 'hotel';
+  const showClubs = showAll || activeType === 'club';
   const showNearby = nearby.length > 0 || isDiscLoading;
 
   return (
     <div className="max-w-7xl mx-auto px-3 sm:px-6 py-5 sm:py-8 space-y-8">
-
       {/* Recent searches */}
-      <RecentSearchPills
-        recentSearches={recentSearches}
-        onSearch={submitSearch}
-      />
+      <RecentSearchPills recentSearches={recentSearches} onSearch={submitSearch} />
 
       {/* Desktop: two-column grid wrapper */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-
         {/* ── LEFT COLUMN ── */}
         <div className="space-y-8">
-
           {/* Near You */}
           {showNearby && (
             <section>
               <SectionHeading
                 icon={<MapPin className="w-4 h-4" />}
                 title={
-                  locationState.location?.city
-                    ? `Near ${locationState.location.city}`
-                    : "Near You"
+                  locationState.location?.city ? `Near ${locationState.location.city}` : 'Near You'
                 }
                 subtitle="Based on your current location"
               />
@@ -206,12 +176,10 @@ export const DiscoveryHome = ({
               />
             </section>
           )}
-
         </div>
 
         {/* ── RIGHT COLUMN ── */}
         <div className="space-y-8">
-
           {/* Trending */}
           {(showAll || activeType) && (
             <section>
@@ -262,7 +230,6 @@ export const DiscoveryHome = ({
               />
             </section>
           )}
-
         </div>
       </div>
     </div>

@@ -1,5 +1,5 @@
-import { StatCard } from "@/components/dashboard/stats/mainStats";
-import DashboardButton from "@/components/dashboard/ui/DashboardButton";
+import { StatCard } from '@/components/dashboard/stats/mainStats';
+import DashboardButton from '@/components/dashboard/ui/DashboardButton';
 import {
   Add,
   Calendar,
@@ -17,8 +17,8 @@ import {
   Phone,
   Printer,
   XCircle,
-} from "@/components/dashboard/ui/svg";
-import DashboardLayout from "@/components/layout/DashboardLayout";
+} from '@/components/dashboard/ui/svg';
+import DashboardLayout from '@/components/layout/DashboardLayout';
 import {
   // ColumnDef,
   // ColumnFiltersState,
@@ -29,7 +29,7 @@ import {
   getSortedRowModel,
   // SortingState,
   useReactTable,
-} from "@tanstack/react-table";
+} from '@tanstack/react-table';
 import {
   Check,
   ChevronDown,
@@ -40,11 +40,11 @@ import {
   MoreVertical,
   Search,
   XIcon,
-} from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+} from 'lucide-react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import ConfirmReservation, {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -52,15 +52,15 @@ import ConfirmReservation, {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
+} from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
 import {
   Pagination,
   PaginationContent,
   PaginationEllipsis,
   PaginationItem,
   PaginationLink,
-} from "@/components/ui/pagination";
+} from '@/components/ui/pagination';
 import {
   Table,
   TableBody,
@@ -68,17 +68,17 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { userService } from "@/services/user.service";
-import { useSelector } from "react-redux";
-import { useNavigate } from "react-router";
-import { toast } from "react-toastify";
+} from '@/components/ui/table';
+import { userService } from '@/services/user.service';
+import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router';
+import { toast } from 'react-toastify';
 // import { formatCustomDate } from '@/utils/formatDate';
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import UniversalLoader from "@/components/user/ui/LogoLoader";
-import { useWebSocket } from "@/contexts/WebSocketContext";
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import UniversalLoader from '@/components/user/ui/LogoLoader';
+import { useWebSocket } from '@/contexts/WebSocketContext';
 
-const categories = ["All", "Upcoming", "Confirmed", "Cancelled", "No Shows"];
+const categories = ['All', 'Upcoming', 'Confirmed', 'Cancelled', 'No Shows'];
 
 const ReservationDashboard = () => {
   const [hideTab, setHideTab] = useState(false);
@@ -86,7 +86,7 @@ const ReservationDashboard = () => {
   const [columnFilters, setColumnFilters] = useState([]);
   const [columnVisibility, setColumnVisibility] = useState({});
   const [rowSelection, setRowSelection] = useState({});
-  const [activeCategory, setActiveCategory] = useState("All");
+  const [activeCategory, setActiveCategory] = useState('All');
   const navigate = useNavigate();
   const vendor = useSelector((state) => state.auth.vendor);
   const [data, setData] = useState([]);
@@ -96,7 +96,7 @@ const ReservationDashboard = () => {
   const [query, setQuery] = useState({
     page: 1,
     limit: 10,
-    status: "", // upcoming | confirmed | cancelled | no-show
+    status: '', // upcoming | confirmed | cancelled | no-show
   });
   const [stats, setStats] = useState({});
   const [isLoading, setIsLoading] = useState(true);
@@ -112,16 +112,16 @@ const ReservationDashboard = () => {
   const [confirmingIds, setConfirmingIds] = useState(new Set());
   const reservationStatusOptions = (status) => {
     switch (status) {
-      case "upcoming":
-        return "bg-[#E7F0F0] text-[#0A6C6D] border-[#B3D1D2]";
-      case "confirmed":
-        return "bg-[#D1FAE5] text-[#37703F] border-[#B8FFC2]";
-      case "cancelled":
-        return "bg-[#FCE6E6] text-[#EF4444] border-[#FAE48A]";
-      case "no-show":
-        return "bg-[#FCE6E6] text-[#EF4444] border-[#FAE48A]";
+      case 'upcoming':
+        return 'bg-[#E7F0F0] text-[#0A6C6D] border-[#B3D1D2]';
+      case 'confirmed':
+        return 'bg-[#D1FAE5] text-[#37703F] border-[#B8FFC2]';
+      case 'cancelled':
+        return 'bg-[#FCE6E6] text-[#EF4444] border-[#FAE48A]';
+      case 'no-show':
+        return 'bg-[#FCE6E6] text-[#EF4444] border-[#FAE48A]';
       default:
-        return "bg-gray-100 text-gray-800 border-gray-300";
+        return 'bg-gray-100 text-gray-800 border-gray-300';
     }
   };
   const socketRef = useRef(null);
@@ -136,13 +136,13 @@ const ReservationDashboard = () => {
       try {
         const resId = booking.resId || booking._id;
 
-        const normalizeStatus = (status) => (status || "").toLowerCase();
+        const normalizeStatus = (status) => (status || '').toLowerCase();
         const paymentStatus = normalizeStatus(booking.paymentStatus);
         const isPaid =
-          paymentStatus.includes("paid") ||
-          paymentStatus.includes("pay_later") ||
-          paymentStatus.includes("partly_paid") ||
-          paymentStatus.includes("success");
+          paymentStatus.includes('paid') ||
+          paymentStatus.includes('pay_later') ||
+          paymentStatus.includes('partly_paid') ||
+          paymentStatus.includes('success');
 
         let paymentRef = null;
         if (isPaid) {
@@ -155,7 +155,7 @@ const ReservationDashboard = () => {
             booking.payment?._id;
         }
 
-        console.log("🔍 Confirm attempt:", {
+        console.log('🔍 Confirm attempt:', {
           bookingId,
           resId,
           paymentRef,
@@ -163,15 +163,12 @@ const ReservationDashboard = () => {
           isPaid,
           availableKeys: Object.keys(booking).filter(
             (k) =>
-              k.includes("pay") ||
-              k.includes("ref") ||
-              k.includes("resId") ||
-              k.includes("payment"),
+              k.includes('pay') || k.includes('ref') || k.includes('resId') || k.includes('payment')
           ),
         });
 
         if (!isPaid) {
-          throw new Error("Cannot confirm arrival: Payment not completed");
+          throw new Error('Cannot confirm arrival: Payment not completed');
         }
 
         await userService.updateReservationStatus({
@@ -182,32 +179,24 @@ const ReservationDashboard = () => {
         });
 
         setData((prev) =>
-          prev.map((b) =>
-            b._id === bookingId ? { ...b, reservationStatus: "confirmed" } : b,
-          ),
+          prev.map((b) => (b._id === bookingId ? { ...b, reservationStatus: 'confirmed' } : b))
         );
-        toast.success("✅ Arrival confirmed!");
+        toast.success('✅ Arrival confirmed!');
       } catch (err) {
-        const msg = err?.response?.data?.message || err?.message || "";
-        if (msg.includes("Missing") && msg.includes("data"))
+        const msg = err?.response?.data?.message || err?.message || '';
+        if (msg.includes('Missing') && msg.includes('data'))
           toast.error(
-            "Backend missing payment data. Admin: Add .populate('payment') to /bookings endpoint.",
+            "Backend missing payment data. Admin: Add .populate('payment') to /bookings endpoint."
           );
-        else if (msg.includes("Missing required fields"))
-          toast.error("Missing resId or paymentId — check booking data.");
-        else if (msg.includes("resId"))
-          toast.error(
-            `resId mismatch: ${err?.response?.data?.providedResId || msg}`,
-          );
-        else if (msg.includes("paymentId") || msg.includes("payment"))
-          toast.error(
-            `Payment issue: ${msg}. Backend needs payment population.`,
-          );
-        else if (msg.includes("Payment must be successful"))
-          toast.error("Payment incomplete.");
-        else if (msg.includes("hotelReservation"))
-          toast.error("Use hotel-specific flow.");
-        else toast.error(msg || "Failed to confirm arrival.");
+        else if (msg.includes('Missing required fields'))
+          toast.error('Missing resId or paymentId — check booking data.');
+        else if (msg.includes('resId'))
+          toast.error(`resId mismatch: ${err?.response?.data?.providedResId || msg}`);
+        else if (msg.includes('paymentId') || msg.includes('payment'))
+          toast.error(`Payment issue: ${msg}. Backend needs payment population.`);
+        else if (msg.includes('Payment must be successful')) toast.error('Payment incomplete.');
+        else if (msg.includes('hotelReservation')) toast.error('Use hotel-specific flow.');
+        else toast.error(msg || 'Failed to confirm arrival.');
       } finally {
         setConfirmingIds((prev) => {
           const next = new Set(prev);
@@ -216,17 +205,17 @@ const ReservationDashboard = () => {
         });
       }
     },
-    [confirmingIds, vendor?._id],
+    [confirmingIds, vendor?._id]
   );
 
   const columns = [
     {
-      id: "select",
+      id: 'select',
       header: ({ table }) => (
         <Checkbox
           checked={
             table.getIsAllPageRowsSelected() ||
-            (table.getIsSomePageRowsSelected() && "indeterminate")
+            (table.getIsSomePageRowsSelected() && 'indeterminate')
           }
           onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
           aria-label="Select all"
@@ -244,110 +233,104 @@ const ReservationDashboard = () => {
       enableHiding: false,
     },
     {
-      accessorKey: "customerName",
-      header: "Customer Name",
+      accessorKey: 'customerName',
+      header: 'Customer Name',
       cell: ({ row }) => {
         const user = row.original;
         return (
           <div className="flex items-center gap-3">
             <Avatar>
               <AvatarFallback>
-                {user.customerName
-                  .split(" ")
-                  .map((i) => i.slice(0, 1).toUpperCase())}
+                {user.customerName.split(' ').map((i) => i.slice(0, 1).toUpperCase())}
               </AvatarFallback>
             </Avatar>
 
             <div className="flex flex-col">
               <span className="text-[#111827] font-medium text-sm">
-                {row.getValue("customerName")}
+                {row.getValue('customerName')}
               </span>
-              <span className="text-[#606368] text-xs capitalize">
-                ID #{user._id.slice(0, 8)}
-              </span>
+              <span className="text-[#606368] text-xs capitalize">ID #{user._id.slice(0, 8)}</span>
             </div>
           </div>
         );
       },
     },
     {
-      accessorKey: "date_n_time",
-      header: "Date & Time",
+      accessorKey: 'date_n_time',
+      header: 'Date & Time',
       cell: ({ row }) => {
         const user = row.original;
         const date = new Date(user.date);
         return (
           <div className="flex flex-col">
             <span className="text-[#111827] font-medium text-sm">
-              {date.toISOString().split("T")[0]}
+              {date.toISOString().split('T')[0]}
             </span>
-            <span className="text-[#606368] text-xs capitalize">
-              Time {user.time}
-            </span>
+            <span className="text-[#606368] text-xs capitalize">Time {user.time}</span>
           </div>
         );
       },
     },
     {
-      accessorKey: "guests",
+      accessorKey: 'guests',
       header: () => {
         return <div>No of Guests</div>;
       },
-      cell: ({ row }) => <div>{row.getValue("guests")}</div>,
+      cell: ({ row }) => <div>{row.getValue('guests')}</div>,
     },
     {
-      accessorKey: "mealPreselected",
+      accessorKey: 'mealPreselected',
       header: () => {
         return <div>Meal Preselected</div>;
       },
       cell: ({ row }) => (
         <div
-          className={`${row.getValue("mealPreselected") ? "bg-[#D1FAE5] text-[#37703F] border-[#B8FFC2]" : "text-[#EF4444] bg-[#FCE6E6] border-[#ffbbbb]"} flex py-1.5 px-3 w-max items-center border rounded-full`}
+          className={`${row.getValue('mealPreselected') ? 'bg-[#D1FAE5] text-[#37703F] border-[#B8FFC2]' : 'text-[#EF4444] bg-[#FCE6E6] border-[#ffbbbb]'} flex py-1.5 px-3 w-max items-center border rounded-full`}
         >
-          {row.getValue("mealPreselected") ? (
+          {row.getValue('mealPreselected') ? (
             <Check className="text-[#37703F] size-4" />
           ) : (
             <XIcon className="text-[#EF4444] size-4" />
           )}
-          {row.getValue("mealPreselected") ? "Yes" : "No"}
+          {row.getValue('mealPreselected') ? 'Yes' : 'No'}
         </div>
       ),
     },
     {
-      accessorKey: "paymentStatus",
+      accessorKey: 'paymentStatus',
       header: () => {
         return <div>Payment Status</div>;
       },
       cell: ({ row }) => (
         <div
-          className={` w-max ${row.getValue("paymentStatus") === "paid" ? "bg-[#D1FAE5] text-[#37703F] border-[#B8FFC2]" : "text-[#EF4444] bg-[#FCE6E6] border-[#ffbbbb]"} flex py-1.5 px-3 border rounded-full`}
+          className={` w-max ${row.getValue('paymentStatus') === 'paid' ? 'bg-[#D1FAE5] text-[#37703F] border-[#B8FFC2]' : 'text-[#EF4444] bg-[#FCE6E6] border-[#ffbbbb]'} flex py-1.5 px-3 border rounded-full`}
         >
-          {row.getValue("paymentStatus") === "not_paid"
-            ? "Pay at Restaurant"
-            : row.getValue("paymentStatus").split("_").join(" ")}
+          {row.getValue('paymentStatus') === 'not_paid'
+            ? 'Pay at Restaurant'
+            : row.getValue('paymentStatus').split('_').join(' ')}
         </div>
       ),
     },
     {
-      accessorKey: "reservationStatus",
+      accessorKey: 'reservationStatus',
       header: () => {
         return <div>Reservation Status</div>;
       },
       cell: ({ row }) => (
         <div
           className={`w-max 
-            ${reservationStatusOptions(row.getValue("reservationStatus").toLowerCase())} 
+            ${reservationStatusOptions(row.getValue('reservationStatus').toLowerCase())} 
               flex py-1.5 px-3 border rounded-full`}
         >
-          {row.getValue("reservationStatus").toLowerCase() === "upcoming" && "Upcoming"}
-          {row.getValue("reservationStatus").toLowerCase() === "confirmed" && "Confirmed"}
-          {row.getValue("reservationStatus").toLowerCase() === "cancelled" && "Cancelled"}
-          {row.getValue("reservationStatus").toLowerCase() === "no-show" && "No Show"}
+          {row.getValue('reservationStatus').toLowerCase() === 'upcoming' && 'Upcoming'}
+          {row.getValue('reservationStatus').toLowerCase() === 'confirmed' && 'Confirmed'}
+          {row.getValue('reservationStatus').toLowerCase() === 'cancelled' && 'Cancelled'}
+          {row.getValue('reservationStatus').toLowerCase() === 'no-show' && 'No Show'}
         </div>
       ),
     },
     {
-      id: "actions",
+      id: 'actions',
       enableHiding: false,
       cell: ({ row }) => {
         const booking = row.original;
@@ -399,9 +382,7 @@ const ReservationDashboard = () => {
               <DropdownMenuItem>
                 <CheckCircle /> Mark as No-Show
               </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => navigator.clipboard.writeText(booking.id)}
-              >
+              <DropdownMenuItem onClick={() => navigator.clipboard.writeText(booking.id)}>
                 <Copy /> Dupllicate Reservation
               </DropdownMenuItem>
               <DropdownMenuSeparator />
@@ -442,9 +423,7 @@ const ReservationDashboard = () => {
     const VITE_SOCKET_URL = import.meta.env.VITE_SOCKET_URL;
 
     const connect = () => {
-      const socket = new WebSocket(
-        `${VITE_SOCKET_URL}?type=vendor&id=${vendor._id}`,
-      );
+      const socket = new WebSocket(`${VITE_SOCKET_URL}?type=vendor&id=${vendor._id}`);
       socketRef.current = socket;
 
       socket.onopen = () => {
@@ -456,19 +435,17 @@ const ReservationDashboard = () => {
           const message = JSON.parse(event.data);
           // Message from server
 
-          if (message.type === "new_reservation") {
-            toast.success(
-              `🆕 New reservation from ${message.data.customerName}`,
-            );
+          if (message.type === 'new_reservation') {
+            toast.success(`🆕 New reservation from ${message.data.customerName}`);
             setData((prev) => [...prev, message.data]);
           }
         } catch (error) {
-          console.error("❌ Failed to parse message:", error);
+          console.error('❌ Failed to parse message:', error);
         }
       };
 
       socket.onerror = (err) => {
-        console.error("⚠️ WebSocket error:", err);
+        console.error('⚠️ WebSocket error:', err);
       };
 
       socket.onclose = (e) => {
@@ -485,7 +462,7 @@ const ReservationDashboard = () => {
     };
 
     const handleReservationUpdate = (payload) => {
-      toast.info(`Reservation updated: ${payload._id?.slice(0,8) || 'ID'}`);
+      toast.info(`Reservation updated: ${payload._id?.slice(0, 8) || 'ID'}`);
       // Refetch data/stats
       fetchReservations();
       fetchStats();
@@ -497,7 +474,7 @@ const ReservationDashboard = () => {
 
     return () => {
       if (socketRef.current) {
-        socketRef.current.close(1000, "Component unmounted");
+        socketRef.current.close(1000, 'Component unmounted');
         socketRef.current = null;
       }
       // if (reconnectTimeout.current) {
@@ -505,7 +482,6 @@ const ReservationDashboard = () => {
       // }
     };
   }, [vendor?._id, subscribe, unsubscribe]);
-
 
   useEffect(() => {
     const fetchReservations = async () => {
@@ -576,18 +552,12 @@ const ReservationDashboard = () => {
                 <DashboardButton
                   onClick={() => setHideTab(!hideTab)}
                   variant="secondary"
-                  text={hideTab ? "Open tabs" : "Hide tabs"}
+                  text={hideTab ? 'Open tabs' : 'Hide tabs'}
                   icon={hideTab ? <Eye /> : <EyeClose />}
                 />
+                <DashboardButton variant="secondary" text="Export" icon={<Export />} />
                 <DashboardButton
-                  variant="secondary"
-                  text="Export"
-                  icon={<Export />}
-                />
-                <DashboardButton
-                  onClick={() =>
-                    navigate("/dashboard/restaurant/reservation/new")
-                  }
+                  onClick={() => navigate('/dashboard/restaurant/reservation/new')}
                   variant="primary"
                   text="New Reservation"
                   icon={<Add fill="#fff" />}
@@ -629,7 +599,7 @@ const ReservationDashboard = () => {
                 {/* <div className='flex h-full items-center w-full'> */}
                 <StatCard
                   title="Pending Payments"
-                  value={stats.pendingPayments.count.toLocaleString("en-US")}
+                  value={stats.pendingPayments.count.toLocaleString('en-US')}
                   change={stats.pendingPayments.change}
                   icon={<Cash2 fill="#E1B505" className="text-[#E1B505]" />}
                   color="orange"
@@ -644,8 +614,7 @@ const ReservationDashboard = () => {
                     {categories.map((category, i) => (
                       <div
                         onClick={() => {
-                          const value =
-                            category === "All" ? "" : category.toLowerCase();
+                          const value = category === 'All' ? '' : category.toLowerCase();
 
                           setActiveCategory(category);
 
@@ -655,7 +624,7 @@ const ReservationDashboard = () => {
                             page: 1, // reset page
                           }));
                         }}
-                        className={`p-2 text-xs md:text-sm rounded-lg border font-medium cursor-pointer ${category === activeCategory ? "border-[#B3D1D2] bg-[#E7F0F0] text-[#111827] " : "border-transparent text-[#606368]"}`}
+                        className={`p-2 text-xs md:text-sm rounded-lg border font-medium cursor-pointer ${category === activeCategory ? 'border-[#B3D1D2] bg-[#E7F0F0] text-[#111827] ' : 'border-transparent text-[#606368]'}`}
                         key={i}
                       >
                         {category}
@@ -667,14 +636,9 @@ const ReservationDashboard = () => {
                       <Search className="absolute left-2 text-[#606368] size-5" />
                       <Input
                         placeholder="Search by guest name or ID"
-                        value={
-                          table.getColumn("customerName")?.getFilterValue() ??
-                          ""
-                        }
+                        value={table.getColumn('customerName')?.getFilterValue() ?? ''}
                         onChange={(event) =>
-                          table
-                            .getColumn("customerName")
-                            ?.setFilterValue(event.target.value)
+                          table.getColumn('customerName')?.setFilterValue(event.target.value)
                         }
                         className="max-w-sm pl-10 bg-[#F9FAFB] border-[#DAE9E9] "
                       />
@@ -682,10 +646,7 @@ const ReservationDashboard = () => {
                     <div className="md:flex gap-2 hidden">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button
-                            variant="outline"
-                            className="ml-auto text-[#606368]"
-                          >
+                          <Button variant="outline" className="ml-auto text-[#606368]">
                             Today <ChevronDown />
                           </Button>
                         </DropdownMenuTrigger>
@@ -699,9 +660,7 @@ const ReservationDashboard = () => {
                                   key={column.id}
                                   className="capitalize"
                                   checked={column.getIsVisible()}
-                                  onCheckedChange={(value) =>
-                                    column.toggleVisibility(!!value)
-                                  }
+                                  onCheckedChange={(value) => column.toggleVisibility(!!value)}
                                 >
                                   {column.id}
                                 </DropdownMenuCheckboxItem>
@@ -711,10 +670,7 @@ const ReservationDashboard = () => {
                       </DropdownMenu>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button
-                            variant="outline"
-                            className="ml-auto text-[#606368]"
-                          >
+                          <Button variant="outline" className="ml-auto text-[#606368]">
                             Payment Status <ChevronDown />
                           </Button>
                         </DropdownMenuTrigger>
@@ -728,9 +684,7 @@ const ReservationDashboard = () => {
                                   key={column.id}
                                   className="capitalize"
                                   checked={column.getIsVisible()}
-                                  onCheckedChange={(value) =>
-                                    column.toggleVisibility(!!value)
-                                  }
+                                  onCheckedChange={(value) => column.toggleVisibility(!!value)}
                                 >
                                   {column.id}
                                 </DropdownMenuCheckboxItem>
@@ -740,10 +694,7 @@ const ReservationDashboard = () => {
                       </DropdownMenu>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button
-                            variant="outline"
-                            className="ml-auto text-[#606368]"
-                          >
+                          <Button variant="outline" className="ml-auto text-[#606368]">
                             Advanced filter <Filter2 fill="black" />
                           </Button>
                         </DropdownMenuTrigger>
@@ -757,9 +708,7 @@ const ReservationDashboard = () => {
                                   key={column.id}
                                   className="capitalize"
                                   checked={column.getIsVisible()}
-                                  onCheckedChange={(value) =>
-                                    column.toggleVisibility(!!value)
-                                  }
+                                  onCheckedChange={(value) => column.toggleVisibility(!!value)}
                                 >
                                   {column.id}
                                 </DropdownMenuCheckboxItem>
@@ -785,10 +734,7 @@ const ReservationDashboard = () => {
                               <TableHead key={header.id}>
                                 {header.isPlaceholder
                                   ? null
-                                  : flexRender(
-                                      header.column.columnDef.header,
-                                      header.getContext(),
-                                    )}
+                                  : flexRender(header.column.columnDef.header, header.getContext())}
                               </TableHead>
                             );
                           })}
@@ -798,26 +744,17 @@ const ReservationDashboard = () => {
                     <TableBody>
                       {table.getRowModel().rows?.length ? (
                         table.getRowModel().rows.map((row) => (
-                          <TableRow
-                            key={row.id}
-                            data-state={row.getIsSelected() && "selected"}
-                          >
+                          <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'}>
                             {row.getVisibleCells().map((cell) => (
                               <TableCell key={cell.id}>
-                                {flexRender(
-                                  cell.column.columnDef.cell,
-                                  cell.getContext(),
-                                )}
+                                {flexRender(cell.column.columnDef.cell, cell.getContext())}
                               </TableCell>
                             ))}
                           </TableRow>
                         ))
                       ) : (
                         <TableRow>
-                          <TableCell
-                            colSpan={columns.length}
-                            className="h-24 text-center"
-                          >
+                          <TableCell colSpan={columns.length} className="h-24 text-center">
                             No results.
                           </TableCell>
                         </TableRow>
@@ -840,8 +777,7 @@ const ReservationDashboard = () => {
                     <PaginationItem>
                       <PaginationLink
                         onClick={() =>
-                          query.page > 1 &&
-                          setQuery((prev) => ({ ...prev, page: prev.page - 1 }))
+                          query.page > 1 && setQuery((prev) => ({ ...prev, page: prev.page - 1 }))
                         }
                         className="cursor-pointer"
                       >
@@ -854,9 +790,7 @@ const ReservationDashboard = () => {
                       <>
                         <PaginationItem>
                           <PaginationLink
-                            onClick={() =>
-                              setQuery((prev) => ({ ...prev, page: 1 }))
-                            }
+                            onClick={() => setQuery((prev) => ({ ...prev, page: 1 }))}
                           >
                             1
                           </PaginationLink>
@@ -870,9 +804,7 @@ const ReservationDashboard = () => {
                       <PaginationItem key={p}>
                         <PaginationLink
                           isActive={query.page === p}
-                          onClick={() =>
-                            setQuery((prev) => ({ ...prev, page: p }))
-                          }
+                          onClick={() => setQuery((prev) => ({ ...prev, page: p }))}
                           className="cursor-pointer"
                         >
                           {p}
@@ -919,7 +851,9 @@ const ReservationDashboard = () => {
                   variant="secondary"
                   icon={<ChevronLeft className="size-5" />}
                   // size="sm"
-                  onClick={() => query.page > 1 && setQuery((prev) => ({ ...prev, page: prev.page - 1 }))}
+                  onClick={() =>
+                    query.page > 1 && setQuery((prev) => ({ ...prev, page: prev.page - 1 }))
+                  }
                   disabled={query.page === 1}
                   className="shadow-md"
                 />
@@ -928,8 +862,7 @@ const ReservationDashboard = () => {
                   icon={<ChevronRight className="size-5" />}
                   // size="sm"
                   onClick={() =>
-                    query.page < dat.pages &&
-                    setQuery((prev) => ({ ...prev, page: prev.page + 1 }))
+                    query.page < dat.pages && setQuery((prev) => ({ ...prev, page: prev.page + 1 }))
                   }
                   disabled={query.page === dat.pages}
                   className="shadow-md"
@@ -954,16 +887,12 @@ const ReservationDashboard = () => {
                       <div>
                         <p className="text-sm text-gray-600 mb-1">Restaurant</p>
                         <p className="text-base font-medium text-gray-900 mb-1">
-                          {showPopup.details.vendor.businessName || "hey"}
+                          {showPopup.details.vendor.businessName || 'hey'}
                         </p>
-                        <p className="text-sm text-gray-600">
-                          {showPopup.details.location}
-                        </p>
+                        <p className="text-sm text-gray-600">{showPopup.details.location}</p>
                       </div>
                       <div>
-                        <p className="text-sm text-gray-600 mb-1">
-                          Reservation ID
-                        </p>
+                        <p className="text-sm text-gray-600 mb-1">Reservation ID</p>
                         <p className="font-medium text-gray-900">
                           #{showPopup.details._id.slice(0, 8).toUpperCase()}
                         </p>
@@ -972,18 +901,13 @@ const ReservationDashboard = () => {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 px-4 mb-4">
                       <div>
-                        <p className="text-sm text-gray-600 mb-1">
-                          Date & Time
-                        </p>
+                        <p className="text-sm text-gray-600 mb-1">Date & Time</p>
                         <p className="font-medium text-gray-900">
-                          {new Date(showPopup.details.date).toLocaleDateString(
-                            undefined,
-                            {
-                              year: "numeric",
-                              month: "long",
-                              day: "numeric",
-                            },
-                          )}{" "}
+                          {new Date(showPopup.details.date).toLocaleDateString(undefined, {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric',
+                          })}{' '}
                           • {showPopup.details.time}
                         </p>
                       </div>
@@ -1001,18 +925,12 @@ const ReservationDashboard = () => {
                     <div className="rounded-2xl border border-gray-200 mb-6 bg-white shadow-sm p-5">
                       <div>
                         <h2 className="font-semibold text-gray-900 mb-2">
-                          Your Selection ({showPopup.details.menus.length}{" "}
-                          {showPopup.details.menus.length > 1
-                            ? "items"
-                            : "item"}
-                          )
+                          Your Selection ({showPopup.details.menus.length}{' '}
+                          {showPopup.details.menus.length > 1 ? 'items' : 'item'})
                         </h2>
                         <ul className="divide-y divide-gray-100">
                           {showPopup.details.menus.map((item, index) => (
-                            <li
-                              key={index}
-                              className="flex justify-between py-2"
-                            >
+                            <li key={index} className="flex justify-between py-2">
                               <span className="text-gray-700">
                                 {item.quantity}x {item.menu.name}
                               </span>
@@ -1041,8 +959,7 @@ const ReservationDashboard = () => {
                       <div className="flex items-start gap-3">
                         <Mail className="w-5 h-5 text-[#0A6C6D] mt-0.5 flex-shrink-0" />
                         <p className="text-sm">
-                          You will receive a confirmation email with your
-                          reservation details
+                          You will receive a confirmation email with your reservation details
                         </p>
                       </div>
 
@@ -1085,10 +1002,7 @@ const ReservationDashboard = () => {
           <ConfirmReservation
             onConfirm={async () => {
               if (selectedBooking) {
-                console.log(
-                  "Confirming arrival for booking ID:",
-                  selectedBooking._id,
-                );
+                console.log('Confirming arrival for booking ID:', selectedBooking._id);
                 handleConfirmArrival(selectedBooking);
               }
             }}

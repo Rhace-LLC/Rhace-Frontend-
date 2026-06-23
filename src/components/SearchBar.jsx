@@ -7,11 +7,11 @@ import {
   Loader2,
   ChevronLeft,
   ArrowLeft,
-} from "lucide-react";
-import { FaStar } from "react-icons/fa6";
-import { TYPE_CONFIG } from "../utils/constants";
-import { delRecent } from "../utils/filterUtils";
-import { useEffect, useRef } from "react";
+} from 'lucide-react';
+import { FaStar } from 'react-icons/fa6';
+import { TYPE_CONFIG } from '../utils/constants';
+import { delRecent } from '../utils/filterUtils';
+import { useEffect, useRef } from 'react';
 
 export const SearchBar = ({
   inputValue,
@@ -36,7 +36,7 @@ export const SearchBar = ({
 }) => {
   const handleClearRecent = (e) => {
     e.preventDefault();
-    localStorage.removeItem("rhace_recent_searches");
+    localStorage.removeItem('rhace_recent_searches');
     setRecentSearches([]);
   };
 
@@ -47,8 +47,8 @@ export const SearchBar = ({
         htmlFor={id}
         className={`flex items-center gap-2 cursor-text bg-gray-50 border rounded-full px-3 py-2.5 sm:py-3.5 ${
           showDropdown
-            ? "border-[#0A6C6D] ring-2 ring-[#0A6C6D]/10 sm:rounded-t-3xl sm:rounded-b-none"
-            : "border-gray-200 hover:border-gray-400"
+            ? 'border-[#0A6C6D] ring-2 ring-[#0A6C6D]/10 sm:rounded-t-3xl sm:rounded-b-none'
+            : 'border-gray-200 hover:border-gray-400'
         }`}
       >
         <Search className="w-4 h-4 text-gray-400 shrink-0" />
@@ -62,25 +62,25 @@ export const SearchBar = ({
           placeholder={
             filters.type
               ? TYPE_CONFIG[filters.type]?.searchPlaceholder
-              : "Search hotels, restaurants, clubs, cuisines..."
+              : 'Search hotels, restaurants, clubs, cuisines...'
           }
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setTimeout(() => setIsFocused(false), 160)}
           onKeyDown={(e) => {
-            if (e.key === "Enter") {
+            if (e.key === 'Enter') {
               submitSearch();
               onSubmit?.(); // close popup
             }
-            if (e.key === "Escape") setIsFocused(false);
+            if (e.key === 'Escape') setIsFocused(false);
           }}
           className="flex-1 bg-transparent cursor-text outline-none text-sm text-gray-900 placeholder-gray-400 min-w-0"
         />
         {inputValue && (
           <button
             onMouseDown={(e) => e.preventDefault()}
-            onClick={() => setInputValue("")}
+            onClick={() => setInputValue('')}
             className="text-gray-400 hover:text-gray-700 shrink-0"
           >
             <X className="w-3.5 h-3.5" />
@@ -114,9 +114,7 @@ export const SearchBar = ({
                   className="flex items-center gap-2.5 px-3 sm:px-4 py-2 hover:bg-gray-50 cursor-pointer group"
                 >
                   <Clock className="w-3.5 h-3.5 text-gray-300 shrink-0" />
-                  <span className="text-sm text-gray-700 flex-1 truncate">
-                    {term}
-                  </span>
+                  <span className="text-sm text-gray-700 flex-1 truncate">{term}</span>
                   <button
                     onMouseDown={(e) => e.stopPropagation()}
                     onClick={(e) => {
@@ -217,37 +215,27 @@ const VendorDropdownRow = ({ vendor, onClick, showArrow }) => {
     >
       <div className="w-8 h-8 rounded-lg overflow-hidden bg-gray-100 shrink-0">
         {vendor.image ? (
-          <img
-            src={vendor.image}
-            alt=""
-            className="w-full h-full object-cover"
-          />
+          <img src={vendor.image} alt="" className="w-full h-full object-cover" />
         ) : (
           <div
-            className={`w-full h-full flex items-center justify-center text-xs font-black ${cfg?.light || "text-gray-400"}`}
+            className={`w-full h-full flex items-center justify-center text-xs font-black ${cfg?.light || 'text-gray-400'}`}
           >
             {vendor.text?.[0]}
           </div>
         )}
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold text-gray-800 truncate">
-          {vendor.text}
-        </p>
+        <p className="text-sm font-semibold text-gray-800 truncate">{vendor.text}</p>
         <p className="text-[11px] text-gray-400 capitalize">
           {cfg?.singular}
-          {vendor.label && vendor.label !== "General"
-            ? `${vendor.label}`
-            : ""}
+          {vendor.label && vendor.label !== 'General' ? `${vendor.label}` : ''}
           {/* {vendor.address ? ` · ${vendor.address.split(",")[0]}` : ""} */}
         </p>
       </div>
       {vendor.rating > 0 && (
         <div className="flex items-center gap-0.5 shrink-0">
           <FaStar className="w-2.5 h-2.5 text-amber-400" />
-          <span className="text-xs font-bold text-gray-700">
-            {vendor.rating.toFixed(1)}
-          </span>
+          <span className="text-xs font-bold text-gray-700">{vendor.rating.toFixed(1)}</span>
         </div>
       )}
       {showArrow && (
@@ -257,22 +245,16 @@ const VendorDropdownRow = ({ vendor, onClick, showArrow }) => {
   );
 };
 
-export const SearchPopup = ({
-  show,
-  setShow,
-  searchProps,
-  filters,
-  inputRef,
-}) => {
+export const SearchPopup = ({ show, setShow, searchProps, filters, inputRef }) => {
   useEffect(() => {
-  if (show) {
-    requestAnimationFrame(() => {
-      inputRef.current?.focus();
-    });
-  }
-}, [show]);
+    if (show) {
+      requestAnimationFrame(() => {
+        inputRef.current?.focus();
+      });
+    }
+  }, [show]);
 
-console.log(searchProps.suggestions)
+  console.log(searchProps.suggestions);
 
   if (!show) return null;
   return (
@@ -300,8 +282,7 @@ console.log(searchProps.suggestions)
               <>
                 {searchProps.isSugLoading ? (
                   <div className="flex items-center gap-2 px-3 py-3 text-xs text-gray-400">
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" />{" "}
-                    Searching...
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" /> Searching...
                   </div>
                 ) : searchProps.suggestions.length > 0 ? (
                   searchProps.suggestions.map((v) => (

@@ -1,4 +1,4 @@
-import api from "@/lib/axios";
+import api from '@/lib/axios';
 
 class HotelService {
   /**
@@ -16,17 +16,17 @@ class HotelService {
         // Backend responded with a status code outside 2xx
         // Log status and body to help diagnose 403 forbidden reasons
         // (e.g. missing/invalid token, insufficient permissions)
-  console.error('[hotel.service] createRoomType failed', {
+        console.error('[hotel.service] createRoomType failed', {
           status: error.response.status,
           data: error.response.data,
           headers: error.response.headers,
         });
       } else if (error.request) {
         // No response received
-  console.error('[hotel.service] createRoomType no response received', error.request);
+        console.error('[hotel.service] createRoomType no response received', error.request);
       } else {
         // Something happened setting up the request
-  console.error('[hotel.service] createRoomType error', error.message);
+        console.error('[hotel.service] createRoomType error', error.message);
       }
       throw error;
     }
@@ -37,17 +37,17 @@ class HotelService {
       return res.data;
     } catch (error) {
       if (error.response) {
-  console.error('[hotel.service] createRoomType failed', {
+        console.error('[hotel.service] createRoomType failed', {
           status: error.response.status,
           data: error.response.data,
           headers: error.response.headers,
         });
       } else if (error.request) {
         // No response received
-  console.error('[hotel.service] createRoomType no response received', error.request);
+        console.error('[hotel.service] createRoomType no response received', error.request);
       } else {
         // Something happened setting up the request
-  console.error('[hotel.service] createRoomType error', error.message);
+        console.error('[hotel.service] createRoomType error', error.message);
       }
       throw error;
     }
@@ -58,17 +58,17 @@ class HotelService {
       return res.data;
     } catch (error) {
       if (error.response) {
-  console.error('[hotel.service] createRoomType failed', {
+        console.error('[hotel.service] createRoomType failed', {
           status: error.response.status,
           data: error.response.data,
           headers: error.response.headers,
         });
       } else if (error.request) {
         // No response received
-  console.error('[hotel.service] createRoomType no response received', error.request);
+        console.error('[hotel.service] createRoomType no response received', error.request);
       } else {
         // Something happened setting up the request
-  console.error('[hotel.service] createRoomType error', error.message);
+        console.error('[hotel.service] createRoomType error', error.message);
       }
       throw error;
     }
@@ -86,7 +86,6 @@ class HotelService {
     const res = await api.get(`/payments`);
     return res.data;
   }
-
 
   /**
    * Get a single room type by id for a hotel

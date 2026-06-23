@@ -1,9 +1,17 @@
 {
   "compilerOptions": {
+    "target": "ESNext",
+    //"module": "NodeNext",
+    //"moduleResolution": "NodeNext",
+    "jsx": "react-jsx",
+    "checkJs": true,
+    "allowJs": true,
+    "strict": false,
+    "noUnusedLocals": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
-    },
-    "jsx": "react-jsx"
-  }
+      "@/*": ["./src/*"]
+    }
+  },
+  "exclude": ["node_modules", "dist", ".vite"]
 }

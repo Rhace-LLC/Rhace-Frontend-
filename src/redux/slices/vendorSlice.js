@@ -1,18 +1,19 @@
-import api from "@/lib/axios";
-import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import api from '@/lib/axios';
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 
 // Async thunk to fetch room types for a given hotelId
 export const fetchRoomTypes = createAsyncThunk(
-  "vendor/fetchRoomTypes",
+  'vendor/fetchRoomTypes',
   async (hotelId, { rejectWithValue }) => {
-    if (!hotelId) return rejectWithValue("Missing hotelId");
+    if (!hotelId) return rejectWithValue('Missing hotelId');
     try {
       const res = await api.get(`/hotels/${hotelId}/roomtypes`);
       // axios responses expose the payload on `data`
       return res.data;
     } catch (err) {
       // prefer server-provided message when available
-      const message = err?.response?.data?.message || err?.response?.data || err.message || "Network error";
+      const message =
+        err?.response?.data?.message || err?.response?.data || err.message || 'Network error';
       return rejectWithValue(message);
     }
   }
@@ -21,18 +22,18 @@ export const fetchRoomTypes = createAsyncThunk(
 const initialState = {
   type: null,
   details: {
-    id: "",
-    email: ""
+    id: '',
+    email: '',
   },
   roomTypes: {
     items: [],
-    status: "idle", // 'idle' | 'loading' | 'succeeded' | 'failed'
+    status: 'idle', // 'idle' | 'loading' | 'succeeded' | 'failed'
     error: null,
   },
 };
 
 const vendorSlice = createSlice({
-  name: "vendor",
+  name: 'vendor',
   initialState,
   reducers: {
     setVendorType: (state, action) => {
@@ -46,16 +47,16 @@ const vendorSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(fetchRoomTypes.pending, (state) => {
-        state.roomTypes.status = "loading";
+        state.roomTypes.status = 'loading';
         state.roomTypes.error = null;
       })
       .addCase(fetchRoomTypes.fulfilled, (state, action) => {
-        state.roomTypes.status = "succeeded";
+        state.roomTypes.status = 'succeeded';
         // store items directly; action.payload expected to be an array
         state.roomTypes.items = Array.isArray(action.payload) ? action.payload : [];
       })
       .addCase(fetchRoomTypes.rejected, (state, action) => {
-        state.roomTypes.status = "failed";
+        state.roomTypes.status = 'failed';
         state.roomTypes.error = action.payload || action.error.message;
       });
   },

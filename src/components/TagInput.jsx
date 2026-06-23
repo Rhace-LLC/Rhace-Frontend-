@@ -1,5 +1,5 @@
-import { Plus, X } from "lucide-react";
-import { useState } from "react";
+import { Plus, X } from 'lucide-react';
+import { useState } from 'react';
 
 const TagInput = ({ label, placeholder, tags, onAdd, onRemove }) => {
   const [inputValue, setInputValue] = useState('');
@@ -42,10 +42,7 @@ const TagInput = ({ label, placeholder, tags, onAdd, onRemove }) => {
               className="inline-flex items-center gap-1 px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm"
             >
               {tag}
-              <button
-                onClick={() => onRemove(tag)}
-                className="hover:text-red-600"
-              >
+              <button onClick={() => onRemove(tag)} className="hover:text-red-600">
                 <X className="w-3 h-3" />
               </button>
             </span>
@@ -56,4 +53,4 @@ const TagInput = ({ label, placeholder, tags, onAdd, onRemove }) => {
   );
 };
 
-export default TagInput
+export default TagInput;

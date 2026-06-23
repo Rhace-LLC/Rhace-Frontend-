@@ -9,8 +9,8 @@ import {
   startOfMonth,
   startOfWeek,
   subMonths,
-} from "date-fns";
-import { useEffect, useRef, useState } from "react";
+} from 'date-fns';
+import { useEffect, useRef, useState } from 'react';
 import {
   // FiCalendar,
   // FiClock,
@@ -19,7 +19,7 @@ import {
   // FiSearch,
   FiChevronLeft,
   FiChevronRight,
-} from "react-icons/fi";
+} from 'react-icons/fi';
 
 export const DateDropdown = ({ selectedDate, onChange }) => {
   const [show, setShow] = useState(false);
@@ -33,8 +33,8 @@ export const DateDropdown = ({ selectedDate, onChange }) => {
         setShow(false);
       }
     };
-    document.addEventListener("mousedown", onClickOutside);
-    return () => document.removeEventListener("mousedown", onClickOutside);
+    document.addEventListener('mousedown', onClickOutside);
+    return () => document.removeEventListener('mousedown', onClickOutside);
   }, []);
 
   // build calendar grid
@@ -57,10 +57,10 @@ export const DateDropdown = ({ selectedDate, onChange }) => {
              w-8 h-8 sm:w-12.5 sm:h-12 flex items-center justify-center text-black text-sm font-normal cursor-pointer  outline-1  outline-gray-300 
              ${
                !isSameMonth(cloneDay, monthStart)
-                 ? "text-neutral-400 "
+                 ? 'text-neutral-400 '
                  : isSameDay(cloneDay, selectedDate || new Date())
-                   ? "bg-indigo-800 text-white"
-                   : "text-gray-700 hover:bg-indigo-50 bg-gray-100"
+                   ? 'bg-indigo-800 text-white'
+                   : 'text-gray-700 hover:bg-indigo-50 bg-gray-100'
              }
            `}
             onClick={() => {
@@ -68,15 +68,15 @@ export const DateDropdown = ({ selectedDate, onChange }) => {
               setShow(false);
             }}
           >
-            {format(cloneDay, "d")}
-          </div>,
+            {format(cloneDay, 'd')}
+          </div>
         );
         day = addDays(day, 1);
       }
       rows.push(
         <div key={day.toString()} className="grid grid-cols-7 ">
           {days}
-        </div>,
+        </div>
       );
       days = [];
     }
@@ -93,7 +93,7 @@ export const DateDropdown = ({ selectedDate, onChange }) => {
       >
         {/* <FiCalendar className="mr-2 text-gray-500" /> */}
         <span className="flex-1 text-sm text-gray-700">
-          {selectedDate ? format(selectedDate, "MMM d, yyyy") : "Pick date"}
+          {selectedDate ? format(selectedDate, 'MMM d, yyyy') : 'Pick date'}
         </span>
         <FiChevronDown className="text-gray-500 cursor-pointer " />
       </div>
@@ -104,7 +104,7 @@ export const DateDropdown = ({ selectedDate, onChange }) => {
           {/* header */}
           <div className="flex items-center justify-between mb-2 px-2">
             <span className="text-base flex-1 font-medium text-gray-800">
-              {format(currentMonth, "MMMM yyyy")}
+              {format(currentMonth, 'MMMM yyyy')}
             </span>
             <button onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}>
               <FiChevronLeft className="w-5 h-5 text-gray-600 cursor-pointer" />
@@ -116,7 +116,7 @@ export const DateDropdown = ({ selectedDate, onChange }) => {
 
           {/* weekday labels */}
           <div className="grid grid-cols-7  text-center text-xs font-semibold text-gray-900 mb-2">
-            {["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"].map((wd) => (
+            {['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'].map((wd) => (
               <div key={wd}>{wd}</div>
             ))}
           </div>

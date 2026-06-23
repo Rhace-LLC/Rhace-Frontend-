@@ -1,4 +1,4 @@
-import { FilterPanel } from "./FilterPanel";
+import { FilterPanel } from './FilterPanel';
 
 /**
  * FilterDrawer
@@ -6,9 +6,13 @@ import { FilterPanel } from "./FilterPanel";
  * - Desktop (lg+): sticky sidebar (rendered by parent layout)
  */
 export const FilterDrawer = ({
-  isOpen, onClose,
-  filters, onChange, onClear,
-  facets, hasFilters,
+  isOpen,
+  onClose,
+  filters,
+  onChange,
+  onClear,
+  facets,
+  hasFilters,
   pagination,
 }) => {
   if (!isOpen) return null;
@@ -16,10 +20,7 @@ export const FilterDrawer = ({
   return (
     <div className="fixed inset-0 z-50 lg:hidden">
       {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-        onClick={onClose}
-      />
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
       {/* Sheet */}
       <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl max-h-[85vh] flex flex-col">
         {/* Handle */}
@@ -45,7 +46,7 @@ export const FilterDrawer = ({
             onClick={onClose}
             className="w-full py-2.5 bg-[#0A6C6D] text-white text-sm font-semibold rounded-xl hover:bg-[#084F4F] transition-colors"
           >
-            Show {pagination?.totalCount > 0 ? `${pagination.totalCount} Results` : "Results"}
+            Show {pagination?.totalCount > 0 ? `${pagination.totalCount} Results` : 'Results'}
           </button>
         </div>
       </div>

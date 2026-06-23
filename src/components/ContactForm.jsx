@@ -1,6 +1,6 @@
-import { useForm } from "react-hook-form";
-import { toast } from "react-toastify";
-import { Send, User, Mail, MessageSquare, FileText } from "lucide-react";
+import { useForm } from 'react-hook-form';
+import { toast } from 'react-toastify';
+import { Send, User, Mail, MessageSquare, FileText } from 'lucide-react';
 
 export function ContactForm() {
   const {
@@ -14,7 +14,7 @@ export function ContactForm() {
     // Simulate form submission
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
-    console.log("Form submitted:", data);
+    console.log('Form submitted:', data);
     toast.success("Message sent successfully! We'll get back to you soon.");
     reset();
   };
@@ -33,14 +33,12 @@ export function ContactForm() {
             <input
               id="name"
               type="text"
-              {...register("name", { required: "Name is required" })}
+              {...register('name', { required: 'Name is required' })}
               className="w-full pl-12 pr-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
               placeholder="John Doe"
             />
           </div>
-          {errors.name && (
-            <p className="mt-2 text-red-600">{errors.name.message}</p>
-          )}
+          {errors.name && <p className="mt-2 text-red-600">{errors.name.message}</p>}
         </div>
 
         <div>
@@ -54,20 +52,18 @@ export function ContactForm() {
             <input
               id="email"
               type="email"
-              {...register("email", {
-                required: "Email is required",
+              {...register('email', {
+                required: 'Email is required',
                 pattern: {
                   value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                  message: "Invalid email address",
+                  message: 'Invalid email address',
                 },
               })}
               className="w-full pl-12 pr-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
               placeholder="john@example.com"
             />
           </div>
-          {errors.email && (
-            <p className="mt-2 text-red-600">{errors.email.message}</p>
-          )}
+          {errors.email && <p className="mt-2 text-red-600">{errors.email.message}</p>}
         </div>
       </div>
 
@@ -82,14 +78,12 @@ export function ContactForm() {
           <input
             id="subject"
             type="text"
-            {...register("subject", { required: "Subject is required" })}
+            {...register('subject', { required: 'Subject is required' })}
             className="w-full pl-12 pr-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all"
             placeholder="How can we help you?"
           />
         </div>
-        {errors.subject && (
-          <p className="mt-2 text-red-600">{errors.subject.message}</p>
-        )}
+        {errors.subject && <p className="mt-2 text-red-600">{errors.subject.message}</p>}
       </div>
 
       <div>
@@ -103,20 +97,18 @@ export function ContactForm() {
           <textarea
             id="message"
             rows={6}
-            {...register("message", {
-              required: "Message is required",
+            {...register('message', {
+              required: 'Message is required',
               minLength: {
                 value: 10,
-                message: "Message must be at least 10 characters",
+                message: 'Message must be at least 10 characters',
               },
             })}
             className="w-full pl-12 pr-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent resize-none transition-all"
             placeholder="Tell us more about your inquiry..."
           />
         </div>
-        {errors.message && (
-          <p className="mt-2 text-red-600">{errors.message.message}</p>
-        )}
+        {errors.message && <p className="mt-2 text-red-600">{errors.message.message}</p>}
       </div>
 
       <button
@@ -124,7 +116,7 @@ export function ContactForm() {
         disabled={isSubmitting}
         className="w-full bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700 text-white px-6 py-4 rounded-xl transition-all flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-teal-500/30 hover:shadow-xl hover:shadow-teal-500/40"
       >
-        <span>{isSubmitting ? "Sending Message..." : "Send Message"}</span>
+        <span>{isSubmitting ? 'Sending Message...' : 'Send Message'}</span>
         <Send className="w-5 h-5" />
       </button>
     </form>

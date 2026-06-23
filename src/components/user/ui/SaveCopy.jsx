@@ -1,18 +1,16 @@
-import React from "react";
-import { Heart, Share2Icon } from "lucide-react";
-import { toast } from "react-toastify";
-import { Button } from "@/components/ui/button";
-import { FavoriteButton3 } from "./favoritebutton";
+import React from 'react';
+import { Heart, Share2Icon } from 'lucide-react';
+import { toast } from 'react-toastify';
+import { Button } from '@/components/ui/button';
+import { FavoriteButton3 } from './favoritebutton';
 
 const SaveCopy = ({ id, type, vendor }) => {
   const handleCopy = () => {
     navigator.clipboard
-      .writeText(
-        `https://rhace-frontend.vercel.app/${type}/${id}`
-      )
-      .then(() => toast.success("Link copied to clipboard!"))
+      .writeText(`https://rhace-frontend.vercel.app/${type}/${id}`)
+      .then(() => toast.success('Link copied to clipboard!'))
       .catch(() => {
-        toast.error("Failed to copy.");
+        toast.error('Failed to copy.');
       });
   };
   return (

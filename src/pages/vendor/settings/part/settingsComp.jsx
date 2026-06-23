@@ -1,4 +1,4 @@
-import { ChevronDown, Clock, Edit2 } from "lucide-react";
+import { ChevronDown, Clock, Edit2 } from 'lucide-react';
 
 // Toggle Switch Component
 export const ToggleSwitch = ({ enabled, onToggle }) => (
@@ -22,8 +22,8 @@ export const SectionCard = ({ title, onEdit, children }) => (
     <div className="flex items-center justify-between mb-6">
       <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
       {onEdit && (
-        <Edit2 
-          className="w-5 h-5 text-gray-400 cursor-pointer hover:text-gray-600" 
+        <Edit2
+          className="w-5 h-5 text-gray-400 cursor-pointer hover:text-gray-600"
           onClick={onEdit}
         />
       )}
@@ -33,11 +33,17 @@ export const SectionCard = ({ title, onEdit, children }) => (
 );
 
 // Input Field Component
-export const InputField = ({ label, value, onChange, type = "text", maxLength, helpText, ...props }) => (
+export const InputField = ({
+  label,
+  value,
+  onChange,
+  type = 'text',
+  maxLength,
+  helpText,
+  ...props
+}) => (
   <div>
-    <label className="block text-sm font-medium text-gray-700 mb-2">
-      {label}
-    </label>
+    <label className="block text-sm font-medium text-gray-700 mb-2">{label}</label>
     <div className="relative">
       <input
         type={type}
@@ -53,33 +59,29 @@ export const InputField = ({ label, value, onChange, type = "text", maxLength, h
         </span>
       )}
     </div>
-    {helpText && (
-      <p className="text-xs text-gray-500 mt-1">{helpText}</p>
-    )}
+    {helpText && <p className="text-xs text-gray-500 mt-1">{helpText}</p>}
   </div>
 );
 
 // Select Field Component
 export const SelectField = ({ label, value, onChange, options, helpText }) => (
   <div>
-    <label className="block text-sm font-medium text-gray-700 mb-2">
-      {label}
-    </label>
+    <label className="block text-sm font-medium text-gray-700 mb-2">{label}</label>
     <div className="relative">
       <select
         value={value}
         onChange={onChange}
         className="w-full px-4 py-2 border border-gray-300 rounded-lg appearance-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
       >
-        {options.map(option => (
-          <option key={option} value={option}>{option}</option>
+        {options.map((option) => (
+          <option key={option} value={option}>
+            {option}
+          </option>
         ))}
       </select>
       <ChevronDown className="absolute right-3 top-3 w-5 h-5 text-gray-400 pointer-events-none" />
     </div>
-    {helpText && (
-      <p className="text-xs text-gray-500 mt-1">{helpText}</p>
-    )}
+    {helpText && <p className="text-xs text-gray-500 mt-1">{helpText}</p>}
   </div>
 );
 
@@ -97,22 +99,20 @@ export const TimeInput = ({ value, onChange, disabled }) => (
   </div>
 );
 
-
 // Placeholder Tab Component
 export const PlaceholderTab = ({ icon: Icon, title, description }) => (
   <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
-   {Icon && <Icon className="w-16 h-16 text-gray-400 mx-auto mb-4" />}
+    {Icon && <Icon className="w-16 h-16 text-gray-400 mx-auto mb-4" />}
     <h3 className="text-lg font-semibold text-gray-900 mb-2">{title}</h3>
     <p className="text-gray-600">{description}</p>
   </div>
 );
 
-
 // Tabs Navigation Component
 export const TabsNavigation = ({ activeTab, setActiveTab, tabs }) => (
   <div className="bg-white mt-6 flex items-center justify-between">
     <div className="flex gap-1 px-6 overflow-x-auto">
-      {tabs.map(tab => {
+      {tabs.map((tab) => {
         const Icon = tab.icon;
         return (
           <button
@@ -130,10 +130,10 @@ export const TabsNavigation = ({ activeTab, setActiveTab, tabs }) => (
         );
       })}
     </div>
-     <button className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
-        <Edit2 className="w-4 h-4" />
-        Edit All
-      </button>
+    <button className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
+      <Edit2 className="w-4 h-4" />
+      Edit All
+    </button>
   </div>
 );
 

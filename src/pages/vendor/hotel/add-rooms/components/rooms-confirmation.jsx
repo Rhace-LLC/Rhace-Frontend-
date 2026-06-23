@@ -18,39 +18,34 @@ import {
   Plus,
   User,
   Users,
-  Wifi
+  Wifi,
 } from 'lucide-react';
 import { useState } from 'react';
 
-
 const amenityIcons = {
-  "Free Breakfast": <Coffee className="w-4 h-4" />,
-  "Breakfast": <Coffee className="w-4 h-4" />,
-  "Free Parking": <Car className="w-4 h-4" />,
-  "Parking": <Car className="w-4 h-4" />,
-  "City View": <Building className="w-4 h-4" />,
-  "Free WiFi": <Wifi className="w-4 h-4" />,
-  "Wi-Fi": <Wifi className="w-4 h-4" />,
-  "WiFi": <Wifi className="w-4 h-4" />
+  'Free Breakfast': <Coffee className="w-4 h-4" />,
+  Breakfast: <Coffee className="w-4 h-4" />,
+  'Free Parking': <Car className="w-4 h-4" />,
+  Parking: <Car className="w-4 h-4" />,
+  'City View': <Building className="w-4 h-4" />,
+  'Free WiFi': <Wifi className="w-4 h-4" />,
+  'Wi-Fi': <Wifi className="w-4 h-4" />,
+  WiFi: <Wifi className="w-4 h-4" />,
 };
 
-export default function HotelBookingInterface ({
-  completeData,
-  onEditStep
-}) {
+export default function HotelBookingInterface({ completeData, onEditStep }) {
   const [confirmed, setConfirmed] = useState(false);
 
   const formatPrice = (price) => {
     return `₦${price.toLocaleString()}`;
   };
 
-
   // Helper function to get payment method labels
   const getPaymentMethodLabel = (key) => {
     const labels = {
       fullPaymentRequired: 'Full Payment Required',
       allowPartPayment: 'Part Payment Allowed',
-      payAtHotel: 'Pay at Hotel'
+      payAtHotel: 'Pay at Hotel',
     };
     return labels[key] || key;
   };
@@ -58,20 +53,19 @@ export default function HotelBookingInterface ({
   // Helper function to get image URL (handles File objects and strings)
   const getImageUrl = (image) => {
     if (!image) return '/food.jpg'; // Default fallback image
-    
+
     if (typeof image === 'string') {
       return image; // Already a URL
     } else if (image instanceof File) {
       return URL.createObjectURL(image); // Convert File to blob URL for preview
     }
-    
+
     return '/food.jpg'; // Fallback
   };
 
   return (
     <div className="min-h-screen py-8">
       <div className="max-w-4xl mx-auto px-4 space-y-6">
-
         {/* Room Type Section */}
         <Card className="shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
@@ -91,20 +85,26 @@ export default function HotelBookingInterface ({
           <CardContent className="space-y-4">
             {completeData.roomTypes.length > 0 ? (
               completeData.roomTypes.map((room) => (
-                <div key={room.id} className="border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow">
+                <div
+                  key={room.id}
+                  className="border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow"
+                >
                   <div className="flex items-start">
                     {/* Image Section */}
                     <div className="relative w-[200px] h-[240px] bg-gradient-to-br from-amber-400 to-orange-500 flex-shrink-0 overflow-hidden">
                       <img
-                        src={room.images && room.images.length > 0 ? getImageUrl(room.images[0]) : '/food.jpg'}
+                        src={
+                          room.images && room.images.length > 0
+                            ? getImageUrl(room.images[0])
+                            : '/food.jpg'
+                        }
                         alt={room.name}
                         className="w-full h-full object-cover"
                       />
                       <div className="absolute inset-0 bg-black/20"></div>
                       {room.images && room.images.length > 1 && (
                         <div className="absolute bottom-3 right-3 bg-white text-gray-700 text-sm px-3 py-1.5 rounded flex items-center font-medium">
-                          <Camera className="w-4 h-4 mr-1.5" />
-                          +{room.images.length - 1} more photos
+                          <Camera className="w-4 h-4 mr-1.5" />+{room.images.length - 1} more photos
                         </div>
                       )}
                     </div>
@@ -115,10 +115,14 @@ export default function HotelBookingInterface ({
                       <div className="flex items-start justify-between mb-1">
                         <div>
                           <h3 className="text-xl font-semibold text-gray-900 mb-1">{room.name}</h3>
-                          <p className="text-sm text-gray-600">{room.description || 'Luxury five Star Hotel'}</p>
+                          <p className="text-sm text-gray-600">
+                            {room.description || 'Luxury five Star Hotel'}
+                          </p>
                         </div>
                         <div className="text-right">
-                          <p className="text-2xl font-bold text-gray-900">{formatPrice(room.pricePerNight)}</p>
+                          <p className="text-2xl font-bold text-gray-900">
+                            {formatPrice(room.pricePerNight)}
+                          </p>
                           <p className="text-sm text-gray-500">/night</p>
                         </div>
                       </div>
@@ -131,7 +135,10 @@ export default function HotelBookingInterface ({
                         </div>
                         <div className="flex items-center text-gray-600">
                           <User className="w-4 h-4 mr-1.5" />
-                          <span>{room.childrenCapacity} {room.childrenCapacity === 1 ? 'Child' : 'Children'}</span>
+                          <span>
+                            {room.childrenCapacity}{' '}
+                            {room.childrenCapacity === 1 ? 'Child' : 'Children'}
+                          </span>
                         </div>
                         <div className="flex items-center text-gray-600">
                           <Home className="w-4 h-4 mr-1.5" />
@@ -159,7 +166,7 @@ export default function HotelBookingInterface ({
                       </div>
 
                       {/* Edit Button */}
-                      <button 
+                      <button
                         onClick={() => onEditStep(1)}
                         className="mt-4 flex items-center text-blue-600 hover:text-blue-700 text-sm font-medium"
                       >
@@ -173,11 +180,7 @@ export default function HotelBookingInterface ({
             ) : (
               <div className="text-center py-8 text-gray-500">
                 <p>No room types configured</p>
-                <Button
-                  variant="outline"
-                  className="mt-2"
-                  onClick={() => onEditStep(1)}
-                >
+                <Button variant="outline" className="mt-2" onClick={() => onEditStep(1)}>
                   Add Room Types
                 </Button>
               </div>
@@ -188,7 +191,9 @@ export default function HotelBookingInterface ({
         {/* Booking & Policy Settings Section */}
         <Card className="shadow-sm">
           <CardHeader className="flex flex-row items-center border-b justify-between space-y-0 pb-4">
-            <CardTitle className="text-lg font-medium text-gray-900">Booking & Policy Settings</CardTitle>
+            <CardTitle className="text-lg font-medium text-gray-900">
+              Booking & Policy Settings
+            </CardTitle>
             <Button
               variant="ghost"
               size="sm"
@@ -206,7 +211,9 @@ export default function HotelBookingInterface ({
                   <div className="space-y-4">
                     <div>
                       <label className="text-sm font-medium text-gray-500">Check-In Time</label>
-                      <p className="text-sm text-gray-900 mt-1">{completeData.bookingPolicy.checkInTime}</p>
+                      <p className="text-sm text-gray-900 mt-1">
+                        {completeData.bookingPolicy.checkInTime}
+                      </p>
                     </div>
                     <div>
                       <label className="text-sm font-medium text-gray-500">Booking Lead Time</label>
@@ -219,12 +226,17 @@ export default function HotelBookingInterface ({
                   <div className="space-y-4">
                     <div>
                       <label className="text-sm font-medium text-gray-500">Room Type Name</label>
-                      <p className="text-sm text-gray-900 mt-1">{completeData.bookingPolicy.roomTypeName}</p>
+                      <p className="text-sm text-gray-900 mt-1">
+                        {completeData.bookingPolicy.roomTypeName}
+                      </p>
                     </div>
                     <div>
-                      <label className="text-sm font-medium text-gray-500">Free Cancellation Period</label>
+                      <label className="text-sm font-medium text-gray-500">
+                        Free Cancellation Period
+                      </label>
                       <p className="text-sm text-gray-900 mt-1">
-                        Up to {completeData.bookingPolicy.freeCancellationHours} hours before check-in
+                        Up to {completeData.bookingPolicy.freeCancellationHours} hours before
+                        check-in
                       </p>
                     </div>
                   </div>
@@ -233,7 +245,9 @@ export default function HotelBookingInterface ({
                 <Separator />
 
                 <div>
-                  <label className="text-sm font-medium text-gray-500 mb-2 block">Cancellation Policy</label>
+                  <label className="text-sm font-medium text-gray-500 mb-2 block">
+                    Cancellation Policy
+                  </label>
                   <p className="text-sm text-gray-900 leading-relaxed">
                     {completeData.bookingPolicy.customPolicyNote ||
                       `Free cancellation up to ${completeData.bookingPolicy.freeCancellationHours} hours before check-in. Cancellation Type: ${completeData.bookingPolicy.cancellationType}`}
@@ -243,13 +257,21 @@ export default function HotelBookingInterface ({
                 <Separator />
 
                 <div>
-                  <label className="text-sm font-medium text-gray-500 mb-3 block">Payment Options</label>
+                  <label className="text-sm font-medium text-gray-500 mb-3 block">
+                    Payment Options
+                  </label>
                   <div className="flex flex-wrap gap-3 mb-4">
                     {Object.entries(completeData?.bookingPolicy?.paymentOptions ?? {})
                       .filter(([, enabled]) => enabled)
                       .map(([option]) => (
-                        <Badge key={option} variant="outline" className="px-3 py-1.5 flex items-center justify-center text-sm">
-                          {option === "payAtHotel" && <MapPin color="#067463" className="w-4 h-4 mr-1" />}
+                        <Badge
+                          key={option}
+                          variant="outline"
+                          className="px-3 py-1.5 flex items-center justify-center text-sm"
+                        >
+                          {option === 'payAtHotel' && (
+                            <MapPin color="#067463" className="w-4 h-4 mr-1" />
+                          )}
                           {getPaymentMethodLabel(option)}
                         </Badge>
                       ))}
@@ -258,7 +280,9 @@ export default function HotelBookingInterface ({
 
                 {completeData.bookingPolicy.paymentInstructions && (
                   <div>
-                    <label className="text-sm font-medium text-gray-500 mb-2 block">Payment Instructions</label>
+                    <label className="text-sm font-medium text-gray-500 mb-2 block">
+                      Payment Instructions
+                    </label>
                     <p className="text-sm text-gray-900 leading-relaxed">
                       {completeData.bookingPolicy.paymentInstructions}
                     </p>
@@ -268,11 +292,7 @@ export default function HotelBookingInterface ({
             ) : (
               <div className="text-center py-8 text-gray-500">
                 <p>Booking policy not configured</p>
-                <Button
-                  variant="outline"
-                  className="mt-2"
-                  onClick={() => onEditStep(2)}
-                >
+                <Button variant="outline" className="mt-2" onClick={() => onEditStep(2)}>
                   Configure Booking Policy
                 </Button>
               </div>
@@ -287,7 +307,8 @@ export default function HotelBookingInterface ({
                 onCheckedChange={(checked) => setConfirmed(checked)}
               />
               <Label htmlFor="confirmDetails" className="text-sm text-gray-700">
-                I confirm all hotel details are correct and I understand that once published, this hotel will be visible to customers for booking.
+                I confirm all hotel details are correct and I understand that once published, this
+                hotel will be visible to customers for booking.
               </Label>
             </div>
           </CardContent>

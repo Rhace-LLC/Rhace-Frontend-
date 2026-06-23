@@ -1,13 +1,12 @@
-import { createContext, useContext, useState } from "react";
-import { useSelector } from "react-redux";
-import { toast } from "react-toastify";
-
+import { createContext, useContext, useState } from 'react';
+import { useSelector } from 'react-redux';
+import { toast } from 'react-toastify';
 
 export function ReservationsProvider({ children }) {
   const [menuItems, setMenuItems] = useState([]);
-  const [additionalNote, setAdditionalNote] = useState("");
-  const [specialRequest, setSpecialRequest] = useState("");
-  const [activeTab, setActiveTab] = useState("Starters");
+  const [additionalNote, setAdditionalNote] = useState('');
+  const [specialRequest, setSpecialRequest] = useState('');
+  const [activeTab, setActiveTab] = useState('Starters');
 
   // Changed to array where each room has its own dates and guests
   const [roomSelections, setRoomSelections] = useState([]);
@@ -16,6 +15,7 @@ export function ReservationsProvider({ children }) {
   const [vendor, setVendor] = useState(undefined);
   const [isLoading, setIsLoading] = useState(false);
   const [booking, setBooking] = useState(null);
+
   const user = useSelector((state) => state.auth.user);
   const [partPay, setPartPay] = useState(false);
 
@@ -31,11 +31,9 @@ export function ReservationsProvider({ children }) {
         ((checkOutDate instanceof Date
           ? checkOutDate.getTime()
           : new Date(checkOutDate).getTime()) -
-          (checkInDate instanceof Date
-            ? checkInDate.getTime()
-            : new Date(checkInDate).getTime())) /
-          msPerDay,
-      ),
+          (checkInDate instanceof Date ? checkInDate.getTime() : new Date(checkInDate).getTime())) /
+          msPerDay
+      )
     );
   };
 
@@ -43,8 +41,7 @@ export function ReservationsProvider({ children }) {
   const calculateTotalPrice = () => {
     return roomSelections.reduce((total, roomSelection) => {
       const { room, quantity = 1 } = roomSelection;
-      const discountedPrice =
-        room.pricePerNight - room.pricePerNight * (room.discount / 100);
+      const discountedPrice = room.pricePerNight - room.pricePerNight * (room.discount / 100);
       const nights = calculateNightsForRoom(roomSelection);
       return total + discountedPrice * quantity * nights;
     }, 0);
@@ -54,7 +51,7 @@ export function ReservationsProvider({ children }) {
   const getTotalRooms = () => {
     return roomSelections.reduce(
       (total, roomSelection) => total + Number(roomSelection.quantity || 1),
-      0,
+      0
     );
   };
 
@@ -62,7 +59,7 @@ export function ReservationsProvider({ children }) {
   const getTotalGuests = () => {
     return roomSelections.reduce(
       (total, roomSelection) => total + Number(roomSelection.guests || 1),
-      0,
+      0
     );
   };
 
@@ -70,18 +67,14 @@ export function ReservationsProvider({ children }) {
   const updateRoomSelection = (roomId, updates) => {
     setRoomSelections((prev) =>
       prev.map((selection) =>
-        selection.room._id === roomId
-          ? { ...selection, ...updates }
-          : selection,
-      ),
+        selection.room._id === roomId ? { ...selection, ...updates } : selection
+      )
     );
   };
 
   // Add a room to selections
   const addRoomSelection = (room, quantity = 1) => {
-    const existingIndex = roomSelections.findIndex(
-      (s) => s.room._id === room._id,
-    );
+    const existingIndex = roomSelections.findIndex((s) => s.room._id === room._id);
 
     if (existingIndex >= 0) {
       // Update quantity if already exists
@@ -115,7 +108,7 @@ export function ReservationsProvider({ children }) {
     setRoomSelections([]);
   };
 
-  const occasions = ["Birthday", "Casual", "Business", "Anniversary", "Other"];
+  const occasions = ['Birthday', 'Casual', 'Business', 'Anniversary', 'Other'];
 
   const generateId = () => {
     return Date.now().toString(36).substring(0, 8).toUpperCase();
@@ -127,31 +120,25 @@ export function ReservationsProvider({ children }) {
 
       // Validate all room selections
       if (roomSelections.length === 0) {
-        throw new Error("Please select at least one room.");
+        throw new Error('Please select at least one room.');
       }
 
       for (const selection of roomSelections) {
         if (!selection.checkInDate || !selection.checkOutDate) {
-          throw new Error(
-            `Please select check-in and check-out dates for ${selection.room.name}.`,
-          );
+          throw new Error(`Please select check-in and check-out dates for ${selection.room.name}.`);
         }
 
         if (selection.checkOutDate <= selection.checkInDate) {
-          throw new Error(
-            `Check-out date must be after check-in date for ${selection.room.name}.`,
-          );
+          throw new Error(`Check-out date must be after check-in date for ${selection.room.name}.`);
         }
 
         if (!selection.guests || selection.guests < 1) {
-          throw new Error(
-            `Please select number of guests for ${selection.room.name}.`,
-          );
+          throw new Error(`Please select number of guests for ${selection.room.name}.`);
         }
       }
 
       if (!vendor?._id) {
-        throw new Error("Vendor information is missing.");
+        throw new Error('Vendor information is missing.');
       }
 
       const totalAmount = calculateTotalPrice();
@@ -159,21 +146,14 @@ export function ReservationsProvider({ children }) {
       // Prepare reservation data with multiple rooms, each having own dates and guests
       const reservationData = {
         resId: generateId(),
-        reservationType: "hotel",
+        reservationType: 'hotel',
         customerName: `${user.firstName} ${user.lastName}`.trim(),
         customerEmail: user.email,
         customerId: user._id,
         specialRequest,
         rooms: roomSelections.map((selection) => {
-          const {
-            room,
-            quantity = 1,
-            checkInDate,
-            checkOutDate,
-            guests,
-          } = selection;
-          const discountedPrice =
-            room.pricePerNight - room.pricePerNight * (room.discount / 100);
+          const { room, quantity = 1, checkInDate, checkOutDate, guests } = selection;
+          const discountedPrice = room.pricePerNight - room.pricePerNight * (room.discount / 100);
           const nights = calculateNightsForRoom(selection);
 
           return {
@@ -197,31 +177,27 @@ export function ReservationsProvider({ children }) {
       };
 
       setBooking(reservationData);
-      const resDatas = JSON.parse(localStorage.getItem("resData") || "[]");
-      localStorage.setItem(
-        "resData",
-        JSON.stringify([...resDatas, reservationData]),
-      );
+      const resDatas = JSON.parse(localStorage.getItem('resData') || '[]');
+      localStorage.setItem('resData', JSON.stringify([...resDatas, reservationData]));
 
       return 1;
     } catch (error) {
-      console.error("Error submitting reservation:", error);
+      console.error('Error submitting reservation:', error);
 
-      let errorMessage = "Failed to submit reservation. Please try again.";
+      let errorMessage = 'Failed to submit reservation. Please try again.';
       if (error instanceof Error) {
         errorMessage = error.message;
-      } else if (error && typeof error === "object" && "response" in error) {
+      } else if (error && typeof error === 'object' && 'response' in error) {
         const axiosError = error;
         errorMessage =
-          axiosError.response?.data?.message ||
-          "Failed to submit reservation. Please try again.";
+          axiosError.response?.data?.message || 'Failed to submit reservation. Please try again.';
       }
       toast.error(errorMessage);
 
-      if (error && typeof error === "object" && "response" in error) {
+      if (error && typeof error === 'object' && 'response' in error) {
         const axiosError = error;
         if (axiosError.response?.data) {
-          console.error("Server error details:", axiosError.response.data);
+          console.error('Server error details:', axiosError.response.data);
         }
       }
       return 0;
@@ -271,11 +247,9 @@ export function ReservationsProvider({ children }) {
 const ReservationContext = createContext(undefined);
 // eslint-disable-next-line react-refresh/only-export-components
 export function useReservations() {
-    const context = useContext(ReservationContext);
-    if (context === undefined) {
-        throw new Error(
-            "useReservations must be used within a ReservationsProvider"
-        );
-    }
-    return context;
+  const context = useContext(ReservationContext);
+  if (context === undefined) {
+    throw new Error('useReservations must be used within a ReservationsProvider: Hotel');
+  }
+  return context;
 }

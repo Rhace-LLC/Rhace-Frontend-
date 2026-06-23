@@ -1,17 +1,46 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
-import { BarChart3, Download, FileText, Loader2, Calendar as CalendarIcon, Search, Filter, Zap, Clock, CheckCircle, XCircle, AlertCircle, FileSpreadsheet, Trash2 } from "lucide-react";
-import { useEffect, useState, useCallback } from "react";
-import { format } from "date-fns";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Label } from "@/components/ui/label";
-import { cn } from "@/lib/utils";
-import { toast } from "react-toastify";
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/components/ui/pagination';
+import {
+  BarChart3,
+  Download,
+  FileText,
+  Loader2,
+  Calendar as CalendarIcon,
+  Search,
+  Filter,
+  Zap,
+  Clock,
+  CheckCircle,
+  XCircle,
+  AlertCircle,
+  FileSpreadsheet,
+  Trash2,
+} from 'lucide-react';
+import { useEffect, useState, useCallback } from 'react';
+import { format } from 'date-fns';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Label } from '@/components/ui/label';
+import { cn } from '@/lib/utils';
+import { toast } from 'react-toastify';
 import {
   generateReservationsReport,
   generateVendorEarningsReport,
@@ -21,14 +50,25 @@ import {
   getReportStatus,
   downloadReport,
   getVendors,
-} from "@/services/admin.service";
-import { useWebSocket } from "@/contexts/WebSocketContext";
+} from '@/services/admin.service';
+import { useWebSocket } from '@/contexts/WebSocketContext';
 
 const extractArray = (p) => {
   if (Array.isArray(p)) return p;
   const candidates = [
-    p?.data, p?.items, p?.results, p?.docs, p?.rows, p?.vendors, p?.list,
-    p?.data?.data, p?.data?.items, p?.data?.results, p?.data?.docs, p?.data?.rows, p?.data?.vendors,
+    p?.data,
+    p?.items,
+    p?.results,
+    p?.docs,
+    p?.rows,
+    p?.vendors,
+    p?.list,
+    p?.data?.data,
+    p?.data?.items,
+    p?.data?.results,
+    p?.data?.docs,
+    p?.data?.rows,
+    p?.data?.vendors,
   ];
   for (const c of candidates) if (Array.isArray(c)) return c;
   return [];
@@ -36,18 +76,18 @@ const extractArray = (p) => {
 
 export default function Reports() {
   const [reportJobs, setReportJobs] = useState(() => {
-    const savedJobs = localStorage.getItem("reportJobs");
+    const savedJobs = localStorage.getItem('reportJobs');
     return savedJobs ? JSON.parse(savedJobs) : [];
   });
-  const [selectedReportType, setSelectedReportType] = useState("");
+  const [selectedReportType, setSelectedReportType] = useState('');
   const [generating, setGenerating] = useState(false);
   const [vendors, setVendors] = useState([]);
   const [filters, setFilters] = useState({});
   const [date, setDate] = useState({ from: new Date(), to: new Date() });
 
   // New state for enhanced features
-  const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
   const [selectedTemplate, setSelectedTemplate] = useState(null);
@@ -64,13 +104,11 @@ export default function Reports() {
   };
 
   const updateJobStatus = useCallback((jobId, status) => {
-    setReportJobs(prev => prev.map(job =>
-      job.id === jobId ? { ...job, status } : job
-    ));
+    setReportJobs((prev) => prev.map((job) => (job.id === jobId ? { ...job, status } : job)));
   }, []);
 
   useEffect(() => {
-    localStorage.setItem("reportJobs", JSON.stringify(reportJobs));
+    localStorage.setItem('reportJobs', JSON.stringify(reportJobs));
   }, [reportJobs]);
 
   useEffect(() => {
@@ -80,7 +118,7 @@ export default function Reports() {
         const vendorData = extractArray(response.data);
         setVendors(vendorData);
       } catch (error) {
-        console.error("Failed to fetch vendors", error);
+        console.error('Failed to fetch vendors', error);
       }
     };
     fetchVendors();
@@ -98,21 +136,23 @@ export default function Reports() {
       } catch (error) {
         console.error(`Failed to get status for job ${jobId}`, error);
         // Stop polling on error
-        return "failed";
+        return 'failed';
       }
-      return "pending"; // Keep polling if status not retrieved
+      return 'pending'; // Keep polling if status not retrieved
     };
 
-    const pendingJobs = reportJobs.filter(job => job.status === "pending" || job.status === "processing");
+    const pendingJobs = reportJobs.filter(
+      (job) => job.status === 'pending' || job.status === 'processing'
+    );
 
     if (pendingJobs.length === 0) {
       return;
     }
 
     const intervalId = setInterval(() => {
-      pendingJobs.forEach(job => {
-        checkJobStatus(job.id).then(status => {
-          if (status === "completed" || status === "failed") {
+      pendingJobs.forEach((job) => {
+        checkJobStatus(job.id).then((status) => {
+          if (status === 'completed' || status === 'failed') {
             // The job is done, no need to check it anymore in this interval loop.
             // A new interval will be set up on the next render if there are still pending jobs.
           }
@@ -124,11 +164,15 @@ export default function Reports() {
   }, [reportJobs, updateJobStatus]);
 
   const reportTypes = [
-    { value: "reservations", label: "Reservations Report", generateFn: generateReservationsReport },
-    { value: "vendor-earnings", label: "Vendor Earnings Report", generateFn: generateVendorEarningsReport },
-    { value: "payments", label: "Payments Report", generateFn: generatePaymentsReport },
-    { value: "users", label: "Users Report", generateFn: generateUsersReport },
-    { value: "vendors", label: "Vendors Report", generateFn: generateVendorsReport },
+    { value: 'reservations', label: 'Reservations Report', generateFn: generateReservationsReport },
+    {
+      value: 'vendor-earnings',
+      label: 'Vendor Earnings Report',
+      generateFn: generateVendorEarningsReport,
+    },
+    { value: 'payments', label: 'Payments Report', generateFn: generatePaymentsReport },
+    { value: 'users', label: 'Users Report', generateFn: generateUsersReport },
+    { value: 'vendors', label: 'Vendors Report', generateFn: generateVendorsReport },
   ];
 
   const generateReport = async () => {
@@ -139,32 +183,35 @@ export default function Reports() {
       const reportType = reportTypes.find((rt) => rt.value === selectedReportType);
       const params = { ...filters };
       if (date?.from) {
-        params.dateFrom = format(date.from, "yyyy-MM-dd");
+        params.dateFrom = format(date.from, 'yyyy-MM-dd');
       }
       if (date?.to) {
-        params.dateTo = format(date.to, "yyyy-MM-dd");
+        params.dateTo = format(date.to, 'yyyy-MM-dd');
       }
 
-      console.log("Generating report with params:", params);
+      console.log('Generating report with params:', params);
       const response = await reportType.generateFn(params);
-      console.log("Report generation response:", response);
-      console.log("Response data:", response?.data);
-      console.log("Response status:", response?.status);
+      console.log('Report generation response:', response);
+      console.log('Response data:', response?.data);
+      console.log('Response status:', response?.status);
       const jobId = response.data?._id;
 
       if (jobId) {
-        setReportJobs(prev => [...prev, {
-          id: jobId,
-          type: selectedReportType,
-          status: "pending",
-          createdAt: new Date().toISOString(),
-        }]);
-        setSelectedReportType("");
+        setReportJobs((prev) => [
+          ...prev,
+          {
+            id: jobId,
+            type: selectedReportType,
+            status: 'pending',
+            createdAt: new Date().toISOString(),
+          },
+        ]);
+        setSelectedReportType('');
       } else {
-        console.error("No jobId in response", response.data);
+        console.error('No jobId in response', response.data);
       }
     } catch (error) {
-      console.error("Failed to generate report", error);
+      console.error('Failed to generate report', error);
       // Optionally, show user-friendly error message
       alert(`Failed to generate report: ${error.response?.data?.message || error.message}`);
     } finally {
@@ -179,7 +226,9 @@ export default function Reports() {
       const status = statusResponse.data?.status;
 
       if (status !== 'completed') {
-        toast.error(`Report is not ready yet. Current status: ${status}. Please wait for completion.`);
+        toast.error(
+          `Report is not ready yet. Current status: ${status}. Please wait for completion.`
+        );
         return;
       }
 
@@ -207,7 +256,7 @@ export default function Reports() {
       // Show success message
       toast.success('Report downloaded successfully');
     } catch (error) {
-      console.error("Failed to download report", error);
+      console.error('Failed to download report', error);
 
       // More specific error messages
       let errorMessage = 'Download failed';
@@ -227,7 +276,7 @@ export default function Reports() {
 
   useEffect(() => {
     const handleReportUpdate = (data) => {
-      console.log("WebSocket report-update data:", data);
+      console.log('WebSocket report-update data:', data);
       const jobId = data._id || data.id || data.jobId;
       if (jobId && data.status) {
         updateJobStatus(jobId, data.status);
@@ -235,29 +284,29 @@ export default function Reports() {
     };
 
     const handleReportJobDeleted = (data) => {
-      console.log("WebSocket report-job-deleted data:", data);
+      console.log('WebSocket report-job-deleted data:', data);
       const jobId = data.id || data.jobId;
       if (jobId) {
-        setReportJobs(prev => prev.filter(job => job.id !== jobId));
+        setReportJobs((prev) => prev.filter((job) => job.id !== jobId));
       }
     };
 
-    subscribe("report-update", handleReportUpdate);
-    subscribe("report-job-deleted", handleReportJobDeleted);
+    subscribe('report-update', handleReportUpdate);
+    subscribe('report-job-deleted', handleReportJobDeleted);
 
     return () => {
-      unsubscribe("report-update");
-      unsubscribe("report-job-deleted");
+      unsubscribe('report-update');
+      unsubscribe('report-job-deleted');
     };
   }, [subscribe, unsubscribe, updateJobStatus]);
 
   const getStatusBadge = (status) => {
     switch (status) {
-      case "completed":
+      case 'completed':
         return <Badge className="bg-green-100 text-green-800">Completed</Badge>;
-      case "processing":
+      case 'processing':
         return <Badge className="bg-blue-100 text-blue-800">Processing</Badge>;
-      case "failed":
+      case 'failed':
         return <Badge className="bg-red-100 text-red-800">Failed</Badge>;
       default:
         return <Badge className="bg-gray-100 text-gray-800">Pending</Badge>;
@@ -280,8 +329,8 @@ export default function Reports() {
       config: {
         type: 'reservations',
         dateRange: 'week',
-        filters: {}
-      }
+        filters: {},
+      },
     },
     {
       id: 'monthly-performance',
@@ -291,8 +340,8 @@ export default function Reports() {
       config: {
         type: 'vendor-earnings',
         dateRange: 'month',
-        filters: {}
-      }
+        filters: {},
+      },
     },
     {
       id: 'user-activity',
@@ -302,9 +351,9 @@ export default function Reports() {
       config: {
         type: 'users',
         dateRange: 'month',
-        filters: { status: 'active' }
-      }
-    }
+        filters: { status: 'active' },
+      },
+    },
   ];
 
   const applyTemplate = (template) => {
@@ -332,10 +381,11 @@ export default function Reports() {
   };
 
   // Enhanced Jobs List Functions
-  const filteredJobs = reportJobs.filter(job => {
-    const matchesSearch = job.type.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         job.id.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === "all" || job.status === statusFilter;
+  const filteredJobs = reportJobs.filter((job) => {
+    const matchesSearch =
+      job.type.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      job.id.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === 'all' || job.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
 
@@ -348,13 +398,15 @@ export default function Reports() {
   const exportJobsToCSV = () => {
     const csvContent = [
       ['Job ID', 'Type', 'Status', 'Created At'],
-      ...filteredJobs.map(job => [
+      ...filteredJobs.map((job) => [
         job.id,
-        reportTypes.find(rt => rt.value === job.type)?.label || job.type,
+        reportTypes.find((rt) => rt.value === job.type)?.label || job.type,
         job.status,
-        new Date(job.createdAt).toLocaleString()
-      ])
-    ].map(row => row.join(',')).join('\n');
+        new Date(job.createdAt).toLocaleString(),
+      ]),
+    ]
+      .map((row) => row.join(','))
+      .join('\n');
 
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
@@ -369,9 +421,13 @@ export default function Reports() {
   };
 
   const deleteReportJob = (jobId) => {
-    if (window.confirm('Are you sure you want to delete this report job? This action cannot be undone.')) {
-      setReportJobs(prev => prev.filter(job => job.id !== jobId));
-      sendMessage("report-job-deleted", { id: jobId });
+    if (
+      window.confirm(
+        'Are you sure you want to delete this report job? This action cannot be undone.'
+      )
+    ) {
+      setReportJobs((prev) => prev.filter((job) => job.id !== jobId));
+      sendMessage('report-job-deleted', { id: jobId });
       toast.success('Report job deleted successfully');
     }
   };
@@ -446,20 +502,20 @@ export default function Reports() {
                     <PopoverTrigger asChild>
                       <Button
                         id="date"
-                        variant={"outline"}
+                        variant={'outline'}
                         className={cn(
-                          "w-full justify-start text-left font-normal",
-                          !date && "text-muted-foreground"
+                          'w-full justify-start text-left font-normal',
+                          !date && 'text-muted-foreground'
                         )}
                       >
                         <CalendarIcon className="mr-2 h-4 w-4" />
                         {date?.from ? (
                           date.to ? (
                             <>
-                              {format(date.from, "LLL dd, y")} - {format(date.to, "LLL dd, y")}
+                              {format(date.from, 'LLL dd, y')} - {format(date.to, 'LLL dd, y')}
                             </>
                           ) : (
-                            format(date.from, "LLL dd, y")
+                            format(date.from, 'LLL dd, y')
                           )
                         ) : (
                           <span>Pick a date</span>
@@ -489,7 +545,9 @@ export default function Reports() {
                       </SelectTrigger>
                       <SelectContent>
                         {vendors.map((vendor) => (
-                          <SelectItem key={vendor._id} value={vendor._id}>{vendor.businessName || vendor.name}</SelectItem>
+                          <SelectItem key={vendor._id} value={vendor._id}>
+                            {vendor.businessName || vendor.name}
+                          </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -502,10 +560,14 @@ export default function Reports() {
                     <div className="space-y-2">
                       <Label htmlFor="vendor-id-reservations">Vendor (optional)</Label>
                       <Select onValueChange={(value) => handleFilterChange('vendorId', value)}>
-                        <SelectTrigger id="vendor-id-reservations"><SelectValue placeholder="Select vendor" /></SelectTrigger>
+                        <SelectTrigger id="vendor-id-reservations">
+                          <SelectValue placeholder="Select vendor" />
+                        </SelectTrigger>
                         <SelectContent>
                           {vendors.map((vendor) => (
-                            <SelectItem key={vendor._id} value={vendor._id}>{vendor.businessName || vendor.name}</SelectItem>
+                            <SelectItem key={vendor._id} value={vendor._id}>
+                              {vendor.businessName || vendor.name}
+                            </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
@@ -513,7 +575,9 @@ export default function Reports() {
                     <div className="space-y-2">
                       <Label htmlFor="reservation-status">Status (optional)</Label>
                       <Select onValueChange={(value) => handleFilterChange('status', value)}>
-                        <SelectTrigger id="reservation-status"><SelectValue placeholder="Select status" /></SelectTrigger>
+                        <SelectTrigger id="reservation-status">
+                          <SelectValue placeholder="Select status" />
+                        </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="confirmed">Confirmed</SelectItem>
                           <SelectItem value="cancelled">Cancelled</SelectItem>
@@ -529,10 +593,14 @@ export default function Reports() {
                     <div className="space-y-2">
                       <Label htmlFor="vendor-id-payments">Vendor (optional)</Label>
                       <Select onValueChange={(value) => handleFilterChange('vendorId', value)}>
-                        <SelectTrigger id="vendor-id-payments"><SelectValue placeholder="Select vendor" /></SelectTrigger>
+                        <SelectTrigger id="vendor-id-payments">
+                          <SelectValue placeholder="Select vendor" />
+                        </SelectTrigger>
                         <SelectContent>
                           {vendors.map((vendor) => (
-                            <SelectItem key={vendor._id} value={vendor._id}>{vendor.businessName || vendor.name}</SelectItem>
+                            <SelectItem key={vendor._id} value={vendor._id}>
+                              {vendor.businessName || vendor.name}
+                            </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
@@ -540,7 +608,9 @@ export default function Reports() {
                     <div className="space-y-2">
                       <Label htmlFor="payment-status">Status (optional)</Label>
                       <Select onValueChange={(value) => handleFilterChange('status', value)}>
-                        <SelectTrigger id="payment-status"><SelectValue placeholder="Select status" /></SelectTrigger>
+                        <SelectTrigger id="payment-status">
+                          <SelectValue placeholder="Select status" />
+                        </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="succeeded">Succeeded</SelectItem>
                           <SelectItem value="failed">Failed</SelectItem>
@@ -556,7 +626,9 @@ export default function Reports() {
                     <div className="space-y-2">
                       <Label htmlFor="user-role">Role (optional)</Label>
                       <Select onValueChange={(value) => handleFilterChange('role', value)}>
-                        <SelectTrigger id="user-role"><SelectValue placeholder="Select role" /></SelectTrigger>
+                        <SelectTrigger id="user-role">
+                          <SelectValue placeholder="Select role" />
+                        </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="user">User</SelectItem>
                           <SelectItem value="vendor">Vendor</SelectItem>
@@ -567,7 +639,9 @@ export default function Reports() {
                     <div className="space-y-2">
                       <Label htmlFor="user-status">Status (optional)</Label>
                       <Select onValueChange={(value) => handleFilterChange('status', value)}>
-                        <SelectTrigger id="user-status"><SelectValue placeholder="Select status" /></SelectTrigger>
+                        <SelectTrigger id="user-status">
+                          <SelectValue placeholder="Select status" />
+                        </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="active">Active</SelectItem>
                           <SelectItem value="inactive">Inactive</SelectItem>
@@ -583,7 +657,9 @@ export default function Reports() {
                     <div className="space-y-2">
                       <Label htmlFor="vendor-type">Vendor Type (optional)</Label>
                       <Select onValueChange={(value) => handleFilterChange('vendorType', value)}>
-                        <SelectTrigger id="vendor-type"><SelectValue placeholder="Select type" /></SelectTrigger>
+                        <SelectTrigger id="vendor-type">
+                          <SelectValue placeholder="Select type" />
+                        </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="hotel">Hotel</SelectItem>
                           <SelectItem value="club">Club</SelectItem>
@@ -593,7 +669,9 @@ export default function Reports() {
                     <div className="space-y-2">
                       <Label htmlFor="vendor-status">Status (optional)</Label>
                       <Select onValueChange={(value) => handleFilterChange('status', value)}>
-                        <SelectTrigger id="vendor-status"><SelectValue placeholder="Select status" /></SelectTrigger>
+                        <SelectTrigger id="vendor-status">
+                          <SelectValue placeholder="Select status" />
+                        </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="active">Active</SelectItem>
                           <SelectItem value="pending">Pending</SelectItem>
@@ -603,7 +681,9 @@ export default function Reports() {
                     <div className="space-y-2">
                       <Label htmlFor="is-verified">Verified (optional)</Label>
                       <Select onValueChange={(value) => handleFilterChange('isVerified', value)}>
-                        <SelectTrigger id="is-verified"><SelectValue placeholder="Select verification status" /></SelectTrigger>
+                        <SelectTrigger id="is-verified">
+                          <SelectValue placeholder="Select verification status" />
+                        </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="true">Verified</SelectItem>
                           <SelectItem value="false">Not Verified</SelectItem>
@@ -675,27 +755,32 @@ export default function Reports() {
             <div className="text-center py-8">
               <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <p className="text-muted-foreground">
-                {reportJobs.length === 0 ? "No reports generated yet." : "No reports match your filters."}
+                {reportJobs.length === 0
+                  ? 'No reports generated yet.'
+                  : 'No reports match your filters.'}
               </p>
             </div>
           ) : (
             <>
               <div className="space-y-4">
                 {paginatedJobs.map((job) => (
-                  <div key={job.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+                  <div
+                    key={job.id}
+                    className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                  >
                     <div className="flex items-center gap-3">
-                      {job.status === "completed" ? (
+                      {job.status === 'completed' ? (
                         <CheckCircle className="h-5 w-5 text-green-500" />
-                      ) : job.status === "processing" ? (
+                      ) : job.status === 'processing' ? (
                         <Loader2 className="h-5 w-5 text-blue-500 animate-spin" />
-                      ) : job.status === "failed" ? (
+                      ) : job.status === 'failed' ? (
                         <XCircle className="h-5 w-5 text-red-500" />
                       ) : (
                         <Clock className="h-5 w-5 text-gray-500" />
                       )}
                       <div>
                         <p className="font-medium">
-                          {reportTypes.find(rt => rt.value === job.type)?.label || job.type}
+                          {reportTypes.find((rt) => rt.value === job.type)?.label || job.type}
                         </p>
                         <p className="text-sm text-muted-foreground">
                           ID: {job.id} • Created: {new Date(job.createdAt).toLocaleString()}
@@ -704,7 +789,7 @@ export default function Reports() {
                     </div>
                     <div className="flex items-center gap-2">
                       {getStatusBadge(job.status)}
-                      {job.status === "completed" && (
+                      {job.status === 'completed' && (
                         <Button size="sm" onClick={() => handleDownload(job.id)}>
                           <Download className="h-4 w-4 mr-2" />
                           Download
@@ -731,11 +816,13 @@ export default function Reports() {
                     <PaginationContent>
                       <PaginationItem>
                         <PaginationPrevious
-                          onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                          className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                          onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                          className={
+                            currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'
+                          }
                         />
                       </PaginationItem>
-                      {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
                         <PaginationItem key={page}>
                           <PaginationLink
                             onClick={() => setCurrentPage(page)}
@@ -748,8 +835,12 @@ export default function Reports() {
                       ))}
                       <PaginationItem>
                         <PaginationNext
-                          onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                          className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                          onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+                          className={
+                            currentPage === totalPages
+                              ? 'pointer-events-none opacity-50'
+                              : 'cursor-pointer'
+                          }
                         />
                       </PaginationItem>
                     </PaginationContent>

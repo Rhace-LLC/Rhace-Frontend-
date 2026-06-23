@@ -9,7 +9,7 @@ const MOVEMENT_THRESHOLD_M = 500; // 500 meters
 const STORAGE_KEY = 'userLocation';
 
 // Pages where location is needed
-const LOCATION_ENABLED_PAGES = ['/search', '/']; 
+const LOCATION_ENABLED_PAGES = ['/search', '/'];
 
 export const LocationProvider = ({ children }) => {
   const routerLocation = useRouterLocation();
@@ -25,9 +25,7 @@ export const LocationProvider = ({ children }) => {
     const Δφ = ((lat2 - lat1) * Math.PI) / 180;
     const Δλ = ((lon2 - lon1) * Math.PI) / 180;
 
-    const a =
-      Math.sin(Δφ / 2) ** 2 +
-      Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) ** 2;
+    const a = Math.sin(Δφ / 2) ** 2 + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) ** 2;
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
     return R * c;
@@ -71,12 +69,7 @@ export const LocationProvider = ({ children }) => {
 
         // Check if user moved significantly
         if (cachedData) {
-          const distance = calculateDistance(
-            cachedData.lat,
-            cachedData.lng,
-            latitude,
-            longitude
-          );
+          const distance = calculateDistance(cachedData.lat, cachedData.lng, latitude, longitude);
 
           if (distance < MOVEMENT_THRESHOLD_M) {
             console.log(`Movement: ${Math.round(distance)}m - keeping cache`);
@@ -91,19 +84,19 @@ export const LocationProvider = ({ children }) => {
       },
       (err) => {
         console.warn('Geolocation error:', err.message);
-        
+
         // User denied permission or GPS failed
         if (err.code === 1) {
           setError('Location permission denied');
         } else {
           setError('Unable to retrieve location');
         }
-        
+
         // Keep cached data if available
         if (!cachedData) {
           setLocation({ lat: null, lng: null });
         }
-        
+
         setIsLoading(false);
       },
       {
@@ -115,8 +108,8 @@ export const LocationProvider = ({ children }) => {
   };
 
   // Check if current page needs location
-  const isLocationPage = LOCATION_ENABLED_PAGES.some(path => 
-    routerLocation.pathname === path || routerLocation.pathname.startsWith(path)
+  const isLocationPage = LOCATION_ENABLED_PAGES.some(
+    (path) => routerLocation.pathname === path || routerLocation.pathname.startsWith(path)
   );
 
   // Auto-fetch location when navigating to enabled pages
@@ -130,7 +123,7 @@ export const LocationProvider = ({ children }) => {
     if (cached) {
       // Use cache immediately for instant UX
       setLocation({ lat: cached.lat, lng: cached.lng });
-      
+
       // Silently verify in background
       fetchLocation(cached);
     } else {
@@ -145,13 +138,13 @@ export const LocationProvider = ({ children }) => {
   };
 
   return (
-    <LocationContext.Provider 
-      value={{ 
-        location, 
-        error, 
-        isLoading, 
+    <LocationContext.Provider
+      value={{
+        location,
+        error,
+        isLoading,
         refreshLocation,
-        hasLocation: !!(location.lat && location.lng)
+        hasLocation: !!(location.lat && location.lng),
       }}
     >
       {children}

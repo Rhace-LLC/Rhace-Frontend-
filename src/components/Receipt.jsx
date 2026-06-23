@@ -1,22 +1,25 @@
-import { Check, Mail, Clock, Download, MapPin, Phone } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router";
-import SuccessGif from "@/public/images/success.gif";
+import { Check, Mail, Clock, Download, MapPin, Phone } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router';
+import SuccessGif from '@/public/images/success.gif';
 
-const Receipt = ({ 
-  reservation, 
-  payment, 
-  type = "hotel", // hotel|restaurant|club
-  onClose 
+const Receipt = ({
+  reservation,
+  payment,
+  type = 'hotel', // hotel|restaurant|club
+  onClose,
 }) => {
   const navigate = useNavigate();
   const { room } = reservation || {};
   const isPayLater = reservation?.payLater;
 
   const formatPrice = (price) => `₦${Number(price || 0).toLocaleString()}`;
-  const formatDate = (dateStr) => new Date(dateStr).toLocaleDateString('en-NG', {
-    year: 'numeric', month: 'short', day: 'numeric'
-  });
+  const formatDate = (dateStr) =>
+    new Date(dateStr).toLocaleDateString('en-NG', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
 
   const handleViewBookings = () => {
     navigate('/bookings');
@@ -38,7 +41,7 @@ const Receipt = ({
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 px-4 py-8 md:px-6 print:bg-white print:shadow-none print:backdrop-blur-none">
-      <div className="max-w-4xl mx-auto print:max-w-[8.5in] print:mx-0"> 
+      <div className="max-w-4xl mx-auto print:max-w-[8.5in] print:mx-0">
         {/* Success Header */}
         <div className="text-center mb-12">
           <div className="flex justify-center relative mb-8">
@@ -53,10 +56,9 @@ const Receipt = ({
             Reservation Confirmed!
           </h1>
           <p className="text-xl text-gray-600 max-w-md mx-auto leading-relaxed">
-            {isPayLater 
-              ? "Your booking is secured. Pay remaining balance on arrival." 
-              : "Payment successful! Your reservation details below."
-            }
+            {isPayLater
+              ? 'Your booking is secured. Pay remaining balance on arrival.'
+              : 'Payment successful! Your reservation details below.'}
           </p>
         </div>
 
@@ -129,7 +131,7 @@ const Receipt = ({
                       <div className="flex justify-between">
                         <span className="text-gray-600">Price/Night:</span>
                         <span className="font-semibold text-[#0A6C6D]">
-                          {formatPrice(room.pricePerNight * (1 - (room.discount || 0)/100))}
+                          {formatPrice(room.pricePerNight * (1 - (room.discount || 0) / 100))}
                         </span>
                       </div>
                     </div>
@@ -139,7 +141,9 @@ const Receipt = ({
                     <div className="space-y-3">
                       <div className="flex justify-between text-sm">
                         <span>Total Amount:</span>
-                        <span className="font-semibold">{formatPrice(reservation.totalAmount)}</span>
+                        <span className="font-semibold">
+                          {formatPrice(reservation.totalAmount)}
+                        </span>
                       </div>
                       {isPayLater && (
                         <div className="text-sm text-orange-600 bg-orange-50 p-3 rounded-xl">
@@ -186,23 +190,23 @@ const Receipt = ({
           <div className="bg-white/90 backdrop-blur-sm p-8 rounded-3xl border border-gray-200 shadow-xl">
             <h3 className="font-semibold text-lg mb-6">Need Help?</h3>
             <div className="space-y-4 print:hidden">
-              <Button 
+              <Button
                 onClick={handlePrintReceipt}
-                variant="outline" 
+                variant="outline"
                 className="w-full justify-start h-12 border-2 border-gray-200 hover:border-gray-300"
               >
                 <Printer className="w-4 h-4 mr-2" />
                 🖨️ Print Receipt
               </Button>
-              <Button 
+              <Button
                 onClick={handleDownloadReceipt}
-                variant="outline" 
+                variant="outline"
                 className="w-full justify-start h-12 border-2 border-gray-200 hover:border-gray-300"
               >
                 <Download className="w-4 h-4 mr-2" />
                 Copy Details
               </Button>
-              <Button 
+              <Button
                 onClick={handleViewBookings}
                 className="w-full h-12 bg-[#0A6C6D] hover:bg-teal-800 text-white shadow-lg"
               >
@@ -221,4 +225,3 @@ const Receipt = ({
 };
 
 export default Receipt;
-

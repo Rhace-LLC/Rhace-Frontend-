@@ -1,11 +1,11 @@
 // GuestDropdown.tsx
-import { useEffect, useRef, useState } from "react";
-import { FiChevronDown, FiMinus, FiPlus } from "react-icons/fi";
+import { useEffect, useRef, useState } from 'react';
+import { FiChevronDown, FiMinus, FiPlus } from 'react-icons/fi';
 
 const GUEST_CONFIG = {
-  adults: { label: "Adults", subtitle: "18 years and above", min: 1 },
-  children: { label: "Children", subtitle: "18 years and under", min: 1 },
-  infants: { label: "Infant", subtitle: "Under the age of 2", min: 0 },
+  adults: { label: 'Adults', subtitle: '18 years and above', min: 1 },
+  children: { label: 'Children', subtitle: '18 years and under', min: 1 },
+  infants: { label: 'Infant', subtitle: 'Under the age of 2', min: 0 },
 };
 
 export const GuestDropdown = ({ onChange }) => {
@@ -25,8 +25,8 @@ export const GuestDropdown = ({ onChange }) => {
         setShow(false);
       }
     };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
   }, []);
 
   const inc = (type) => {
@@ -56,7 +56,7 @@ export const GuestDropdown = ({ onChange }) => {
         onClick={() => setShow((s) => !s)}
       >
         <span className="text-sm text-gray-700">
-          {totalGuests} {totalGuests > 1 ? "Guests" : "Guest"}
+          {totalGuests} {totalGuests > 1 ? 'Guests' : 'Guest'}
         </span>
         <FiChevronDown className="text-gray-500" />
       </div>
@@ -85,14 +85,9 @@ export const GuestDropdown = ({ onChange }) => {
                     <FiMinus className="w-4 h-4 text-gray-600" />
                   </button>
                   <div className="outline-1 h-8 px-3 outline-offset-[-1px] outline-neutral-200 inline-flex items-center justify-center">
-                    <span className=" text-center font-medium text-sm text-gray-700 ">
-                      {val}
-                    </span>
+                    <span className=" text-center font-medium text-sm text-gray-700 ">{val}</span>
                   </div>
-                  <button
-                    onClick={() => inc(type)}
-                    className="p-1 border rounded-full"
-                  >
+                  <button onClick={() => inc(type)} className="p-1 border rounded-full">
                     <FiPlus className="w-4 h-4 text-gray-600" />
                   </button>
                 </div>

@@ -1,10 +1,10 @@
-import { Button } from "@/components/ui/button";
-import { Loader2, Minus, Plus, X } from "lucide-react";
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router";
-import { toast } from "react-toastify";
-import DatePicker from "../ui/datepicker";
-import { GuestPicker } from "../ui/guestpicker";
+import { Button } from '@/components/ui/button';
+import { Loader2, Minus, Plus, X } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router';
+import { toast } from 'react-toastify';
+import DatePicker from '../ui/datepicker';
+import { GuestPicker } from '../ui/guestpicker';
 
 const HotelBookingForm = ({ id, selectedRooms, setSelectedRooms }) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -36,8 +36,7 @@ const HotelBookingForm = ({ id, selectedRooms, setSelectedRooms }) => {
   const calculateTotal = () => {
     if (!selectedRooms || selectedRooms.length === 0) return 0;
     return selectedRooms.reduce((total, room) => {
-      const discountedPrice =
-        room.pricePerNight - room.pricePerNight * (room.discount / 100);
+      const discountedPrice = room.pricePerNight - room.pricePerNight * (room.discount / 100);
       const nights = calculateNights(room);
       return total + discountedPrice * (room.quantity || 1) * nights;
     }, 0);
@@ -46,10 +45,7 @@ const HotelBookingForm = ({ id, selectedRooms, setSelectedRooms }) => {
   // Get total number of rooms
   const getTotalRooms = () => {
     if (!selectedRooms || selectedRooms.length === 0) return 0;
-    return selectedRooms.reduce(
-      (total, room) => total + Number(room.quantity || 1),
-      0,
-    );
+    return selectedRooms.reduce((total, room) => total + Number(room.quantity || 1), 0);
   };
 
   // Get total nights (using max)
@@ -61,60 +57,57 @@ const HotelBookingForm = ({ id, selectedRooms, setSelectedRooms }) => {
   // Calculate total guests across all rooms
   const getTotalGuests = () => {
     if (!selectedRooms || selectedRooms.length === 0) return 0;
-    return selectedRooms.reduce(
-      (total, room) => total + Number(room.guests || 1),
-      0,
-    );
+    return selectedRooms.reduce((total, room) => total + Number(room.guests || 1), 0);
   };
 
   // Remove room from selection
   const removeRoom = (roomId) => {
     const newSelection = selectedRooms.filter((r) => r._id !== roomId);
     setSelectedRooms(newSelection);
-    localStorage.setItem("selectedRooms", JSON.stringify(newSelection));
+    localStorage.setItem('selectedRooms', JSON.stringify(newSelection));
     // toast.info("Room removed from selection");
   };
- useEffect(() => {
-    removeRoom()
+  useEffect(() => {
+    removeRoom();
   }, []);
 
   // Update quantity for a room
-const updateQuantity = (roomId, delta) => {
-  const updated = selectedRooms.map((room) => {
-    if (room._id === roomId) {
-      const newQty = Math.max(1, Math.min((room.quantity || 1) + delta, room.totalUnits));
+  const updateQuantity = (roomId, delta) => {
+    const updated = selectedRooms.map((room) => {
+      if (room._id === roomId) {
+        const newQty = Math.max(1, Math.min((room.quantity || 1) + delta, room.totalUnits));
 
-      const newMaxAdults = (room.adultsCapacity || 1) * newQty;
-      const newMaxChildren = (room.childrenCapacity || 0) * newQty;
-      const newMaxGuests = newMaxAdults + newMaxChildren;
+        const newMaxAdults = (room.adultsCapacity || 1) * newQty;
+        const newMaxChildren = (room.childrenCapacity || 0) * newQty;
+        const newMaxGuests = newMaxAdults + newMaxChildren;
 
-      const updates = { ...room, quantity: newQty };
+        const updates = { ...room, quantity: newQty };
 
-      // Clamp guests to new max
-      if ((room.guests || 1) > newMaxGuests) {
-        updates.guests = newMaxGuests;
+        // Clamp guests to new max
+        if ((room.guests || 1) > newMaxGuests) {
+          updates.guests = newMaxGuests;
+        }
+
+        // Clamp breakdown too
+        if (room.guestBreakdown) {
+          const clampedAdults = Math.min(room.guestBreakdown.adults || 1, newMaxAdults);
+          const clampedChildren = Math.min(room.guestBreakdown.children || 0, newMaxChildren);
+          updates.guestBreakdown = {
+            ...room.guestBreakdown,
+            adults: clampedAdults,
+            children: clampedChildren,
+          };
+          updates.guests = clampedAdults + clampedChildren + (room.guestBreakdown.infants || 0);
+        }
+
+        return updates;
       }
+      return room;
+    });
 
-      // Clamp breakdown too
-      if (room.guestBreakdown) {
-        const clampedAdults = Math.min(room.guestBreakdown.adults || 1, newMaxAdults);
-        const clampedChildren = Math.min(room.guestBreakdown.children || 0, newMaxChildren);
-        updates.guestBreakdown = {
-          ...room.guestBreakdown,
-          adults: clampedAdults,
-          children: clampedChildren,
-        };
-        updates.guests = clampedAdults + clampedChildren + (room.guestBreakdown.infants || 0);
-      }
-
-      return updates;
-    }
-    return room;
-  });
-
-  setSelectedRooms(updated);
-  localStorage.setItem("selectedRooms", JSON.stringify(updated));
-};
+    setSelectedRooms(updated);
+    localStorage.setItem('selectedRooms', JSON.stringify(updated));
+  };
 
   // Update dates for a specific room
   const updateRoomDates = (roomId, field, value) => {
@@ -125,7 +118,7 @@ const updateQuantity = (roomId, delta) => {
       return room;
     });
     setSelectedRooms(updated);
-    localStorage.setItem("selectedRooms", JSON.stringify(updated));
+    localStorage.setItem('selectedRooms', JSON.stringify(updated));
   };
 
   // Update guests for a specific room
@@ -138,7 +131,7 @@ const updateQuantity = (roomId, delta) => {
       return room;
     });
     setSelectedRooms(updated);
-    localStorage.setItem("selectedRooms", JSON.stringify(updated));
+    localStorage.setItem('selectedRooms', JSON.stringify(updated));
   };
 
   const formatPrice = (price) => `₦${price.toLocaleString()}`;
@@ -147,7 +140,7 @@ const updateQuantity = (roomId, delta) => {
     e.preventDefault();
 
     if (!selectedRooms || selectedRooms.length === 0) {
-      toast.error("Please select at least one room");
+      toast.error('Please select at least one room');
       return;
     }
 
@@ -161,9 +154,7 @@ const updateQuantity = (roomId, delta) => {
       const checkIn = new Date(room.checkInDate);
       const checkOut = new Date(room.checkOutDate);
       if (checkOut <= checkIn) {
-        toast.error(
-          `Check-out date must be after check-in date for ${room.name}`,
-        );
+        toast.error(`Check-out date must be after check-in date for ${room.name}`);
         return;
       }
     }
@@ -179,7 +170,7 @@ const updateQuantity = (roomId, delta) => {
       nights: calculateNights(room),
       maxAdults: room.adultsCapacity || 1,
       maxChildren: room.childrenCapacity || 0,
-          guestBreakdown: room.guestBreakdown || { adults: room.guests || 1, children: 0, infants: 0 },  // ← ADD
+      guestBreakdown: room.guestBreakdown || { adults: room.guests || 1, children: 0, infants: 0 }, // ← ADD
       // ✅ Add these so ReservationSummary has fallback data if API fetch fails
       pricePerNight: room.pricePerNight,
       discount: room.discount || 0,
@@ -198,26 +189,19 @@ const updateQuantity = (roomId, delta) => {
       navigate(`/hotels/${id}/reservations?${params.toString()}`);
     } catch (err) {
       const errorMessage =
-        err.response?.data?.message ||
-        err.message ||
-        "An unexpected error occurred";
+        err.response?.data?.message || err.message || 'An unexpected error occurred';
       toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }
   };
   return (
-    <div
-      className="p-4 rounded-2xl bg-[#ffffff] border border-[#E5E7EB]"
-      data-booking-form
-    >
+    <div className="p-4 rounded-2xl bg-[#ffffff] border border-[#E5E7EB]" data-booking-form>
       {/* Selected Rooms Summary */}
       {selectedRooms && selectedRooms.length > 0 ? (
         <div className=" w-96 mb-4">
           <div className="flex justify-between items-center mb-3">
-            <h3 className="font-semibold text-gray-900">
-              Selected Rooms ({getTotalRooms()})
-            </h3>
+            <h3 className="font-semibold text-gray-900">Selected Rooms ({getTotalRooms()})</h3>
             <span className="text-lg font-bold text-[#0A6C6D]">
               {formatPrice(calculateTotal())}
             </span>
@@ -236,19 +220,14 @@ const updateQuantity = (roomId, delta) => {
               const maxGuests = maxAdults + maxChildren;
               console.log(room.adultsCapacity, room);
               return (
-                <div
-                  key={room._id}
-                  className="bg-gray-50 rounded-lg p-3 border"
-                >
+                <div key={room._id} className="bg-gray-50 rounded-lg p-3 border">
                   <div className="flex justify-between items-start mb-2">
                     <div className="flex-1">
-                      <p className="font-medium text-sm text-gray-900">
-                        {room.name}
-                      </p>
+                      <p className="font-medium text-sm text-gray-900">{room.name}</p>
                       <p className="text-xs text-gray-500">
-                        {formatPrice(discountedPrice)}/night ×{" "}
-                        {room.quantity || 1} room × {nights} night
-                        {nights !== 1 ? "s" : ""}
+                        {formatPrice(discountedPrice)}/night × {room.quantity || 1} room × {nights}{' '}
+                        night
+                        {nights !== 1 ? 's' : ''}
                       </p>
                     </div>
                     <button
@@ -264,24 +243,16 @@ const updateQuantity = (roomId, delta) => {
                     <div>
                       <DatePicker
                         title="Check In Date"
-                        value={
-                          room.checkInDate ? new Date(room.checkInDate) : null
-                        }
-                        onChange={(date) =>
-                          updateRoomDates(room._id, "checkInDate", date)
-                        }
+                        value={room.checkInDate ? new Date(room.checkInDate) : null}
+                        onChange={(date) => updateRoomDates(room._id, 'checkInDate', date)}
                         className="bg-white"
                       />
                     </div>
                     <div>
                       <DatePicker
                         title="Check Out Date"
-                        value={
-                          room.checkOutDate ? new Date(room.checkOutDate) : null
-                        }
-                        onChange={(date) =>
-                          updateRoomDates(room._id, "checkOutDate", date)
-                        }
+                        value={room.checkOutDate ? new Date(room.checkOutDate) : null}
+                        onChange={(date) => updateRoomDates(room._id, 'checkOutDate', date)}
                         minDate={room.checkInDate ? new Date(room.checkInDate) : null}
                         className="bg-white"
                       />
@@ -309,9 +280,7 @@ const updateQuantity = (roomId, delta) => {
                         >
                           <Plus className="w-3 h-3" />
                         </button>
-                        <span className="text-xs text-gray-500 ml-2">
-                          (max: {room.totalUnits})
-                        </span>
+                        <span className="text-xs text-gray-500 ml-2">(max: {room.totalUnits})</span>
                       </div>
                     </div>
 
@@ -320,8 +289,7 @@ const updateQuantity = (roomId, delta) => {
                         value={room.guests || 1}
                         breakdown={room.guestBreakdown} // ← ADD
                         onChange={
-                          (value, breakdown) =>
-                            updateRoomGuests(room._id, value, breakdown) // ← forward breakdown
+                          (value, breakdown) => updateRoomGuests(room._id, value, breakdown) // ← forward breakdown
                         }
                         className="bg-white"
                         maxAdults={maxAdults}
@@ -344,9 +312,9 @@ const updateQuantity = (roomId, delta) => {
           <div className="bg-[#E7F0F0] rounded-lg p-3">
             <div className="flex justify-between items-center text-sm">
               <span className="text-gray-600">
-                Total for {getTotalRooms()} room(s), {getTotalGuests()}{" "}
-                guest(s), {getTotalNights()} night
-                {getTotalNights() !== 1 ? "s" : ""}
+                Total for {getTotalRooms()} room(s), {getTotalGuests()} guest(s), {getTotalNights()}{' '}
+                night
+                {getTotalNights() !== 1 ? 's' : ''}
               </span>
               <span className="text-lg font-bold text-[#0A6C6D]">
                 {formatPrice(calculateTotal())}
@@ -357,9 +325,7 @@ const updateQuantity = (roomId, delta) => {
       ) : (
         <div className="mb-4">
           <p className="text-sm text-gray-600 mb-2">No rooms selected</p>
-          <p className="text-xs text-gray-500">
-            Go to Rooms tab to select rooms
-          </p>
+          <p className="text-xs text-gray-500">Go to Rooms tab to select rooms</p>
         </div>
       )}
 
@@ -378,7 +344,7 @@ const updateQuantity = (roomId, delta) => {
               <Loader2 className="animate-spin mr-2" /> Processing...
             </>
           ) : (
-            `Reserve ${getTotalRooms()} Room${getTotalRooms() !== 1 ? "s" : ""}`
+            `Reserve ${getTotalRooms()} Room${getTotalRooms() !== 1 ? 's' : ''}`
           )}
         </Button>
       </form>
@@ -389,13 +355,7 @@ const updateQuantity = (roomId, delta) => {
 export default HotelBookingForm;
 
 export const SvgIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="16"
-    height="16"
-    fill="none"
-    viewBox="0 0 16 16"
-  >
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16">
     <g clipPath="url(#clip0_96_1657)">
       <path
         fill="#E0B300"

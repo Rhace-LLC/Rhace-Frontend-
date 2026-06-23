@@ -1,31 +1,31 @@
-import React, { useState } from "react";
-import RestaurantOverview from "./RestaurantOverview";
-import RestaurantAvailableSlot from "./RestaurantAvailableSlot";
-import RestaurantMenu from "./RestaurantMenu";
-import RestaurantReviews from "./RestaurantReview";
-import { useLocation } from "react-router";
+import React, { useState } from 'react';
+import RestaurantOverview from './RestaurantOverview';
+import RestaurantAvailableSlot from './RestaurantAvailableSlot';
+import RestaurantMenu from './RestaurantMenu';
+import RestaurantReviews from './RestaurantReview';
+import { useLocation } from 'react-router';
 
 const RestaurantInfo = ({ data }) => {
   const location = useLocation();
-  const section = location.hash ? location.hash.substring(1) : "overview";
+  const section = location.hash ? location.hash.substring(1) : 'overview';
   const [activeTab, setActiveTab] = useState(section);
 
   const tabs = [
     {
-      name: "Overview",
-      tab: "overview",
+      name: 'Overview',
+      tab: 'overview',
     },
     {
-      name: "Menu",
-      tab: "menu",
+      name: 'Menu',
+      tab: 'menu',
     },
     {
-      name: "Availale Reservation Slots",
-      tab: "available",
+      name: 'Availale Reservation Slots',
+      tab: 'available',
     },
     {
-      name: "Reviews",
-      tab: "reviews",
+      name: 'Reviews',
+      tab: 'reviews',
     },
   ];
   return (
@@ -37,8 +37,9 @@ const RestaurantInfo = ({ data }) => {
               key={i}
               onClick={() => setActiveTab(tab.tab)}
               className={`p-3 w-max cursor-pointer font-semibold ${
-                activeTab === tab.tab ?
-                "border-b-2 text-[#0A6C6D] border-[#0A6C6D]" : "text-[#606368]"
+                activeTab === tab.tab
+                  ? 'border-b-2 text-[#0A6C6D] border-[#0A6C6D]'
+                  : 'text-[#606368]'
               }`}
             >
               {tab.name}
@@ -47,10 +48,27 @@ const RestaurantInfo = ({ data }) => {
         </div>
       </div>
       <div className="mt-8 px-4 md:px-0">
-        {activeTab === "overview" && <RestaurantOverview address={data.address} openingTime={data.openingTime} closingTime={data.closingTime} cuisines={data.cuisines} desc={data.businessDescription} priceRange={data?.priceRange ?? ""} />}
-        {activeTab === "menu" && <RestaurantMenu id={data._id} />}
-        {activeTab === "available" && <RestaurantAvailableSlot openingTime={data.openingTime} closingTime={data.closingTime} availableSlots={data.availableSlots} />}
-        {activeTab === "reviews" && <RestaurantReviews restaurantId={data._id} ratings={data.rating} />}
+        {activeTab === 'overview' && (
+          <RestaurantOverview
+            address={data.address}
+            openingTime={data.openingTime}
+            closingTime={data.closingTime}
+            cuisines={data.cuisines}
+            desc={data.businessDescription}
+            priceRange={data?.priceRange ?? ''}
+          />
+        )}
+        {activeTab === 'menu' && <RestaurantMenu id={data._id} />}
+        {activeTab === 'available' && (
+          <RestaurantAvailableSlot
+            openingTime={data.openingTime}
+            closingTime={data.closingTime}
+            availableSlots={data.availableSlots}
+          />
+        )}
+        {activeTab === 'reviews' && (
+          <RestaurantReviews restaurantId={data._id} ratings={data.rating} />
+        )}
       </div>
     </div>
   );

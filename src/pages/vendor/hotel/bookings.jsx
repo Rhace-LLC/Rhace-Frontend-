@@ -1,9 +1,9 @@
-import { StatCard } from "@/components/dashboard/stats/mainStats";
+import { StatCard } from '@/components/dashboard/stats/mainStats';
 
-import DashboardButton from "@/components/dashboard/ui/DashboardButton";
-import DashboardLayout from "@/components/layout/DashboardLayout";
-import NoDataFallback from "@/components/NoDataFallback";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import DashboardButton from '@/components/dashboard/ui/DashboardButton';
+import DashboardLayout from '@/components/layout/DashboardLayout';
+import NoDataFallback from '@/components/NoDataFallback';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import {
   Table,
   TableBody,
@@ -11,8 +11,8 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { useMemo } from "react";
+} from '@/components/ui/table';
+import { useMemo } from 'react';
 
 import {
   Calendar,
@@ -25,27 +25,27 @@ import {
   EyeClose,
   Filter2,
   XCircle,
-} from "@/components/dashboard/ui/svg";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
+} from '@/components/dashboard/ui/svg';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import ConfirmReservation, {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
-import UniversalLoader from "@/components/user/ui/LogoLoader";
-import { userService } from "@/services/user.service";
-import { formatDate } from "@/utils/formatDate";
+} from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
+import UniversalLoader from '@/components/user/ui/LogoLoader';
+import { userService } from '@/services/user.service';
+import { formatDate } from '@/utils/formatDate';
 import {
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
   getSortedRowModel,
   useReactTable,
-} from "@tanstack/react-table";
+} from '@tanstack/react-table';
 import {
   ChevronDown,
   ChevronLeft,
@@ -56,53 +56,53 @@ import {
   Search,
   Mail,
   Clock,
-} from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { useSelector } from "react-redux";
-import { toast } from "react-toastify";
-import { useWebSocket } from "@/contexts/WebSocketContext";
+} from 'lucide-react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useSelector } from 'react-redux';
+import { toast } from 'react-toastify';
+import { useWebSocket } from '@/contexts/WebSocketContext';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-const normalizePaymentStatus = (status = "") => {
+const normalizePaymentStatus = (status = '') => {
   const s = status.toLowerCase();
-  if (s === "paid" || s === "success") return "Fully Paid";
-  if (s === "part paid") return "Part Paid";
-  if (s.includes("not paid")) return "Unpaid";
-  return "Unpaid";
+  if (s === 'paid' || s === 'success') return 'Fully Paid';
+  if (s === 'part paid') return 'Part Paid';
+  if (s.includes('not paid')) return 'Unpaid';
+  return 'Unpaid';
 };
 
 const getPaymentStatusColor = (status) => {
   const normalized = normalizePaymentStatus(status);
   switch (normalized) {
-    case "Fully Paid":
-      return "bg-green-100 text-green-800 border";
-    case "Part Paid":
-      return "bg-yellow-100 text-yellow-800 border";
-    case "Unpaid":
-      return "bg-gray-100 text-gray-800 border";
+    case 'Fully Paid':
+      return 'bg-green-100 text-green-800 border';
+    case 'Part Paid':
+      return 'bg-yellow-100 text-yellow-800 border';
+    case 'Unpaid':
+      return 'bg-gray-100 text-gray-800 border';
     default:
-      return "bg-gray-100 text-gray-800 border";
+      return 'bg-gray-100 text-gray-800 border';
   }
 };
 
 // ─── BookingManagement ────────────────────────────────────────────────────────
 const BookingManagement = () => {
-  const [activeTab, setActiveTab] = useState("All");
+  const [activeTab, setActiveTab] = useState('All');
   const vendor = useSelector((state) => state.auth.vendor);
   const [bookings, setBookings] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(8);
   const [totalItems, setTotalItems] = useState(0);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState('');
   const [sorting, setSorting] = useState([]);
   const [columnFilters, setColumnFilters] = useState([]);
   const [columnVisibility, setColumnVisibility] = useState({});
   const [rowSelection, setRowSelection] = useState({});
-  const [selectedDate, setSelectedDate] = useState("all");
-  const [selectedPaymentStatus, setSelectedPaymentStatus] = useState("all");
-  const [selectedRoomType, setSelectedRoomType] = useState("all");
+  const [selectedDate, setSelectedDate] = useState('all');
+  const [selectedPaymentStatus, setSelectedPaymentStatus] = useState('all');
+  const [selectedRoomType, setSelectedRoomType] = useState('all');
   const [hideTab, setHideTab] = useState(false);
   const [showPopup, setShowPopup] = useState({
     display: false,
@@ -111,17 +111,17 @@ const BookingManagement = () => {
 
   const reservationStatusOptions = (status) => {
     switch (status) {
-      case "upcoming":
-        return "bg-[#E7F0F0] text-[#0A6C6D] border-[#B3D1D2]";
-      case "confirmed":
-        return "bg-[#D1FAE5] text-[#37703F] border-[#B8FFC2]";
-      case "canceled":
-      case "cancelled":
-        return "bg-[#FCE6E6] text-[#EF4444] border-[#FAE48A]";
-      case "no-show":
-        return "bg-[#FCE6E6] text-[#EF4444] border-[#FAE48A]";
+      case 'upcoming':
+        return 'bg-[#E7F0F0] text-[#0A6C6D] border-[#B3D1D2]';
+      case 'confirmed':
+        return 'bg-[#D1FAE5] text-[#37703F] border-[#B8FFC2]';
+      case 'canceled':
+      case 'cancelled':
+        return 'bg-[#FCE6E6] text-[#EF4444] border-[#FAE48A]';
+      case 'no-show':
+        return 'bg-[#FCE6E6] text-[#EF4444] border-[#FAE48A]';
       default:
-        return "bg-gray-100 text-gray-800 border-gray-300";
+        return 'bg-gray-100 text-gray-800 border-gray-300';
     }
   };
 
@@ -146,13 +146,13 @@ const BookingManagement = () => {
       try {
         const resId = booking.resId || booking._id;
 
-        const normalizeStatus = (status) => (status || "").toLowerCase();
+        const normalizeStatus = (status) => (status || '').toLowerCase();
         const paymentStatus = normalizeStatus(booking.paymentStatus);
         const isPaid =
-          paymentStatus.includes("paid") ||
-          paymentStatus.includes("pay_later") ||
-          paymentStatus.includes("partly_paid") ||
-          paymentStatus.includes("success");
+          paymentStatus.includes('paid') ||
+          paymentStatus.includes('pay_later') ||
+          paymentStatus.includes('partly_paid') ||
+          paymentStatus.includes('success');
 
         let paymentRef = null;
         if (isPaid) {
@@ -165,7 +165,7 @@ const BookingManagement = () => {
             booking.payment?._id;
         }
 
-        console.log("🔍 Confirm attempt:", {
+        console.log('🔍 Confirm attempt:', {
           bookingId,
           resId,
           paymentRef,
@@ -173,15 +173,12 @@ const BookingManagement = () => {
           isPaid,
           availableKeys: Object.keys(booking).filter(
             (k) =>
-              k.includes("pay") ||
-              k.includes("ref") ||
-              k.includes("resId") ||
-              k.includes("payment"),
+              k.includes('pay') || k.includes('ref') || k.includes('resId') || k.includes('payment')
           ),
         });
 
         if (!isPaid) {
-          throw new Error("Cannot confirm arrival: Payment not completed");
+          throw new Error('Cannot confirm arrival: Payment not completed');
         }
 
         await userService.updateReservationStatus({
@@ -192,32 +189,24 @@ const BookingManagement = () => {
         });
 
         setBookings((prev) =>
-          prev.map((b) =>
-            b._id === bookingId ? { ...b, reservationStatus: "confirmed" } : b,
-          ),
+          prev.map((b) => (b._id === bookingId ? { ...b, reservationStatus: 'confirmed' } : b))
         );
-        toast.success("✅ Arrival confirmed!");
+        toast.success('✅ Arrival confirmed!');
       } catch (err) {
-        const msg = err?.response?.data?.message || err?.message || "";
-        if (msg.includes("Missing") && msg.includes("data"))
+        const msg = err?.response?.data?.message || err?.message || '';
+        if (msg.includes('Missing') && msg.includes('data'))
           toast.error(
-            "Backend missing payment data. Admin: Add .populate('payment') to /bookings endpoint.",
+            "Backend missing payment data. Admin: Add .populate('payment') to /bookings endpoint."
           );
-        else if (msg.includes("Missing required fields"))
-          toast.error("Missing resId or paymentId — check booking data.");
-        else if (msg.includes("resId"))
-          toast.error(
-            `resId mismatch: ${err?.response?.data?.providedResId || msg}`,
-          );
-        else if (msg.includes("paymentId") || msg.includes("payment"))
-          toast.error(
-            `Payment issue: ${msg}. Backend needs payment population.`,
-          );
-        else if (msg.includes("Payment must be successful"))
-          toast.error("Payment incomplete.");
-        else if (msg.includes("hotelReservation"))
-          toast.error("Use hotel-specific flow.");
-        else toast.error(msg || "Failed to confirm arrival.");
+        else if (msg.includes('Missing required fields'))
+          toast.error('Missing resId or paymentId — check booking data.');
+        else if (msg.includes('resId'))
+          toast.error(`resId mismatch: ${err?.response?.data?.providedResId || msg}`);
+        else if (msg.includes('paymentId') || msg.includes('payment'))
+          toast.error(`Payment issue: ${msg}. Backend needs payment population.`);
+        else if (msg.includes('Payment must be successful')) toast.error('Payment incomplete.');
+        else if (msg.includes('hotelReservation')) toast.error('Use hotel-specific flow.');
+        else toast.error(msg || 'Failed to confirm arrival.');
       } finally {
         setConfirmingIds((prev) => {
           const next = new Set(prev);
@@ -226,16 +215,16 @@ const BookingManagement = () => {
         });
       }
     },
-    [confirmingIds, vendor?._id],
+    [confirmingIds, vendor?._id]
   );
 
   // ── QR scan confirmation ────────────────────────────────────────────────────
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const qrBookingId = params.get("bookingId");
+    const qrBookingId = params.get('bookingId');
     if (qrBookingId) {
       handleConfirmArrival({ _id: qrBookingId });
-      window.history.replaceState({}, "", window.location.pathname);
+      window.history.replaceState({}, '', window.location.pathname);
     }
   }, [handleConfirmArrival]);
 
@@ -243,16 +232,14 @@ const BookingManagement = () => {
   const columns = useMemo(
     () => [
       {
-        id: "select",
+        id: 'select',
         header: ({ table }) => (
           <Checkbox
             checked={
               table.getIsAllPageRowsSelected() ||
-              (table.getIsSomePageRowsSelected() && "indeterminate")
+              (table.getIsSomePageRowsSelected() && 'indeterminate')
             }
-            onCheckedChange={(value) =>
-              table.toggleAllPageRowsSelected(!!value)
-            }
+            onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
             aria-label="Select all"
             className="bg-white"
           />
@@ -268,25 +255,22 @@ const BookingManagement = () => {
         enableHiding: false,
       },
       {
-        accessorKey: "customerName",
-        header: "Customer name",
+        accessorKey: 'customerName',
+        header: 'Customer name',
         cell: ({ row }) => {
           const booking = row.original;
           return (
             <div className="flex items-center gap-3">
               <Avatar>
                 <AvatarFallback>
-                  {booking.customerName
-                    ?.split(" ")
-                    .map((i) => i.slice(0, 1).toUpperCase()) || "N/A"}
+                  {booking.customerName?.split(' ').map((i) => i.slice(0, 1).toUpperCase()) ||
+                    'N/A'}
                 </AvatarFallback>
               </Avatar>
               <div>
-                <div className="font-medium text-gray-900">
-                  {booking.customerName || "Unknown"}
-                </div>
+                <div className="font-medium text-gray-900">{booking.customerName || 'Unknown'}</div>
                 <div className="text-sm text-gray-500">
-                  ID: #{booking._id?.slice(0, 8) || "N/A"}
+                  ID: #{booking._id?.slice(0, 8) || 'N/A'}
                 </div>
               </div>
             </div>
@@ -294,8 +278,8 @@ const BookingManagement = () => {
         },
       },
       {
-        accessorKey: "checkInDate",
-        header: "Check-In Date",
+        accessorKey: 'checkInDate',
+        header: 'Check-In Date',
         cell: ({ row }) => {
           const { rooms } = row.original;
 
@@ -308,20 +292,18 @@ const BookingManagement = () => {
                         {formatDate(room.checkInDate)}
                       </div>
                     ))
-                  : "N/A"}
+                  : 'N/A'}
               </div>
               {rooms && rooms.length > 2 && (
-                <span className="text-xs text-gray-500">
-                  +{rooms.length - 2} more
-                </span>
+                <span className="text-xs text-gray-500">+{rooms.length - 2} more</span>
               )}
             </div>
           );
         },
       },
       {
-        accessorKey: "checkOutDate",
-        header: "Check-Out Date",
+        accessorKey: 'checkOutDate',
+        header: 'Check-Out Date',
         cell: ({ row }) => {
           const { rooms } = row.original;
 
@@ -334,20 +316,18 @@ const BookingManagement = () => {
                         {formatDate(room.checkOutDate)}
                       </div>
                     ))
-                  : "N/A"}
+                  : 'N/A'}
               </div>
               {rooms && rooms.length > 2 && (
-                <span className="text-xs text-gray-500">
-                  +{rooms.length - 2} more
-                </span>
+                <span className="text-xs text-gray-500">+{rooms.length - 2} more</span>
               )}
             </div>
           );
         },
       },
       {
-        accessorKey: "room.name",
-        header: "Room Type",
+        accessorKey: 'room.name',
+        header: 'Room Type',
         cell: ({ row }) => {
           const { rooms } = row.original;
 
@@ -357,23 +337,21 @@ const BookingManagement = () => {
                 {rooms && rooms.length > 0
                   ? rooms.slice(0, 2).map((room, i) => (
                       <div key={i} className="text-sm text-gray-900">
-                        {room.roomId.name || "N/A"}
+                        {room.roomId.name || 'N/A'}
                       </div>
                     ))
-                  : "N/A"}
+                  : 'N/A'}
               </div>
               {rooms && rooms.length > 2 && (
-                <span className="text-xs text-gray-500">
-                  +{rooms.length - 2} more
-                </span>
+                <span className="text-xs text-gray-500">+{rooms.length - 2} more</span>
               )}
             </div>
           );
         },
       },
       {
-        accessorKey: "guests",
-        header: "No of Guests",
+        accessorKey: 'guests',
+        header: 'No of Guests',
         cell: ({ row }) => {
           const { rooms } = row.original;
 
@@ -386,22 +364,20 @@ const BookingManagement = () => {
                         {room.guests} guests
                       </div>
                     ))
-                  : "N/A"}
+                  : 'N/A'}
               </div>
               {rooms && rooms.length > 2 && (
-                <span className="text-xs text-gray-500">
-                  +{rooms.length - 2} more
-                </span>
+                <span className="text-xs text-gray-500">+{rooms.length - 2} more</span>
               )}
             </div>
           );
         },
       },
       {
-        accessorKey: "paymentStatus",
-        header: "Payment Status",
+        accessorKey: 'paymentStatus',
+        header: 'Payment Status',
         cell: ({ row }) => {
-          const paymentStatus = row.getValue("paymentStatus");
+          const paymentStatus = row.getValue('paymentStatus');
           return (
             <span
               className={`inline-flex px-3 py-2.5 text-xs font-medium rounded-full ${getPaymentStatusColor(paymentStatus)}`}
@@ -412,26 +388,28 @@ const BookingManagement = () => {
         },
       },
       {
-        accessorKey: "reservationStatus",
+        accessorKey: 'reservationStatus',
         header: () => {
           return <div>Reservation Status</div>;
         },
         cell: ({ row }) => (
           <div
             className={`w-max 
-            ${reservationStatusOptions(row.getValue("reservationStatus"))} 
+            ${reservationStatusOptions(row.getValue('reservationStatus'))} 
               flex py-1.5 px-3 border rounded-full`}
           >
-            {row.getValue("reservationStatus") === "upcoming" && "Upcoming"}
-            {row.getValue("reservationStatus") === "confirmed" && "Confirmed"}
-            {["canceled", "cancelled"].includes(row.getValue("reservationStatus")) && "Canceled"}
-            {row.getValue("reservationStatus") === "no-show" && "No Show"}
-            {!["upcoming", "confirmed", "canceled", "cancelled", "no-show"].includes(row.getValue("reservationStatus")) && row.getValue("reservationStatus")}
+            {row.getValue('reservationStatus') === 'upcoming' && 'Upcoming'}
+            {row.getValue('reservationStatus') === 'confirmed' && 'Confirmed'}
+            {['canceled', 'cancelled'].includes(row.getValue('reservationStatus')) && 'Canceled'}
+            {row.getValue('reservationStatus') === 'no-show' && 'No Show'}
+            {!['upcoming', 'confirmed', 'canceled', 'cancelled', 'no-show'].includes(
+              row.getValue('reservationStatus')
+            ) && row.getValue('reservationStatus')}
           </div>
         ),
       },
       {
-        id: "actions",
+        id: 'actions',
         enableHiding: false,
         cell: ({ row }) => {
           const booking = row.original;
@@ -460,7 +438,7 @@ const BookingManagement = () => {
                     setOpen(true);
                   }}
                 >
-                  <CheckCircle />  Confirm Reservation
+                  <CheckCircle /> Confirm Reservation
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem className="text-[#EF4444]">
@@ -472,7 +450,7 @@ const BookingManagement = () => {
         },
       },
     ],
-    [confirmingIds, handleConfirmArrival],
+    [confirmingIds, handleConfirmArrival]
   );
 
   const totalPages = Math.ceil(totalItems / itemsPerPage);
@@ -488,17 +466,17 @@ const BookingManagement = () => {
       for (let i = 1; i <= totalPages; i++) pages.push(i);
     } else {
       pages.push(1);
-      if (currentPage > maxVisible) pages.push("ellipsis-start");
+      if (currentPage > maxVisible) pages.push('ellipsis-start');
       const start = Math.max(2, currentPage - 1);
       const end = Math.min(totalPages - 1, currentPage + 1);
       for (let i = start; i <= end; i++) pages.push(i);
-      if (currentPage < totalPages - maxVisible + 1) pages.push("ellipsis-end");
+      if (currentPage < totalPages - maxVisible + 1) pages.push('ellipsis-end');
       pages.push(totalPages);
     }
     return pages;
   };
 
-  const tabs = ["All", "Upcoming", "Completed", "Canceled", "No shows"];
+  const tabs = ['All', 'Upcoming', 'Completed', 'Canceled', 'No shows'];
 
   // Replace native WebSocket with Socket.IO WebSocketContext
   const { subscribe, unsubscribe, connected } = useWebSocket();
@@ -509,10 +487,10 @@ const BookingManagement = () => {
       setBookings((prev) => [data, ...prev]);
     };
 
-    subscribe("reservation-created", handleNewReservation);
+    subscribe('reservation-created', handleNewReservation);
 
     return () => {
-      unsubscribe("reservation-created");
+      unsubscribe('reservation-created');
     };
   }, [subscribe, unsubscribe]);
 
@@ -538,30 +516,24 @@ const BookingManagement = () => {
     return bookings.filter((booking) => {
       const matchesSearch =
         !searchTerm ||
-        booking.customerName
-          ?.toLowerCase()
-          .includes(searchTerm.toLowerCase()) ||
+        booking.customerName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         booking._id?.toLowerCase().includes(searchTerm.toLowerCase());
 
       let matchesTab = true;
-      if (activeTab !== "All") {
-        const status = (
-          booking.reservationStatus ||
-          booking.status ||
-          ""
-        ).toLowerCase();
+      if (activeTab !== 'All') {
+        const status = (booking.reservationStatus || booking.status || '').toLowerCase();
         switch (activeTab) {
-          case "Upcoming":
-            matchesTab = status === "upcoming";
+          case 'Upcoming':
+            matchesTab = status === 'upcoming';
             break;
-          case "Completed":
-            matchesTab = status === "completed" || status === "paid";
+          case 'Completed':
+            matchesTab = status === 'completed' || status === 'paid';
             break;
-          case "Canceled":
-            matchesTab = status === "canceled" || status === "cancelled";
+          case 'Canceled':
+            matchesTab = status === 'canceled' || status === 'cancelled';
             break;
-          case "No shows":
-            matchesTab = status === "no shows" || status === "no-shows";
+          case 'No shows':
+            matchesTab = status === 'no shows' || status === 'no-shows';
             break;
           default:
             matchesTab = true;
@@ -569,62 +541,46 @@ const BookingManagement = () => {
       }
 
       const matchesPaymentStatus =
-        selectedPaymentStatus === "all" ||
+        selectedPaymentStatus === 'all' ||
         normalizePaymentStatus(booking.paymentStatus) === selectedPaymentStatus;
 
-      const matchesRoomType =
-        selectedRoomType === "all" || booking.room?.name === selectedRoomType;
+      const matchesRoomType = selectedRoomType === 'all' || booking.room?.name === selectedRoomType;
 
       let matchesDate = true;
-      if (selectedDate !== "all") {
+      if (selectedDate !== 'all') {
         const checkInDate = new Date(booking.checkInDate);
         const today = new Date();
         today.setHours(0, 0, 0, 0);
-        if (selectedDate === "Today") {
+        if (selectedDate === 'Today') {
           checkInDate.setHours(0, 0, 0, 0);
           matchesDate = checkInDate.getTime() === today.getTime();
         }
-        if (selectedDate === "This Week") {
+        if (selectedDate === 'This Week') {
           const weekStart = new Date(today);
           weekStart.setDate(today.getDate() - today.getDay());
           const weekEnd = new Date(weekStart);
           weekEnd.setDate(weekStart.getDate() + 6);
           matchesDate = checkInDate >= weekStart && checkInDate <= weekEnd;
         }
-        if (selectedDate === "This Month") {
+        if (selectedDate === 'This Month') {
           matchesDate =
             checkInDate.getMonth() === today.getMonth() &&
             checkInDate.getFullYear() === today.getFullYear();
         }
-        if (selectedDate === "Last 30 Days") {
+        if (selectedDate === 'Last 30 Days') {
           const thirtyDaysAgo = new Date(today);
           thirtyDaysAgo.setDate(today.getDate() - 30);
           matchesDate = checkInDate >= thirtyDaysAgo;
         }
       }
 
-      return (
-        matchesSearch &&
-        matchesTab &&
-        matchesPaymentStatus &&
-        matchesRoomType &&
-        matchesDate
-      );
+      return matchesSearch && matchesTab && matchesPaymentStatus && matchesRoomType && matchesDate;
     });
-  }, [
-    bookings,
-    searchTerm,
-    activeTab,
-    selectedPaymentStatus,
-    selectedRoomType,
-    selectedDate,
-  ]);
+  }, [bookings, searchTerm, activeTab, selectedPaymentStatus, selectedRoomType, selectedDate]);
 
   const confirmedCount = useMemo(() => {
     return bookings.filter((b) =>
-      ["confirmed", "completed"].includes(
-        (b.reservationStatus || b.status || "").toLowerCase(),
-      ),
+      ['confirmed', 'completed'].includes((b.reservationStatus || b.status || '').toLowerCase())
     ).length;
   }, [bookings]);
 
@@ -632,10 +588,7 @@ const BookingManagement = () => {
 
   useEffect(() => {
     setTotalItems(filteredBookings.length);
-    const maxPage = Math.max(
-      1,
-      Math.ceil(filteredBookings.length / itemsPerPage),
-    );
+    const maxPage = Math.max(1, Math.ceil(filteredBookings.length / itemsPerPage));
     setCurrentPage((prev) => Math.min(prev, maxPage));
   }, [filteredBookings.length, itemsPerPage]);
 
@@ -668,21 +621,17 @@ const BookingManagement = () => {
         if (timeoutRef.current) clearTimeout(timeoutRef.current);
         timeoutRef.current = setTimeout(() => callback(...args), delay);
       },
-      [callback, delay],
+      [callback, delay]
     );
   };
 
-  const [searchInput, setSearchInput] = useState("");
+  const [searchInput, setSearchInput] = useState('');
   const debouncedSearch = useDebounce((value) => setSearchTerm(value), 300);
 
   if (isLoading) return <UniversalLoader fullscreen />;
 
   return (
-    <DashboardLayout
-      type={vendor.vendorType}
-      settings={false}
-      section="bookings"
-    >
+    <DashboardLayout type={vendor.vendorType} settings={false} section="bookings">
       <div className="min-h-screen bg-gray-50 p-6 mb-12">
         <div className="max-w-7xl mx-auto">
           <div className="md:flex hidden justify-between items-center mb-6">
@@ -691,7 +640,7 @@ const BookingManagement = () => {
               <DashboardButton
                 onClick={() => setHideTab(!hideTab)}
                 variant="secondary"
-                text={hideTab ? "Open tabs" : "Hide tabs"}
+                text={hideTab ? 'Open tabs' : 'Hide tabs'}
                 icon={hideTab ? <Eye /> : <EyeClose />}
               />
               <DashboardButton
@@ -700,28 +649,40 @@ const BookingManagement = () => {
                 icon={<Export />}
                 onClick={() => {
                   try {
-                    const headers = ["Customer Name", "Email", "Check In", "Check Out", "Room Type", "Status", "Payment", "Amount"];
-                    const rows = filteredBookings.map(b => [
-                      b.customerName || "",
-                      b.email || "",
-                      b.checkInDate ? new Date(b.checkInDate).toLocaleDateString() : "",
-                      b.checkOutDate ? new Date(b.checkOutDate).toLocaleDateString() : "",
-                      b.rooms?.map(r => r.roomId?.name).join("; ") || "",
-                      b.reservationStatus || "",
-                      b.paymentStatus || "",
+                    const headers = [
+                      'Customer Name',
+                      'Email',
+                      'Check In',
+                      'Check Out',
+                      'Room Type',
+                      'Status',
+                      'Payment',
+                      'Amount',
+                    ];
+                    const rows = filteredBookings.map((b) => [
+                      b.customerName || '',
+                      b.email || '',
+                      b.checkInDate ? new Date(b.checkInDate).toLocaleDateString() : '',
+                      b.checkOutDate ? new Date(b.checkOutDate).toLocaleDateString() : '',
+                      b.rooms?.map((r) => r.roomId?.name).join('; ') || '',
+                      b.reservationStatus || '',
+                      b.paymentStatus || '',
                       b.totalAmount || 0,
                     ]);
-                    const csv = [headers.join(","), ...rows.map(r => r.map(c => `"${c}"`).join(","))].join("\n");
-                    const blob = new Blob([csv], { type: "text/csv" });
+                    const csv = [
+                      headers.join(','),
+                      ...rows.map((r) => r.map((c) => `"${c}"`).join(',')),
+                    ].join('\n');
+                    const blob = new Blob([csv], { type: 'text/csv' });
                     const url = URL.createObjectURL(blob);
-                    const a = document.createElement("a");
+                    const a = document.createElement('a');
                     a.href = url;
-                    a.download = `bookings-${new Date().toISOString().slice(0,10)}.csv`;
+                    a.download = `bookings-${new Date().toISOString().slice(0, 10)}.csv`;
                     a.click();
                     URL.revokeObjectURL(url);
-                    toast.success("Bookings exported successfully");
+                    toast.success('Bookings exported successfully');
                   } catch (e) {
-                    toast.error("Failed to export bookings");
+                    toast.error('Failed to export bookings');
                   }
                 }}
               />
@@ -755,10 +716,7 @@ const BookingManagement = () => {
               <div className="flex-1">
                 <StatCard
                   title="Pending"
-                  value={
-                    bookings.filter((r) => r.reservationStatus === "Upcoming")
-                      .length
-                  }
+                  value={bookings.filter((r) => r.reservationStatus === 'Upcoming').length}
                   change={8}
                   icon={<Cash2 className="text-[#CD16C3]" />}
                   color="pink"
@@ -770,11 +728,7 @@ const BookingManagement = () => {
                 <StatCard
                   title="Total Revenue"
                   value={`₦ ${bookings
-                    .filter(
-                      (r) =>
-                        r.paymentStatus === "paid" ||
-                        r.paymentStatus === "success",
-                    )
+                    .filter((r) => r.paymentStatus === 'paid' || r.paymentStatus === 'success')
                     .reduce((sum, r) => sum + (r.totalAmount || 0), 0)
                     .toLocaleString()}`}
                   change={-5}
@@ -796,8 +750,8 @@ const BookingManagement = () => {
                     onClick={() => setActiveTab(tab)}
                     className={`p-2 text-xs md:text-sm rounded-lg border font-medium cursor-pointer ${
                       activeTab === tab
-                        ? "border-[#B3D1D2] bg-[#E7F0F0] text-[#111827]"
-                        : "border-transparent text-[#606368]"
+                        ? 'border-[#B3D1D2] bg-[#E7F0F0] text-[#111827]'
+                        : 'border-transparent text-[#606368]'
                     }`}
                   >
                     {tab}
@@ -824,29 +778,19 @@ const BookingManagement = () => {
                   {/* Date filter */}
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className="ml-auto text-[#606368]"
-                      >
-                        {selectedDate === "all" ? "Date" : selectedDate}{" "}
-                        <ChevronDown />
+                      <Button variant="outline" className="ml-auto text-[#606368]">
+                        {selectedDate === 'all' ? 'Date' : selectedDate} <ChevronDown />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-48">
                       <div className="p-2">
-                        {[
-                          "all",
-                          "Today",
-                          "This Week",
-                          "This Month",
-                          "Last 30 Days",
-                        ].map((d) => (
+                        {['all', 'Today', 'This Week', 'This Month', 'Last 30 Days'].map((d) => (
                           <button
                             key={d}
                             onClick={() => setSelectedDate(d)}
-                            className={`w-full text-left px-3 py-2 rounded-md hover:bg-gray-100 ${selectedDate === d ? "bg-gray-100 font-medium" : ""}`}
+                            className={`w-full text-left px-3 py-2 rounded-md hover:bg-gray-100 ${selectedDate === d ? 'bg-gray-100 font-medium' : ''}`}
                           >
-                            {d === "all" ? "All Dates" : d}
+                            {d === 'all' ? 'All Dates' : d}
                           </button>
                         ))}
                       </div>
@@ -856,38 +800,31 @@ const BookingManagement = () => {
                   {/* Payment status filter */}
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className="ml-auto text-[#606368]"
-                      >
-                        {selectedPaymentStatus === "all"
-                          ? "Payment Status"
-                          : selectedPaymentStatus}{" "}
+                      <Button variant="outline" className="ml-auto text-[#606368]">
+                        {selectedPaymentStatus === 'all' ? 'Payment Status' : selectedPaymentStatus}{' '}
                         <ChevronDown />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-48">
                       <div className="p-2">
                         <button
-                          onClick={() => setSelectedPaymentStatus("all")}
-                          className={`w-full text-left px-3 py-2 rounded-md hover:bg-gray-100 ${selectedPaymentStatus === "all" ? "bg-gray-100 font-medium" : ""}`}
+                          onClick={() => setSelectedPaymentStatus('all')}
+                          className={`w-full text-left px-3 py-2 rounded-md hover:bg-gray-100 ${selectedPaymentStatus === 'all' ? 'bg-gray-100 font-medium' : ''}`}
                         >
                           All Status
                         </button>
                         {[
-                          { label: "Fully Paid", color: "bg-green-500" },
-                          { label: "Part Paid", color: "bg-yellow-500" },
-                          { label: "Unpaid", color: "bg-gray-500" },
+                          { label: 'Fully Paid', color: 'bg-green-500' },
+                          { label: 'Part Paid', color: 'bg-yellow-500' },
+                          { label: 'Unpaid', color: 'bg-gray-500' },
                         ].map(({ label, color }) => (
                           <button
                             key={label}
                             onClick={() => setSelectedPaymentStatus(label)}
-                            className={`w-full text-left px-3 py-2 rounded-md hover:bg-gray-100 ${selectedPaymentStatus === label ? "bg-gray-100 font-medium" : ""}`}
+                            className={`w-full text-left px-3 py-2 rounded-md hover:bg-gray-100 ${selectedPaymentStatus === label ? 'bg-gray-100 font-medium' : ''}`}
                           >
                             <span className="inline-flex items-center gap-2">
-                              <span
-                                className={`w-2 h-2 rounded-full ${color}`}
-                              />
+                              <span className={`w-2 h-2 rounded-full ${color}`} />
                               {label}
                             </span>
                           </button>
@@ -899,10 +836,7 @@ const BookingManagement = () => {
                   {/* Advanced filter */}
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className="ml-auto text-[#606368]"
-                      >
+                      <Button variant="outline" className="ml-auto text-[#606368]">
                         Advanced filter <Filter2 fill="black" />
                       </Button>
                     </DropdownMenuTrigger>
@@ -914,18 +848,12 @@ const BookingManagement = () => {
                           </label>
                           <select
                             value={selectedRoomType}
-                            onChange={(e) =>
-                              setSelectedRoomType(e.target.value)
-                            }
+                            onChange={(e) => setSelectedRoomType(e.target.value)}
                             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
                           >
                             <option value="all">All Room Types</option>
                             {Array.from(
-                              new Set(
-                                bookings
-                                  .map((b) => b.room?.name)
-                                  .filter(Boolean),
-                              ),
+                              new Set(bookings.map((b) => b.room?.name).filter(Boolean))
                             ).map((roomType) => (
                               <option key={roomType} value={roomType}>
                                 {roomType}
@@ -936,9 +864,9 @@ const BookingManagement = () => {
                         <div className="pt-2 border-t">
                           <button
                             onClick={() => {
-                              setSelectedDate("all");
-                              setSelectedPaymentStatus("all");
-                              setSelectedRoomType("all");
+                              setSelectedDate('all');
+                              setSelectedPaymentStatus('all');
+                              setSelectedRoomType('all');
                             }}
                             className="w-full px-3 py-2 text-sm text-teal-600 hover:bg-teal-50 rounded-md font-medium"
                           >
@@ -969,10 +897,7 @@ const BookingManagement = () => {
                           <TableHead key={header.id}>
                             {header.isPlaceholder
                               ? null
-                              : flexRender(
-                                  header.column.columnDef.header,
-                                  header.getContext(),
-                                )}
+                              : flexRender(header.column.columnDef.header, header.getContext())}
                           </TableHead>
                         ))}
                       </TableRow>
@@ -983,25 +908,19 @@ const BookingManagement = () => {
                       table.getRowModel().rows.map((row) => (
                         <TableRow
                           key={row.id}
-                          data-state={row.getIsSelected() && "selected"}
+                          data-state={row.getIsSelected() && 'selected'}
                           className="hover:bg-gray-50"
                         >
                           {row.getVisibleCells().map((cell) => (
                             <TableCell key={cell.id}>
-                              {flexRender(
-                                cell.column.columnDef.cell,
-                                cell.getContext(),
-                              )}
+                              {flexRender(cell.column.columnDef.cell, cell.getContext())}
                             </TableCell>
                           ))}
                         </TableRow>
                       ))
                     ) : (
                       <TableRow>
-                        <TableCell
-                          colSpan={columns.length}
-                          className="h-24 text-center"
-                        >
+                        <TableCell colSpan={columns.length} className="h-24 text-center">
                           No bookings found.
                         </TableCell>
                       </TableRow>
@@ -1027,21 +946,15 @@ const BookingManagement = () => {
               {getPageNumbers().map((page, idx) => (
                 <button
                   key={idx}
-                  onClick={() =>
-                    typeof page === "number" && handlePageChange(page)
-                  }
-                  disabled={
-                    page === "ellipsis-start" || page === "ellipsis-end"
-                  }
+                  onClick={() => typeof page === 'number' && handlePageChange(page)}
+                  disabled={page === 'ellipsis-start' || page === 'ellipsis-end'}
                   className={`px-3 py-1 rounded-md ${
                     currentPage === page
-                      ? "bg-teal-600 text-white"
-                      : "bg-white text-gray-700 border border-gray-200"
-                  } ${page === "ellipsis-start" || page === "ellipsis-end" ? "cursor-default" : "hover:bg-gray-100"}`}
+                      ? 'bg-teal-600 text-white'
+                      : 'bg-white text-gray-700 border border-gray-200'
+                  } ${page === 'ellipsis-start' || page === 'ellipsis-end' ? 'cursor-default' : 'hover:bg-gray-100'}`}
                 >
-                  {page === "ellipsis-start" || page === "ellipsis-end"
-                    ? "…"
-                    : page}
+                  {page === 'ellipsis-start' || page === 'ellipsis-end' ? '…' : page}
                 </button>
               ))}
             </div>
@@ -1071,111 +984,91 @@ const BookingManagement = () => {
             <div className="max-w-4xl mx-auto">
               {/* Reservation Details */}
               <div className="bg-white rounded-2xl border border-gray-200 mb-6">
-              <h2 className="text-lg font-semibold text-[#111827] py-4 px-5">
-                Reservation Details
-              </h2>
+                <h2 className="text-lg font-semibold text-[#111827] py-4 px-5">
+                  Reservation Details
+                </h2>
 
-              <hr className="border-gray-200 mb-2" />
-              <div className=" divide-y px-4">
-                {showPopup.details.rooms.length > 0 &&
-                  showPopup.details.rooms.map((item, index) => (
-                    <div key={index} className="py-2">
-                      <div className="mb-2 text-xs text-medium">
-                        Superion{" "}
-                        {item.roomId.category || item.roomId.roomCategory}{" "}
-                        {item.roomId.name}
-                      </div>
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
-                        <div>
-                          <p className="text-sm text-gray-600 mb-1">
-                            Check In Date
-                          </p>
-                          <p className="font-medium text-gray-900">
-                            {new Date(item.checkInDate).toLocaleDateString(
-                              "en-NG",
-                              {
-                                year: "numeric",
-                                month: "short",
-                                day: "numeric",
-                              },
-                            )}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-gray-600 mb-1">
-                            Check Out Date
-                          </p>
-                          <p className="font-medium text-gray-900">
-                            {new Date(item.checkOutDate).toLocaleDateString(
-                              "en-NG",
-                              {
-                                year: "numeric",
-                                month: "short",
-                                day: "numeric",
-                              },
-                            )}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-gray-600 mb-1">
-                            Guests Allowed
-                          </p>
-                          <p className="font-medium text-gray-900">
-                            {item.guests} Guests
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-              </div>
-            </div>
-            <div className="rounded-2xl bg-white border border-gray-200 mb-6">
-              <div className=" divide-y">
-                <div className="flex p-4 justify-between items-center">
-                  <h3 className="text-lg font-semibold">Room Summary</h3>
-                </div>
-                <div className="divide-y px-4">
+                <hr className="border-gray-200 mb-2" />
+                <div className=" divide-y px-4">
                   {showPopup.details.rooms.length > 0 &&
-                    showPopup.details.rooms.map((room, index) => (
-                      <div key={index} className="grid grid-cols-2 py-4 gap-4">
-                        <div className="space-y-1">
-                          <p className="text-xs text-gray-600">Room Name</p>
-                          <p className="text-sm  line-clamp-1 font-medium text-gray-900">
-                            Superion {room.roomId.category} {room.roomId.name}
-                          </p>
+                    showPopup.details.rooms.map((item, index) => (
+                      <div key={index} className="py-2">
+                        <div className="mb-2 text-xs text-medium">
+                          Superion {item.roomId.category || item.roomId.roomCategory}{' '}
+                          {item.roomId.name}
                         </div>
-                        <div className="space-y-1">
-                          <p className="text-xs text-gray-600">
-                            Price per Night
-                          </p>
-                          <p className="text-sm font-medium text-gray-900">
-                            ₦
-                            {(
-                              room.roomId.pricePerNight -
-                              room.roomId.pricePerNight *
-                                (room.roomId.discount / 100)
-                            ).toLocaleString()}
-                          </p>
-                        </div>
-                        <div className="space-y-1">
-                          <p className="text-xs text-gray-600">Bed Type</p>
-                          <p className="text-sm font-medium text-gray-900">
-                            {room.roomId.bedType} Bed
-                          </p>
-                        </div>
-                        <div className="space-y-1">
-                          <p className="text-xs text-gray-600">
-                            Guests Allowed
-                          </p>
-                          <p className="text-sm font-medium text-gray-900">
-                            {room.roomId.adultsCapacity}
-                          </p>
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
+                          <div>
+                            <p className="text-sm text-gray-600 mb-1">Check In Date</p>
+                            <p className="font-medium text-gray-900">
+                              {new Date(item.checkInDate).toLocaleDateString('en-NG', {
+                                year: 'numeric',
+                                month: 'short',
+                                day: 'numeric',
+                              })}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-sm text-gray-600 mb-1">Check Out Date</p>
+                            <p className="font-medium text-gray-900">
+                              {new Date(item.checkOutDate).toLocaleDateString('en-NG', {
+                                year: 'numeric',
+                                month: 'short',
+                                day: 'numeric',
+                              })}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-sm text-gray-600 mb-1">Guests Allowed</p>
+                            <p className="font-medium text-gray-900">{item.guests} Guests</p>
+                          </div>
                         </div>
                       </div>
                     ))}
                 </div>
               </div>
-            </div>
+              <div className="rounded-2xl bg-white border border-gray-200 mb-6">
+                <div className=" divide-y">
+                  <div className="flex p-4 justify-between items-center">
+                    <h3 className="text-lg font-semibold">Room Summary</h3>
+                  </div>
+                  <div className="divide-y px-4">
+                    {showPopup.details.rooms.length > 0 &&
+                      showPopup.details.rooms.map((room, index) => (
+                        <div key={index} className="grid grid-cols-2 py-4 gap-4">
+                          <div className="space-y-1">
+                            <p className="text-xs text-gray-600">Room Name</p>
+                            <p className="text-sm  line-clamp-1 font-medium text-gray-900">
+                              Superion {room.roomId.category} {room.roomId.name}
+                            </p>
+                          </div>
+                          <div className="space-y-1">
+                            <p className="text-xs text-gray-600">Price per Night</p>
+                            <p className="text-sm font-medium text-gray-900">
+                              ₦
+                              {(
+                                room.roomId.pricePerNight -
+                                room.roomId.pricePerNight * (room.roomId.discount / 100)
+                              ).toLocaleString()}
+                            </p>
+                          </div>
+                          <div className="space-y-1">
+                            <p className="text-xs text-gray-600">Bed Type</p>
+                            <p className="text-sm font-medium text-gray-900">
+                              {room.roomId.bedType} Bed
+                            </p>
+                          </div>
+                          <div className="space-y-1">
+                            <p className="text-xs text-gray-600">Guests Allowed</p>
+                            <p className="text-sm font-medium text-gray-900">
+                              {room.roomId.adultsCapacity}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              </div>
 
               {/* Info Cards - Changed to green background */}
               <div className="bg-[#E7F0F0] border border-[#B3D1D2] rounded-2xl p-4 mb-8">
@@ -1183,8 +1076,7 @@ const BookingManagement = () => {
                   <div className="flex items-start gap-3">
                     <Mail className="w-5 h-5 text-[#0A6C6D] mt-0.5 flex-shrink-0" />
                     <p className="text-sm">
-                      You will receive a confirmation email with your
-                      reservation details
+                      You will receive a confirmation email with your reservation details
                     </p>
                   </div>
 

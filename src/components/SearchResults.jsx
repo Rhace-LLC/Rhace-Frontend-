@@ -1,7 +1,7 @@
-import { AlertCircle, ChevronLeft, ChevronRight, Search, SlidersHorizontal } from "lucide-react";
-import { VenueCard, SkeletonCard } from "./VenueCard";
-import { FilterChips } from "./FilterPanel";
-import { countActiveFilters } from "../utils/filterUtils";
+import { AlertCircle, ChevronLeft, ChevronRight, Search, SlidersHorizontal } from 'lucide-react';
+import { VenueCard, SkeletonCard } from './VenueCard';
+import { FilterChips } from './FilterPanel';
+import { countActiveFilters } from '../utils/filterUtils';
 
 // ── Pagination ────────────────────────────────────────────────────────────────
 const Pagination = ({ pagination, onPage }) => {
@@ -11,32 +11,47 @@ const Pagination = ({ pagination, onPage }) => {
   const pages = [];
   for (let i = 1; i <= totalPages; i++) {
     if (i === 1 || i === totalPages || Math.abs(i - currentPage) <= 1) pages.push(i);
-    else if (Math.abs(i - currentPage) === 2) pages.push("...");
+    else if (Math.abs(i - currentPage) === 2) pages.push('...');
   }
-  const deduped = pages.filter((p, i) => !(p === "..." && pages[i - 1] === "..."));
+  const deduped = pages.filter((p, i) => !(p === '...' && pages[i - 1] === '...'));
 
   return (
     <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-5 mt-5 border-t border-gray-100">
       <p className="text-xs text-gray-500 order-2 sm:order-1">
-        <span className="font-semibold text-gray-800">{totalCount}</span> results · Page {currentPage} of {totalPages}
+        <span className="font-semibold text-gray-800">{totalCount}</span> results · Page{' '}
+        {currentPage} of {totalPages}
       </p>
       <div className="flex items-center gap-1 order-1 sm:order-2">
-        <button disabled={!hasPrevPage} onClick={() => onPage(currentPage - 1)}
-          className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:border-gray-800 disabled:opacity-30 disabled:cursor-not-allowed transition-all">
+        <button
+          disabled={!hasPrevPage}
+          onClick={() => onPage(currentPage - 1)}
+          className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:border-gray-800 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+        >
           <ChevronLeft className="w-3.5 h-3.5" />
         </button>
         {deduped.map((p, i) =>
-          p === "..." ? (
-            <span key={`e${i}`} className="w-8 h-8 flex items-center justify-center text-gray-400 text-xs">…</span>
+          p === '...' ? (
+            <span
+              key={`e${i}`}
+              className="w-8 h-8 flex items-center justify-center text-gray-400 text-xs"
+            >
+              …
+            </span>
           ) : (
-            <button key={p} onClick={() => onPage(p)}
-              className={`w-8 h-8 flex items-center justify-center rounded-lg text-xs font-semibold border transition-all ${p === currentPage ? "bg-[#0A6C6D] border-[#0A6C6D] text-white" : "border-gray-200 text-gray-600 hover:border-gray-800"}`}>
+            <button
+              key={p}
+              onClick={() => onPage(p)}
+              className={`w-8 h-8 flex items-center justify-center rounded-lg text-xs font-semibold border transition-all ${p === currentPage ? 'bg-[#0A6C6D] border-[#0A6C6D] text-white' : 'border-gray-200 text-gray-600 hover:border-gray-800'}`}
+            >
               {p}
             </button>
           )
         )}
-        <button disabled={!hasNextPage} onClick={() => onPage(currentPage + 1)}
-          className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:border-gray-800 disabled:opacity-30 disabled:cursor-not-allowed transition-all">
+        <button
+          disabled={!hasNextPage}
+          onClick={() => onPage(currentPage + 1)}
+          className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:border-gray-800 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+        >
           <ChevronRight className="w-3.5 h-3.5" />
         </button>
       </div>
@@ -46,10 +61,17 @@ const Pagination = ({ pagination, onPage }) => {
 
 // ── Main SearchResults ────────────────────────────────────────────────────────
 export const SearchResults = ({
-  results, isLoading, error,
-  pagination, activeQuery,
-  filters, updateFilter, clearFilters, hasFilters,
-  facets, goToPage,
+  results,
+  isLoading,
+  error,
+  pagination,
+  activeQuery,
+  filters,
+  updateFilter,
+  clearFilters,
+  hasFilters,
+  facets,
+  goToPage,
   onOpenFilters,
 }) => {
   const activeFilterCount = countActiveFilters(filters);
@@ -57,15 +79,19 @@ export const SearchResults = ({
 
   return (
     <div className="max-w-7xl mx-auto py-4 sm:py-6">
-
       {/* Mobile filter button */}
       <div className="flex items-center justify-between mb-3 gap-2 flex-wrap">
         {!isLoading && (
           <p className="text-sm text-gray-600">
             {pagination.totalCount > 0 ? (
-              <><span className="font-bold text-gray-900">{pagination.totalCount}</span> results for "<span className="font-semibold text-[#0A6C6D]">{activeQuery}</span>"</>
+              <>
+                <span className="font-bold text-gray-900">{pagination.totalCount}</span> results for
+                "<span className="font-semibold text-[#0A6C6D]">{activeQuery}</span>"
+              </>
             ) : (
-              <>No results for "<span className="font-semibold">{activeQuery}</span>"</>
+              <>
+                No results for "<span className="font-semibold">{activeQuery}</span>"
+              </>
             )}
           </p>
         )}
@@ -97,14 +123,18 @@ export const SearchResults = ({
       {/* Skeleton grid */}
       {isLoading && (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
-          {Array.from({ length: 8 }).map((_, i) => <SkeletonCard key={i} />)}
+          {Array.from({ length: 8 }).map((_, i) => (
+            <SkeletonCard key={i} />
+          ))}
         </div>
       )}
 
       {/* Results grid */}
       {!isLoading && hasResults && (
         <div className="grid md:grid-cols-2 gap-3 sm:gap-4">
-          {results.map(v => <VenueCard key={v._id} vendor={v} activeType={filters.type} />)}
+          {results.map((v) => (
+            <VenueCard key={v._id} vendor={v} activeType={filters.type} />
+          ))}
         </div>
       )}
 
@@ -119,8 +149,10 @@ export const SearchResults = ({
             <p className="text-gray-500 text-sm">Try different keywords or adjust your filters</p>
           </div>
           {hasFilters && (
-            <button onClick={clearFilters}
-              className="px-4 py-2 bg-[#0A6C6D] text-white text-sm font-semibold rounded-xl hover:bg-[#084F4F] transition-colors">
+            <button
+              onClick={clearFilters}
+              className="px-4 py-2 bg-[#0A6C6D] text-white text-sm font-semibold rounded-xl hover:bg-[#084F4F] transition-colors"
+            >
               Clear Filters
             </button>
           )}
@@ -128,9 +160,7 @@ export const SearchResults = ({
       )}
 
       {/* Pagination */}
-      {!isLoading && hasResults && (
-        <Pagination pagination={pagination} onPage={goToPage} />
-      )}
+      {!isLoading && hasResults && <Pagination pagination={pagination} onPage={goToPage} />}
     </div>
   );
 };

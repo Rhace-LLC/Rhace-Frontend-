@@ -1,4 +1,4 @@
-import { ChevronRight } from "lucide-react";
+import { ChevronRight } from 'lucide-react';
 
 // interface Vendor {
 //   businessName: string;
@@ -22,53 +22,47 @@ import { ChevronRight } from "lucide-react";
 const PaymentCard = ({ payment, onViewDetails }) => {
   const getStatusConfig = (status) => {
     switch (status) {
-      case "Success":
+      case 'Success':
         return {
-          bg: "bg-emerald-50",
-          text: "text-emerald-700",
-          dot: "bg-emerald-500",
+          bg: 'bg-emerald-50',
+          text: 'text-emerald-700',
+          dot: 'bg-emerald-500',
         };
-      case "Pending":
+      case 'Pending':
         return {
-          bg: "bg-amber-50",
-          text: "text-amber-700",
-          dot: "bg-amber-500",
+          bg: 'bg-amber-50',
+          text: 'text-amber-700',
+          dot: 'bg-amber-500',
         };
-      case "Failed":
+      case 'Failed':
         return {
-          bg: "bg-rose-50",
-          text: "text-rose-700",
-          dot: "bg-rose-500",
+          bg: 'bg-rose-50',
+          text: 'text-rose-700',
+          dot: 'bg-rose-500',
         };
       default:
         return {
-          bg: "bg-gray-50",
-          text: "text-gray-700",
-          dot: "bg-gray-500",
+          bg: 'bg-gray-50',
+          text: 'text-gray-700',
+          dot: 'bg-gray-500',
         };
     }
   };
 
   const statusConfig = getStatusConfig(payment.status);
 
-  const formattedDate = new Date(payment.createdAt).toLocaleDateString(
-    "en-US",
-    {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    },
-  );
+  const formattedDate = new Date(payment.createdAt).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
 
-  const formattedTime = new Date(payment.createdAt).toLocaleTimeString(
-    "en-US",
-    {
-      hour: "2-digit",
-      minute: "2-digit",
-    },
-  );
+  const formattedTime = new Date(payment.createdAt).toLocaleTimeString('en-US', {
+    hour: '2-digit',
+    minute: '2-digit',
+  });
 
-  const formattedAmount = payment.amountPaid.toLocaleString("en-NG", {
+  const formattedAmount = payment.amountPaid.toLocaleString('en-NG', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   });
@@ -88,9 +82,7 @@ const PaymentCard = ({ payment, onViewDetails }) => {
         <div
           className={`absolute top-3 right-3 ${statusConfig.bg} ${statusConfig.text} px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-md`}
         >
-          <div
-            className={`w-2 h-2 ${statusConfig.dot} rounded-full animate-pulse`}
-          />
+          <div className={`w-2 h-2 ${statusConfig.dot} rounded-full animate-pulse`} />
           <span className="text-xs font-semibold">{payment.status}</span>
         </div>
       </div>
@@ -119,9 +111,7 @@ const PaymentCard = ({ payment, onViewDetails }) => {
         <div className="mt-auto pt-4 border-t border-gray-100">
           <div className="flex items-end justify-between">
             <div className="flex flex-col">
-              <span className="text-xs text-gray-500 font-medium mb-1">
-                Amount
-              </span>
+              <span className="text-xs text-gray-500 font-medium mb-1">Amount</span>
               <span className="text-xl sm:text-2xl font-bold text-teal-700">
                 ₦{formattedAmount}
               </span>

@@ -1,4 +1,4 @@
-import { MapPin, Loader2, Navigation } from "lucide-react";
+import { MapPin, Loader2, Navigation } from 'lucide-react';
 
 /**
  * LocationPill
@@ -7,29 +7,35 @@ import { MapPin, Loader2, Navigation } from "lucide-react";
  */
 export const LocationPill = ({ location, status, isDetecting, requestLocation, error }) => {
   const label =
-    status === "detecting" ? "Detecting…" :
-    location.city          ? location.city :
-    status === "denied"    ? "Location denied" :
-    "Enable location";
+    status === 'detecting'
+      ? 'Detecting…'
+      : location.city
+        ? location.city
+        : status === 'denied'
+          ? 'Location denied'
+          : 'Enable location';
 
   return (
     <button
       onClick={requestLocation}
-      title={status === "granted" ? `Using location: ${location.city}` : "Click to use your location"}
+      title={
+        status === 'granted' ? `Using location: ${location.city}` : 'Click to use your location'
+      }
       className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-[11px] font-semibold transition-all ${
-        status === "granted"
-          ? "border-[#0A6C6D]/30 bg-[#0A6C6D]/5 text-[#0A6C6D] cursor-default"
-          : status === "detecting"
-          ? "border-gray-200 bg-gray-50 text-gray-400 cursor-wait"
-          : "border-gray-200 bg-white text-gray-500 hover:border-[#0A6C6D] hover:text-[#0A6C6D] cursor-pointer"
+        status === 'granted'
+          ? 'border-[#0A6C6D]/30 bg-[#0A6C6D]/5 text-[#0A6C6D] cursor-default'
+          : status === 'detecting'
+            ? 'border-gray-200 bg-gray-50 text-gray-400 cursor-wait'
+            : 'border-gray-200 bg-white text-gray-500 hover:border-[#0A6C6D] hover:text-[#0A6C6D] cursor-pointer'
       }`}
     >
-      {isDetecting
-        ? <Loader2 className="w-3 h-3 animate-spin" />
-        : status === "granted"
-        ? <MapPin className="w-3 h-3" />
-        : <Navigation className="w-3 h-3" />
-      }
+      {isDetecting ? (
+        <Loader2 className="w-3 h-3 animate-spin" />
+      ) : status === 'granted' ? (
+        <MapPin className="w-3 h-3" />
+      ) : (
+        <Navigation className="w-3 h-3" />
+      )}
       <span className="max-w-[120px] truncate">{label}</span>
     </button>
   );
@@ -56,8 +62,12 @@ export const LocationBanner = ({ requestLocation, isDetecting, onDismiss }) => (
         disabled={isDetecting}
         className="px-3 py-1.5 bg-[#0A6C6D] text-white text-xs font-semibold rounded-full hover:bg-[#084F4F] disabled:opacity-60 transition-colors flex items-center gap-1.5"
       >
-        {isDetecting ? <Loader2 className="w-3 h-3 animate-spin" /> : <Navigation className="w-3 h-3" />}
-        {isDetecting ? "Detecting…" : "Use location"}
+        {isDetecting ? (
+          <Loader2 className="w-3 h-3 animate-spin" />
+        ) : (
+          <Navigation className="w-3 h-3" />
+        )}
+        {isDetecting ? 'Detecting…' : 'Use location'}
       </button>
       {onDismiss && (
         <button onClick={onDismiss} className="text-xs text-gray-400 hover:text-gray-600 px-2">

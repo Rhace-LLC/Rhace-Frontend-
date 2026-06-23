@@ -1,10 +1,10 @@
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import paystackLogo from "@/public/images/paystack.svg";
-import { paymentService } from "@/services/payment.service";
-import { AlertTriangle, Lock, Shield } from "lucide-react";
-import { useState, useEffect } from "react";
-import { toast } from "react-toastify";
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import paystackLogo from '@/public/images/paystack.svg';
+import { paymentService } from '@/services/payment.service';
+import { AlertTriangle, Lock, Shield } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { toast } from 'react-toastify';
 
 export default function PaymentPage({ booking, setPopupOpen, payLater }) {
   const [isLoading, setIsLoading] = useState(false);
@@ -13,18 +13,16 @@ export default function PaymentPage({ booking, setPopupOpen, payLater }) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const paymentMethods = [
     {
-      name: "Paystack",
+      name: 'Paystack',
       logo: paystackLogo,
-      description: "Secure payment with cards, bank transfer, or USSD",
+      description: 'Secure payment with cards, bank transfer, or USSD',
     },
   ];
 
   useEffect(() => {
     setSelectedPayment(paymentMethods[0]);
   }, [paymentMethods]);
-  const displayAmount = payLater
-    ? 1000
-    : (booking?.totalAmount ?? booking?.amount ?? 0);
+  const displayAmount = payLater ? 1000 : (booking?.totalAmount ?? booking?.amount ?? 0);
   console.log(booking);
   const handlePayClick = async () => {
     if (isLoading) return;
@@ -43,7 +41,7 @@ export default function PaymentPage({ booking, setPopupOpen, payLater }) {
         payLater,
         partPaid: booking.partPaid,
         resId: booking.resId,
-        ...(booking.reservationType === "restaurant" && {
+        ...(booking.reservationType === 'restaurant' && {
           date: booking.date,
           time: booking.time,
           guests: booking.guests,
@@ -57,14 +55,14 @@ export default function PaymentPage({ booking, setPopupOpen, payLater }) {
           seatingPreference: booking.seatingPreference,
           specialRequest: booking.specialRequest,
         }),
-        ...(booking.reservationType === "hotel" && {
+        ...(booking.reservationType === 'hotel' && {
           rooms: booking.rooms,
           checkInDate: booking.checkInDate || booking.rooms?.[0]?.checkInDate,
           checkOutDate: booking.checkOutDate || booking.rooms?.[0]?.checkOutDate,
           guests: booking.guests || booking.rooms?.[0]?.guests,
           specialRequest: booking.specialRequest || booking.rooms?.[0]?.specialRequest,
         }),
-        ...(booking.reservationType === "club" && {
+        ...(booking.reservationType === 'club' && {
           date: booking.date,
           time: booking.time,
           guests: booking.guests,
@@ -73,18 +71,18 @@ export default function PaymentPage({ booking, setPopupOpen, payLater }) {
           table: booking.table,
         }),
       });
+      
       // const reference = res.data.reference || res.data.reference;
       toast.success('Redirecting to Paystack...');
-      
+
       // Brief delay then redirect
       setTimeout(() => {
         window.location.href = res.data.authorization_url;
       }, 800);
-      
+
       // Note: Full verification happens at /paystack/callback
     } catch (error) {
-      const errorMessage =
-        error.response?.data?.message || "Failed to initialize payment";
+      const errorMessage = error.response?.data?.message || 'Failed to initialize payment';
       toast.error(errorMessage);
       setIsLoading(false);
     }
@@ -94,12 +92,8 @@ export default function PaymentPage({ booking, setPopupOpen, payLater }) {
     <div className="min-h-screen fixed top-0 left-0 w-full flex items-center justify-center z-50 bg-black/60 px-2 md:px-4 py-4">
       <Card className="max-w-md w-full border rounded-2xl border-gray-200">
         <CardHeader className="text-center">
-          <CardTitle className="text-xl font-semibold text-gray-900">
-            Secure Payment
-          </CardTitle>
-          <p className="text-sm text-gray-600 mt-1">
-            Complete your payment to confirm reservation
-          </p>
+          <CardTitle className="text-xl font-semibold text-gray-900">Secure Payment</CardTitle>
+          <p className="text-sm text-gray-600 mt-1">Complete your payment to confirm reservation</p>
         </CardHeader>
 
         <CardContent className="space-y-4">
@@ -119,8 +113,7 @@ export default function PaymentPage({ booking, setPopupOpen, payLater }) {
                 <div>
                   <h4 className="text-sm font-medium mb-1">Reservation Fee</h4>
                   <p className="text-xs text-gray-600">
-                    Pay ₦1,000 now to secure your reservation. Meal payment due
-                    at venue.
+                    Pay ₦1,000 now to secure your reservation. Meal payment due at venue.
                   </p>
                 </div>
               </div>
@@ -135,31 +128,21 @@ export default function PaymentPage({ booking, setPopupOpen, payLater }) {
                   key={index}
                   className={`flex items-center justify-between p-4 border-2 cursor-pointer rounded-lg transition-all ${
                     selectedPayment?.name === method.name
-                      ? "border-[#0A6C6D] bg-[#0A6C6D]/5"
-                      : "border-gray-200 hover:border-gray-300"
+                      ? 'border-[#0A6C6D] bg-[#0A6C6D]/5'
+                      : 'border-gray-200 hover:border-gray-300'
                   }`}
                   onClick={() => setSelectedPayment(method)}
                 >
                   <div className="flex items-center gap-3">
-                    <img
-                      src={method.logo}
-                      alt={method.name}
-                      className="w-8 h-8"
-                    />
+                    <img src={method.logo} alt={method.name} className="w-8 h-8" />
                     <div>
-                      <span className="text-sm font-medium text-gray-900 block">
-                        {method.name}
-                      </span>
-                      <span className="text-xs text-gray-500">
-                        {method.description}
-                      </span>
+                      <span className="text-sm font-medium text-gray-900 block">{method.name}</span>
+                      <span className="text-xs text-gray-500">{method.description}</span>
                     </div>
                   </div>
                   <div
                     className={`w-5 h-5 shrink-0 rounded-full border-2 flex items-center justify-center ${
-                      selectedPayment?.name === method.name
-                        ? "border-[#0A6C6D]"
-                        : "border-gray-300"
+                      selectedPayment?.name === method.name ? 'border-[#0A6C6D]' : 'border-gray-300'
                     }`}
                   >
                     {selectedPayment?.name === method.name && (
@@ -203,11 +186,11 @@ export default function PaymentPage({ booking, setPopupOpen, payLater }) {
           </div>
 
           <p className="text-xs text-center text-gray-500 pt-2">
-            By proceeding, you agree to our{" "}
+            By proceeding, you agree to our{' '}
             <a href="/terms" className="text-[#0A6C6D] hover:underline">
               Terms
-            </a>{" "}
-            and{" "}
+            </a>{' '}
+            and{' '}
             <a href="/privacy" className="text-[#0A6C6D] hover:underline">
               Privacy Policy
             </a>

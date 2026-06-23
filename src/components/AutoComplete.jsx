@@ -1,11 +1,11 @@
-import { useEffect, useRef, useState } from "react";
-import { MapPin, Flame, Star, Bell, Clock, Search } from "lucide-react";
-import { restaurantService } from "@/services/rest.services";
+import { useEffect, useRef, useState } from 'react';
+import { MapPin, Flame, Star, Bell, Clock, Search } from 'lucide-react';
+import { restaurantService } from '@/services/rest.services';
 
 export const SearchAutocomplete = ({
   value,
   onChange,
-  placeholder = "Enter Restaurant or Cuisine",
+  placeholder = 'Enter Restaurant or Cuisine',
   onSelect,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -16,34 +16,34 @@ export const SearchAutocomplete = ({
 
   const suggestionCategories = {
     nearby: {
-      title: "Nearby ",
+      title: 'Nearby ',
       icon: <MapPin className="w-4 h-4" />,
-      iconBgColor: "bg-blue-50",
-      iconColor: "text-blue-600",
+      iconBgColor: 'bg-blue-50',
+      iconColor: 'text-blue-600',
     },
     popular: {
-      title: "Popular ",
+      title: 'Popular ',
       icon: <Flame className="w-4 h-4" />,
-      iconBgColor: "bg-red-50",
-      iconColor: "text-red-500",
+      iconBgColor: 'bg-red-50',
+      iconColor: 'text-red-500',
     },
     topRated: {
-      title: "Top-Rated ",
+      title: 'Top-Rated ',
       icon: <Star className="w-4 h-4" />,
-      iconBgColor: "bg-yellow-50",
-      iconColor: "text-yellow-600",
+      iconBgColor: 'bg-yellow-50',
+      iconColor: 'text-yellow-600',
     },
     trending: {
-      title: "Trending Now",
+      title: 'Trending Now',
       icon: <Bell className="w-4 h-4" />,
-      iconBgColor: "bg-purple-50",
-      iconColor: "text-purple-500",
+      iconBgColor: 'bg-purple-50',
+      iconColor: 'text-purple-500',
     },
     recentlyViewed: {
-      title: "Recently Viewed",
+      title: 'Recently Viewed',
       icon: <Clock className="w-4 h-4" />,
-      iconBgColor: "bg-gray-50",
-      iconColor: "text-gray-600",
+      iconBgColor: 'bg-gray-50',
+      iconColor: 'text-gray-600',
     },
   };
 
@@ -51,20 +51,20 @@ export const SearchAutocomplete = ({
     const fetchSuggestions = async () => {
       setIsLoading(true);
       try {
-        const location = localStorage.getItem("userLocation");
+        const location = localStorage.getItem('userLocation');
         const loc = JSON.parse(location);
-        console.log("User location from localStorage:", loc);
+        console.log('User location from localStorage:', loc);
         const res = await restaurantService.getSuggestions({
           lat: loc.lat,
           lng: loc.lng,
         });
-        console.log("Full API response:", res);
+        console.log('Full API response:', res);
 
         // Safely extract the correct layer
         const fetched = res?.data?.data || res?.data || {};
         setSuggestions(fetched);
       } catch (error) {
-        console.error("Error fetching suggestions:", error);
+        console.error('Error fetching suggestions:', error);
       } finally {
         setIsLoading(false);
       }
@@ -81,8 +81,8 @@ export const SearchAutocomplete = ({
       }
     };
 
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   const handleInputChange = (e) => {
@@ -118,7 +118,7 @@ export const SearchAutocomplete = ({
   // ✅ Calculate total count
   const totalCount = Object.values(groupedSuggestions).reduce(
     (sum, arr) => sum + (Array.isArray(arr) ? arr.length : 0),
-    0,
+    0
   );
   return (
     <div className="relative w-full z-30" ref={dropdownRef}>
@@ -137,15 +137,13 @@ export const SearchAutocomplete = ({
           {isLoading ? (
             <div className="p-6 text-center">
               <div className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-solid border-blue-600 border-r-transparent"></div>
-              <p className="mt-2 text-sm text-gray-500">
-                Loading suggestions...
-              </p>
+              <p className="mt-2 text-sm text-gray-500">Loading suggestions...</p>
             </div>
           ) : totalCount === 0 ? ( // ✅ Check total count
             <div className="p-6 text-center">
               <Search className="w-8 h-8 text-gray-300 mx-auto mb-2" />
               <p className="text-sm text-gray-500">
-                {value ? "No restaurants found" : "Start typing to search"}
+                {value ? 'No restaurants found' : 'Start typing to search'}
               </p>
             </div>
           ) : (
@@ -154,69 +152,62 @@ export const SearchAutocomplete = ({
                 Suggestions
               </h3>
 
-              {Object.entries(groupedSuggestions).map(
-                ([category, restaurants]) => {
-                  // ✅ Skip empty categories
-                  if (!Array.isArray(restaurants) || restaurants.length === 0)
-                    return null;
+              {Object.entries(groupedSuggestions).map(([category, restaurants]) => {
+                // ✅ Skip empty categories
+                if (!Array.isArray(restaurants) || restaurants.length === 0) return null;
 
-                  const categoryConfig =
-                    suggestionCategories[category] ||
-                    suggestionCategories.nearby;
+                const categoryConfig =
+                  suggestionCategories[category] || suggestionCategories.nearby;
 
-                  return (
-                    <div key={category} className="mb-3 last:mb-0">
-                      <div className="flex items-center gap-2 mb-2 px-2">
-                        <div
-                          className={`w-8 h-8 rounded-lg ${categoryConfig.iconBgColor} flex items-center justify-center ${categoryConfig.iconColor}`}
-                        >
-                          {categoryConfig.icon}
-                        </div>
-                        <h4 className="text-sm font-medium text-gray-700">
-                          {categoryConfig.title}
-                        </h4>
+                return (
+                  <div key={category} className="mb-3 last:mb-0">
+                    <div className="flex items-center gap-2 mb-2 px-2">
+                      <div
+                        className={`w-8 h-8 rounded-lg ${categoryConfig.iconBgColor} flex items-center justify-center ${categoryConfig.iconColor}`}
+                      >
+                        {categoryConfig.icon}
                       </div>
-
-                      <div className="space-y-0.5">
-                        {restaurants.map((restaurant) => (
-                          <button
-                            key={restaurant._id} // ✅ Changed from 'id' to '_id'
-                            onClick={() => handleRestaurantClick(restaurant)}
-                            className="w-full text-left px-3 py-2.5 hover:bg-gray-50 rounded-lg transition-colors duration-150 group"
-                          >
-                            <div className="flex items-center justify-between">
-                              <div className="flex-1 min-w-0">
-                                <span className="text-sm text-gray-700 group-hover:text-gray-900 font-medium">
-                                  {restaurant.businessName}{" "}
-                                  {/* ✅ Changed from 'name' */}
-                                </span>
-                                {restaurant.location && (
-                                  <span className="text-sm text-gray-500 ml-1">
-                                    • {restaurant.location}
-                                  </span>
-                                )}
-                              </div>
-                              <svg
-                                className="w-4 h-4 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 ml-2"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M9 5l7 7-7 7"
-                                />
-                              </svg>
-                            </div>
-                          </button>
-                        ))}
-                      </div>
+                      <h4 className="text-sm font-medium text-gray-700">{categoryConfig.title}</h4>
                     </div>
-                  );
-                },
-              )}
+
+                    <div className="space-y-0.5">
+                      {restaurants.map((restaurant) => (
+                        <button
+                          key={restaurant._id} // ✅ Changed from 'id' to '_id'
+                          onClick={() => handleRestaurantClick(restaurant)}
+                          className="w-full text-left px-3 py-2.5 hover:bg-gray-50 rounded-lg transition-colors duration-150 group"
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex-1 min-w-0">
+                              <span className="text-sm text-gray-700 group-hover:text-gray-900 font-medium">
+                                {restaurant.businessName} {/* ✅ Changed from 'name' */}
+                              </span>
+                              {restaurant.location && (
+                                <span className="text-sm text-gray-500 ml-1">
+                                  • {restaurant.location}
+                                </span>
+                              )}
+                            </div>
+                            <svg
+                              className="w-4 h-4 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 ml-2"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M9 5l7 7-7 7"
+                              />
+                            </svg>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>

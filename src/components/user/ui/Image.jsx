@@ -1,27 +1,24 @@
-import React, { useState } from "react";
-import { ChevronLeft, ChevronRight, X } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
+import React, { useState } from 'react';
+import { ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 
-const Images = ({
-  images,
-  name
-}) => {
+const Images = ({ images, name }) => {
   const [showImageModal, setShowImageModal] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   const imageStyle = (i) => {
     switch (i) {
       case 0:
-        return "row-span-5 col-span-2";
+        return 'row-span-5 col-span-2';
       case 1:
-        return "row-span-2";
+        return 'row-span-2';
       case 2:
-        return "row-span-3";
+        return 'row-span-3';
       case 3:
-        return "row-span-3";
+        return 'row-span-3';
       case 4:
-        return "row-span-2";
+        return 'row-span-2';
       default:
         break;
     }
@@ -42,10 +39,10 @@ const Images = ({
         {images.slice(0, 5).map((image, i) => (
           <div key={i} className={`relative ${imageStyle(i)}`}>
             <img
-              src={image || "/hero-bg.png"}
+              src={image || '/hero-bg.png'}
               className="object-cover cursor-pointer hover:opacity-80 duration-300 size-full"
               alt={`${name} Image ${i + 1}`}
-            //   fill
+              //   fill
               onClick={() => {
                 setCurrentImageIndex(i);
                 setShowImageModal(true);
@@ -57,7 +54,7 @@ const Images = ({
       {showImageModal && (
         <div
           className={cn(
-            "fixed inset-0 z-90 hidden md:flex items-center justify-center p-2 h-screen w-full sm:p-4 backdrop-blur-sm bg-black/80"
+            'fixed inset-0 z-90 hidden md:flex items-center justify-center p-2 h-screen w-full sm:p-4 backdrop-blur-sm bg-black/80'
           )}
         >
           <button
@@ -82,7 +79,7 @@ const Images = ({
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
                 onError={(e) => {
                   const img = e.target;
-                  img.src = "/public/fallback-image.jpg";
+                  img.src = '/public/fallback-image.jpg';
                 }}
               />
             </div>
@@ -93,9 +90,7 @@ const Images = ({
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      setCurrentImageIndex((prev) =>
-                        prev === 0 ? images.length - 1 : prev - 1
-                      );
+                      setCurrentImageIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
                     }}
                     className="absolute left-2 sm:left-4 top-1/2 cursor-pointer -translate-y-1/2 p-2 sm:p-3 rounded-full bg-white/10 hover:bg-white/20 transition-colors backdrop-blur-sm"
                   >
@@ -106,9 +101,7 @@ const Images = ({
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      setCurrentImageIndex((prev) =>
-                        prev === images.length - 1 ? 0 : prev + 1
-                      );
+                      setCurrentImageIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
                     }}
                     className="absolute right-2 sm:right-4 top-1/2 cursor-pointer -translate-y-1/2 p-2 sm:p-3 rounded-full bg-white/10 hover:bg-white/20 transition-colors backdrop-blur-sm"
                   >

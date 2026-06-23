@@ -6,7 +6,7 @@ export default function AdminProtectedRoute() {
   const location = useLocation();
 
   // Check if user is authenticated as admin and has a valid token
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem('token');
   if (!admin || !token) {
     // Redirect to admin login with return URL
     const returnUrl = encodeURIComponent(location.pathname + location.search);

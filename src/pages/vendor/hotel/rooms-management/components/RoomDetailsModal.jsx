@@ -1,7 +1,6 @@
 // import { Edit, Eye, Trash2, X } from 'lucide-react';
 // import { useState } from 'react';
 
-
 // const RoomDetailsModal = ({ room, isOpen, onClose, onEdit, onDelete,  onViewImages }) => {
 //   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
@@ -36,7 +35,7 @@
 //   };
 // console.log(room._id)
 //   return (
-//     <div className="fixed inset-0 bg-black/60  flex items-center justify-center p-4 z-50 hide-scrollbar"> 
+//     <div className="fixed inset-0 bg-black/60  flex items-center justify-center p-4 z-50 hide-scrollbar">
 //       <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
 //         <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center z-10">
 //           <h2 className="text-2xl font-bold text-gray-900">Room Details</h2>
@@ -236,7 +235,21 @@
 
 // export default RoomDetailsModal;
 
-import { Edit, Eye, Trash2, X, Users, Tag, CalendarDays, RefreshCw, BedDouble, Percent, Wrench, CheckCircle2, XCircle } from 'lucide-react';
+import {
+  Edit,
+  Eye,
+  Trash2,
+  X,
+  Users,
+  Tag,
+  CalendarDays,
+  RefreshCw,
+  BedDouble,
+  Percent,
+  Wrench,
+  CheckCircle2,
+  XCircle,
+} from 'lucide-react';
 import { useState } from 'react';
 
 const RoomDetailsModal = ({ room, isOpen, onClose, onEdit, onDelete, onViewImages }) => {
@@ -250,22 +263,18 @@ const RoomDetailsModal = ({ room, isOpen, onClose, onEdit, onDelete, onViewImage
     room.maintenanceStatus === 'maintenance'
       ? 'Maintenance'
       : room.isAvailable
-      ? 'Available'
-      : 'Occupied';
+        ? 'Available'
+        : 'Occupied';
 
   const statusStyle =
     room.maintenanceStatus === 'maintenance'
       ? 'bg-amber-50 text-amber-700 border-amber-200'
       : room.isAvailable
-      ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-      : 'bg-red-50 text-red-600 border-red-200';
+        ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+        : 'bg-red-50 text-red-600 border-red-200';
 
   const StatusIcon =
-    room.maintenanceStatus === 'maintenance'
-      ? Wrench
-      : room.isAvailable
-      ? CheckCircle2
-      : XCircle;
+    room.maintenanceStatus === 'maintenance' ? Wrench : room.isAvailable ? CheckCircle2 : XCircle;
 
   const handlePrevImage = () =>
     setCurrentImageIndex((p) => (p === 0 ? (room.images?.length || 1) - 1 : p - 1));
@@ -276,7 +285,6 @@ const RoomDetailsModal = ({ room, isOpen, onClose, onEdit, onDelete, onViewImage
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-2xl w-full max-w-3xl max-h-[92vh] overflow-y-auto shadow-2xl">
-
         {/* ── Header ── */}
         <div className="sticky top-0 bg-white/95 backdrop-blur-sm border-b border-gray-100 px-6 py-4 flex justify-between items-center z-10 rounded-t-2xl">
           <div>
@@ -285,19 +293,23 @@ const RoomDetailsModal = ({ room, isOpen, onClose, onEdit, onDelete, onViewImage
               {room.type && (
                 <span className="text-xs text-gray-400 capitalize">{room.type} room</span>
               )}
-              <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold border ${statusStyle}`}>
+              <span
+                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold border ${statusStyle}`}
+              >
                 <StatusIcon className="w-2.5 h-2.5" />
                 {statusLabel}
               </span>
             </div>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-500">
+          <button
+            onClick={onClose}
+            className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-500"
+          >
             <X size={20} />
           </button>
         </div>
 
         <div className="p-6 space-y-6">
-
           {/* ── Image carousel ── */}
           {room.images && room.images.length > 0 ? (
             <div className="relative h-64 sm:h-80 rounded-xl overflow-hidden bg-gray-100">
@@ -308,15 +320,37 @@ const RoomDetailsModal = ({ room, isOpen, onClose, onEdit, onDelete, onViewImage
               />
               {room.images.length > 1 && (
                 <>
-                  <button onClick={handlePrevImage} className="absolute left-3 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white p-2 rounded-full shadow-md transition-all">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+                  <button
+                    onClick={handlePrevImage}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white p-2 rounded-full shadow-md transition-all"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M15 19l-7-7 7-7"
+                      />
+                    </svg>
                   </button>
-                  <button onClick={handleNextImage} className="absolute right-3 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white p-2 rounded-full shadow-md transition-all">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                  <button
+                    onClick={handleNextImage}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white p-2 rounded-full shadow-md transition-all"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 5l7 7-7 7"
+                      />
+                    </svg>
                   </button>
                   <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
                     {room.images.map((_, idx) => (
-                      <button key={idx} onClick={() => setCurrentImageIndex(idx)}
+                      <button
+                        key={idx}
+                        onClick={() => setCurrentImageIndex(idx)}
                         className={`h-1.5 rounded-full transition-all duration-200 ${idx === currentImageIndex ? 'bg-white w-5' : 'bg-white/50 w-1.5'}`}
                       />
                     ))}
@@ -336,18 +370,25 @@ const RoomDetailsModal = ({ room, isOpen, onClose, onEdit, onDelete, onViewImage
           {/* ── Price + Discount ── */}
           <div className="grid grid-cols-2 gap-3">
             <div className="bg-[#f0fafa] border border-[#cce8e8] rounded-xl px-4 py-3.5">
-              <p className="text-[11px] font-semibold uppercase tracking-widest text-[#0A6C6D]/60 mb-1">Price / Night</p>
+              <p className="text-[11px] font-semibold uppercase tracking-widest text-[#0A6C6D]/60 mb-1">
+                Price / Night
+              </p>
               <p className="text-2xl font-extrabold text-[#0A6C6D]">
                 ₦{(room.pricePerNight || 0).toLocaleString()}
               </p>
               {room.discount > 0 && (
                 <p className="text-xs text-[#0A6C6D]/60 mt-0.5 line-through">
-                  ₦{Math.round((room.pricePerNight || 0) / (1 - room.discount / 100)).toLocaleString()}
+                  ₦
+                  {Math.round(
+                    (room.pricePerNight || 0) / (1 - room.discount / 100)
+                  ).toLocaleString()}
                 </p>
               )}
             </div>
             <div className="bg-gray-50 border border-gray-100 rounded-xl px-4 py-3.5">
-              <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 mb-1">Discount</p>
+              <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 mb-1">
+                Discount
+              </p>
               <p className="text-2xl font-extrabold text-gray-800">
                 {room.discount ?? 0}
                 <span className="text-base font-semibold text-gray-400 ml-0.5">%</span>
@@ -363,7 +404,9 @@ const RoomDetailsModal = ({ room, isOpen, onClose, onEdit, onDelete, onViewImage
                 <Users className="w-4 h-4 text-[#0A6C6D]" />
               </div>
               <div>
-                <p className="text-[10px] text-gray-400 font-semibold uppercase tracking-wider">Capacity</p>
+                <p className="text-[10px] text-gray-400 font-semibold uppercase tracking-wider">
+                  Capacity
+                </p>
                 <p className="text-sm font-bold text-gray-800">{totalCapacity} guests</p>
               </div>
             </div>
@@ -374,7 +417,9 @@ const RoomDetailsModal = ({ room, isOpen, onClose, onEdit, onDelete, onViewImage
                 <BedDouble className="w-4 h-4 text-[#0A6C6D]" />
               </div>
               <div>
-                <p className="text-[10px] text-gray-400 font-semibold uppercase tracking-wider">Adults</p>
+                <p className="text-[10px] text-gray-400 font-semibold uppercase tracking-wider">
+                  Adults
+                </p>
                 <p className="text-sm font-bold text-gray-800">{room.adultsCapacity ?? 0}</p>
               </div>
             </div>
@@ -385,7 +430,9 @@ const RoomDetailsModal = ({ room, isOpen, onClose, onEdit, onDelete, onViewImage
                 <Users className="w-4 h-4 text-[#0A6C6D]" />
               </div>
               <div>
-                <p className="text-[10px] text-gray-400 font-semibold uppercase tracking-wider">Children</p>
+                <p className="text-[10px] text-gray-400 font-semibold uppercase tracking-wider">
+                  Children
+                </p>
                 <p className="text-sm font-bold text-gray-800">{room.childrenCapacity ?? 0}</p>
               </div>
             </div>
@@ -397,7 +444,9 @@ const RoomDetailsModal = ({ room, isOpen, onClose, onEdit, onDelete, onViewImage
                   <Tag className="w-4 h-4 text-[#0A6C6D]" />
                 </div>
                 <div>
-                  <p className="text-[10px] text-gray-400 font-semibold uppercase tracking-wider">Total Units</p>
+                  <p className="text-[10px] text-gray-400 font-semibold uppercase tracking-wider">
+                    Total Units
+                  </p>
                   <p className="text-sm font-bold text-gray-800">{room.totalUnits}</p>
                 </div>
               </div>
@@ -410,8 +459,12 @@ const RoomDetailsModal = ({ room, isOpen, onClose, onEdit, onDelete, onViewImage
                   <BedDouble className="w-4 h-4 text-[#0A6C6D]" />
                 </div>
                 <div>
-                  <p className="text-[10px] text-gray-400 font-semibold uppercase tracking-wider">Room Type</p>
-                  <p className="text-sm font-bold text-gray-800 capitalize">{room.roomType || room.type}</p>
+                  <p className="text-[10px] text-gray-400 font-semibold uppercase tracking-wider">
+                    Room Type
+                  </p>
+                  <p className="text-sm font-bold text-gray-800 capitalize">
+                    {room.roomType || room.type}
+                  </p>
                 </div>
               </div>
             )}
@@ -422,8 +475,12 @@ const RoomDetailsModal = ({ room, isOpen, onClose, onEdit, onDelete, onViewImage
                 <Wrench className="w-4 h-4 text-[#0A6C6D]" />
               </div>
               <div>
-                <p className="text-[10px] text-gray-400 font-semibold uppercase tracking-wider">Status</p>
-                <p className="text-sm font-bold text-gray-800 capitalize">{room.maintenanceStatus || 'Available'}</p>
+                <p className="text-[10px] text-gray-400 font-semibold uppercase tracking-wider">
+                  Status
+                </p>
+                <p className="text-sm font-bold text-gray-800 capitalize">
+                  {room.maintenanceStatus || 'Available'}
+                </p>
               </div>
             </div>
           </div>
@@ -431,7 +488,9 @@ const RoomDetailsModal = ({ room, isOpen, onClose, onEdit, onDelete, onViewImage
           {/* ── Description ── */}
           {room.description && (
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 mb-2">Description</p>
+              <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 mb-2">
+                Description
+              </p>
               <p className="text-sm text-gray-600 leading-relaxed bg-gray-50 rounded-xl p-4 border border-gray-100">
                 {room.description}
               </p>
@@ -442,11 +501,15 @@ const RoomDetailsModal = ({ room, isOpen, onClose, onEdit, onDelete, onViewImage
           {room.amenities && room.amenities.length > 0 && (
             <div>
               <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 mb-3">
-                Amenities <span className="text-gray-300 font-normal ml-1">({room.amenities.length})</span>
+                Amenities{' '}
+                <span className="text-gray-300 font-normal ml-1">({room.amenities.length})</span>
               </p>
               <div className="flex flex-wrap gap-2">
                 {room.amenities.map((amenity) => (
-                  <span key={amenity} className="px-3 py-1.5 bg-[#f0fafa] text-[#0A6C6D] text-xs font-medium rounded-full border border-[#cce8e8]">
+                  <span
+                    key={amenity}
+                    className="px-3 py-1.5 bg-[#f0fafa] text-[#0A6C6D] text-xs font-medium rounded-full border border-[#cce8e8]"
+                  >
                     {amenity}
                   </span>
                 ))}
@@ -460,13 +523,23 @@ const RoomDetailsModal = ({ room, isOpen, onClose, onEdit, onDelete, onViewImage
               {room.createdAt && (
                 <div className="flex items-center gap-1.5 text-xs text-gray-400">
                   <CalendarDays className="w-3.5 h-3.5" />
-                  Created {new Date(room.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                  Created{' '}
+                  {new Date(room.createdAt).toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric',
+                  })}
                 </div>
               )}
               {room.updatedAt && (
                 <div className="flex items-center gap-1.5 text-xs text-gray-400">
                   <RefreshCw className="w-3.5 h-3.5" />
-                  Updated {new Date(room.updatedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                  Updated{' '}
+                  {new Date(room.updatedAt).toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric',
+                  })}
                 </div>
               )}
             </div>
@@ -478,20 +551,29 @@ const RoomDetailsModal = ({ room, isOpen, onClose, onEdit, onDelete, onViewImage
           <div className="flex items-center gap-2">
             {room.images && room.images.length > 0 && (
               <button
-                onClick={() => { onViewImages(room); onClose(); }}
+                onClick={() => {
+                  onViewImages(room);
+                  onClose();
+                }}
                 className="flex items-center gap-1.5 px-3 py-2 text-sm text-gray-600 hover:text-[#0A6C6D] hover:bg-[#f0fafa] border border-gray-200 hover:border-[#cce8e8] rounded-lg transition-all"
               >
                 <Eye size={14} /> Photos
               </button>
             )}
             <button
-              onClick={() => { onEdit(room); onClose(); }}
+              onClick={() => {
+                onEdit(room);
+                onClose();
+              }}
               className="flex items-center gap-1.5 px-3 py-2 text-sm text-gray-600 hover:text-[#0A6C6D] hover:bg-[#f0fafa] border border-gray-200 hover:border-[#cce8e8] rounded-lg transition-all"
             >
               <Edit size={14} /> Edit
             </button>
             <button
-              onClick={() => { onDelete(room._id); onClose(); }}
+              onClick={() => {
+                onDelete(room._id);
+                onClose();
+              }}
               className="flex items-center gap-1.5 px-3 py-2 text-sm text-red-500 hover:text-red-600 hover:bg-red-50 border border-gray-200 hover:border-red-200 rounded-lg transition-all"
             >
               <Trash2 size={14} /> Delete

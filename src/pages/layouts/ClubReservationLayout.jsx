@@ -1,6 +1,6 @@
-import { ReservationsProvider } from "@/contexts/club/ReservationContext";
-import React from "react";
-import { Outlet } from "react-router";
+import { ReservationsProvider } from '@/contexts/club/ReservationContext';
+import React from 'react';
+import { Outlet } from 'react-router';
 
 const ReservationLayout = () => {
   return (

@@ -1,21 +1,20 @@
-"use client";
+'use client';
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { MapPin, Upload, X } from "lucide-react";
-import { useState } from "react";
+} from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { MapPin, Upload, X } from 'lucide-react';
+import { useState } from 'react';
 
-
-export function HotelSetupForm ({ formData, setFormData }) {
+export function HotelSetupForm({ formData, setFormData }) {
   const [previewUrls, setPreviewUrls] = useState([]);
   const [dragActive, setDragActive] = useState(false);
 
@@ -31,9 +30,9 @@ export function HotelSetupForm ({ formData, setFormData }) {
   const handleDrag = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    if (e.type === "dragenter" || e.type === "dragover") {
+    if (e.type === 'dragenter' || e.type === 'dragover') {
       setDragActive(true);
-    } else if (e.type === "dragleave") {
+    } else if (e.type === 'dragleave') {
       setDragActive(false);
     }
   };
@@ -49,10 +48,7 @@ export function HotelSetupForm ({ formData, setFormData }) {
         ...formData,
         images: [...(formData.images || []), ...newFiles],
       });
-      setPreviewUrls((prev) => [
-        ...prev,
-        ...newFiles.map((f) => URL.createObjectURL(f)),
-      ]);
+      setPreviewUrls((prev) => [...prev, ...newFiles.map((f) => URL.createObjectURL(f))]);
     }
   };
 
@@ -63,10 +59,7 @@ export function HotelSetupForm ({ formData, setFormData }) {
         ...formData,
         images: [...(formData.images || []), ...newFiles],
       });
-      setPreviewUrls((prev) => [
-        ...prev,
-        ...newFiles.map((f) => URL.createObjectURL(f)),
-      ]);
+      setPreviewUrls((prev) => [...prev, ...newFiles.map((f) => URL.createObjectURL(f))]);
     }
   };
 
@@ -90,24 +83,30 @@ export function HotelSetupForm ({ formData, setFormData }) {
         <div className="space-y-6 rounded-lg border p-8 bg-white">
           {/* Hotel Name */}
           <div className="space-y-2">
-            <Label htmlFor="hotelName">Hotel name<span className="text-red-500">*</span></Label>
+            <Label htmlFor="hotelName">
+              Hotel name<span className="text-red-500">*</span>
+            </Label>
             <Input
               id="hotelName"
               placeholder="Enter hotel name"
               value={formData.hotelName}
-              onChange={(e) => handleInputChange("hotelName", e.target.value)}
+              onChange={(e) => handleInputChange('hotelName', e.target.value)}
             />
           </div>
 
           {/* Phone Number */}
           <div className="space-y-2">
-            <Label htmlFor="phoneNumber">Phone Number<span className="text-red-500">*</span></Label>
+            <Label htmlFor="phoneNumber">
+              Phone Number<span className="text-red-500">*</span>
+            </Label>
             <div className="flex gap-2">
               <Select
                 value={formData.countryCode}
-                onValueChange={(value) => handleInputChange("countryCode", value)}
+                onValueChange={(value) => handleInputChange('countryCode', value)}
               >
-                <SelectTrigger className="w-20"><SelectValue /></SelectTrigger>
+                <SelectTrigger className="w-20">
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="+234">+234</SelectItem>
                   <SelectItem value="+1">+1</SelectItem>
@@ -118,7 +117,7 @@ export function HotelSetupForm ({ formData, setFormData }) {
               <Input
                 id="phoneNumber"
                 value={formData.phoneNumber}
-                onChange={(e) => handleInputChange("phoneNumber", e.target.value)}
+                onChange={(e) => handleInputChange('phoneNumber', e.target.value)}
                 className="flex-1"
               />
             </div>
@@ -126,25 +125,29 @@ export function HotelSetupForm ({ formData, setFormData }) {
 
           {/* Email */}
           <div className="space-y-2">
-            <Label htmlFor="emailAddress">Email Address<span className="text-red-500">*</span></Label>
+            <Label htmlFor="emailAddress">
+              Email Address<span className="text-red-500">*</span>
+            </Label>
             <Input
               id="emailAddress"
               type="email"
               placeholder="Enter email address"
               value={formData.emailAddress}
-              onChange={(e) => handleInputChange("emailAddress", e.target.value)}
+              onChange={(e) => handleInputChange('emailAddress', e.target.value)}
             />
           </div>
 
           {/* Address */}
           <div className="space-y-2">
-            <Label htmlFor="address">Address<span className="text-red-500">*</span></Label>
+            <Label htmlFor="address">
+              Address<span className="text-red-500">*</span>
+            </Label>
             <div className="relative">
               <Input
                 id="address"
                 placeholder="Search for address"
                 value={formData.address}
-                onChange={(e) => handleInputChange("address", e.target.value)}
+                onChange={(e) => handleInputChange('address', e.target.value)}
                 className="pr-10"
               />
               <MapPin className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -155,36 +158,41 @@ export function HotelSetupForm ({ formData, setFormData }) {
           <Textarea
             placeholder="Additional address detail"
             value={formData.additionalAddressDetail}
-            onChange={(e) => handleInputChange("additionalAddressDetail", e.target.value)}
+            onChange={(e) => handleInputChange('additionalAddressDetail', e.target.value)}
             className="min-h-[80px] resize-none"
           />
 
           {/* Branch Code */}
           <div className="space-y-2">
-            <Label htmlFor="branchCode">Branch Code<span className="text-red-500">*</span></Label>
+            <Label htmlFor="branchCode">
+              Branch Code<span className="text-red-500">*</span>
+            </Label>
             <div className="flex gap-2">
               <Input id="branchCode" value={formData.branchCode} readOnly className="flex-1" />
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => handleInputChange("branchCode", `HTL-${Math.floor(Math.random() * 100000)}`)}
+                onClick={() =>
+                  handleInputChange('branchCode', `HTL-${Math.floor(Math.random() * 100000)}`)
+                }
               >
                 Edit
               </Button>
             </div>
           </div>
-
-
         </div>
 
         {/* Right Column */}
         <div className="space-y-6 rounded-lg border p-8 bg-white h-max">
           {/* Multiple Images Upload */}
           <div className="space-y-2">
-            <Label>Logo/Cover Image <span className="text-gray-400">(Optional)</span></Label>
+            <Label>
+              Logo/Cover Image <span className="text-gray-400">(Optional)</span>
+            </Label>
             <div
-              className={`border-2 border-dashed rounded-lg p-6 text-center ${dragActive ? "border-teal-500 bg-teal-50" : "border-gray-300"
-                }`}
+              className={`border-2 border-dashed rounded-lg p-6 text-center ${
+                dragActive ? 'border-teal-500 bg-teal-50' : 'border-gray-300'
+              }`}
               onDragEnter={handleDrag}
               onDragLeave={handleDrag}
               onDragOver={handleDrag}
@@ -192,14 +200,12 @@ export function HotelSetupForm ({ formData, setFormData }) {
             >
               <div className="flex flex-col items-center gap-3">
                 <Upload className="h-8 w-8 text-gray-400" />
-                <p className="text-gray-600 text-sm">
-                  Drag and drop images here, or
-                </p>
+                <p className="text-gray-600 text-sm">Drag and drop images here, or</p>
                 <Button
                   type="button"
                   variant="ghost"
                   size="sm"
-                  onClick={() => document.getElementById("fileInput")?.click()}
+                  onClick={() => document.getElementById('fileInput')?.click()}
                 >
                   Browse Files
                 </Button>
@@ -211,9 +217,7 @@ export function HotelSetupForm ({ formData, setFormData }) {
                   onChange={handleFileSelect}
                   className="hidden"
                 />
-                <p className="text-xs text-gray-500">
-                  JPG, PNG OR GIF • Max 5MB each
-                </p>
+                <p className="text-xs text-gray-500">JPG, PNG OR GIF • Max 5MB each</p>
               </div>
             </div>
 
@@ -242,12 +246,16 @@ export function HotelSetupForm ({ formData, setFormData }) {
 
           {/* Hotel Type */}
           <div className="space-y-2">
-            <Label>Hotel Type<span className="text-red-500">*</span></Label>
+            <Label>
+              Hotel Type<span className="text-red-500">*</span>
+            </Label>
             <Select
               value={formData.hotelType}
-              onValueChange={(value) => handleInputChange("hotelType", value)}
+              onValueChange={(value) => handleInputChange('hotelType', value)}
             >
-              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="Apartment">Apartment</SelectItem>
                 <SelectItem value="Hotel">Hotel</SelectItem>
@@ -261,26 +269,22 @@ export function HotelSetupForm ({ formData, setFormData }) {
           <div className="space-y-3">
             <Label>Hotel category</Label>
             <div className="flex gap-2">
-              {(["Standard", "Luxury", "Business"]).map(
-                (category) => (
-                  <Button
-                    key={category}
-                    type="button"
-                    variant={
-                      formData.hotelCategory === category ? "default" : "outline"
-                    }
-                    size="sm"
-                    onClick={() => handleCategorySelect(category)}
-                    className={
-                      formData.hotelCategory === category
-                        ? "bg-teal-100 text-teal-700 border-teal-200"
-                        : "text-gray-600"
-                    }
-                  >
-                    {category}
-                  </Button>
-                )
-              )}
+              {['Standard', 'Luxury', 'Business'].map((category) => (
+                <Button
+                  key={category}
+                  type="button"
+                  variant={formData.hotelCategory === category ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => handleCategorySelect(category)}
+                  className={
+                    formData.hotelCategory === category
+                      ? 'bg-teal-100 text-teal-700 border-teal-200'
+                      : 'text-gray-600'
+                  }
+                >
+                  {category}
+                </Button>
+              ))}
             </div>
           </div>
         </div>

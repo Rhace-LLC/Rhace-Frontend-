@@ -1,20 +1,15 @@
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-} from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { setAdmin, setVendor } from "@/redux/slices/authSlice";
-import { authService } from "@/services/auth.service";
-import { Eye, EyeOff, Loader2 } from "lucide-react";
-import { useState } from "react";
-import { useDispatch } from "react-redux";
-import { useNavigate, useSearchParams } from "react-router";
-import { toast } from "react-toastify";
-import HeroImage from "../../../components/auth/HeroImage";
-import logo from "../../../public/images/Rhace-11.png";
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import { setAdmin, setVendor } from '@/redux/slices/authSlice';
+import { authService } from '@/services/auth.service';
+import { Eye, EyeOff, Loader2 } from 'lucide-react';
+import { useState } from 'react';
+import { useDispatch } from 'react-redux';
+import { useNavigate, useSearchParams } from 'react-router';
+import { toast } from 'react-toastify';
+import HeroImage from '../../../components/auth/HeroImage';
+import logo from '../../../public/images/Rhace-11.png';
 
 const getCurrentYear = () => new Date().getFullYear();
 
@@ -24,54 +19,58 @@ const Login = () => {
   const [isLoading, setIsloading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState({
-    email: "",
-    password: "",
+    email: '',
+    password: '',
   });
   const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-    role: "vendor", // default to vendor
+    email: '',
+    password: '',
+    role: 'vendor', // default to vendor
   });
 
   const [searchParams] = useSearchParams();
-  const redirectTo = searchParams.get("redirect") || "/dashboard";
+  const redirectTo = searchParams.get('redirect') || '/dashboard';
 
   const handleLogin = async () => {
     try {
       if (!formValidation()) {
         return;
       }
-      setError({ email: "", password: "" });
+      setError({ email: '', password: '' });
       setIsloading(true);
       let user;
-      if (formData.role === "admin") {
+      if (formData.role === 'admin') {
         user = await authService.adminLogin(formData.email, formData.password);
         dispatch(setAdmin(user?.vendor)); // assuming backend returns admin in vendor field
-        toast.success("Welcome back, Admin!");
-        navigate("/admin/dashboard");
+        toast.success('Welcome back, Admin!');
+        navigate('/admin/dashboard');
       } else {
         user = await authService.vendorLogin(formData.email, formData.password);
         dispatch(setVendor(user?.vendor));
-        localStorage.setItem("vendorId", user?.vendor?._id || user?.vendor?.id);
-        toast.success("Welcome back!");
+        localStorage.setItem('vendorId', user?.vendor?._id || user?.vendor?.id);
+        toast.success('Welcome back!');
         const vendorData = user.vendor;
 
         const dashboardPath = `/dashboard/${vendorData.vendorType}`;
         if (!vendorData.isOnboarded) {
-          navigate("/auth/vendor/onboarding");
+          navigate('/auth/vendor/onboarding');
         } else {
-          navigate(redirectTo === "/dashboard" ? dashboardPath : dashboardPath);
+          navigate(redirectTo === '/dashboard' ? dashboardPath : dashboardPath);
         }
       }
     } catch (err) {
-      const message = err?.response?.data?.message || "Invalid email or password";
+      const message = err?.response?.data?.message || 'Invalid email or password';
 
       toast.error(message);
       if (
-        err.response?.data?.message ===
-        "Please verify your email with the OTP sent to your inbox."
+        err.response?.data?.message === 'Please verify your email with the OTP sent to your inbox.'
       ) {
-        navigate(`/auth/vendor/otp?email=${formData.email}`);
+        // FIX: Keep the structural URL layout raw, and ONLY encode the raw dynamic email variable
+        const safeEmail = encodeURIComponent(formData.email);
+        authService.vendorResendOTP(formData.email); // Trigger OTP resend to ensure email is sent before navigation
+
+        // Ensure the path starts with an absolute / so it navigates from the domain root
+        navigate(`/auth/vendor/otp?email=${safeEmail}`);
       }
     } finally {
       setIsloading(false);
@@ -80,17 +79,17 @@ const Login = () => {
 
   const formValidation = () => {
     if (!formData.email) {
-      setError((prev) => ({ ...prev, email: "Email is required." }));
+      setError((prev) => ({ ...prev, email: 'Email is required.' }));
       return false;
     }
     if (!formData.password) {
-      setError((prev) => ({ ...prev, password: "Password is required." }));
+      setError((prev) => ({ ...prev, password: 'Password is required.' }));
       return false;
     }
     if (formData.password.length < 6) {
       setError((prev) => ({
         ...prev,
-        password: "Password must be at least 6 characters.",
+        password: 'Password must be at least 6 characters.',
       }));
       return false;
     }
@@ -108,26 +107,17 @@ const Login = () => {
             <CardHeader className="text-center pb-6">
               <div className="flex items-center justify-center gap-2">
                 <a href="/auth/vendor/signup" className="cursor-pointer">
-                  <img
-                    src={logo}
-                    alt="Rhace Logo"
-                    className="w-20 h-20 object-contain"
-                  />
+                  <img src={logo} alt="Rhace Logo" className="w-20 h-20 object-contain" />
                 </a>
               </div>
-              <h1 className="text-2xl font-semibold text-gray-900 mb-2">
-                Welcome Back
-              </h1>
+              <h1 className="text-2xl font-semibold text-gray-900 mb-2">Welcome Back</h1>
               <p className="text-sm text-gray-600">
                 We're glad to see you again. Please log in to your account.
               </p>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label
-                  htmlFor="email"
-                  className="text-sm font-medium text-gray-700"
-                >
+                <Label htmlFor="email" className="text-sm font-medium text-gray-700">
                   Email
                 </Label>
                 <div className="relative">
@@ -137,16 +127,14 @@ const Login = () => {
                     type="email"
                     placeholder="Enter your buisness email"
                     value={formData.email}
-                    onChange={(e) => handleInputChange("email", e.target.value)}
+                    onChange={(e) => handleInputChange('email', e.target.value)}
                     className="w-full h-10 sm:h-12 rounded-md border-gray-100 bg-gray-100 
                           text-black text-sm placeholder-[#a0a3a8]
                           focus:outline-none focus:border-[#0A6C6D] focus:ring-1 focus:ring-[#0A6C6D]
                           hover:border-[#0A6C6D] transition-all duration-300 ease-in-out pl-3"
                   />
                 </div>
-                {error.email && (
-                  <p className="text-sm text-red-600 mt-1">{error.email}</p>
-                )}
+                {error.email && <p className="text-sm text-red-600 mt-1">{error.email}</p>}
               </div>
               {/* <div className="space-y-2">
                 <Label htmlFor="role" className="text-sm font-medium text-gray-700">
@@ -166,22 +154,17 @@ const Login = () => {
                 </select>
               </div> */}
               <div className="space-y-2">
-                <Label
-                  htmlFor="password"
-                  className="text-sm font-medium text-gray-700"
-                >
+                <Label htmlFor="password" className="text-sm font-medium text-gray-700">
                   Password
                 </Label>
                 <div className="relative">
                   {/* <Lock className="absolute left-3 top-3.5 h-4 w-4 text-[#8a8f9a]" strokeWidth={1.25} /> */}
                   <input
                     id="password"
-                    type={showPassword ? "text" : "password"}
+                    type={showPassword ? 'text' : 'password'}
                     value={formData.password}
                     placeholder="********"
-                    onChange={(e) =>
-                      handleInputChange("password", e.target.value)
-                    }
+                    onChange={(e) => handleInputChange('password', e.target.value)}
                     className="w-full h-10 sm:h-12 rounded-md border-gray-100 bg-gray-100 
                           text-black text-sm placeholder-[#a0a3a8]
                           focus:outline-none focus:border-[#0A6C6D] focus:ring-1 focus:ring-[#0A6C6D]
@@ -195,9 +178,7 @@ const Login = () => {
                     {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
                 </div>
-                {error.password && (
-                  <p className="text-sm text-red-600 mt-1">{error.password}</p>
-                )}
+                {error.password && <p className="text-sm text-red-600 mt-1">{error.password}</p>}
               </div>
               <div className="flex justify-end">
                 <a
@@ -208,6 +189,8 @@ const Login = () => {
                 </a>
               </div>
               <Button
+                variant="default"
+                size={'sm'}
                 disabled={!formData.email || !formData.password || isLoading}
                 onClick={handleLogin}
                 className="w-full py-6 rounded-md bg-[#0A6C6D] text-white text-sm font-light transition-transform duration-200 hover:shadow-lg hover:bg-[#0A6C6D] mt-5"
@@ -217,14 +200,14 @@ const Login = () => {
                     Loading <Loader2 className="animate-spin" />
                   </span>
                 ) : (
-                  "Login"
+                  'Login'
                 )}
               </Button>
             </CardContent>
             <CardFooter className="flex flex-col space-y-4 pt-6">
-              {formData.role === "vendor" && (
+              {formData.role === 'vendor' && (
                 <p className="text-sm text-center text-[#0A6C6D] hover:text-[#074f55] transition-all font-light">
-                  Don't Have An Account?{" "}
+                  Don't Have An Account?{' '}
                   <a
                     href="/auth/vendor/signup"
                     className="text-[#0a646d] hover:underline font-medium"
@@ -234,9 +217,7 @@ const Login = () => {
                 </p>
               )}
               <div className="flex flex-col md:flex-row justify-between items-center w-full text-xs text-gray-500">
-                <span>
-                  Copyright © {getCurrentYear()} Rhace Enterprises LTD.
-                </span>
+                <span>Copyright © {getCurrentYear()} Rhace Enterprises LTD.</span>
                 <a href="#" className="hover:underline">
                   Privacy Policy
                 </a>

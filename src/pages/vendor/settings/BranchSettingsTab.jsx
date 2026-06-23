@@ -1,21 +1,19 @@
-import { Building2, ChevronDown, Clock } from "lucide-react";
-import { InputField, SectionCard, SelectField, TimeInput, ToggleSwitch } from "./part/settingsComp";
-
-
+import { Building2, ChevronDown, Clock } from 'lucide-react';
+import { InputField, SectionCard, SelectField, TimeInput, ToggleSwitch } from './part/settingsComp';
 
 const OpeningHoursRow = ({ day, hours, onUpdateTime, onToggle }) => (
   <div className="flex items-center gap-4">
     <div className="w-24 text-sm text-gray-700">{day}</div>
-    
+
     <div className="flex items-center gap-2 flex-1">
       <TimeInput
         value={hours.start}
         onChange={(e) => onUpdateTime(day, 'start', e.target.value)}
         disabled={!hours.enabled}
       />
-      
+
       <span className="text-gray-500">to</span>
-      
+
       <TimeInput
         value={hours.end}
         onChange={(e) => onUpdateTime(day, 'end', e.target.value)}
@@ -23,10 +21,7 @@ const OpeningHoursRow = ({ day, hours, onUpdateTime, onToggle }) => (
       />
     </div>
 
-    <ToggleSwitch
-      enabled={hours.enabled}
-      onToggle={() => onToggle(day)}
-    />
+    <ToggleSwitch enabled={hours.enabled} onToggle={() => onToggle(day)} />
   </div>
 );
 
@@ -34,7 +29,7 @@ const OpeningHoursRow = ({ day, hours, onUpdateTime, onToggle }) => (
 export const OpeningHours = ({ openingHours, updateTime, toggleDayEnabled }) => (
   <SectionCard title="Opening Hours">
     <div className="space-y-3">
-      {Object.keys(openingHours).map(day => (
+      {Object.keys(openingHours).map((day) => (
         <OpeningHoursRow
           key={day}
           day={day}
@@ -46,7 +41,6 @@ export const OpeningHours = ({ openingHours, updateTime, toggleDayEnabled }) => 
     </div>
   </SectionCard>
 );
-
 
 // Reservation Preferences Component
 export const ReservationPreferences = ({
@@ -61,7 +55,7 @@ export const ReservationPreferences = ({
   leadTime,
   setLeadTime,
   cutoffTime,
-  setCutoffTime
+  setCutoffTime,
 }) => (
   <SectionCard title="Reservation Preferences">
     <div className="grid grid-cols-2 gap-6">
@@ -101,7 +95,13 @@ export const ReservationPreferences = ({
         label="Lead Time For Reservation"
         value={leadTime}
         onChange={(e) => setLeadTime(e.target.value)}
-        options={['30 minutes before', '1 hour before', '2 hours before', '4 hours before', '1 day before']}
+        options={[
+          '30 minutes before',
+          '1 hour before',
+          '2 hours before',
+          '4 hours before',
+          '1 day before',
+        ]}
         helpText="Minimum time before a reservation can be made"
       />
 
@@ -118,7 +118,9 @@ export const ReservationPreferences = ({
           />
           <Clock className="absolute right-3 top-2.5 w-5 h-5 text-gray-400 pointer-events-none" />
         </div>
-        <p className="text-xs text-gray-500 mt-1">After this time, same-day bookings will not be accepted</p>
+        <p className="text-xs text-gray-500 mt-1">
+          After this time, same-day bookings will not be accepted
+        </p>
       </div>
     </div>
   </SectionCard>

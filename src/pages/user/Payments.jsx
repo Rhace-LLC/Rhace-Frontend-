@@ -1,6 +1,6 @@
-import Header from "@/components/user/Header";
-import PaymentPage from "@/components/user/ui/Payment";
-import { paymentService } from "@/services/payment.service";
+import Header from '@/components/user/Header';
+import PaymentPage from '@/components/user/ui/Payment';
+import { paymentService } from '@/services/payment.service';
 import {
   ArrowLeft,
   Building2,
@@ -12,84 +12,83 @@ import {
   Wallet,
   X,
   XCircle,
-} from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+} from 'lucide-react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 // import { useWebSocket } from "@/contexts/WebSocketContext";
-import { RefreshCw } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import { AreaChart, ResponsiveContainer, Tooltip } from "recharts";
+import { RefreshCw } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { AreaChart, ResponsiveContainer, Tooltip } from 'recharts';
 
 // ─── Status config ────────────────────────────────────────────────────────────
 const STATUS = {
   Paid: {
-    label: "Paid",
-    bg: "bg-emerald-50",
-    text: "text-emerald-600",
-    border: "border-emerald-100",
-    glow: "shadow-emerald-100",
-    dot: "#10b981",
+    label: 'Paid',
+    bg: 'bg-emerald-50',
+    text: 'text-emerald-600',
+    border: 'border-emerald-100',
+    glow: 'shadow-emerald-100',
+    dot: '#10b981',
     icon: CheckCircle2,
-    gradient: "from-emerald-50 to-white",
-    pill: "bg-emerald-500",
+    gradient: 'from-emerald-50 to-white',
+    pill: 'bg-emerald-500',
   },
   Pending: {
-    label: "Pending",
-    bg: "bg-amber-50",
-    text: "text-amber-600",
-    border: "border-amber-100",
-    glow: "shadow-amber-100",
-    dot: "#f59e0b",
+    label: 'Pending',
+    bg: 'bg-amber-50',
+    text: 'text-amber-600',
+    border: 'border-amber-100',
+    glow: 'shadow-amber-100',
+    dot: '#f59e0b',
     icon: Clock,
-    gradient: "from-amber-50 to-white",
-    pill: "bg-amber-400",
+    gradient: 'from-amber-50 to-white',
+    pill: 'bg-amber-400',
   },
   Failed: {
-    label: "Failed",
-    bg: "bg-rose-50",
-    text: "text-rose-600",
-    border: "border-rose-100",
-    glow: "shadow-rose-100",
-    dot: "#f43f5e",
+    label: 'Failed',
+    bg: 'bg-rose-50',
+    text: 'text-rose-600',
+    border: 'border-rose-100',
+    glow: 'shadow-rose-100',
+    dot: '#f43f5e',
     icon: XCircle,
-    gradient: "from-rose-50 to-white",
-    pill: "bg-rose-500",
+    gradient: 'from-rose-50 to-white',
+    pill: 'bg-rose-500',
   },
 };
 
 const normaliseStatus = (s) => {
-  if (!s) return "Pending";
+  if (!s) return 'Pending';
   const t = s.toLowerCase().trim();
-  if (t === "success" || t === "paid") return "Paid";
-  if (t === "failed" || t === "fail") return "Failed";
-  return "Pending";
+  if (t === 'success' || t === 'paid') return 'Paid';
+  if (t === 'failed' || t === 'fail') return 'Failed';
+  return 'Pending';
 };
 
 const getStatus = (s) => STATUS[normaliseStatus(s)] ?? STATUS.Pending;
 
 // ─── Payment method icon ──────────────────────────────────────────────────────
 const MethodIcon = ({ method }) => {
-  const m = (method || "").toLowerCase();
-  if (m.includes("card")) return <CreditCard className="w-3.5 h-3.5" />;
-  if (m.includes("bank") || m.includes("transfer"))
-    return <Building2 className="w-3.5 h-3.5" />;
-  if (m.includes("wallet")) return <Wallet className="w-3.5 h-3.5" />;
+  const m = (method || '').toLowerCase();
+  if (m.includes('card')) return <CreditCard className="w-3.5 h-3.5" />;
+  if (m.includes('bank') || m.includes('transfer')) return <Building2 className="w-3.5 h-3.5" />;
+  if (m.includes('wallet')) return <Wallet className="w-3.5 h-3.5" />;
   return <Smartphone className="w-3.5 h-3.5" />;
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-const fmt = (n) => `₦${Number(n).toLocaleString("en-NG")}`;
+const fmt = (n) => `₦${Number(n).toLocaleString('en-NG')}`;
 
 const fmtDate = (d) =>
-  new Date(d).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
+  new Date(d).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
   });
 
 const fmtTime = (d) =>
-  new Date(d).toLocaleTimeString("en-US", {
-    hour: "2-digit",
-    minute: "2-digit",
+  new Date(d).toLocaleTimeString('en-US', {
+    hour: '2-digit',
+    minute: '2-digit',
   });
 
 // Group payments by date label
@@ -153,13 +152,9 @@ function TxRow({ payment, onClick, index }) {
           {payment.vendor.businessName}
         </p>
         <div className="flex items-center gap-1.5 mt-0.5">
-          <span className="text-[11px] text-gray-400">
-            {payment.vendor.vendorType}
-          </span>
+          <span className="text-[11px] text-gray-400">{payment.vendor.vendorType}</span>
           <span className="text-gray-200">·</span>
-          <span className="text-[11px] text-gray-400">
-            {fmtTime(payment.createdAt)}
-          </span>
+          <span className="text-[11px] text-gray-400">{fmtTime(payment.createdAt)}</span>
           <span className="text-gray-200">·</span>
           <span className="flex items-center gap-0.5 text-[11px] text-gray-400">
             <MethodIcon method={payment.paymentMethod} />
@@ -190,8 +185,7 @@ function SummaryStrip({ totalSpent, counts, chartData }) {
     <div
       className="mx-4 mb-4 rounded-3xl overflow-hidden"
       style={{
-        background:
-          "linear-gradient(135deg, #0A6C6D 0%, #0d8f90 60%, #0A6C6D 100%)",
+        background: 'linear-gradient(135deg, #0A6C6D 0%, #0d8f90 60%, #0A6C6D 100%)',
       }}
     >
       {/* Top section */}
@@ -204,9 +198,7 @@ function SummaryStrip({ totalSpent, counts, chartData }) {
             <p className="text-[28px] font-extrabold text-white tracking-tight leading-none">
               {fmt(totalSpent)}
             </p>
-            <p className="text-[12px] text-white/50 mt-1">
-              Across all paid transactions
-            </p>
+            <p className="text-[12px] text-white/50 mt-1">Across all paid transactions</p>
           </div>
           {/* Mini chart */}
           <div className="w-28 h-12 opacity-70">
@@ -216,12 +208,12 @@ function SummaryStrip({ totalSpent, counts, chartData }) {
                   contentStyle={{
                     fontSize: 11,
                     borderRadius: 8,
-                    background: "rgba(0,0,0,0.7)",
-                    border: "none",
-                    color: "#fff",
+                    background: 'rgba(0,0,0,0.7)',
+                    border: 'none',
+                    color: '#fff',
                   }}
-                  formatter={(v) => [fmt(v), ""]}
-                  labelFormatter={() => ""}
+                  formatter={(v) => [fmt(v), '']}
+                  labelFormatter={() => ''}
                 />
                 {/* <Area type="monotone" dataKey="amountPaid" stroke="rgba(255,255,255,0.8)" fill="rgba(255,255,255,0.15)" strokeWidth={2} dot={false} /> */}
               </AreaChart>
@@ -233,25 +225,18 @@ function SummaryStrip({ totalSpent, counts, chartData }) {
       {/* Bottom stat pills */}
       <div className="flex border-t border-white/10">
         {[
-          { label: "Paid", count: counts.Paid, color: "#10b981" },
-          { label: "Pending", count: counts.Pending, color: "#f59e0b" },
-          { label: "Failed", count: counts.Failed, color: "#f43f5e" },
+          { label: 'Paid', count: counts.Paid, color: '#10b981' },
+          { label: 'Pending', count: counts.Pending, color: '#f59e0b' },
+          { label: 'Failed', count: counts.Failed, color: '#f43f5e' },
         ].map((item, i) => (
           <div
             key={item.label}
-            className={`flex-1 flex flex-col items-center py-3 ${i < 2 ? "border-r border-white/10" : ""}`}
+            className={`flex-1 flex flex-col items-center py-3 ${i < 2 ? 'border-r border-white/10' : ''}`}
           >
-            <span className="text-[18px] font-bold text-white">
-              {item.count}
-            </span>
+            <span className="text-[18px] font-bold text-white">{item.count}</span>
             <div className="flex items-center gap-1 mt-0.5">
-              <span
-                className="w-1.5 h-1.5 rounded-full"
-                style={{ backgroundColor: item.color }}
-              />
-              <span className="text-[11px] text-white/50 font-medium">
-                {item.label}
-              </span>
+              <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: item.color }} />
+              <span className="text-[11px] text-white/50 font-medium">{item.label}</span>
             </div>
           </div>
         ))}
@@ -262,7 +247,7 @@ function SummaryStrip({ totalSpent, counts, chartData }) {
 
 // ─── Filter tabs ──────────────────────────────────────────────────────────────
 function FilterTabs({ active, onChange }) {
-  const tabs = ["All", "Paid", "Pending", "Failed"];
+  const tabs = ['All', 'Paid', 'Pending', 'Failed'];
   return (
     <div className="flex items-center gap-2 px-4 mb-4 overflow-x-auto pb-0.5">
       {tabs.map((t) => {
@@ -274,10 +259,10 @@ function FilterTabs({ active, onChange }) {
             onClick={() => onChange(t)}
             className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-[13px] font-semibold whitespace-nowrap transition-all duration-200 border ${
               isActive
-                ? t === "All"
-                  ? "bg-[#0A6C6D] text-white border-[#0A6C6D] shadow-md shadow-[#0A6C6D]/20"
+                ? t === 'All'
+                  ? 'bg-[#0A6C6D] text-white border-[#0A6C6D] shadow-md shadow-[#0A6C6D]/20'
                   : `${s.bg} ${s.text} ${s.border} shadow-sm`
-                : "bg-white text-gray-400 border-gray-100 hover:border-gray-200 hover:text-gray-600"
+                : 'bg-white text-gray-400 border-gray-100 hover:border-gray-200 hover:text-gray-600'
             }`}
           >
             {s && isActive && <s.icon className="w-3 h-3" />}
@@ -292,8 +277,33 @@ function FilterTabs({ active, onChange }) {
 // ─── Detail drawer ────────────────────────────────────────────────────────────
 function DetailDrawer({ payment, onClose, openCheckout }) {
   const s = getStatus(payment.status);
+  console.log("payment", payment)
   const Icon = s.icon;
+const getConfirmationRoute = (payment) => {
+  const reservationType =
+    payment?.metadata?.reservationType ||
+    payment?.vendor?.vendorType;
 
+  const bookingId = payment?._id || payment?.paystackReference
+
+  if (!bookingId) return null;
+
+  switch (reservationType?.toLowerCase()) {
+    case 'hotel':
+      return `/hotels/confirmation/${bookingId}`;
+
+    case 'club':
+      return `/clubs/confirmation/${bookingId}`;
+
+    case 'restaurant':
+      return `/restaurants/confirmation/${bookingId}`;
+
+    default:
+      return null;
+  }
+};
+
+  const navigate = useNavigate();
   return (
     <div
       className="fixed inset-0 z-100 flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm"
@@ -303,7 +313,7 @@ function DetailDrawer({ payment, onClose, openCheckout }) {
         className="bg-white w-full sm:max-w-sm rounded-t-4xl sm:rounded-[2rem] overflow-hidden shadow-2xl max-h-[88vh] flex flex-col"
         onClick={(e) => e.stopPropagation()}
         style={{
-          animation: "drawerUp 0.35s cubic-bezier(.32,1.25,.64,1) forwards",
+          animation: 'drawerUp 0.35s cubic-bezier(.32,1.25,.64,1) forwards',
         }}
       >
         {/* Drag handle */}
@@ -329,9 +339,7 @@ function DetailDrawer({ payment, onClose, openCheckout }) {
             <p className="text-white font-bold text-base leading-tight">
               {payment.vendor.businessName}
             </p>
-            <p className="text-white/60 text-xs mt-0.5">
-              {payment.vendor.address}
-            </p>
+            <p className="text-white/60 text-xs mt-0.5">{payment.vendor.address}</p>
           </div>
         </div>
 
@@ -358,18 +366,16 @@ function DetailDrawer({ payment, onClose, openCheckout }) {
           {/* Detail tiles */}
           <div className="grid grid-cols-2 gap-2.5 mb-5">
             {[
-              { label: "Date", value: fmtDate(payment.createdAt) },
-              { label: "Time", value: fmtTime(payment.createdAt) },
-              { label: "Method", value: payment.paymentMethod || "Not specified" },
-              { label: "Type", value: payment.vendor.vendorType },
+              { label: 'Date', value: fmtDate(payment.createdAt) },
+              { label: 'Time', value: fmtTime(payment.createdAt) },
+              { label: 'Method', value: payment.paymentMethod || 'Not specified' },
+              { label: 'Type', value: payment.vendor.vendorType },
             ].map(({ label, value }) => (
               <div key={label} className="bg-gray-50 rounded-2xl px-3.5 py-3">
                 <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">
                   {label}
                 </p>
-                <p className="text-[13px] font-semibold text-gray-800">
-                  {value}
-                </p>
+                <p className="text-[13px] font-semibold text-gray-800">{value}</p>
               </div>
             ))}
           </div>
@@ -380,29 +386,43 @@ function DetailDrawer({ payment, onClose, openCheckout }) {
               Reference
             </p>
             <p className="text-[12px] font-semibold text-gray-700 font-mono tracking-tight">
-              {payment.paystackReference ? payment.paystackReference.toUpperCase() : "Not specified"}
+              {payment.paystackReference
+                ? payment.paystackReference.toUpperCase()
+                : 'Not specified'}
             </p>
           </div>
 
           {/* Actions */}
-          <div
-            className={`grid ${s.label === "Pending" ? "grid-cols-2" : "grid-cols-1"} gap-2.5`}
-          >
+          <div className={''}>
             <button
-              className={` ${s.label === "Pending" ? "border-gray-100 bg-gray-50 hover:bg-gray-100 text-gray-500" : "bg-[#0A6C6D] hover:bg-[#085a66] text-white shadow-[#0A6C6D]/25"} flex-1 flex items-center justify-center gap-2 py-3.5 rounded-2xl font-bold text-sm transition-all shadow-lg `}
+              className={` ${s.label === 'Pending' ? 'border-gray-100 bg-gray-50 hover:bg-gray-100 text-gray-500' : 'bg-[#0A6C6D] hover:bg-[#085a66] text-white shadow-[#0A6C6D]/25'} flex-1 flex items-center justify-center gap-2 py-3.5 rounded-2xl font-bold text-sm transition-all shadow-lg `}
             >
               <Download className="w-4 h-4" />
               Download Receipt
             </button>
-            {s.label === "Pending" && (
-              <button
-                onClick={() => openCheckout(payment)}
-                className="bg-[#0A6C6D] hover:bg-[#085a66] text-white shadow-[#0A6C6D]/25 px-2 flex items-center justify-center gap-2 border py-3.5 rounded-2xl font-bold text-sm transition-all"
-              >
-                <CreditCard className="w-4 h-4" />
-                Make Payment
-              </button>
-            )}
+{s.label === 'Pending' && (
+  <div className="grid grid-cols-1 gap-2">
+    <button
+      onClick={() => openCheckout(payment)}
+      className="bg-[#0A6C6D] hover:bg-[#085a66] text-white shadow-[#0A6C6D]/25 px-2 flex items-center justify-center gap-2 border py-3.5 rounded-2xl font-bold text-sm transition-all"
+    >
+      <CreditCard className="w-4 h-4" />
+      Make Payment
+    </button>
+
+    {getConfirmationRoute(payment) && (
+      <button
+        onClick={() => {
+          navigate(getConfirmationRoute(payment));
+        }}
+        className="border border-[#0A6C6D] text-[#0A6C6D] hover:bg-[#0A6C6D]/5 px-2 flex items-center justify-center gap-2 py-3.5 rounded-2xl font-bold text-sm transition-all"
+      >
+        <CheckCircle2 className="w-4 h-4" />
+        I've Made Payment, Verify
+      </button>
+    )}
+  </div>
+)}
           </div>
         </div>
       </div>
@@ -413,7 +433,7 @@ function DetailDrawer({ payment, onClose, openCheckout }) {
 // ─── Main ─────────────────────────────────────────────────────────────────────
 const PaymentsHistory = () => {
   const [payments, setPayments] = useState([]);
-  const [filterStatus, setFilterStatus] = useState("All");
+  const [filterStatus, setFilterStatus] = useState('All');
   const [selectedPayment, setSelectedPayment] = useState(null);
   const [paymentForCheckout, setPaymentForCheckout] = useState(null);
   const [popopen, setPopopen] = useState(false);
@@ -423,26 +443,24 @@ const PaymentsHistory = () => {
 
   // ── All backend logic preserved unchanged ──
   const filteredPayments = useMemo(() => {
-    return filterStatus === "All"
+    return filterStatus === 'All'
       ? payments
       : payments.filter((p) => normaliseStatus(p.status) === filterStatus);
   }, [payments, filterStatus]);
 
   const totalSpent = useMemo(() => {
     return payments
-      .filter((p) => normaliseStatus(p.status) === "Paid")
+      .filter((p) => normaliseStatus(p.status) === 'Paid')
       .reduce((sum, p) => sum + p.amount, 0);
   }, [payments]);
 
   const counts = useMemo(
     () => ({
-      Paid: payments.filter((p) => normaliseStatus(p.status) === "Paid").length,
-      Pending: payments.filter((p) => normaliseStatus(p.status) === "Pending")
-        .length,
-      Failed: payments.filter((p) => normaliseStatus(p.status) === "Failed")
-        .length,
+      Paid: payments.filter((p) => normaliseStatus(p.status) === 'Paid').length,
+      Pending: payments.filter((p) => normaliseStatus(p.status) === 'Pending').length,
+      Failed: payments.filter((p) => normaliseStatus(p.status) === 'Failed').length,
     }),
-    [payments],
+    [payments]
   );
 
   const chartData = useMemo(() => {
@@ -463,7 +481,7 @@ const PaymentsHistory = () => {
       setPayments(result);
     } catch (error) {
       console.error('Payments fetch failed:', error);
-//     toast.error('Failed to refresh payments');
+      //     toast.error('Failed to refresh payments');
     } finally {
       setIsRefreshing(false);
       setIsLoading(false);
@@ -481,10 +499,7 @@ const PaymentsHistory = () => {
     };
   }, [fetchPayments]);
 
-  const grouped = useMemo(
-    () => groupByDate(filteredPayments),
-    [filteredPayments],
-  );
+  const grouped = useMemo(() => groupByDate(filteredPayments), [filteredPayments]);
   const openCheckout = (payment) => {
     setPaymentForCheckout(payment);
     setSelectedPayment(null); // close drawer
@@ -511,15 +526,13 @@ const PaymentsHistory = () => {
           {/* ── Page header ── */}
           <div className="flex items-center gap-3 px-4 mb-6 mt-5">
             <button
-              onClick={() => navigate("/")}
+              onClick={() => navigate('/')}
               className="w-9 h-9 p-3 border rounded-full flex items-center justify-center"
             >
               <ArrowLeft className="w-4 shrink-0 h-4 text-2xl" />
             </button>
             <div className="flex-1">
-              <h1 className="text-[20px] font-bold text-gray-900 leading-tight">
-                Payment History
-              </h1>
+              <h1 className="text-[20px] font-bold text-gray-900 leading-tight">Payment History</h1>
               <p className="text-[12px] text-gray-400 leading-tight">
                 Your lifestyle transactions {isRefreshing && '(refreshing...)'}
               </p>
@@ -535,11 +548,7 @@ const PaymentsHistory = () => {
           </div>
 
           {/* ── Summary ── */}
-          <SummaryStrip
-            totalSpent={totalSpent}
-            counts={counts}
-            chartData={chartData}
-          />
+          <SummaryStrip totalSpent={totalSpent} counts={counts} chartData={chartData} />
 
           {/* ── Filters ── */}
           <FilterTabs active={filterStatus} onChange={setFilterStatus} />
@@ -557,14 +566,10 @@ const PaymentsHistory = () => {
                 <div className="w-14 h-14 rounded-full bg-gray-50 flex items-center justify-center mb-4">
                   <XCircle className="w-6 h-6 text-gray-300" />
                 </div>
-                <p className="text-gray-500 text-sm font-medium mb-1">
-                  No transactions found
-                </p>
-                <p className="text-gray-400 text-xs mb-4">
-                  Try a different filter
-                </p>
+                <p className="text-gray-500 text-sm font-medium mb-1">No transactions found</p>
+                <p className="text-gray-400 text-xs mb-4">Try a different filter</p>
                 <button
-                  onClick={() => setFilterStatus("All")}
+                  onClick={() => setFilterStatus('All')}
                   className="text-[#0A6C6D] font-semibold text-sm hover:underline"
                 >
                   View all
@@ -591,11 +596,7 @@ const PaymentsHistory = () => {
                           className="row-anim"
                           style={{ animationDelay: `${i * 40}ms` }}
                         >
-                          <TxRow
-                            payment={payment}
-                            onClick={setSelectedPayment}
-                            index={i}
-                          />
+                          <TxRow payment={payment} onClick={setSelectedPayment} index={i} />
                         </div>
                       ))}
                     </div>

@@ -1,44 +1,36 @@
-import { SearchAutocomplete } from "@/components/AutoComplete";
-import { DateDropdown } from "@/components/DateDropdown";
-import Footer from "@/components/Footer";
-import { GuestDropdown } from "@/components/GuestDropdown";
-import { UserProfileMenu } from "@/components/layout/headers/user-header";
-import Header from "@/components/user/Header";
-import { format } from "date-fns";
-import { useEffect, useRef, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router";
-import "./landing.css"; // Make sure to import the CSS file
+import { SearchAutocomplete } from '@/components/AutoComplete';
+import { DateDropdown } from '@/components/DateDropdown';
+import Footer from '@/components/Footer';
+import { GuestDropdown } from '@/components/GuestDropdown';
+import { UserProfileMenu } from '@/components/layout/headers/user-header';
+import Header from '@/components/user/Header';
+import { format } from 'date-fns';
+import { useEffect, useRef, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router';
+import './landing.css'; // Make sure to import the CSS file
 // import LocationModal from "@/components/LocationModal";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useRestaurantData } from "@/hooks/favorites";
-import { logout } from "@/redux/slices/authSlice";
-import { formatOfferText } from "@/utils/helper";
-import {
-  CalendarClock,
-  ChevronDown,
-  ChevronUp,
-  Home,
-  Search,
-  User,
-} from "lucide-react";
-import { FaSearchLocation } from "react-icons/fa";
-import { IoCalendarNumber } from "react-icons/io5";
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useRestaurantData } from '@/hooks/favorites';
+import { logout } from '@/redux/slices/authSlice';
+import { formatOfferText } from '@/utils/helper';
+import { CalendarClock, ChevronDown, ChevronUp, Home, Search, User } from 'lucide-react';
+import { FaSearchLocation } from 'react-icons/fa';
+import { IoCalendarNumber } from 'react-icons/io5';
 function UserLandingPage() {
   const [date, setDate] = useState();
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
   const [isMobile, setIsMobile] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [mounted, setMounted] = useState(false);
   const formRef = useRef(null > null);
   const inputRef = useRef(null > null);
   function useMixedPlaces() {
-    const clubs = useRestaurantData("club");
-    const hotels = useRestaurantData("hotel");
-    const restaurants = useRestaurantData("restaurant");
+    const clubs = useRestaurantData('club');
+    const hotels = useRestaurantData('hotel');
+    const restaurants = useRestaurantData('restaurant');
 
-    const isLoading =
-      clubs.isLoading || hotels.isLoading || restaurants.isLoading;
+    const isLoading = clubs.isLoading || hotels.isLoading || restaurants.isLoading;
 
     const mixedFour = [
       clubs.restaurants?.[0],
@@ -55,8 +47,8 @@ function UserLandingPage() {
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 640);
     checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -64,22 +56,17 @@ function UserLandingPage() {
   useEffect(() => {
     setMounted(true);
     const handleClickOutside = (event) => {
-      if (
-        isExpanded &&
-        isMobile &&
-        formRef.current &&
-        !formRef.current.contains(event.target)
-      ) {
+      if (isExpanded && isMobile && formRef.current && !formRef.current.contains(event.target)) {
         setIsExpanded(false);
       }
     };
 
-    document.addEventListener("mousedown", handleClickOutside);
-    document.addEventListener("touchstart", handleClickOutside);
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('touchstart', handleClickOutside);
 
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-      document.removeEventListener("touchstart", handleClickOutside);
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
     };
   }, [isExpanded, isMobile]);
   useEffect(() => {
@@ -88,8 +75,8 @@ function UserLandingPage() {
         setIsMenuOpen(false);
       }
     };
-    if (isMenuOpen) document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    if (isMenuOpen) document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isMenuOpen]);
   const dispatch = useDispatch();
   const [profile, setProfile] = useState(null);
@@ -113,7 +100,7 @@ function UserLandingPage() {
   }, [user]);
 
   const handleLogout = async () => {
-    console.log("Attempting to logout");
+    console.log('Attempting to logout');
     dispatch(logout());
     setProfile(null);
   };
@@ -121,11 +108,11 @@ function UserLandingPage() {
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     const totalGuests = guests.adults + guests.children + guests.infants;
-    const location = localStorage.getItem("userLocation") || "";
+    const location = localStorage.getItem('userLocation') || '';
     const searchData = {
       query: searchQuery,
       //   tab: activeTab,
-      date: date ? format(date, "yyyy-MM-dd") : undefined,
+      date: date ? format(date, 'yyyy-MM-dd') : undefined,
       //   time: time || undefined,
       guests: totalGuests.toString(),
       timestamp: new Date().toISOString(),
@@ -133,7 +120,7 @@ function UserLandingPage() {
     };
 
     // Store in localStorage
-    localStorage.setItem("searchData", JSON.stringify(searchData));
+    localStorage.setItem('searchData', JSON.stringify(searchData));
 
     // Call onSearch callback if provided
     // if (onSearch) {
@@ -145,22 +132,22 @@ function UserLandingPage() {
   };
   const footer = [
     {
-      title: "Home",
+      title: 'Home',
       icon: <Home />,
-      link: "/",
+      link: '/',
     },
     {
-      title: "Moments",
+      title: 'Moments',
       icon: <CalendarClock />,
-      link: "/bookings",
+      link: '/bookings',
     },
     {
-      title: "Search",
+      title: 'Search',
       icon: <Search />,
-      link: "/search",
+      link: '/search',
     },
     {
-      title: "Profile",
+      title: 'Profile',
       icon: (
         <div className="relative text-gray-700" ref={dropdownRef}>
           <button
@@ -233,8 +220,8 @@ function UserLandingPage() {
                 stays & nights out.
               </h1>
               <p className="text-lg md:text-xl mb-8 font-light opacity-95">
-                Discover top restaurants, luxury hotels, and exclusive clubs.
-                Reserve your spot instantly, all in one place, no waiting.
+                Discover top restaurants, luxury hotels, and exclusive clubs. Reserve your spot
+                instantly, all in one place, no waiting.
               </p>
 
               {/* Booking Bar */}
@@ -337,25 +324,25 @@ function UserLandingPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {[
               {
-                icon: "🍽️",
-                title: "restaurants",
-                desc: "Discover finest tables, from hidden gems to rooftop dining.",
-                link: "book a table →",
-                type: "restaurants",
+                icon: '🍽️',
+                title: 'restaurants',
+                desc: 'Discover finest tables, from hidden gems to rooftop dining.',
+                link: 'book a table →',
+                type: 'restaurants',
               },
               {
-                icon: "🏨",
-                title: "hotels",
-                desc: "Curated stays — boutique, luxury, or quick getaway.",
-                link: "find a room →",
-                type: "hotels",
+                icon: '🏨',
+                title: 'hotels',
+                desc: 'Curated stays — boutique, luxury, or quick getaway.',
+                link: 'find a room →',
+                type: 'hotels',
               },
               {
-                icon: "🎧",
-                title: "clubs & lounges",
-                desc: "Guestlist, VIP tables & entry to the hottest nightspots.",
-                link: "reserve night →",
-                type: "clubs",
+                icon: '🎧',
+                title: 'clubs & lounges',
+                desc: 'Guestlist, VIP tables & entry to the hottest nightspots.',
+                link: 'reserve night →',
+                type: 'clubs',
               },
             ].map((service) => (
               <div
@@ -363,14 +350,12 @@ function UserLandingPage() {
                 className="bg-white border border-[#b2d8d5] rounded-3xl p-8 hover:bg-[#e0f2f1] hover:border-[#2c7a78] transition"
               >
                 <div className="text-4xl mb-4">{service.icon}</div>
-                <h3 className="text-2xl font-semibold text-[#18534f] mb-2">
-                  {service.title}
-                </h3>
+                <h3 className="text-2xl font-semibold text-[#18534f] mb-2">{service.title}</h3>
                 <p className="text-[#2d5551] mb-6">{service.desc}</p>
                 <div
                   onClick={() => {
-                    mounted && localStorage.setItem("activeTab", service.type);
-                    navigate("/book-reservation");
+                    mounted && localStorage.setItem('activeTab', service.type);
+                    navigate('/book-reservation');
                   }}
                   className="text-[#2c7a78] cursor-pointer font-semibold underline pb-0.5  transition"
                 >
@@ -394,15 +379,11 @@ function UserLandingPage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {isLoading
-              ? Array.from({ length: 4 }).map((_, idx) => (
-                  <SkeletonCard key={idx} />
-                ))
+              ? Array.from({ length: 4 }).map((_, idx) => <SkeletonCard key={idx} />)
               : mixedFour.map((place, idx) => (
                   <div
                     key={idx}
-                    onClick={() =>
-                      navigate(`/${place.vendorType}s/${place._id}`)
-                    }
+                    onClick={() => navigate(`/${place.vendorType}s/${place._id}`)}
                     className="bg-white border border-[#b2d8d5] cursor-pointer rounded-3xl overflow-hidden hover:-translate-y-1 transition"
                   >
                     <div
@@ -415,27 +396,25 @@ function UserLandingPage() {
                     <div className="p-5">
                       <span className="bg-[#e0f2f1] text-[#18534f] w-fit gap-2 flex justify-between items-center px-3 py-1 rounded-full text-xs font-semibold mb-3">
                         <span>
-                          {place.vendorType === "restaurant"
-                            ? "🍽️"
-                            : place.vendorType === "hotel"
-                              ? "🏨"
-                              : "🎶"}
+                          {place.vendorType === 'restaurant'
+                            ? '🍽️'
+                            : place.vendorType === 'hotel'
+                              ? '🏨'
+                              : '🎶'}
                         </span>
                         <span>{place.vendorType}</span>
                       </span>
 
-                      <h4 className="text-xl text-[#0c3734] font-semibold">
-                        {place.businessName}
-                      </h4>
+                      <h4 className="text-xl text-[#0c3734] font-semibold">{place.businessName}</h4>
 
                       <p className="text-[#7ab3b0] font-medium text-sm mt-1">
-                        {place.vendorType === "restaurant"
-                          ? place.cuisines.slice(0, 2).join(", ")
-                          : place.vendorType === "hotel"
+                        {place.vendorType === 'restaurant'
+                          ? place.cuisines.slice(0, 2).join(', ')
+                          : place.vendorType === 'hotel'
                             ? formatOfferText(place.offer)
-                            : place.vendorType === "club"
-                              ? place.categories.slice(0, 2).join(", ")
-                              : " "}
+                            : place.vendorType === 'club'
+                              ? place.categories.slice(0, 2).join(', ')
+                              : ' '}
                       </p>
                     </div>
                   </div>
@@ -446,10 +425,8 @@ function UserLandingPage() {
         <section className="how mt-[4rem]">
           <div className="section-wrap sm:max-w-7xl  sm:px-6 lg:px-8 py-16">
             <span className="section-tag">Simple Process</span>
-            <h2 style={{ color: "white" }}>Book in Under 2 Minutes</h2>
-            <p className="section-sub">
-              From discovery to confirmation — effortless every time.
-            </p>
+            <h2 style={{ color: 'white' }}>Book in Under 2 Minutes</h2>
+            <p className="section-sub">From discovery to confirmation — effortless every time.</p>
             <div className="steps">
               {steps.map((step, index) => (
                 <div key={step.id} className="step">
@@ -470,9 +447,7 @@ function UserLandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <div className="bg-gradient-to-r from-[#18534f] to-[#2c7a78] rounded-3xl p-8 md:p-12 text-white flex flex-col md:flex-row items-center justify-between gap-8">
             <div>
-              <span className="text-xl font-light block mb-2">
-                are you a venue owner?
-              </span>
+              <span className="text-xl font-light block mb-2">are you a venue owner?</span>
               <h2 className="text-3xl md:text-4xl font-bold leading-tight">
                 claim your <br />
                 restaurant, hotel or club
@@ -508,18 +483,10 @@ function UserLandingPage() {
               </a>
             </div>
             <div className="bg-white border border-[#b2d8d5] rounded-3xl p-8">
-              <p className="font-semibold text-[#0c3734] mb-4">
-                ✔ real‑time availability
-              </p>
-              <p className="font-semibold text-[#0c3734] mb-4">
-                ✔ multi‑venue (resto/hotel/club)
-              </p>
-              <p className="font-semibold text-[#0c3734] mb-4">
-                ✔ guest insights
-              </p>
-              <p className="text-[#2c7a78] italic mt-4">
-                — no shadow, just smooth flow
-              </p>
+              <p className="font-semibold text-[#0c3734] mb-4">✔ real‑time availability</p>
+              <p className="font-semibold text-[#0c3734] mb-4">✔ multi‑venue (resto/hotel/club)</p>
+              <p className="font-semibold text-[#0c3734] mb-4">✔ guest insights</p>
+              <p className="text-[#2c7a78] italic mt-4">— no shadow, just smooth flow</p>
             </div>
           </div>
         </div>
@@ -538,31 +505,27 @@ function UserLandingPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
               {
-                date: "feb 20, 2026",
-                title: "5 new rooftop bars in Lagos",
-                desc: "Perfect for sunset drinks and club after-parties.",
+                date: 'feb 20, 2026',
+                title: '5 new rooftop bars in Lagos',
+                desc: 'Perfect for sunset drinks and club after-parties.',
               },
               {
-                date: "feb 18, 2026",
-                title: "hotel & club combos",
-                desc: "Stay and play — best packages this weekend.",
+                date: 'feb 18, 2026',
+                title: 'hotel & club combos',
+                desc: 'Stay and play — best packages this weekend.',
               },
               {
-                date: "feb 15, 2026",
-                title: "booking etiquette: tables vs. guestlist",
-                desc: "Everything you need to know.",
+                date: 'feb 15, 2026',
+                title: 'booking etiquette: tables vs. guestlist',
+                desc: 'Everything you need to know.',
               },
             ].map((post, idx) => (
               <article
                 key={idx}
                 className="bg-white border border-[#b2d8d5] rounded-3xl p-8 hover:bg-[#e0f2f1] transition"
               >
-                <time className="text-[#7ab3b0] text-xs font-medium uppercase">
-                  {post.date}
-                </time>
-                <h3 className="text-2xl text-[#0c3734] font-semibold my-3">
-                  {post.title}
-                </h3>
+                <time className="text-[#7ab3b0] text-xs font-medium uppercase">{post.date}</time>
+                <h3 className="text-2xl text-[#0c3734] font-semibold my-3">{post.title}</h3>
                 <p className="text-[#18534f]">{post.desc}</p>
               </article>
             ))}
@@ -570,22 +533,24 @@ function UserLandingPage() {
         </div>
       </main>
 
-     {profile && <div className="fixed bottom-0 left-0 w-full bg-white py-2 flex items-center justify-center gap-12 border-t md:hidden z-50">
-        {footer.map((item, i) => (
-          <button
-            onClick={() => item.link && navigate(item.link)}
-            key={i}
-            className="text-sm font-medium text-gray-700 hover:text-gray-900"
-          >
-            <div className="flex items-center gap-1 flex-col ">
-              <div>{item.icon}</div>
-              <span className="text-xs">{item.title}</span>
-            </div>
-          </button>
-        ))}
-      </div>}
+      {profile && (
+        <div className="fixed bottom-0 left-0 w-full bg-white py-2 flex items-center justify-center gap-12 border-t md:hidden z-50">
+          {footer.map((item, i) => (
+            <button
+              onClick={() => item.link && navigate(item.link)}
+              key={i}
+              className="text-sm font-medium text-gray-700 hover:text-gray-900"
+            >
+              <div className="flex items-center gap-1 flex-col ">
+                <div>{item.icon}</div>
+                <span className="text-xs">{item.title}</span>
+              </div>
+            </button>
+          ))}
+        </div>
+      )}
       {/* Footer */}
-      <div className={`${profile && "hidden"} md:block`}>
+      <div className={`${profile && 'hidden'} md:block`}>
         <Footer />
       </div>
     </div>
@@ -597,7 +562,7 @@ export default UserLandingPage;
 const steps = [
   {
     id: 1,
-    number: "01",
+    number: '01',
     icon: (
       <>
         <svg width="0" height="0">
@@ -607,59 +572,43 @@ const steps = [
           </linearGradient>
         </svg>
 
-        <FaSearchLocation
-          style={{ fill: "url(#iconGradient)" }}
-          className="w-6 h-6"
-        />
+        <FaSearchLocation style={{ fill: 'url(#iconGradient)' }} className="w-6 h-6" />
       </>
     ),
-    title: "Search",
-    description:
-      "Find restaurants, hotels, or clubs by cuisine, location, date, or vibe.",
+    title: 'Search',
+    description: 'Find restaurants, hotels, or clubs by cuisine, location, date, or vibe.',
   },
   {
     id: 2,
-    number: "02",
-    title: "Choose",
+    number: '02',
+    title: 'Choose',
     icon: (
       <>
         <svg width="0" height="0">
-          <linearGradient
-            id="iconGradient2"
-            x1="0%"
-            y1="0%"
-            x2="100%"
-            y2="100%"
-          >
+          <linearGradient id="iconGradient2" x1="0%" y1="0%" x2="100%" y2="100%">
             <stop offset="0%" stopColor="#81d6c0" />
             <stop offset="100%" stopColor="#ffffff" />
           </linearGradient>
         </svg>
 
-        <IoCalendarNumber
-          style={{ fill: "url(#iconGradient2)" }}
-          className="w-6 h-6"
-        />
+        <IoCalendarNumber style={{ fill: 'url(#iconGradient2)' }} className="w-6 h-6" />
       </>
     ),
-    description:
-      "Browse real-time availability. Read reviews. Pick your perfect spot.",
+    description: 'Browse real-time availability. Read reviews. Pick your perfect spot.',
   },
   {
     id: 3,
-    number: "03",
-    icon: "✅",
-    title: "Confirm",
-    description:
-      "Book instantly with no phone calls. Get a confirmation in seconds.",
+    number: '03',
+    icon: '✅',
+    title: 'Confirm',
+    description: 'Book instantly with no phone calls. Get a confirmation in seconds.',
   },
   {
     id: 4,
-    number: "04",
-    icon: "🎉",
-    title: "Enjoy",
-    description:
-      "Show up, relax, and enjoy your experience. We'll handle the rest.",
+    number: '04',
+    icon: '🎉',
+    title: 'Enjoy',
+    description: "Show up, relax, and enjoy your experience. We'll handle the rest.",
   },
 ];
 const SkeletonCard = () => {

@@ -1,20 +1,21 @@
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 
 export const logoutAsync = createAsyncThunk(
-  "auth/logoutAsync",
+  'auth/logoutAsync',
   async (_, { dispatch, getState }) => {
+    /** @type any */
     const state = getState();
-    const userType = state.auth.user ? "user" : state.auth.vendor ? "vendor" : null;
+    const userType = state.auth.user ? 'user' : state.auth.vendor ? 'vendor' : null;
 
-    localStorage.removeItem("token");
+    localStorage.removeItem('token');
     // Clear Redux state
     dispatch(authSlice.actions.logout());
 
     // Navigate to respective login page
-    if (userType === "user") {
-      window.location.href = "/auth/users/login";
-    } else if (userType === "vendor") {
-      window.location.href = "/auth/vendor/login";
+    if (userType === 'user') {
+      window.location.href = '/auth/users/login';
+    } else if (userType === 'vendor') {
+      window.location.href = '/auth/vendor/login';
     }
   }
 );
@@ -29,7 +30,7 @@ const initialState = {
 };
 
 const authSlice = createSlice({
-  name: "auth",
+  name: 'auth',
   initialState,
   reducers: {
     setUser: (state, action) => {

@@ -1,10 +1,10 @@
-import { InputField, SectionCard, SelectField } from "./settingsComp";
-import { useState } from "react";
-import axios from "axios";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/card";
-import { Edit3, Upload } from "@/public/icons/icons";
-import { Input } from "@/components/ui/input";
+import { InputField, SectionCard, SelectField } from './settingsComp';
+import { useState } from 'react';
+import axios from 'axios';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/card';
+import { Edit3, Upload } from '@/public/icons/icons';
+import { Input } from '@/components/ui/input';
 
 export const BusinessInformation = ({
   businessName,
@@ -25,7 +25,7 @@ export const BusinessInformation = ({
         label="Business Type"
         value={businessType}
         onChange={(e) => setBusinessType(e.target.value)}
-        options={["Restaurant", "Club", "Hotel"]}
+        options={['Restaurant', 'Club', 'Hotel']}
       />
     </div>
   </SectionCard>
@@ -42,16 +42,16 @@ export const BusinessLogo = ({ value, onChange }) => {
     try {
       const file = files[0];
       const formData = new FormData();
-      formData.append("file", file);
-      formData.append("upload_preset", UPLOAD_PRESET);
+      formData.append('file', file);
+      formData.append('upload_preset', UPLOAD_PRESET);
       const response = await axios.post(
         `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
-        formData,
+        formData
       );
       const imageUrl = response.data.secure_url;
       onChange(imageUrl);
     } catch (error) {
-      console.error("Upload failed:", error);
+      console.error('Upload failed:', error);
     } finally {
       setUploadImageLoading(false);
     }
@@ -66,11 +66,7 @@ export const BusinessLogo = ({ value, onChange }) => {
       <div className="flex gap-6 items-start">
         {value ? (
           <div className="w-32 h-32 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
-            <img
-              src={value}
-              alt="Business Logo"
-              className="object-cover w-full h-full"
-            />
+            <img src={value} alt="Business Logo" className="object-cover w-full h-full" />
           </div>
         ) : (
           <div className="w-24 h-24 bg-slate-100 rounded-xl flex items-center justify-center border-2 border-dashed border-slate-200">
@@ -86,15 +82,16 @@ export const BusinessLogo = ({ value, onChange }) => {
             type="file"
             multiple
             accept="image/*"
-            onChange={(e) =>
-              e.target.files && handleImageUpload(e.target.files)
-            }
+            onChange={(e) => e.target.files && handleImageUpload(e.target.files)}
             className="hidden"
             disabled={uploadImageLoading}
             id="image-upload"
           />
-          <label htmlFor="image-upload" className="px-4 py-2 border cursor-pointer border-[#94A3B8] rounded-lg text-sm font-medium text-teal-700 bg-teal-50/50 hover:bg-teal-50 transition-colors">
-            {uploadImageLoading ? "Uploading..." : "Browse Files"}
+          <label
+            htmlFor="image-upload"
+            className="px-4 py-2 border cursor-pointer border-[#94A3B8] rounded-lg text-sm font-medium text-teal-700 bg-teal-50/50 hover:bg-teal-50 transition-colors"
+          >
+            {uploadImageLoading ? 'Uploading...' : 'Browse Files'}
           </label>
           <p className="text-[11px] text-slate-400 mt-3">
             Recommended size: 400×400px. Max file size: 2MB.

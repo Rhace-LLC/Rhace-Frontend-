@@ -1,5 +1,5 @@
-import logoWhite from "../../../../public/images/Rhace-09.png";
-import { motion } from "framer-motion";
+import logoWhite from '../../../../public/images/Rhace-09.png';
+import { motion } from 'framer-motion';
 
 export function Footer() {
   return (
@@ -20,14 +20,10 @@ export function Footer() {
     rotate-45
     lg:rotate-0
   "
-          style={{ letterSpacing: "0.1em" }}
+          style={{ letterSpacing: '0.1em' }}
         >
           <div className="flex items-center w-[40rem] sm:w-full justify-center">
-            <img
-              src={logoWhite}
-              alt="Rhace Logo"
-              className="w-auto  object-contain"
-            />
+            <img src={logoWhite} alt="Rhace Logo" className="w-auto  object-contain" />
           </div>
         </motion.div>
       </div>
@@ -41,10 +37,7 @@ export function Footer() {
             transition={{ duration: 0.6 }}
             className="space-y-4"
           >
-            <motion.div
-              className="flex items-center gap-2"
-              whileHover={{ scale: 1.05 }}
-            >
+            <motion.div className="flex items-center gap-2" whileHover={{ scale: 1.05 }}>
               <div className="flex items-center space-x-2">
                 <img
                   src={logoWhite}
@@ -54,23 +47,22 @@ export function Footer() {
               </div>
             </motion.div>
             <p className="text-gray-400">
-              Your complete dashboard for managing hospitality businesses with
-              ease.
+              Your complete dashboard for managing hospitality businesses with ease.
             </p>
           </motion.div>
 
           {[
             {
-              title: "Product",
-              links: ["Features", "Pricing", "Security", "Updates"],
+              title: 'Product',
+              links: ['Features', 'Pricing', 'Security', 'Updates'],
             },
             {
-              title: "Company",
-              links: ["Home", "About", "partner", "Contact"],
+              title: 'Company',
+              links: ['Home', 'About', 'partner', 'Contact'],
             },
             {
-              title: "Support",
-              links: ["Help Center", "Documentation", "API", "Status"],
+              title: 'Support',
+              links: ['Help Center', 'Documentation', 'API', 'Status'],
             },
           ].map((section, sectionIndex) => (
             <motion.div
@@ -83,15 +75,11 @@ export function Footer() {
               <h4 className="text-white mb-4">{section.title}</h4>
               <ul className="space-y-2">
                 {section.links.map((link, linkIndex) => {
-                  const href = link.toLowerCase().replace(" ", "-");
+                  const href = link.toLowerCase().replace(' ', '-');
                   return (
-                    <motion.li
-                      key={linkIndex}
-                      whileHover={{ x: 5 }}
-                      transition={{ duration: 0.2 }}
-                    >
+                    <motion.li key={linkIndex} whileHover={{ x: 5 }} transition={{ duration: 0.2 }}>
                       <a
-                        href={href === "home" ? `/` : href}
+                        href={href === 'home' ? `/` : href}
                         className="hover:text-teal-400 transition-colors"
                       >
                         {link}
@@ -113,7 +101,7 @@ export function Footer() {
         >
           <p className="text-gray-400">© 2025 Rhace. All rights reserved.</p>
           <div className="flex gap-6">
-            {["Privacy", "Terms", "Cookies"].map((item, index) => (
+            {['Privacy', 'Terms', 'Cookies'].map((item, index) => (
               <motion.a
                 key={index}
                 href="#"

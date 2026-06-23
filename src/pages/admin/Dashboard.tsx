@@ -1,12 +1,31 @@
-import { Users, UserPlus, DollarSign, AlertCircle, ArrowUpRight, ArrowDownRight, ExternalLink, TrendingUp, TrendingDown, RefreshCw } from "lucide-react";
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { StatCard } from "@/components/Statcard";
-import { useEffect, useState, useRef, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import {
+  Users,
+  UserPlus,
+  DollarSign,
+  AlertCircle,
+  ArrowUpRight,
+  ArrowDownRight,
+  ExternalLink,
+  TrendingUp,
+  TrendingDown,
+  RefreshCw,
+} from 'lucide-react';
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from 'recharts';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { StatCard } from '@/components/Statcard';
+import { useEffect, useState, useRef, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   getDashboardKPIs,
   getRecentTransactions,
@@ -20,12 +39,9 @@ import {
   getCustomerFrequency,
   getRevenueByCategory,
   getReservationSources,
-  getUsers
-} from "@/services/admin.service";
-import { useWebSocket } from "@/contexts/WebSocketContext";
-
-
-
+  getUsers,
+} from '@/services/admin.service';
+import { useWebSocket } from '@/contexts/WebSocketContext';
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -44,7 +60,9 @@ export default function Dashboard() {
   const [todaysReservations, setTodaysReservations] = useState<any[]>([]);
   const [topVendors, setTopVendors] = useState<any[]>([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [wsStatus, setWsStatus] = useState<"connected" | "disconnected" | "connecting">("connecting");
+  const [wsStatus, setWsStatus] = useState<'connected' | 'disconnected' | 'connecting'>(
+    'connecting'
+  );
 
   const fetchKPIs = async () => {
     try {
@@ -52,7 +70,7 @@ export default function Dashboard() {
       const k = kRes?.data?.data || kRes?.data || kRes || null;
       setKpis(k);
     } catch (err) {
-      console.error("Failed to load KPIs", err);
+      console.error('Failed to load KPIs', err);
     }
   };
 
@@ -83,22 +101,22 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (connected) {
-      setWsStatus("connected");
-      subscribe("new-reservation", (data: any) => {
-        console.log("New reservation received via WebSocket:", data);
+      setWsStatus('connected');
+      subscribe('new-reservation', (data: any) => {
+        console.log('New reservation received via WebSocket:', data);
         refreshDashboard();
       });
-      subscribe("new-transaction", (data: any) => {
-        console.log("New transaction received via WebSocket:", data);
+      subscribe('new-transaction', (data: any) => {
+        console.log('New transaction received via WebSocket:', data);
         refreshDashboard();
       });
     } else {
-      setWsStatus("disconnected");
+      setWsStatus('disconnected');
     }
 
     return () => {
-      unsubscribe("new-reservation");
-      unsubscribe("new-transaction");
+      unsubscribe('new-reservation');
+      unsubscribe('new-transaction');
     };
   }, [connected, subscribe, unsubscribe]);
 
@@ -107,22 +125,20 @@ export default function Dashboard() {
       const rev = await getRevenueTrends();
       setRevenueTrends(Array.isArray(rev?.data) ? rev.data : []);
     } catch (err) {
-      console.error("Failed to load revenue trends", err);
+      console.error('Failed to load revenue trends', err);
     }
   };
-
-
 
   const fetchTodaysReservations = async () => {
     try {
       const today = await getTodaysReservations();
       const normalizeRes = (r: any) => ({
-        name: r.customerName || r.user?.name || r.guestName || "Guest",
-        id: r.id || r._id || r.reference || "",
-        date: r.date || r.checkInDate || r.createdAt || "",
-        time: r.time || r.checkInTime || "",
-        venue: r.vendorName || r.vendor?.businessName || r.businessName || "",
-        status: r.status || r.reservationStatus || "",
+        name: r.customerName || r.user?.name || r.guestName || 'Guest',
+        id: r.id || r._id || r.reference || '',
+        date: r.date || r.checkInDate || r.createdAt || '',
+        time: r.time || r.checkInTime || '',
+        venue: r.vendorName || r.vendor?.businessName || r.businessName || '',
+        status: r.status || r.reservationStatus || '',
       });
       setTodaysReservations(Array.isArray(today?.data) ? today.data.map(normalizeRes) : []);
     } catch (err) {
@@ -132,11 +148,11 @@ export default function Dashboard() {
 
   const fetchTopVendors = async () => {
     try {
-      console.log("[Dashboard] Fetching top vendor earnings...");
+      console.log('[Dashboard] Fetching top vendor earnings...');
       // Use the correct endpoint for top performing vendors
       const tv = await getTopVendorEarnings({ page: 1, limit: 10 });
-      console.log("[Dashboard] Top vendors response:", tv);
-      
+      console.log('[Dashboard] Top vendors response:', tv);
+
       // Handle the new response format from /payments/vendors-earnings
       // Response format: { earnings: [...], pagination: {...} }
       let vendors = [];
@@ -159,11 +175,11 @@ export default function Dashboard() {
       } else if (Array.isArray(tv)) {
         vendors = tv;
       }
-      
+
       setTopVendors(vendors);
-      console.log("[Dashboard] Top vendors set:", vendors.length);
+      console.log('[Dashboard] Top vendors set:', vendors.length);
     } catch (err) {
-      console.error("[Dashboard] Failed to load top vendors", err);
+      console.error('[Dashboard] Failed to load top vendors', err);
       // Fallback to old endpoint if new one fails
       try {
         const fallback = await getTopVendors();
@@ -175,7 +191,7 @@ export default function Dashboard() {
         }
         setTopVendors(vendors);
       } catch (fallbackErr) {
-        console.error("[Dashboard] Fallback also failed", fallbackErr);
+        console.error('[Dashboard] Fallback also failed', fallbackErr);
       }
     }
   };
@@ -186,20 +202,27 @@ export default function Dashboard() {
       const res = await getUsers({ page: 1, limit: 10 });
       const payload = res?.data || {};
       // Try common shapes for total count
-      const total = payload?.total || payload?.totalDocs || payload?.totalUsers || payload?.count || payload?.meta?.total || res?.data?.data?.total || null;
+      const total =
+        payload?.total ||
+        payload?.totalDocs ||
+        payload?.totalUsers ||
+        payload?.count ||
+        payload?.meta?.total ||
+        res?.data?.data?.total ||
+        null;
       // Some APIs return counts in headers (e.g. x-total-count)
       const headerCount = res?.headers?.['x-total-count'] || res?.headers?.['X-Total-Count'];
       const parsedHeader = headerCount ? Number(headerCount) : null;
       if (total != null || parsedHeader != null) {
         const finalTotal = Number(total ?? parsedHeader);
         setTotalUsers(finalTotal);
-        console.log("Total users fetched:", finalTotal);
+        console.log('Total users fetched:', finalTotal);
       } else {
         // Don't set if total not provided, fall back to KPIs
-        console.log("Total users not provided in response, using KPIs");
+        console.log('Total users not provided in response, using KPIs');
       }
     } catch (err) {
-      console.error("Failed to load total users", err);
+      console.error('Failed to load total users', err);
       // Don't set to 0, keep null to fall back to KPIs
     }
   };
@@ -208,18 +231,18 @@ export default function Dashboard() {
     try {
       const tx = await getRecentTransactions();
       const normalizeTx = (t: any) => ({
-        id: t.id || "",
-        type: t.type || "vendor",
+        id: t.id || '',
+        type: t.type || 'vendor',
         amount: t.amount || 0,
-        status: t.status || "Pending",
-        createdAt: t.createdAt || "",
+        status: t.status || 'Pending',
+        createdAt: t.createdAt || '',
         guest: t.guest || null,
-        entity: t.entity || "",
-        method: t.method || "bank_transfer",
+        entity: t.entity || '',
+        method: t.method || 'bank_transfer',
       });
       setTransactions(Array.isArray(tx?.data) ? tx.data.map(normalizeTx) : []);
     } catch (err) {
-      console.error("Failed to load transactions", err);
+      console.error('Failed to load transactions', err);
     }
   };
 
@@ -235,13 +258,11 @@ export default function Dashboard() {
         fetchTopVendors(),
       ]);
     } catch (err) {
-      console.error("Failed to refresh dashboard", err);
+      console.error('Failed to refresh dashboard', err);
     } finally {
       setIsRefreshing(false);
     }
   };
-
-
 
   // WebSocket subscriptions for real-time updates
   useEffect(() => {
@@ -343,47 +364,62 @@ export default function Dashboard() {
       fetchRevenueTrends();
     };
 
-    subscribe("user-created", handleUserCreated);
-    subscribe("user-deleted", handleUserDeleted);
-    subscribe("user-updated", handleUserUpdated);
-    subscribe("user-count-updated", handleUserCountUpdated);
-    subscribe("payout_update", handlePayoutUpdate);
-    subscribe("payout-processed", handlePayoutProcessed);
-    subscribe("reservation-created", handleReservationCreated);
-    subscribe("reservation-updated", handleReservationUpdated);
-    subscribe("reservation-deleted", handleReservationDeleted);
-    subscribe("reservation-status-changed", handleReservationStatusChanged);
-    subscribe("payment-created", handlePaymentCreated);
-    subscribe("payment-updated", handlePaymentUpdated);
-    subscribe("vendor-updated", handleVendorUpdated);
-    subscribe("vendor-earnings-updated", handleVendorEarningsUpdated);
+    subscribe('user-created', handleUserCreated);
+    subscribe('user-deleted', handleUserDeleted);
+    subscribe('user-updated', handleUserUpdated);
+    subscribe('user-count-updated', handleUserCountUpdated);
+    subscribe('payout_update', handlePayoutUpdate);
+    subscribe('payout-processed', handlePayoutProcessed);
+    subscribe('reservation-created', handleReservationCreated);
+    subscribe('reservation-updated', handleReservationUpdated);
+    subscribe('reservation-deleted', handleReservationDeleted);
+    subscribe('reservation-status-changed', handleReservationStatusChanged);
+    subscribe('payment-created', handlePaymentCreated);
+    subscribe('payment-updated', handlePaymentUpdated);
+    subscribe('vendor-updated', handleVendorUpdated);
+    subscribe('vendor-earnings-updated', handleVendorEarningsUpdated);
 
     return () => {
-    unsubscribe("user-created");
-    unsubscribe("user-deleted");
-    unsubscribe("user-updated");
-    unsubscribe("user-count-updated");
-    unsubscribe("payout_update");
-    unsubscribe("payout-processed");
-      unsubscribe("reservation-created");
-      unsubscribe("reservation-updated");
-      unsubscribe("reservation-deleted");
-      unsubscribe("reservation-status-changed");
-      unsubscribe("payment-created");
-      unsubscribe("payment-updated");
-      unsubscribe("vendor-updated");
-      unsubscribe("vendor-earnings-updated");
+      unsubscribe('user-created');
+      unsubscribe('user-deleted');
+      unsubscribe('user-updated');
+      unsubscribe('user-count-updated');
+      unsubscribe('payout_update');
+      unsubscribe('payout-processed');
+      unsubscribe('reservation-created');
+      unsubscribe('reservation-updated');
+      unsubscribe('reservation-deleted');
+      unsubscribe('reservation-status-changed');
+      unsubscribe('payment-created');
+      unsubscribe('payment-updated');
+      unsubscribe('vendor-updated');
+      unsubscribe('vendor-earnings-updated');
     };
   }, [subscribe, unsubscribe]);
 
-  const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  const months = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ];
   const trendList = Array.isArray(revenueTrends) ? revenueTrends : [];
   const chartData = trendList.map((r: any) => ({
-    label: months[((r._id?.month ?? r.month ?? 1) - 1)] + ` ${r._id?.year ?? r.year ?? new Date().getFullYear()}`,
+    label:
+      months[(r._id?.month ?? r.month ?? 1) - 1] +
+      ` ${r._id?.year ?? r.year ?? new Date().getFullYear()}`,
     value: Number(r.total ?? r.totalRevenue ?? r.revenue ?? 0),
   }));
   const recent = chartData.slice(-8);
-  const maxVal = Math.max(1, ...recent.map(d => Number(d.value) || 0));
+  const maxVal = Math.max(1, ...recent.map((d) => Number(d.value) || 0));
   const lastRevenue = recent.length ? recent[recent.length - 1].value : 0;
   const prevRevenue = recent.length > 1 ? recent[recent.length - 2].value : 0;
   const pctChange = prevRevenue ? ((lastRevenue - prevRevenue) / prevRevenue) * 100 : 0;
@@ -420,7 +456,11 @@ export default function Dashboard() {
         />
         <StatCard
           title="Pending Payouts"
-          value={formatNaira(transactions.filter(t => t.status !== "Paid").reduce((sum, t) => sum + (Number(t.amount) || 0), 0))}
+          value={formatNaira(
+            transactions
+              .filter((t) => t.status !== 'Paid')
+              .reduce((sum, t) => sum + (Number(t.amount) || 0), 0)
+          )}
           change="+0% vs last week"
           icon={AlertCircle}
           iconBg="bg-yellow-100"
@@ -429,7 +469,11 @@ export default function Dashboard() {
         />
         <StatCard
           title="Successful Payouts"
-          value={formatNaira(transactions.filter(t => t.status === "Paid").reduce((sum, t) => sum + (Number(t.amount) || 0), 0))}
+          value={formatNaira(
+            transactions
+              .filter((t) => t.status === 'Paid')
+              .reduce((sum, t) => sum + (Number(t.amount) || 0), 0)
+          )}
           change="+0% vs last week"
           icon={TrendingUp}
           iconBg="bg-blue-100"
@@ -438,7 +482,7 @@ export default function Dashboard() {
         />
         <StatCard
           title="Last Payout"
-          value={transactions.length > 0 ? formatNaira(Number(transactions[0].amount) || 0) : "₦0"}
+          value={transactions.length > 0 ? formatNaira(Number(transactions[0].amount) || 0) : '₦0'}
           change="-0% vs last week"
           icon={ArrowDownRight}
           iconBg="bg-red-100"
@@ -451,7 +495,12 @@ export default function Dashboard() {
         <CardHeader className="flex flex-row items-center justify-between pb-2">
           <CardTitle className="text-lg">Earnings Trends</CardTitle>
           <div className="flex gap-2">
-            <Button variant="link" size="sm" className="text-primary p-0 h-auto" onClick={() => navigate('/dashboard/admin/reports')}>
+            <Button
+              variant="link"
+              size="sm"
+              className="text-primary p-0 h-auto"
+              onClick={() => navigate('/dashboard/admin/reports')}
+            >
               View All <ExternalLink className="w-3 h-3 ml-1" />
             </Button>
             <span className="text-xs px-2 py-1 border rounded bg-background">Monthly</span>
@@ -462,9 +511,13 @@ export default function Dashboard() {
             <p className="text-2xl md:text-3xl font-bold">{formatNaira(lastRevenue)}</p>
             <p className="text-xs text-muted-foreground flex items-center gap-1">
               {trendUp ? (
-                <span className="text-success flex items-center">↑ {pctChange.toFixed(1)}% vs previous</span>
+                <span className="text-success flex items-center">
+                  ↑ {pctChange.toFixed(1)}% vs previous
+                </span>
               ) : (
-                <span className="text-destructive flex items-center">↓ {Math.abs(pctChange).toFixed(1)}% vs previous</span>
+                <span className="text-destructive flex items-center">
+                  ↓ {Math.abs(pctChange).toFixed(1)}% vs previous
+                </span>
               )}
             </p>
           </div>
@@ -473,8 +526,8 @@ export default function Dashboard() {
               <AreaChart data={recent}>
                 <defs>
                   <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
-                    <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
+                    <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
+                    <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
@@ -495,7 +548,7 @@ export default function Dashboard() {
                     backgroundColor: 'hsl(var(--background))',
                     border: '1px solid hsl(var(--border))',
                     borderRadius: '6px',
-                    boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
+                    boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
                   }}
                   formatter={(value: any) => [formatNaira(value), 'Revenue']}
                   labelStyle={{ color: 'hsl(var(--foreground))' }}
@@ -521,14 +574,23 @@ export default function Dashboard() {
               <Users className="w-5 h-5 text-white" />
             </div>
             <div>
-              <CardTitle className="text-xl font-bold text-gray-900 dark:text-white">Today's Reservations</CardTitle>
+              <CardTitle className="text-xl font-bold text-gray-900 dark:text-white">
+                Today's Reservations
+              </CardTitle>
               <div className="flex items-center gap-2 mt-1">
                 <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                <span className="text-xs text-green-600 dark:text-green-400 font-medium">Live Updates</span>
+                <span className="text-xs text-green-600 dark:text-green-400 font-medium">
+                  Live Updates
+                </span>
               </div>
             </div>
           </div>
-          <Button variant="link" size="sm" className="text-primary p-0 h-auto hover:text-primary/80 transition-colors" onClick={() => navigate('/dashboard/admin/reservations')}>
+          <Button
+            variant="link"
+            size="sm"
+            className="text-primary p-0 h-auto hover:text-primary/80 transition-colors"
+            onClick={() => navigate('/dashboard/admin/reservations')}
+          >
             View All <ExternalLink className="w-3 h-3 ml-1" />
           </Button>
         </CardHeader>
@@ -537,18 +599,27 @@ export default function Dashboard() {
             {todaysReservations.length === 0 ? (
               <div className="text-center py-8">
                 <Users className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-                <p className="text-sm text-gray-500 dark:text-gray-400">No reservations for today</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  No reservations for today
+                </p>
               </div>
             ) : (
               todaysReservations.slice(0, 5).map((res, i) => (
-                <div key={i} className="group bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-200 border border-gray-100 dark:border-gray-700">
+                <div
+                  key={i}
+                  className="group bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-200 border border-gray-100 dark:border-gray-700"
+                >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
                       <div className="relative">
                         <Avatar className="w-12 h-12 ring-2 ring-blue-100 dark:ring-blue-900">
                           <AvatarImage src="" alt={res.name} className="" />
                           <AvatarFallback className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold">
-                            {res.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                            {res.name
+                              .split(' ')
+                              .map((n) => n[0])
+                              .join('')
+                              .toUpperCase()}
                           </AvatarFallback>
                         </Avatar>
                         <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white dark:border-gray-800"></div>
@@ -559,18 +630,26 @@ export default function Dashboard() {
                       </div>
                     </div>
                     <div className="text-right hidden sm:block">
-                      <p className="text-sm font-medium text-gray-900 dark:text-white">{res.date}</p>
+                      <p className="text-sm font-medium text-gray-900 dark:text-white">
+                        {res.date}
+                      </p>
                       <p className="text-xs text-gray-500 dark:text-gray-400">{res.time}</p>
                     </div>
                     <div className="hidden md:block">
-                      <p className="text-sm font-medium text-gray-900 dark:text-white">{res.venue}</p>
+                      <p className="text-sm font-medium text-gray-900 dark:text-white">
+                        {res.venue}
+                      </p>
                     </div>
                     <Badge
-                      variant={res.status === "Active" || res.status === "Confirmed" ? "default" : "secondary"}
+                      variant={
+                        res.status === 'Active' || res.status === 'Confirmed'
+                          ? 'default'
+                          : 'secondary'
+                      }
                       className={`px-3 py-1 ${
-                        res.status === "Active" || res.status === "Confirmed"
-                          ? "bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-sm"
-                          : "bg-gradient-to-r from-yellow-500 to-orange-600 text-white shadow-sm"
+                        res.status === 'Active' || res.status === 'Confirmed'
+                          ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-sm'
+                          : 'bg-gradient-to-r from-yellow-500 to-orange-600 text-white shadow-sm'
                       }`}
                     >
                       {res.status}
@@ -590,16 +669,27 @@ export default function Dashboard() {
               <TrendingUp className="w-5 h-5 text-white" />
             </div>
             <div>
-              <CardTitle className="text-xl font-bold text-gray-900 dark:text-white">Top Performing Vendors</CardTitle>
+              <CardTitle className="text-xl font-bold text-gray-900 dark:text-white">
+                Top Performing Vendors
+              </CardTitle>
               <div className="flex items-center gap-2 mt-1">
                 <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
-                <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">Real-time Performance</span>
+                <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">
+                  Real-time Performance
+                </span>
               </div>
             </div>
           </div>
           <div className="flex gap-2">
-            <span className="text-xs px-3 py-1 border rounded bg-white/80 dark:bg-gray-800/80 text-gray-700 dark:text-gray-300 shadow-sm">Monthly</span>
-            <Button variant="link" size="sm" className="text-primary p-0 h-auto hover:text-primary/80 transition-colors" onClick={() => navigate('/dashboard/admin/vendors')}>
+            <span className="text-xs px-3 py-1 border rounded bg-white/80 dark:bg-gray-800/80 text-gray-700 dark:text-gray-300 shadow-sm">
+              Monthly
+            </span>
+            <Button
+              variant="link"
+              size="sm"
+              className="text-primary p-0 h-auto hover:text-primary/80 transition-colors"
+              onClick={() => navigate('/dashboard/admin/vendors')}
+            >
               View All <ExternalLink className="w-3 h-3 ml-1" />
             </Button>
           </div>
@@ -609,29 +699,38 @@ export default function Dashboard() {
             {topVendors.length === 0 ? (
               <div className="text-center py-8">
                 <TrendingUp className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-                <p className="text-sm text-gray-500 dark:text-gray-400">No vendor performance data available</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  No vendor performance data available
+                </p>
               </div>
             ) : (
               topVendors.slice(0, 5).map((vendor, i) => (
-                <div key={i} className="group bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-200 border border-gray-100 dark:border-gray-700">
+                <div
+                  key={i}
+                  className="group bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-200 border border-gray-100 dark:border-gray-700"
+                >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
                       <div className="relative">
                         <div className="w-12 h-12 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-lg">
-                          {(vendor.businessName || vendor.name || "V")[0].toUpperCase()}
+                          {(vendor.businessName || vendor.name || 'V')[0].toUpperCase()}
                         </div>
                         <div className="absolute -top-1 -left-1 w-5 h-5 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center text-xs font-bold text-white shadow-sm">
                           {i + 1}
                         </div>
                       </div>
                       <div>
-                        <p className="font-semibold text-gray-900 dark:text-white">{vendor.businessName || vendor.name || "Vendor"}</p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">{vendor.vendorType || vendor.type || "Business"}</p>
+                        <p className="font-semibold text-gray-900 dark:text-white">
+                          {vendor.businessName || vendor.name || 'Vendor'}
+                        </p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          {vendor.vendorType || vendor.type || 'Business'}
+                        </p>
                       </div>
                     </div>
                     <div className="text-right hidden sm:block">
                       <p className="text-sm font-medium text-gray-900 dark:text-white">
-                        {vendor.totalReservations || vendor.bookings || "0"} Bookings
+                        {vendor.totalReservations || vendor.bookings || '0'} Bookings
                       </p>
                       <p className="text-xs text-gray-500 dark:text-gray-400">Total Bookings</p>
                     </div>

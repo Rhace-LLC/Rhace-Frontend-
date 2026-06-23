@@ -1,11 +1,11 @@
-import React, { useState } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import UniversalLoader from "../ui/LogoLoader";
-import { toast } from "react-toastify";
-import { HiPercentBadge } from "react-icons/hi2";
-import { capitalize } from "@/utils/helper";
-import DatePicker from "../ui/datepicker";
-import { GuestPicker } from "../ui/guestpicker";
+import React, { useState } from 'react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import UniversalLoader from '../ui/LogoLoader';
+import { toast } from 'react-toastify';
+import { HiPercentBadge } from 'react-icons/hi2';
+import { capitalize } from '@/utils/helper';
+import DatePicker from '../ui/datepicker';
+import { GuestPicker } from '../ui/guestpicker';
 import {
   BedFill,
   Building1,
@@ -14,25 +14,25 @@ import {
   Group3,
   Wifi,
   DishCoverFill,
-} from "@/public/icons/icons";
+} from '@/public/icons/icons';
 
 const AMENITY_LIMIT = 5;
 
 const Rooms = ({ setSelectedRooms, setShow, rooms }) => {
   const tabs = [
-    { title: "Superior Standard Room", value: "Standard" },
-    { title: "Superior Deluxe Room", value: "Deluxe" },
-    { title: "Superior Executive Room", value: "Executive" },
-    { title: "Superior Presidential Room", value: "Presidential" },
+    { title: 'Superior Standard Room', value: 'Standard' },
+    { title: 'Superior Deluxe Room', value: 'Deluxe' },
+    { title: 'Superior Executive Room', value: 'Executive' },
+    { title: 'Superior Presidential Room', value: 'Presidential' },
   ];
 
   const [activeTab, setActiveTab] = useState(tabs[0]);
   const [currentImageIndex, setCurrentImageIndex] = useState({});
   const [expandedAmenities, setExpandedAmenities] = useState({});
-  
+
   // Track quantity per room
   const [quantities, setQuantities] = useState({});
-  
+
   // Track dates and guests per room
   const [roomDetails, setRoomDetails] = useState({});
 
@@ -60,14 +60,14 @@ const Rooms = ({ setSelectedRooms, setShow, rooms }) => {
     localStorage.setItem('selectedRooms', JSON.stringify(roomsData));
   };
   const filteredRooms = rooms.filter((r) => {
-  const category = r.category || r.roomCategory;
-  return category?.toLowerCase() === activeTab.value.toLowerCase();
-});
+    const category = r.category || r.roomCategory;
+    return category?.toLowerCase() === activeTab.value.toLowerCase();
+  });
   // Handle quantity change for a room
   const handleQuantityChange = (roomId, delta) => {
-    setQuantities(prev => {
+    setQuantities((prev) => {
       const current = prev[roomId] || 0;
-      const room = rooms.find(r => r._id === roomId);
+      const room = rooms.find((r) => r._id === roomId);
       const maxUnits = room?.totalUnits || 0;
       const newQty = Math.max(0, Math.min(current + delta, maxUnits));
       return { ...prev, [roomId]: newQty };
@@ -76,23 +76,23 @@ const Rooms = ({ setSelectedRooms, setShow, rooms }) => {
 
   // Handle date change for a specific room
   const handleDateChange = (roomId, field, value) => {
-    setRoomDetails(prev => ({
+    setRoomDetails((prev) => ({
       ...prev,
       [roomId]: {
         ...prev[roomId],
-        [field]: value
-      }
+        [field]: value,
+      },
     }));
   };
 
   // Handle guests change for a specific room
   const handleGuestsChange = (roomId, value) => {
-    setRoomDetails(prev => ({
+    setRoomDetails((prev) => ({
       ...prev,
       [roomId]: {
         ...prev[roomId],
-        guests: value
-      }
+        guests: value,
+      },
     }));
   };
 
@@ -101,7 +101,7 @@ const Rooms = ({ setSelectedRooms, setShow, rooms }) => {
     const details = roomDetails[roomId] || getDefaultDates();
     const { checkInDate, checkOutDate } = details;
     if (!checkInDate || !checkOutDate) return 1;
-    
+
     const msPerDay = 1000 * 60 * 60 * 24;
     return Math.max(1, Math.ceil((new Date(checkOutDate) - new Date(checkInDate)) / msPerDay));
   };
@@ -110,15 +110,15 @@ const Rooms = ({ setSelectedRooms, setShow, rooms }) => {
   const addToSelection = (room) => {
     const qty = quantities[room._id] || 1;
     if (qty < 1) {
-      toast.error("Please select at least 1 room");
+      toast.error('Please select at least 1 room');
       return;
     }
 
     const details = roomDetails[room._id] || getDefaultDates();
     const nights = calculateNights(room._id);
-    
+
     if (nights < 1) {
-      toast.error("Check-out date must be after check-in date");
+      toast.error('Check-out date must be after check-in date');
       return;
     }
 
@@ -128,12 +128,12 @@ const Rooms = ({ setSelectedRooms, setShow, rooms }) => {
       checkInDate: details.checkInDate,
       checkOutDate: details.checkOutDate,
       guests: details.guests || 1,
-      nights
+      nights,
     };
 
-    const existingIndex = selectedRooms.findIndex(r => r._id === room._id);
+    const existingIndex = selectedRooms.findIndex((r) => r._id === room._id);
     let newSelection;
-    
+
     if (existingIndex >= 0) {
       // Update quantity if already selected
       newSelection = [...selectedRooms];
@@ -142,30 +142,30 @@ const Rooms = ({ setSelectedRooms, setShow, rooms }) => {
       // Add new room
       newSelection = [...selectedRooms, roomData];
     }
-    
+
     syncToParent(newSelection);
-    
+
     toast.success(`${qty} ${room.name} added to selection.`);
-    
+
     if (window.innerWidth >= 768) {
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
     setShow(true);
   };
 
   // Remove room from selection
   const removeFromSelection = (roomId) => {
-    const newSelection = selectedRooms.filter(r => r._id !== roomId);
+    const newSelection = selectedRooms.filter((r) => r._id !== roomId);
     syncToParent(newSelection);
-    toast.info("Room removed from selection.");
+    toast.info('Room removed from selection.');
   };
 
   // Calculate total price for selected rooms
   const calculateTotal = () => {
     return selectedRooms.reduce((total, room) => {
-      const discountedPrice = room.pricePerNight - (room.pricePerNight * (room.discount / 100));
+      const discountedPrice = room.pricePerNight - room.pricePerNight * (room.discount / 100);
       const nights = room.nights || calculateNights(room._id);
-      return total + (discountedPrice * (room.quantity || 1) * nights);
+      return total + discountedPrice * (room.quantity || 1) * nights;
     }, 0);
   };
 
@@ -177,7 +177,7 @@ const Rooms = ({ setSelectedRooms, setShow, rooms }) => {
   // Get total nights (using the most common or max)
   const getTotalNights = () => {
     if (selectedRooms.length === 0) return 1;
-    const nightsSet = new Set(selectedRooms.map(r => r.nights || 1));
+    const nightsSet = new Set(selectedRooms.map((r) => r.nights || 1));
     return Math.max(...nightsSet);
   };
 
@@ -211,7 +211,7 @@ const Rooms = ({ setSelectedRooms, setShow, rooms }) => {
   const getAmenitiesList = (room) => {
     const list = [];
 
-    if (room.amenities.includes("Wi-Fi")) {
+    if (room.amenities.includes('Wi-Fi')) {
       list.push(
         <div key="wifi" className="flex items-center">
           <Wifi className="size-5 mr-1" />
@@ -230,11 +230,11 @@ const Rooms = ({ setSelectedRooms, setShow, rooms }) => {
     list.push(
       <div key="bed" className="flex items-center">
         <BedFill className="size-5 mr-1" />
-        <span>{room.amenities.bedType || "1 Twin Bed"}</span>
+        <span>{room.amenities.bedType || '1 Twin Bed'}</span>
       </div>
     );
 
-    if (room.amenities.includes("Free Breakfast")) {
+    if (room.amenities.includes('Free Breakfast')) {
       list.push(
         <div key="breakfast" className="flex items-center">
           <DishCoverFill className="size-5 mr-1" />
@@ -243,7 +243,7 @@ const Rooms = ({ setSelectedRooms, setShow, rooms }) => {
       );
     }
 
-    if (room.amenities.includes("Free Parking")) {
+    if (room.amenities.includes('Free Parking')) {
       list.push(
         <div key="parking" className="flex items-center">
           <Car2 className="size-5 mr-1" />
@@ -252,7 +252,7 @@ const Rooms = ({ setSelectedRooms, setShow, rooms }) => {
       );
     }
 
-    if (room.amenities.includes("City View")) {
+    if (room.amenities.includes('City View')) {
       list.push(
         <div key="cityview" className="flex items-center">
           <Building1 className="size-5 mr-1" />
@@ -263,7 +263,7 @@ const Rooms = ({ setSelectedRooms, setShow, rooms }) => {
 
     return list;
   };
-console.log(filteredRooms)
+  console.log(filteredRooms);
   if (!rooms) return <UniversalLoader type="room-cards" size={100} />;
 
   return (
@@ -271,9 +271,7 @@ console.log(filteredRooms)
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-4">
-          <h1 className="font-semibold mb-2 sm:text-lg text-sm">
-            Select Room Types
-          </h1>
+          <h1 className="font-semibold mb-2 sm:text-lg text-sm">Select Room Types</h1>
           {/* Tabs */}
           <div className="flex space-x-1 bg-whit hide-scrollbar overflow-auto w-full rounded-lg py-1">
             {tabs.map((tab) => (
@@ -282,8 +280,8 @@ console.log(filteredRooms)
                 onClick={() => setActiveTab(tab)}
                 className={`px-4 py-2 rounded-xl text-sm text-nowrap font-medium transition-colors ${
                   activeTab.value === tab.value
-                    ? "bg-[#E7F0F0] border border-[#0A6C6D] text-gray-900"
-                    : "text-gray-600 hover:text-gray-900"
+                    ? 'bg-[#E7F0F0] border border-[#0A6C6D] text-gray-900'
+                    : 'text-gray-600 hover:text-gray-900'
                 }`}
               >
                 {tab.title}
@@ -302,10 +300,11 @@ console.log(filteredRooms)
                 ? allAmenities
                 : allAmenities.slice(0, AMENITY_LIMIT);
               const hasMore = allAmenities.length > AMENITY_LIMIT;
-              
+
               const currentDetails = roomDetails[room._id] || getDefaultDates();
               const nights = calculateNights(room._id);
-              const discountedPrice = room.pricePerNight - (room.pricePerNight * (room.discount / 100));
+              const discountedPrice =
+                room.pricePerNight - room.pricePerNight * (room.discount / 100);
               const qty = quantities[room._id] || 0;
 
               return (
@@ -363,11 +362,11 @@ console.log(filteredRooms)
                         className="font-normal items-center flex sm:font-medium text-xs sm:text-sm mb-4"
                       >
                         <span className="text-[#0A6C6D] underline">
-                          {isExpanded ? "Show less" : "Show more amenities"}
+                          {isExpanded ? 'Show less' : 'Show more amenities'}
                         </span>
                         <ChevronRight
                           className={`w-4 h-4 text-[#606368] transition-transform ${
-                            isExpanded ? "rotate-90" : ""
+                            isExpanded ? 'rotate-90' : ''
                           }`}
                         />
                       </button>
@@ -382,23 +381,19 @@ console.log(filteredRooms)
                         </span>
                         <div className="flex items-center gap-1.5 text-xs">
                           <CheckMark className="w-5 h-5" />
-                          <span className="text-[#111827]">
-                            {room.totalUnits} rooms left
-                          </span>
+                          <span className="text-[#111827]">{room.totalUnits} rooms left</span>
                         </div>
                       </div>
                     </div>
 
                     {/* Cancellation Policy */}
-                    <p className="text-xs text-gray-600 mb-4">
-                      {room.cancellation}
-                    </p>
+                    <p className="text-xs text-gray-600 mb-4">{room.cancellation}</p>
 
                     {/* Pricing */}
                     <div className="flex items-center justify-between font-semibold mb-4">
                       <div className="flex items-center">
                         <span className="text-lg font-semibold sm:font-bold text-[#111827]">
-                          Price:{" "}
+                          Price:{' '}
                           <span className="border-b border-[#111827]">
                             {formatPrice(discountedPrice)}
                           </span>
@@ -408,13 +403,10 @@ console.log(filteredRooms)
                             {formatPrice(room.pricePerNight)}
                           </span>
                         )}
-                        <span className="text-xs text-[#606368] font-normal ml-1">
-                          /night
-                        </span>
+                        <span className="text-xs text-[#606368] font-normal ml-1">/night</span>
                       </div>
                     </div>
 
-                   
                     {/* Reserve Button */}
                     <button
                       onClick={() => addToSelection(room)}
@@ -441,4 +433,3 @@ console.log(filteredRooms)
 };
 
 export default Rooms;
-

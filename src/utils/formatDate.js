@@ -1,13 +1,14 @@
-
 export function formatCustomDate(dateString) {
   const date = new Date(dateString);
 
   // Format time like "8:00 AM"
-  const time = date.toLocaleTimeString('en-US', {
-    hour: 'numeric',
-    minute: '2-digit',
-    hour12: true,
-  }).toLowerCase(); // to make "am" lowercase
+  const time = date
+    .toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+    })
+    .toLowerCase(); // to make "am" lowercase
 
   // Format date like "May 28, 2025"
   const formattedDate = date.toLocaleDateString('en-US', {
@@ -23,11 +24,13 @@ export function formatCustomDateTime(dateString) {
   const date = new Date(dateString);
 
   // Format time like "8:00 AM"
-  const time = date.toLocaleTimeString('en-US', {
-    hour: 'numeric',
-    minute: '2-digit',
-    hour12: true,
-  }).toLowerCase(); // to make "am" lowercase
+  const time = date
+    .toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+    })
+    .toLowerCase(); // to make "am" lowercase
 
   // Format date like "May 28, 2025"
   const formattedDate = date.toLocaleDateString('en-US', {
@@ -41,11 +44,13 @@ export function formatCustomDateTime(dateString) {
 
 export function formatTime(dateString) {
   const date = new Date(dateString);
-    const time = date.toLocaleTimeString('en-US', {
-    hour: 'numeric',
-    minute: '2-digit',
-    hour12: true,
-  }).toLowerCase(); //
+  const time = date
+    .toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+    })
+    .toLowerCase(); //
   return time;
 }
 

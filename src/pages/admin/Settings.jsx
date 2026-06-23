@@ -1,22 +1,41 @@
-import { useState, useEffect } from "react";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Switch } from "@/components/ui/switch";
-import { Textarea } from "@/components/ui/textarea";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Separator } from "@/components/ui/separator";
-import { Home, Store, Calendar, CreditCard, Bell, Shield, ChevronLeft, ChevronRight, Save, RefreshCw, AlertCircle, CheckCircle } from "lucide-react";
-import { getSettings, updateSettings } from "@/services/admin.service";
-import { useWebSocket } from "@/contexts/WebSocketContext";
-import { toast } from "react-toastify";
+import { useState, useEffect } from 'react';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Switch } from '@/components/ui/switch';
+import { Textarea } from '@/components/ui/textarea';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Separator } from '@/components/ui/separator';
+import {
+  Home,
+  Store,
+  Calendar,
+  CreditCard,
+  Bell,
+  Shield,
+  ChevronLeft,
+  ChevronRight,
+  Save,
+  RefreshCw,
+  AlertCircle,
+  CheckCircle,
+} from 'lucide-react';
+import { getSettings, updateSettings } from '@/services/admin.service';
+import { useWebSocket } from '@/contexts/WebSocketContext';
+import { toast } from 'react-toastify';
 
 export default function Settings() {
-  const [activeTab, setActiveTab] = useState("overview");
+  const [activeTab, setActiveTab] = useState('overview');
   const [settings, setSettings] = useState({});
   const [formData, setFormData] = useState({});
   const [loading, setLoading] = useState(true);
@@ -36,14 +55,14 @@ export default function Settings() {
 
   useEffect(() => {
     const handleSettingsUpdate = (payload) => {
-      console.log("Settings update received:", payload);
+      console.log('Settings update received:', payload);
       fetchSettings(); // Refresh settings data in real-time
     };
 
-    subscribe("settings_updated", handleSettingsUpdate);
+    subscribe('settings_updated', handleSettingsUpdate);
 
     return () => {
-      unsubscribe("settings_updated");
+      unsubscribe('settings_updated');
     };
   }, [subscribe, unsubscribe]);
 
@@ -55,11 +74,11 @@ export default function Settings() {
       setError(null);
     } catch (err) {
       if (err.response?.status === 403) {
-        setError("Access denied. Please ensure you are logged in as an admin.");
-        toast.error("Access denied. Admin privileges required.");
+        setError('Access denied. Please ensure you are logged in as an admin.');
+        toast.error('Access denied. Admin privileges required.');
       } else {
-        setError("Failed to load settings");
-        toast.error("Failed to load settings");
+        setError('Failed to load settings');
+        toast.error('Failed to load settings');
       }
     } finally {
       setLoading(false);
@@ -67,7 +86,7 @@ export default function Settings() {
   };
 
   const handleInputChange = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleSaveSettings = async (tabData) => {
@@ -79,12 +98,12 @@ export default function Settings() {
       setSettings(updatedSettings);
 
       // Emit WebSocket event for real-time updates
-      sendMessage("settings_updated", updatedSettings);
+      sendMessage('settings_updated', updatedSettings);
 
-      toast.success("Settings saved successfully");
+      toast.success('Settings saved successfully');
     } catch (err) {
-      console.error("Failed to save settings:", err);
-      toast.error("Failed to save settings");
+      console.error('Failed to save settings:', err);
+      toast.error('Failed to save settings');
     } finally {
       setSaving(false);
     }
@@ -134,11 +153,16 @@ export default function Settings() {
           <Card className="p-6">
             <h3 className="font-semibold mb-4">General Information</h3>
             <p className="text-sm text-muted-foreground mb-6">Basic configuration settings</p>
-            
+
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <Label htmlFor="platform-name">Platform Name*</Label>
-                <Input id="platform-name" value={formData['platform-name'] || 'Bookies'} onChange={(e) => handleInputChange('platform-name', e.target.value)} maxLength={50} />
+                <Input
+                  id="platform-name"
+                  value={formData['platform-name'] || 'Bookies'}
+                  onChange={(e) => handleInputChange('platform-name', e.target.value)}
+                  maxLength={50}
+                />
                 <p className="text-xs text-muted-foreground">
                   This name appears on vendor onboarding screens and email templates.
                 </p>
@@ -146,7 +170,10 @@ export default function Settings() {
 
               <div className="space-y-2">
                 <Label htmlFor="currency">Default Currency*</Label>
-                <Select value={formData.currency || 'ngn'} onValueChange={(value) => handleInputChange('currency', value)}>
+                <Select
+                  value={formData.currency || 'ngn'}
+                  onValueChange={(value) => handleInputChange('currency', value)}
+                >
                   <SelectTrigger id="currency">
                     <SelectValue />
                   </SelectTrigger>
@@ -167,9 +194,7 @@ export default function Settings() {
                   <Input id="booking-window" defaultValue="90" type="number" className="max-w-24" />
                   <span className="flex items-center text-sm text-muted-foreground">days</span>
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  Users can book up to 90 days ahead.
-                </p>
+                <p className="text-xs text-muted-foreground">Users can book up to 90 days ahead.</p>
               </div>
 
               <div className="space-y-2">
@@ -220,9 +245,16 @@ export default function Settings() {
 
             <div className="flex flex-col sm:flex-row justify-end gap-3 mt-6 pt-6 border-t">
               <Button variant="outline">Reset to Default</Button>
-              <Button onClick={() => handleSaveSettings({ /* overview settings */ })} disabled={saving}>
+              <Button
+                onClick={() =>
+                  handleSaveSettings({
+                    /* overview settings */
+                  })
+                }
+                disabled={saving}
+              >
                 <Save className="h-4 w-4 mr-2" />
-                {saving ? "Saving..." : "Save Changes"}
+                {saving ? 'Saving...' : 'Save Changes'}
               </Button>
             </div>
           </Card>
@@ -257,22 +289,30 @@ export default function Settings() {
                     <div className="flex items-start gap-3">
                       <Checkbox id="restaurant" defaultChecked />
                       <div>
-                        <Label htmlFor="restaurant" className="font-medium">Restaurant</Label>
+                        <Label htmlFor="restaurant" className="font-medium">
+                          Restaurant
+                        </Label>
                         <p className="text-xs text-muted-foreground">Food & Dining Establishment</p>
                       </div>
                     </div>
                     <div className="flex items-start gap-3">
                       <Checkbox id="hotel" defaultChecked />
                       <div>
-                        <Label htmlFor="hotel" className="font-medium">Hotel</Label>
+                        <Label htmlFor="hotel" className="font-medium">
+                          Hotel
+                        </Label>
                         <p className="text-xs text-muted-foreground">Accommodation Services</p>
                       </div>
                     </div>
                     <div className="flex items-start gap-3">
                       <Checkbox id="bars" />
                       <div>
-                        <Label htmlFor="bars" className="font-medium">Bars</Label>
-                        <p className="text-xs text-muted-foreground">Beverage-focused establishments</p>
+                        <Label htmlFor="bars" className="font-medium">
+                          Bars
+                        </Label>
+                        <p className="text-xs text-muted-foreground">
+                          Beverage-focused establishments
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -288,7 +328,8 @@ export default function Settings() {
                       <div>
                         <p className="font-medium text-sm">Auto-Approve for New Menus</p>
                         <p className="text-xs text-muted-foreground mt-1">
-                          When enabled, menus created by vendors go live immediately. When disabled, admin must approve new menus.
+                          When enabled, menus created by vendors go live immediately. When disabled,
+                          admin must approve new menus.
                         </p>
                       </div>
                       <Switch defaultChecked />
@@ -297,7 +338,8 @@ export default function Settings() {
                       <div>
                         <p className="font-medium text-sm">Auto-Approve for New Branches</p>
                         <p className="text-xs text-muted-foreground mt-1">
-                          Determines whether vendors can independently create branches or require admin approval first.
+                          Determines whether vendors can independently create branches or require
+                          admin approval first.
                         </p>
                       </div>
                       <Switch defaultChecked />
@@ -310,7 +352,8 @@ export default function Settings() {
                 <div>
                   <h3 className="font-semibold mb-2">Default Commission Rate</h3>
                   <p className="text-sm text-muted-foreground mb-4">
-                    Set the default commission percentage for all vendors. This can be overridden for individual vendors.
+                    Set the default commission percentage for all vendors. This can be overridden
+                    for individual vendors.
                   </p>
                   <div className="flex gap-2">
                     <Input defaultValue="10" type="number" className="max-w-24" />
@@ -323,14 +366,16 @@ export default function Settings() {
                   <p className="text-sm text-muted-foreground mb-4">
                     Customize the welcome message that vendors see after registration.
                   </p>
-                  <Textarea 
+                  <Textarea
                     placeholder="Add a short onboarding message here"
                     className="min-h-32"
                   />
                 </div>
 
                 <div>
-                  <h3 className="font-semibold mb-2">Required Information During Vendor Onboarding</h3>
+                  <h3 className="font-semibold mb-2">
+                    Required Information During Vendor Onboarding
+                  </h3>
                   <p className="text-sm text-muted-foreground mb-4">
                     Configure what information vendors must provide during registration.
                   </p>
@@ -380,13 +425,13 @@ export default function Settings() {
               <Button variant="outline" size="icon" disabled>
                 <ChevronLeft className="h-4 w-4" />
               </Button>
-              {[1, 2, 3, "...", 10, 11, 12].map((page, idx) => (
+              {[1, 2, 3, '...', 10, 11, 12].map((page, idx) => (
                 <Button
                   key={idx}
-                  variant={page === 1 ? "default" : "outline"}
+                  variant={page === 1 ? 'default' : 'outline'}
                   size="icon"
                   className="w-10 hidden sm:inline-flex"
-                  disabled={page === "..."}
+                  disabled={page === '...'}
                 >
                   {page}
                 </Button>
@@ -401,19 +446,25 @@ export default function Settings() {
         <TabsContent value="reservation" className="space-y-6">
           <Card className="p-6">
             <h3 className="font-semibold mb-4">Reservation Rules</h3>
-            <p className="text-sm text-muted-foreground mb-6">Configure reservation policies and rules for the platform.</p>
+            <p className="text-sm text-muted-foreground mb-6">
+              Configure reservation policies and rules for the platform.
+            </p>
 
             <div className="space-y-6">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <Label htmlFor="cancellation-policy">Cancellation Policy</Label>
-                  <Select defaultValue={settings.cancellationPolicy || "flexible"}>
+                  <Select defaultValue={settings.cancellationPolicy || 'flexible'}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="flexible">Flexible - Free cancellation up to 24 hours</SelectItem>
-                      <SelectItem value="moderate">Moderate - Free cancellation up to 48 hours</SelectItem>
+                      <SelectItem value="flexible">
+                        Flexible - Free cancellation up to 24 hours
+                      </SelectItem>
+                      <SelectItem value="moderate">
+                        Moderate - Free cancellation up to 48 hours
+                      </SelectItem>
                       <SelectItem value="strict">Strict - No free cancellation</SelectItem>
                     </SelectContent>
                   </Select>
@@ -530,9 +581,16 @@ export default function Settings() {
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Reset
               </Button>
-              <Button onClick={() => handleSaveSettings({ /* reservation settings */ })} disabled={saving}>
+              <Button
+                onClick={() =>
+                  handleSaveSettings({
+                    /* reservation settings */
+                  })
+                }
+                disabled={saving}
+              >
                 <Save className="h-4 w-4 mr-2" />
-                {saving ? "Saving..." : "Save Changes"}
+                {saving ? 'Saving...' : 'Save Changes'}
               </Button>
             </div>
           </Card>
@@ -541,13 +599,15 @@ export default function Settings() {
         <TabsContent value="payment" className="space-y-6">
           <Card className="p-6">
             <h3 className="font-semibold mb-4">Payment & Payouts</h3>
-            <p className="text-sm text-muted-foreground mb-6">Configure payment processing and vendor payout settings.</p>
+            <p className="text-sm text-muted-foreground mb-6">
+              Configure payment processing and vendor payout settings.
+            </p>
 
             <div className="space-y-6">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <Label htmlFor="payment-gateway">Primary Payment Gateway</Label>
-                  <Select defaultValue={settings.paymentGateway || "paystack"}>
+                  <Select defaultValue={settings.paymentGateway || 'paystack'}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -564,7 +624,7 @@ export default function Settings() {
 
                 <div className="space-y-2">
                   <Label htmlFor="payout-frequency">Payout Frequency</Label>
-                  <Select defaultValue={settings.payoutFrequency || "weekly"}>
+                  <Select defaultValue={settings.payoutFrequency || 'weekly'}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -708,9 +768,16 @@ export default function Settings() {
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Reset
               </Button>
-              <Button onClick={() => handleSaveSettings({ /* payment settings */ })} disabled={saving}>
+              <Button
+                onClick={() =>
+                  handleSaveSettings({
+                    /* payment settings */
+                  })
+                }
+                disabled={saving}
+              >
                 <Save className="h-4 w-4 mr-2" />
-                {saving ? "Saving..." : "Save Changes"}
+                {saving ? 'Saving...' : 'Save Changes'}
               </Button>
             </div>
           </Card>
@@ -719,7 +786,9 @@ export default function Settings() {
         <TabsContent value="notifications" className="space-y-6">
           <Card className="p-6">
             <h3 className="font-semibold mb-4">Notifications</h3>
-            <p className="text-sm text-muted-foreground mb-6">Configure notification preferences for admin alerts and user communications.</p>
+            <p className="text-sm text-muted-foreground mb-6">
+              Configure notification preferences for admin alerts and user communications.
+            </p>
 
             <div className="space-y-6">
               <div className="space-y-4">
@@ -854,19 +923,21 @@ export default function Settings() {
                       id="welcome-email-template"
                       placeholder="Customize the welcome email sent to new vendors..."
                       className="min-h-20"
-                      defaultValue={settings.welcomeEmailTemplate || ""}
+                      defaultValue={settings.welcomeEmailTemplate || ''}
                     />
                     <p className="text-xs text-muted-foreground">
                       HTML template for vendor welcome emails.
                     </p>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="reservation-confirm-template">Reservation Confirmation Template</Label>
+                    <Label htmlFor="reservation-confirm-template">
+                      Reservation Confirmation Template
+                    </Label>
                     <Textarea
                       id="reservation-confirm-template"
                       placeholder="Customize reservation confirmation messages..."
                       className="min-h-20"
-                      defaultValue={settings.reservationConfirmTemplate || ""}
+                      defaultValue={settings.reservationConfirmTemplate || ''}
                     />
                     <p className="text-xs text-muted-foreground">
                       Template for reservation confirmation emails and SMS.
@@ -882,7 +953,7 @@ export default function Settings() {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <Label htmlFor="notification-frequency">Notification Frequency</Label>
-                    <Select defaultValue={settings.notificationFrequency || "immediate"}>
+                    <Select defaultValue={settings.notificationFrequency || 'immediate'}>
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
@@ -902,7 +973,7 @@ export default function Settings() {
                     <Input
                       id="quiet-hours-start"
                       type="time"
-                      defaultValue={settings.quietHoursStart || "22:00"}
+                      defaultValue={settings.quietHoursStart || '22:00'}
                     />
                     <p className="text-xs text-muted-foreground">
                       Start time for quiet hours (no notifications).
@@ -913,11 +984,9 @@ export default function Settings() {
                     <Input
                       id="quiet-hours-end"
                       type="time"
-                      defaultValue={settings.quietHoursEnd || "08:00"}
+                      defaultValue={settings.quietHoursEnd || '08:00'}
                     />
-                    <p className="text-xs text-muted-foreground">
-                      End time for quiet hours.
-                    </p>
+                    <p className="text-xs text-muted-foreground">End time for quiet hours.</p>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="max-notifications-day">Max Notifications per Day</Label>
@@ -941,9 +1010,16 @@ export default function Settings() {
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Reset
               </Button>
-              <Button onClick={() => handleSaveSettings({ /* notification settings */ })} disabled={saving}>
+              <Button
+                onClick={() =>
+                  handleSaveSettings({
+                    /* notification settings */
+                  })
+                }
+                disabled={saving}
+              >
                 <Save className="h-4 w-4 mr-2" />
-                {saving ? "Saving..." : "Save Changes"}
+                {saving ? 'Saving...' : 'Save Changes'}
               </Button>
             </div>
           </Card>
@@ -952,7 +1028,9 @@ export default function Settings() {
         <TabsContent value="security" className="space-y-6">
           <Card className="p-6">
             <h3 className="font-semibold mb-4">Admin Access & Security</h3>
-            <p className="text-sm text-muted-foreground mb-6">Manage admin access, authentication, and security settings.</p>
+            <p className="text-sm text-muted-foreground mb-6">
+              Manage admin access, authentication, and security settings.
+            </p>
 
             <div className="space-y-6">
               <div className="space-y-4">
@@ -1121,7 +1199,7 @@ export default function Settings() {
                       id="custom-roles"
                       placeholder="Define custom admin roles and permissions..."
                       className="min-h-20"
-                      defaultValue={settings.customRoles || ""}
+                      defaultValue={settings.customRoles || ''}
                     />
                     <p className="text-xs text-muted-foreground">
                       JSON format for custom role definitions.
@@ -1162,9 +1240,16 @@ export default function Settings() {
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Reset
               </Button>
-              <Button onClick={() => handleSaveSettings({ /* security settings */ })} disabled={saving}>
+              <Button
+                onClick={() =>
+                  handleSaveSettings({
+                    /* security settings */
+                  })
+                }
+                disabled={saving}
+              >
                 <Save className="h-4 w-4 mr-2" />
-                {saving ? "Saving..." : "Save Changes"}
+                {saving ? 'Saving...' : 'Save Changes'}
               </Button>
             </div>
           </Card>

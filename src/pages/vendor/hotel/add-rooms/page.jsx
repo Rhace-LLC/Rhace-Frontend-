@@ -10,8 +10,7 @@ import { BookingPolicyForm } from './components/booking-policy';
 import HotelBookingInterface from './components/rooms-confirmation';
 import { SetupSteps } from './components/setup-steps';
 
-
-export default function AddRooms () {
+export default function AddRooms() {
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
 
@@ -30,9 +29,9 @@ export default function AddRooms () {
         images: [],
         category: 'Standard',
         discount: 0,
-      }
+      },
     ],
-    bookingPolicy: {}
+    bookingPolicy: {},
   });
 
   const [openAccordion, setOpenAccordion] = useState('room-1');
@@ -41,9 +40,9 @@ export default function AddRooms () {
   // Handle booking policy form submission
   const handleBookingPolicySubmit = (data) => {
     console.log('Booking policy data:', data);
-    setCompleteFormData(prev => ({
+    setCompleteFormData((prev) => ({
       ...prev,
-      bookingPolicy: data
+      bookingPolicy: data,
     }));
     // Auto advance to next step
     setCurrentStep(3);
@@ -63,26 +62,26 @@ export default function AddRooms () {
       amenities: ['Wi-Fi', 'TV', 'AC'],
       images: [],
       category: 'Standard',
-      discount: 0
+      discount: 0,
     };
 
-    setCompleteFormData(prev => ({
+    setCompleteFormData((prev) => ({
       ...prev,
-      roomTypes: [...prev.roomTypes, newRoom]
+      roomTypes: [...prev.roomTypes, newRoom],
     }));
     setOpenAccordion(`room-${newRoomId}`);
   };
 
   const handleDeleteRoomType = (roomId) => {
     if (completeFormData.roomTypes.length > 1) {
-      setCompleteFormData(prev => ({
+      setCompleteFormData((prev) => ({
         ...prev,
-        roomTypes: prev.roomTypes.filter(room => room.id !== roomId)
+        roomTypes: prev.roomTypes.filter((room) => room.id !== roomId),
       }));
 
       // Handle accordion state
       if (openAccordion === `room-${roomId}`) {
-        const remainingRooms = completeFormData.roomTypes.filter(room => room.id !== roomId);
+        const remainingRooms = completeFormData.roomTypes.filter((room) => room.id !== roomId);
         if (remainingRooms.length > 0) {
           setOpenAccordion(`room-${remainingRooms[0].id}`);
         }
@@ -103,16 +102,18 @@ export default function AddRooms () {
   );
 
   const handleAmenityToggle = (roomId, amenity) => {
-    setCompleteFormData(prev => ({
+    setCompleteFormData((prev) => ({
       ...prev,
-      roomTypes: prev.roomTypes.map(room =>
-        room.id === roomId ? {
-          ...room,
-          amenities: room.amenities.includes(amenity)
-            ? room.amenities.filter(a => a !== amenity)
-            : [...room.amenities, amenity]
-        } : room
-      )
+      roomTypes: prev.roomTypes.map((room) =>
+        room.id === roomId
+          ? {
+              ...room,
+              amenities: room.amenities.includes(amenity)
+                ? room.amenities.filter((a) => a !== amenity)
+                : [...room.amenities, amenity],
+            }
+          : room
+      ),
     }));
   };
 
@@ -126,13 +127,10 @@ export default function AddRooms () {
     formData.append('upload_preset', UPLOAD_PRESET);
 
     try {
-      const response = await fetch(
-        `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
-        {
-          method: 'POST',
-          body: formData,
-        }
-      );
+      const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
+        method: 'POST',
+        body: formData,
+      });
       const data = await response.json();
       return data.secure_url;
     } catch (error) {
@@ -165,11 +163,11 @@ export default function AddRooms () {
     return processedImages;
   };
 
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   // Final form submission
   const handleFinalSubmit = async () => {
     if (loading) return; // prevent duplicate submits
-    setLoading(true)
+    setLoading(true);
     // Validate that all required data is present
     if (!completeFormData.bookingPolicy) {
       alert('Please complete booking policy setup');
@@ -211,7 +209,6 @@ export default function AddRooms () {
           // include booking policy from the unified form data
           bookingPolicy: completeFormData.bookingPolicy,
           totalUnits: room.totalAvailableRooms,
-
         };
 
         // Create room type
@@ -222,7 +219,7 @@ export default function AddRooms () {
       console.log('Created room types:', created);
 
       setLoading(false);
-      navigate("/dashboard/hotel/rooms")
+      navigate('/dashboard/hotel/rooms');
     } catch (err) {
       // More detailed error logging for debugging 403 responses
       if (err?.response) {
@@ -242,7 +239,8 @@ export default function AddRooms () {
         console.log('Stored tokens:', {
           token: localStorage.getItem('token'),
           auth_token: localStorage.getItem('auth_token'),
-          vendor_token: localStorage.getItem('vendor-token') || localStorage.getItem('vendor_token'),
+          vendor_token:
+            localStorage.getItem('vendor-token') || localStorage.getItem('vendor_token'),
         });
       } catch {
         // ignore
@@ -311,16 +309,12 @@ export default function AddRooms () {
             <div className="">
               <BookingPolicyForm
                 onSubmit={handleBookingPolicySubmit}
-                formData={
-                  completeFormData.bookingPolicy
-                }
+                formData={completeFormData.bookingPolicy}
                 setFormData={(update) =>
                   setCompleteFormData((prev) => ({
                     ...prev,
                     bookingPolicy:
-                      typeof update === "function"
-                        ? update(prev.bookingPolicy)
-                        : update,
+                      typeof update === 'function' ? update(prev.bookingPolicy) : update,
                   }))
                 }
                 initialData={completeFormData.bookingPolicy}
@@ -369,7 +363,7 @@ export default function AddRooms () {
           <Button
             variant="secondary"
             size="default"
-            className='bg-[#0a6c6d] text-white hover:bg-teal-700 flex items-center gap-2'
+            className="bg-[#0a6c6d] text-white hover:bg-teal-700 flex items-center gap-2"
             onClick={handleContinue}
             disabled={!canProceedToNextStep() || loading}
           >

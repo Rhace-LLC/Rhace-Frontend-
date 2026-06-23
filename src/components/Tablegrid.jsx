@@ -3,34 +3,32 @@ import {
   hasMultipleImages,
   useCarouselLogic,
   useRestaurantData,
-} from "@/hooks/favorites";
-import { HeartIcon } from "@/public/icons/icons";
-import { userService } from "@/services/user.service";
-import { formatOfferText } from "@/utils/helper";
-import { useEffect, useState } from "react";
-import { FaStar } from "react-icons/fa6";
-import { FiChevronRight, FiChevronsDown } from "react-icons/fi";
-import { useNavigate } from "react-router";
-import { Button } from "./ui/button";
-import UniversalLoader from "./user/ui/LogoLoader";
-import { FavoriteButton } from "./user/ui/favoritebutton";
-
+} from '@/hooks/favorites';
+import { HeartIcon } from '@/public/icons/icons';
+import { userService } from '@/services/user.service';
+import { formatOfferText } from '@/utils/helper';
+import { useEffect, useState } from 'react';
+import { FaStar } from 'react-icons/fa6';
+import { FiChevronRight, FiChevronsDown } from 'react-icons/fi';
+import { useNavigate } from 'react-router';
+import { Button } from './ui/button';
+import UniversalLoader from './user/ui/LogoLoader';
+import { FavoriteButton } from './user/ui/favoritebutton';
 
 // Common cuisine color palette
 const cuisineColorPalette = [
-  "bg-orange-100 border-orange-200",
-  "bg-green-100 border-green-200",
-  "bg-blue-100 border-blue-200",
-  "bg-purple-100 border-purple-200",
-  "bg-pink-100 border-pink-200",
-  "bg-yellow-100 border-yellow-200",
-  "bg-teal-100 border-teal-200",
+  'bg-orange-100 border-orange-200',
+  'bg-green-100 border-green-200',
+  'bg-blue-100 border-blue-200',
+  'bg-purple-100 border-purple-200',
+  'bg-pink-100 border-pink-200',
+  'bg-yellow-100 border-yellow-200',
+  'bg-teal-100 border-teal-200',
 ];
 
 const TableGrid = ({ title, type }) => {
-  const { currentIndices, handleMouseEnter, handleMouseLeave, handleDotClick } =
-    useCarouselLogic();
-  const { restaurants, isLoading } = useRestaurantData("restaurant", type);
+  const { currentIndices, handleMouseEnter, handleMouseLeave, handleDotClick } = useCarouselLogic();
+  const { restaurants, isLoading } = useRestaurantData('restaurant', type);
   const navigate = useNavigate();
 
   if (isLoading) return <UniversalLoader type="cards" />;
@@ -38,8 +36,6 @@ const TableGrid = ({ title, type }) => {
   if (!restaurants || restaurants.length === 0) return null;
 
   let limit = 4;
-
-
 
   return (
     <div className="mb-12 md:mb-20 lg:mb-[92px] px- sm:px-6 lg:px-8">
@@ -61,7 +57,7 @@ const TableGrid = ({ title, type }) => {
           const cuisinesArray = Array.isArray(restaurant.cuisines)
             ? restaurant.cuisines
             : restaurant.cuisines
-                ?.split(",")
+                ?.split(',')
                 .map((c) => c.trim())
                 .filter(Boolean) || [];
 
@@ -75,7 +71,7 @@ const TableGrid = ({ title, type }) => {
                   restaurantId,
                   restaurant,
                   getImagesForRestaurant,
-                  hasMultipleImages,
+                  hasMultipleImages
                 )
               }
               onMouseLeave={() => handleMouseLeave(restaurantId)}
@@ -89,15 +85,13 @@ const TableGrid = ({ title, type }) => {
                       src={image}
                       alt={restaurant.businessName}
                       className={`absolute size-full object-cover transition-all duration-500 ease-in-out ${
-                        index === currentIndex
-                          ? "opacity-100 scale-100"
-                          : "opacity-0 scale-105"
+                        index === currentIndex ? 'opacity-100 scale-100' : 'opacity-0 scale-105'
                       }`}
                       style={{
                         transform:
                           index === currentIndex
-                            ? "translateX(0) scale(1)"
-                            : "translateX(100%) scale(1.05)",
+                            ? 'translateX(0) scale(1)'
+                            : 'translateX(100%) scale(1.05)',
                       }}
                     />
                   ))}
@@ -141,8 +135,8 @@ const TableGrid = ({ title, type }) => {
                         onClick={(e) => handleDotClick(restaurantId, index, e)}
                         className={`block rounded-full transition-all duration-300 ease-out cursor-pointer focus:outline-none ${
                           index === currentIndex
-                            ? "bg-white scale-125 w-4 sm:w-6 h-1.5 sm:h-2 shadow-md"
-                            : "bg-white/70 w-1.5 sm:w-2 h-1.5 sm:h-2 hover:bg-white/90"
+                            ? 'bg-white scale-125 w-4 sm:w-6 h-1.5 sm:h-2 shadow-md'
+                            : 'bg-white/70 w-1.5 sm:w-2 h-1.5 sm:h-2 hover:bg-white/90'
                         }`}
                       />
                     ))}
@@ -170,7 +164,7 @@ const TableGrid = ({ title, type }) => {
 
                   {cuisinesArray.length > 0 && (
                     <div className=" line-clamp-1 mt-2 text-sm text-gray-500 ">
-                      {cuisinesArray.join(", ")}
+                      {cuisinesArray.join(', ')}
                     </div>
                   )}
                   <div className="flex  mt-2 items-center gap-1 sm:text-sm text-xs text-gray-500 ">
@@ -232,9 +226,8 @@ const TableGrid = ({ title, type }) => {
 };
 
 export const TableGridTwo = ({ title, type }) => {
-  const { currentIndices, handleMouseEnter, handleMouseLeave, handleDotClick } =
-    useCarouselLogic();
-  const { restaurants, isLoading } = useRestaurantData("hotel", type);
+  const { currentIndices, handleMouseEnter, handleMouseLeave, handleDotClick } = useCarouselLogic();
+  const { restaurants, isLoading } = useRestaurantData('hotel', type);
   const navigate = useNavigate();
 
   if (isLoading) return <UniversalLoader type="cards" />;
@@ -269,7 +262,7 @@ export const TableGridTwo = ({ title, type }) => {
                   restaurantId,
                   restaurant,
                   getImagesForRestaurant,
-                  hasMultipleImages,
+                  hasMultipleImages
                 )
               }
               onMouseLeave={() => handleMouseLeave(restaurantId)}
@@ -284,15 +277,13 @@ export const TableGridTwo = ({ title, type }) => {
                       src={image}
                       alt={restaurant.businessName}
                       className={`absolute size-full object-cover transition-all duration-500 ease-in-out ${
-                        index === currentIndex
-                          ? "opacity-100 scale-100"
-                          : "opacity-0 scale-105"
+                        index === currentIndex ? 'opacity-100 scale-100' : 'opacity-0 scale-105'
                       }`}
                       style={{
                         transform:
                           index === currentIndex
-                            ? "translateX(0) scale(1)"
-                            : "translateX(100%) scale(1.05)",
+                            ? 'translateX(0) scale(1)'
+                            : 'translateX(100%) scale(1.05)',
                       }}
                     />
                   ))}
@@ -318,8 +309,8 @@ export const TableGridTwo = ({ title, type }) => {
                         onClick={(e) => handleDotClick(restaurantId, index, e)}
                         className={`block rounded-full  transition-all duration-300 ease-out cursor-pointer focus:outline-none ${
                           index === currentIndex
-                            ? "bg-white scale-125 w-4 sm:w-6 h-1.5 sm:h-2 shadow-md"
-                            : "bg-white/70 w-1.5 sm:w-2 h-1.5 sm:h-2 hover:bg-white/90"
+                            ? 'bg-white scale-125 w-4 sm:w-6 h-1.5 sm:h-2 shadow-md'
+                            : 'bg-white/70 w-1.5 sm:w-2 h-1.5 sm:h-2 hover:bg-white/90'
                         }`}
                       />
                     ))}
@@ -384,7 +375,7 @@ export const TableGridTwo = ({ title, type }) => {
                               <rect width="16" height="16" fill="white" />
                             </clipPath>
                           </defs>
-                        </svg>{" "}
+                        </svg>{' '}
                         {formatOfferText(restaurant.offer)}
                       </div>
                     )}
@@ -443,9 +434,8 @@ export const TableGridTwo = ({ title, type }) => {
 };
 
 export const TableGridThree = ({ title, type }) => {
-  const { currentIndices, handleMouseEnter, handleMouseLeave, handleDotClick } =
-    useCarouselLogic();
-  const { restaurants, isLoading } = useRestaurantData("club", type);
+  const { currentIndices, handleMouseEnter, handleMouseLeave, handleDotClick } = useCarouselLogic();
+  const { restaurants, isLoading } = useRestaurantData('club', type);
   // const navigate = useNavigate();
 
   if (isLoading) return <UniversalLoader type="cards" />;
@@ -474,7 +464,7 @@ export const TableGridThree = ({ title, type }) => {
           const categories = Array.isArray(restaurant.categories)
             ? restaurant.categories
             : restaurant.categories
-                ?.split(",")
+                ?.split(',')
                 .map((c) => c.trim())
                 .filter(Boolean) || [];
 
@@ -487,7 +477,7 @@ export const TableGridThree = ({ title, type }) => {
                   restaurantId,
                   restaurant,
                   getImagesForRestaurant,
-                  hasMultipleImages,
+                  hasMultipleImages
                 )
               }
               onMouseLeave={() => handleMouseLeave(restaurantId)}
@@ -501,22 +491,20 @@ export const TableGridThree = ({ title, type }) => {
                       src={image}
                       alt={restaurant.businessName}
                       className={`absolute size-full object-cover transition-all duration-500 ease-in-out ${
-                        index === currentIndex
-                          ? "opacity-100 scale-100"
-                          : "opacity-0 scale-105"
+                        index === currentIndex ? 'opacity-100 scale-100' : 'opacity-0 scale-105'
                       }`}
                       style={{
                         transform:
                           index === currentIndex
-                            ? "translateX(0) scale(1)"
-                            : "translateX(100%) scale(1.05)",
+                            ? 'translateX(0) scale(1)'
+                            : 'translateX(100%) scale(1.05)',
                       }}
                     />
                   ))}
 
                   {/* Overlay */}
                   <div className="absolute inset-0 bg-linear-to-t from-black/10 via-transparent to-transparent pointer-events-none" />
-                  {(restaurant.specialCategory) && (
+                  {restaurant.specialCategory && (
                     <span className="absolute top-1 left-2 bg-yellow-500/95 backdrop-blur-sm px-2 sm:px-3 py-0.5 sm:py-1 text-xs font-medium text-gray-800 rounded-full shadow-lg transition-all duration-300 hover:bg-white whitespace-nowrap">
                       {restaurant.specialCategory}
                     </span>
@@ -527,7 +515,6 @@ export const TableGridThree = ({ title, type }) => {
                   </div>
                 </div>
 
-
                 {multipleImages && (
                   <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex space-x-1 sm:space-x-1.5">
                     {images.map((_, index) => (
@@ -536,8 +523,8 @@ export const TableGridThree = ({ title, type }) => {
                         onClick={(e) => handleDotClick(restaurantId, index, e)}
                         className={`block rounded-full transition-all duration-300 ease-out cursor-pointer focus:outline-none ${
                           index === currentIndex
-                            ? "bg-white scale-125 w-4 sm:w-6 h-1.5 sm:h-2 shadow-md"
-                            : "bg-white/70 w-1.5 sm:w-2 h-1.5 sm:h-2 hover:bg-white/90"
+                            ? 'bg-white scale-125 w-4 sm:w-6 h-1.5 sm:h-2 shadow-md'
+                            : 'bg-white/70 w-1.5 sm:w-2 h-1.5 sm:h-2 hover:bg-white/90'
                         }`}
                       />
                     ))}
@@ -546,7 +533,10 @@ export const TableGridThree = ({ title, type }) => {
               </div>
 
               {/* Info Section */}
-              <a href={`/clubs/${restaurant._id}`} className="pt-3 flex-1 space-y-2 flex flex-col justify-between">
+              <a
+                href={`/clubs/${restaurant._id}`}
+                className="pt-3 flex-1 space-y-2 flex flex-col justify-between"
+              >
                 <div className="space-y-2">
                   <div className="flex flex-col-reverse px-2 sm:px-3  w-full justify-between">
                     <h3 className="text-sm sm:text-lg font-semibold capitalize text-gray-900 leading-tight line-clamp-1">
@@ -557,10 +547,7 @@ export const TableGridThree = ({ title, type }) => {
                   {categories.length > 0 && (
                     <div className="flex gap-1 overflow-x-auto hide-scrollbar px-2 sm:px-3 ">
                       {categories.slice(0, 3).map((category, index) => {
-                        const classes =
-                          cuisineColorPalette[
-                            index % cuisineColorPalette.length
-                          ];
+                        const classes = cuisineColorPalette[index % cuisineColorPalette.length];
                         return (
                           <div
                             key={index}
@@ -584,9 +571,7 @@ export const TableGridThree = ({ title, type }) => {
                   </div>
 
                   <div className="flex px-2 sm:px-3 text-gray-500 mt-1.5 justify-start items-center gap-1">
-                    <div className="font-medium text-xs sm:text-sm leading-none">
-                      Table from
-                    </div>
+                    <div className="font-medium text-xs sm:text-sm leading-none">Table from</div>
                     <div className="text-[13px] sm:text-sm text-black leading-none">
                       ₦{restaurant.priceRange.toLocaleString()}
                     </div>
@@ -698,7 +683,7 @@ export const TableGridFour = ({ title }) => {
 
               {/* Badge */}
               <div className="absolute top-3 left-3 bg-orange-500/95 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold text-white shadow-lg">
-                {menu.mealTimes?.[0] || "Special"}
+                {menu.mealTimes?.[0] || 'Special'}
               </div>
 
               <button className="absolute top-2 right-4 text-white cursor-pointer text-base sm:text-lg transition-all duration-300 hover:scale-110 hover:text-red-400 drop-shadow-md">
@@ -753,9 +738,7 @@ export const TableGridFour = ({ title }) => {
                   <span className="text-2xl sm:text-3xl font-bold text-gray-900">
                     ₦{menu.price.toLocaleString()}
                   </span>
-                  <span className="text-xs text-gray-500">
-                    {menu.pricingModel}
-                  </span>
+                  <span className="text-xs text-gray-500">{menu.pricingModel}</span>
                 </div>
 
                 <Button
@@ -790,6 +773,3 @@ export const TableGridFour = ({ title }) => {
     </div>
   );
 };
-
-// /api/users/favorites?search= GET to fetch favorites with queries included
-// /api/users/favorites/ POST to add favorites payload: vendorId

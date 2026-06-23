@@ -1,16 +1,16 @@
-import { useEffect, useState } from "react";
-import { Loader2, Minus, Plus } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import ReservationHeader from "./ReservationHeader";
-import { useReservations } from "@/contexts/restaurant/ReservationContext";
-import { toast } from "react-toastify";
+import { useEffect, useState } from 'react';
+import { Loader2, Minus, Plus } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import ReservationHeader from './ReservationHeader';
+import { useReservations } from '@/contexts/restaurant/ReservationContext';
+import { toast } from 'react-toastify';
 // import { MenusData } from "@/lib/api";
-import { menuService } from "@/services/menu.service";
-import UniversalLoader from "../ui/LogoLoader";
+import { menuService } from '@/services/menu.service';
+import UniversalLoader from '../ui/LogoLoader';
 export default function PreSelectMeal({ id }) {
   const {
     activeTab,
@@ -33,24 +33,24 @@ export default function PreSelectMeal({ id }) {
 
   const tabs = [
     {
-      name: "Starters",
-      value: "Starters",
+      name: 'Starters',
+      value: 'Starters',
     },
     {
-      name: "Main Course",
-      value: "Main Dish ",
+      name: 'Main Course',
+      value: 'Main Dish ',
     },
     {
-      name: "Appetizers",
-      value: "Appetizer",
+      name: 'Appetizers',
+      value: 'Appetizer',
     },
     {
-      name: "Desserts",
-      value: "Dessert",
+      name: 'Desserts',
+      value: 'Dessert',
     },
     {
-      name: "Drinks",
-      value: "Drink",
+      name: 'Drinks',
+      value: 'Drink',
     },
   ];
 
@@ -58,21 +58,21 @@ export default function PreSelectMeal({ id }) {
     setLoading(true);
     try {
       const data = await menuService.getMenuItems(id);
-      console.log(data)
+      console.log(data);
       setMenuItems(
         data.menuItems.map((item) => ({
           ...item,
           selected: false,
           quantity: 0,
-          specialRequest: "",
+          specialRequest: '',
         }))
       );
       if (data.length === 0) {
-        toast.info("No menu items available at the moment.");
+        toast.info('No menu items available at the moment.');
       }
     } catch (error) {
-      console.error("Error fetching menu items:", error);
-      toast.error("Failed to load menu items. Please try again later.");
+      console.error('Error fetching menu items:', error);
+      toast.error('Failed to load menu items. Please try again later.');
     } finally {
       setLoading(false);
     }
@@ -88,7 +88,7 @@ export default function PreSelectMeal({ id }) {
     setMenuItems(
       menuItems.map((item) => {
         if (item._id === id) {
-          if (type === "input") {
+          if (type === 'input') {
             const newQuantity = change;
             return { ...item, quantity: newQuantity, selected: newQuantity > 0 ? true : false };
           } else {
@@ -118,8 +118,7 @@ export default function PreSelectMeal({ id }) {
         if (item._id === id) {
           if (item.quantity === 0) {
             return { ...item, selected: true, quantity: 1 };
-          }
-          else {
+          } else {
             return { ...item, selected: false, quantity: 0 };
           }
         }
@@ -135,17 +134,11 @@ export default function PreSelectMeal({ id }) {
   const selectedItems = menuItems.filter((item) => item.selected);
 
   const calculateSubtotal = () => {
-    return selectedItems.reduce(
-      (total, item) => total + item.price * item.quantity,
-      0
-    );
+    return selectedItems.reduce((total, item) => total + item.price * item.quantity, 0);
   };
 
-
   if (loading) {
-    return (
-      <UniversalLoader fullscreen type="preselect-meal"/>
-    );
+    return <UniversalLoader fullscreen type="preselect-meal" />;
   }
 
   return (
@@ -154,52 +147,48 @@ export default function PreSelectMeal({ id }) {
       <ReservationHeader title="Pre-Select your Meal" index={2} />
       <div className="bg-[#E7F0F0] border-[#B3D1D2] sticky top-0 z-50 w-full">
         <div className="max-w-4xl mx-auto rounded-md mb-6 p-4">
-          <div className="text-xs md:text-sm text-gray-600 mb-1">
-            Reservation Completed
-          </div>
+          <div className="text-xs md:text-sm text-gray-600 mb-1">Reservation Completed</div>
           <div className="flex flex-wrap items-center gap-y-1 text-xs md:text-sm">
-            <span className="font-medium">
-              {vendor?.businessName || "Restaurant Name"}
-            </span>
+            <span className="font-medium">{vendor?.businessName || 'Restaurant Name'}</span>
             <span className="flex items-center">
               <span className="md:size-2 size-1 bg-black rounded-full mx-2"></span>
               {date
                 ? date
-                  .toLocaleDateString("en-GB", {
-                    day: "numeric",
-                    month: "long",
-                    year: "numeric",
-                  })
-                  .replace(
-                    /^(\d{1,2})/,
-                    (d) =>
-                      d +
-                      (["1", "21", "31"].includes(d)
-                        ? "st"
-                        : ["2", "22"].includes(d)
-                          ? "nd"
-                          : ["3", "23"].includes(d)
-                            ? "rd"
-                            : "th")
-                  )
-                : "N/A"}
+                    .toLocaleDateString('en-GB', {
+                      day: 'numeric',
+                      month: 'long',
+                      year: 'numeric',
+                    })
+                    .replace(
+                      /^(\d{1,2})/,
+                      (d) =>
+                        d +
+                        (['1', '21', '31'].includes(d)
+                          ? 'st'
+                          : ['2', '22'].includes(d)
+                            ? 'nd'
+                            : ['3', '23'].includes(d)
+                              ? 'rd'
+                              : 'th')
+                    )
+                : 'N/A'}
             </span>
             <span className="flex items-center">
               <span className="md:size-2 size-1 bg-black rounded-full mx-2"></span>
               {time
                 ? (() => {
-                  const [hourStr, minuteStr] = time.split(":");
-                  let hour = parseInt(hourStr, 10);
-                  const minute = minuteStr || "00";
-                  hour = hour % 12 || 12;
-                  return `${hour}:${minute}`;
-                })()
-                : "N/A"}
+                    const [hourStr, minuteStr] = time.split(':');
+                    let hour = parseInt(hourStr, 10);
+                    const minute = minuteStr || '00';
+                    hour = hour % 12 || 12;
+                    return `${hour}:${minute}`;
+                  })()
+                : 'N/A'}
             </span>
             <span className="flex items-center">
               <span className="md:size-2 size-1 bg-black rounded-full mx-2"></span>
-              {guestCount || "N/A"} Guest
-              {guestCount && parseInt(guestCount) > 1 ? "s" : ""}
+              {guestCount || 'N/A'} Guest
+              {guestCount && parseInt(guestCount) > 1 ? 's' : ''}
             </span>
           </div>
         </div>
@@ -228,13 +217,10 @@ export default function PreSelectMeal({ id }) {
               </svg>
             </div>
             <div>
-              <h3 className="font-medium text-xs md:text-md mb-1">
-                Want to pre-select your meal?
-              </h3>
+              <h3 className="font-medium text-xs md:text-md mb-1">Want to pre-select your meal?</h3>
               <p className="md:text-sm text-xs text-gray-600">
-                Pre-selecting your meal helps the restaurant prepare faster and
-                ensures your favorite dishes are available. You can always make
-                changes later
+                Pre-selecting your meal helps the restaurant prepare faster and ensures your
+                favorite dishes are available. You can always make changes later
               </p>
             </div>
           </div>
@@ -250,10 +236,11 @@ export default function PreSelectMeal({ id }) {
               <TabsTrigger
                 key={i}
                 value={tab.value}
-                className={`px-4 py-2 text-xs md:text-sm rounded-full shadow-none! cursor-pointer ${activeTab === tab.value
-                  ? "bg-[#0A6C6D]! text-white!"
-                  : "text-[#6B7280] bg-[#F9FAFB]"
-                  }`}
+                className={`px-4 py-2 text-xs md:text-sm rounded-full shadow-none! cursor-pointer ${
+                  activeTab === tab.value
+                    ? 'bg-[#0A6C6D]! text-white!'
+                    : 'text-[#6B7280] bg-[#F9FAFB]'
+                }`}
               >
                 {tab.name}
               </TabsTrigger>
@@ -264,141 +251,123 @@ export default function PreSelectMeal({ id }) {
         <div className="space-y-4 mb-6 px-4 md:px-0">
           {menuFiltered.length > 0
             ? menuFiltered.slice(0, visibleCount).map((item) => (
-              <Card
-                key={item._id}
-                className={`overflow-hidden shadow-none md:shadow-md border-0 md:border bg-transparent md:bg-white rounded-none md:rounded-[20px] p-0 ${item.selected ? "border-[#1E3A8A]" : ""
+                <Card
+                  key={item._id}
+                  className={`overflow-hidden shadow-none md:shadow-md border-0 md:border bg-transparent md:bg-white rounded-none md:rounded-[20px] p-0 ${
+                    item.selected ? 'border-[#1E3A8A]' : ''
                   }`}
-              >
-                <CardContent className="p-0 border-none md:border">
-                  <div className={`md:p-2 ${item.selected && "md:bg-[#E9EBF3]"}`}>
-                    <div
-                      className={`flex flex-col md:items-center md:border md:flex-row md:p-4 bg-transparent md:bg-white rounded-none md:rounded-[16px] md:gap-4 ${item.selected
-                        ? "border-[#B9C2DB]"
-                        : "border-transparent"
+                >
+                  <CardContent className="p-0 border-none md:border">
+                    <div className={`md:p-2 ${item.selected && 'md:bg-[#E9EBF3]'}`}>
+                      <div
+                        className={`flex flex-col md:items-center md:border md:flex-row md:p-4 bg-transparent md:bg-white rounded-none md:rounded-[16px] md:gap-4 ${
+                          item.selected ? 'border-[#B9C2DB]' : 'border-transparent'
                         }`}
-                    >
-                      <div className="flex gap-2">
-                        <div className={`relative h-24 w-32 sm:h-32 flex-shrink-0 `}>
-                          <img
-                            src={item.coverImage || "/placeholder.svg"}
-                            alt={item.name}
-                            className={`object-cover rounded-2xl size-full border-3 md:border-0 ${item.selected ? "border-[#1E3A8A]" : "border-transparent"}`}
-                          />
-                        </div>
-                        <div className="md:hidden flex-1 min-w-0">
-                          <h3 className="font-medium">{item.name}</h3>
-                          <p className="text-sm truncate text-gray-600 mt-1">
-                            {item.description} 
-                          </p>
-                          <p className="font-medium mt-2">
-                            ₦{item.price.toLocaleString()} 
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex justify-between items-start">
-                          <div className="hidden md:block">
+                      >
+                        <div className="flex gap-2">
+                          <div className={`relative h-24 w-32 sm:h-32 flex-shrink-0 `}>
+                            <img
+                              src={item.coverImage || '/placeholder.svg'}
+                              alt={item.name}
+                              className={`object-cover rounded-2xl size-full border-3 md:border-0 ${item.selected ? 'border-[#1E3A8A]' : 'border-transparent'}`}
+                            />
+                          </div>
+                          <div className="md:hidden flex-1 min-w-0">
                             <h3 className="font-medium">{item.name}</h3>
-                            <p className="text-sm text-gray-600 mt-1">
+                            <p className="text-sm truncate text-gray-600 mt-1">
                               {item.description}
                             </p>
-                            <p className="font-medium mt-2">
-                              ₦{item.price.toLocaleString()}
-                            </p>
-                          </div>
-                          <div
-                            className={`w-6 h-6 rounded-md border hidden md:flex items-center justify-center cursor-pointer ${item.selected
-                              ? "bg-[#0A6C6D] border-[#0A6C6D] text-white"
-                              : "border-gray-300"
-                              }`}
-                            onClick={() => handleSelectionChange(item._id)}
-                          >
-                            {item.selected && (
-                              <svg
-                                width="16"
-                                height="16"
-                                viewBox="0 0 16 16"
-                                fill="none"
-                                xmlns="http://www.w3.org/2000/svg"
-                              >
-                                <path
-                                  d="M3.33301 9.33301C3.33301 9.33301 4.66634 9.66634 5.66634 11.6663C5.66634 11.6663 9.37221 5.55523 12.6663 4.33301"
-                                  stroke="white"
-                                  strokeWidth="1.5"
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                />
-                              </svg>
-                            )}
+                            <p className="font-medium mt-2">₦{item.price.toLocaleString()}</p>
                           </div>
                         </div>
-
-                        <div className="mt-4 flex sm:items-center gap-3">
-                          <div className="flex items-center gap-2">
-                            <Button
-                              variant="outline"
-                              size="icon"
-                              className="size-6 md:size-8 rounded-full border-[#1E3A8A] border-2 text-[#1E3A8A]"
-                              onClick={() =>
-                                handleQuantityChange(item._id, -1)
-                              }
+                        <div className="flex-1">
+                          <div className="flex justify-between items-start">
+                            <div className="hidden md:block">
+                              <h3 className="font-medium">{item.name}</h3>
+                              <p className="text-sm text-gray-600 mt-1">{item.description}</p>
+                              <p className="font-medium mt-2">₦{item.price.toLocaleString()}</p>
+                            </div>
+                            <div
+                              className={`w-6 h-6 rounded-md border hidden md:flex items-center justify-center cursor-pointer ${
+                                item.selected
+                                  ? 'bg-[#0A6C6D] border-[#0A6C6D] text-white'
+                                  : 'border-gray-300'
+                              }`}
+                              onClick={() => handleSelectionChange(item._id)}
                             >
-                              <Minus className="size-3" />
-                            </Button>
-                            <span className="w-12 text-center">
-                              <Input
-                                type="number"
-                                value={item.quantity}
-                                min={0}
-                                max={20}
-                                inputMode="numeric"
-                                pattern="[0-9]*"
-                                className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none text-center"
-                                onWheel={(e) =>
-                                  (e.target).blur()
-                                }
-                                onChange={(e) => {
-                                  let value = Number(e.target.value);
-                                  if (value < 1) value = 1;
-                                  handleQuantityChange(
-                                    item._id,
-                                    value,
-                                    "input"
-                                  );
-                                }}
-                              />
-                            </span>
-                            <Button
-                              variant="outline"
-                              size="icon"
-                              className="size-6 md:size-8 rounded-full border-[#1E3A8A] border-2 text-[#1E3A8A]"
-                              onClick={() =>
-                                handleQuantityChange(item._id, 1)
-                              }
-                            >
-                              <Plus className="h-3 w-3" />
-                            </Button>
+                              {item.selected && (
+                                <svg
+                                  width="16"
+                                  height="16"
+                                  viewBox="0 0 16 16"
+                                  fill="none"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                >
+                                  <path
+                                    d="M3.33301 9.33301C3.33301 9.33301 4.66634 9.66634 5.66634 11.6663C5.66634 11.6663 9.37221 5.55523 12.6663 4.33301"
+                                    stroke="white"
+                                    strokeWidth="1.5"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                  />
+                                </svg>
+                              )}
+                            </div>
                           </div>
-                          <div className="flex-1">
-                            <Input
-                              placeholder="Special request (e.g. no garlic)"
-                              value={item.specialRequest}
-                              onChange={(e) =>
-                                handleSpecialRequestChange(
-                                  item._id,
-                                  e.target.value
-                                )
-                              }
-                              className="h-8 text-sm bg-[#F9FAFB] rounded-xl border border-[#E5E7EB] p-5"
-                            />
+
+                          <div className="mt-4 flex sm:items-center gap-3">
+                            <div className="flex items-center gap-2">
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                className="size-6 md:size-8 rounded-full border-[#1E3A8A] border-2 text-[#1E3A8A]"
+                                onClick={() => handleQuantityChange(item._id, -1)}
+                              >
+                                <Minus className="size-3" />
+                              </Button>
+                              <span className="w-12 text-center">
+                                <Input
+                                  type="number"
+                                  value={item.quantity}
+                                  min={0}
+                                  max={20}
+                                  inputMode="numeric"
+                                  pattern="[0-9]*"
+                                  className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none text-center"
+                                  onWheel={(e) => e.target.blur()}
+                                  onChange={(e) => {
+                                    let value = Number(e.target.value);
+                                    if (value < 1) value = 1;
+                                    handleQuantityChange(item._id, value, 'input');
+                                  }}
+                                />
+                              </span>
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                className="size-6 md:size-8 rounded-full border-[#1E3A8A] border-2 text-[#1E3A8A]"
+                                onClick={() => handleQuantityChange(item._id, 1)}
+                              >
+                                <Plus className="h-3 w-3" />
+                              </Button>
+                            </div>
+                            <div className="flex-1">
+                              <Input
+                                placeholder="Special request (e.g. no garlic)"
+                                value={item.specialRequest}
+                                onChange={(e) =>
+                                  handleSpecialRequestChange(item._id, e.target.value)
+                                }
+                                className="h-8 text-sm bg-[#F9FAFB] rounded-xl border border-[#E5E7EB] p-5"
+                              />
+                            </div>
                           </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))
+                  </CardContent>
+                </Card>
+              ))
             : `not found any ${activeTab} items`}
         </div>
 
@@ -410,15 +379,13 @@ export default function PreSelectMeal({ id }) {
               onClick={() =>
                 setVisibleCount((prev) => {
                   // Reset visibleCount when tab changes
-                  const filteredLength = menuItems.filter(
-                    (a) => a.category === activeTab
-                  ).length;
+                  const filteredLength = menuItems.filter((a) => a.category === activeTab).length;
                   if (visibleCount >= filteredLength) return prev;
                   return prev + 3;
                 })
               }
             >
-              Show more{" "}
+              Show more{' '}
               <svg
                 width="24"
                 height="24"
@@ -446,9 +413,7 @@ export default function PreSelectMeal({ id }) {
 
         <Card className="bg-[#E9EBF3] hidden md:block rounded-2xl border-[#E5E7EB] mb-6">
           <CardContent className="p-6">
-            <h3 className="font-medium mb-4">
-              Your Selection ({selectedItems.length} items)
-            </h3>
+            <h3 className="font-medium mb-4">Your Selection ({selectedItems.length} items)</h3>
 
             <div className="space-y-3 mb-4">
               {selectedItems.map((item) => (
@@ -469,9 +434,7 @@ export default function PreSelectMeal({ id }) {
         </Card>
 
         <div className="hidden md:block mb-6">
-          <p className="text-sm font-medium mb-2">
-            Additional note for the restaurant
-          </p>
+          <p className="text-sm font-medium mb-2">Additional note for the restaurant</p>
           <Textarea
             placeholder="Let us know if you have any special request like dietary restrictions, birthday requests, etc."
             value={additionalNote}
@@ -483,11 +446,7 @@ export default function PreSelectMeal({ id }) {
       <div className="w-full fixed bottom-0 left-0 bg-white border-t border-[#E5E7EB]">
         <div className="flex justify-between gap-2 items-center max-w-4xl mx-auto p-4">
           <div className="hidden md:flex justify-between items-center w-full">
-            <Button
-              onClick={handleSkip}
-              variant="ghost"
-              className="text-teal-600 h-10"
-            >
+            <Button onClick={handleSkip} variant="ghost" className="text-teal-600 h-10">
               Skip for now
             </Button>
             <Button
@@ -500,29 +459,28 @@ export default function PreSelectMeal({ id }) {
                   <Loader2 className="animate-spin" /> Confirming
                 </span>
               ) : (
-                "Confirm Meal Selection"
+                'Confirm Meal Selection'
               )}
             </Button>
           </div>
           <div className="md:hidden w-full flex justify-between items-center gap-2">
             {selectedItems.length > 0 ? (
-              <Button onClick={handleSubmit} className="flex items-center h-10 py-6 justify-between rounded-xl bg-[#0A6C6D]  px-8 w-full">
+              <Button
+                onClick={handleSubmit}
+                className="flex items-center h-10 py-6 justify-between rounded-xl bg-[#0A6C6D]  px-8 w-full"
+              >
                 <span>Checkout ({selectedItems.length} items)</span>
                 <span>₦{calculateSubtotal().toLocaleString()}</span>
               </Button>
             ) : (
               <>
-                <Button
-                  onClick={handleSkip}
-                  variant="ghost"
-                  className="text-teal-600 h-10"
-                >
+                <Button onClick={handleSkip} variant="ghost" className="text-teal-600 h-10">
                   {isSkipLoading ? (
                     <span className="flex gap-2">
                       <Loader2 className="animate-spin" /> Loading
                     </span>
                   ) : (
-                    "Skip for now"
+                    'Skip for now'
                   )}
                 </Button>
                 <Button
@@ -535,7 +493,7 @@ export default function PreSelectMeal({ id }) {
                       <Loader2 className="animate-spin" /> Confirming
                     </span>
                   ) : (
-                    "Confirm"
+                    'Confirm'
                   )}
                 </Button>
               </>

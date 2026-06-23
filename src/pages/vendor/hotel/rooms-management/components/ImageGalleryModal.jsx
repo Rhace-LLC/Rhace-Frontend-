@@ -27,19 +27,29 @@ const ImageGalleryModal = ({ images, onClose }) => {
             {images.length > 1 && (
               <>
                 <button
-                  onClick={() => setCurrent(prev => prev === 0 ? images.length - 1 : prev - 1)}
+                  onClick={() => setCurrent((prev) => (prev === 0 ? images.length - 1 : prev - 1))}
                   className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white p-3 rounded-full shadow-lg transition-all"
                 >
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15 19l-7-7 7-7"
+                    />
                   </svg>
                 </button>
                 <button
-                  onClick={() => setCurrent(prev => prev === images.length - 1 ? 0 : prev + 1)}
+                  onClick={() => setCurrent((prev) => (prev === images.length - 1 ? 0 : prev + 1))}
                   className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white p-3 rounded-full shadow-lg transition-all"
                 >
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 5l7 7-7 7"
+                    />
                   </svg>
                 </button>
               </>
@@ -58,7 +68,9 @@ const ImageGalleryModal = ({ images, onClose }) => {
                     key={idx}
                     onClick={() => setCurrent(idx)}
                     className={`flex-shrink-0 w-20 h-20 rounded-lg border-2 overflow-hidden transition-all ${
-                      idx === current ? "border-teal-500 scale-105" : "border-transparent opacity-60 hover:opacity-100"
+                      idx === current
+                        ? 'border-teal-500 scale-105'
+                        : 'border-transparent opacity-60 hover:opacity-100'
                     }`}
                   >
                     <img

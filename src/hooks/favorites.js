@@ -1,11 +1,11 @@
-import { userService } from "@/services/user.service";
-import { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
-import { toast } from "react-toastify";
+import { userService } from '@/services/user.service';
+import { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
+import { toast } from 'react-toastify';
 
 export const useFavorites = () => {
   const [favorites, setFavorites] = useState([]);
-  const [isLoadingFav, setIsLoadingFav] = useState("");
+  const [isLoadingFav, setIsLoadingFav] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -14,7 +14,7 @@ export const useFavorites = () => {
     try {
       setLoading(true);
       setError(null);
-      
+
       const response = await userService.getFavorites();
       const res = response.favorites || response.data || response;
 
@@ -32,7 +32,7 @@ export const useFavorites = () => {
       setFavorites(favoritesArray);
       return favoritesArray;
     } catch (error) {
-      console.error("Error fetching favorites:", error);
+      console.error('Error fetching favorites:', error);
       setFavorites([]);
       return [];
     } finally {
@@ -44,14 +44,11 @@ export const useFavorites = () => {
   const toggleFavorite = async (vendorId, vendorData = {}) => {
     if (!vendorId) return;
 
-    const vendorType = vendorData.type || vendorData.vendorType || "restaurant";
-    
+    const vendorType = vendorData.type || vendorData.vendorType || 'restaurant';
+
     // Check current status
     const isCurrentlyFavorite = favorites.some(
-      (fav) =>
-        fav.vendor?._id === vendorId ||
-        fav.vendorId === vendorId ||
-        fav._id === vendorId
+      (fav) => fav.vendor?._id === vendorId || fav.vendorId === vendorId || fav._id === vendorId
     );
 
     // ⚡ INSTANT UI UPDATE (no waiting!)
@@ -71,13 +68,13 @@ export const useFavorites = () => {
           _id: vendorId,
           name: vendorData.name,
           image: vendorData.image,
-          ...vendorData
+          ...vendorData,
         },
         vendorId: vendorId,
         vendorType: vendorType,
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
       };
-      
+
       setFavorites((prev) => [...prev, optimisticFavorite]);
     }
 
@@ -94,19 +91,17 @@ export const useFavorites = () => {
       // Silently sync with server to get complete data
       await fetchFavorites();
     } catch (error) {
-      console.error("Error syncing favorite:", error);
-      
+      console.error('Error syncing favorite:', error);
+
       // ⚠️ Revert on error
       toast.error(
-        isCurrentlyFavorite 
-          ? "Couldn't remove from favorites" 
-          : "Couldn't add to favorites"
+        isCurrentlyFavorite ? "Couldn't remove from favorites" : "Couldn't add to favorites"
       );
-      
+
       // Refetch to restore correct state
       await fetchFavorites();
     } finally {
-      setIsLoadingFav("");
+      setIsLoadingFav('');
     }
   };
 
@@ -217,9 +212,7 @@ export const useCarouselLogic = () => {
   // Cleanup on unmount
   useEffect(() => {
     return () => {
-      Object.values(intervalIds).forEach((intervalId) =>
-        clearInterval(intervalId)
-      );
+      Object.values(intervalIds).forEach((intervalId) => clearInterval(intervalId));
     };
   }, [intervalIds]);
 
@@ -241,8 +234,8 @@ export const useRestaurantData = (vendorType, type) => {
     const fetchRestaurant = async () => {
       try {
         setIsLoading(true);
-        if (type && type === "nearby") {
-          const location = localStorage.getItem("userLocation");
+        if (type && type === 'nearby') {
+          const location = localStorage.getItem('userLocation');
           const loc = JSON.parse(location);
           const res = await userService.getNearest({
             longitude: loc.lng,
@@ -251,8 +244,8 @@ export const useRestaurantData = (vendorType, type) => {
           });
           setRestaurants(res.data);
         } else {
-          const res = await userService.getVendors(vendorType, user ? user.user?._id : "");
-          console.log("Fetched restaurants:", res.data);
+          const res = await userService.getVendors(vendorType, user ? user.user?._id : '');
+          console.log('Fetched restaurants:', res.data);
           setRestaurants(res.data);
         }
       } catch (error) {
@@ -271,10 +264,10 @@ export const useRestaurantData = (vendorType, type) => {
 export const getImagesForRestaurant = (restaurant) => {
   if (restaurant?.profileImages && restaurant?.profileImages?.length > 1) {
     return restaurant?.profileImages?.map((image) =>
-      typeof image === "string" ? image : image.url
+      typeof image === 'string' ? image : image.url
     );
   }
-  return restaurant.image ? [restaurant.image] : ["/placeholder.jpg"];
+  return restaurant.image ? [restaurant.image] : ['/placeholder.jpg'];
 };
 
 export const hasMultipleImages = (restaurant) => {
@@ -284,13 +277,13 @@ export const hasMultipleImages = (restaurant) => {
 
 // Common cuisine color palette
 export const cuisineColorPalette = [
-  "bg-orange-100 outline-orange-200",
-  "bg-green-100 outline-green-200",
-  "bg-blue-100 outline-blue-200",
-  "bg-purple-100 outline-purple-200",
-  "bg-pink-100 outline-pink-200",
-  "bg-yellow-100 outline-yellow-200",
-  "bg-teal-100 outline-teal-200",
+  'bg-orange-100 outline-orange-200',
+  'bg-green-100 outline-green-200',
+  'bg-blue-100 outline-blue-200',
+  'bg-purple-100 outline-purple-200',
+  'bg-pink-100 outline-pink-200',
+  'bg-yellow-100 outline-yellow-200',
+  'bg-teal-100 outline-teal-200',
 ];
 
 // Image handling functions
@@ -298,7 +291,5 @@ export const getImagesForVenue = (venue) => {
   if (venue?.profileImages && venue?.profileImages?.length > 1) {
     return venue.profileImages;
   }
-  return venue.profileImages?.[0]
-    ? [venue.profileImages[0]]
-    : ["/restaurant.jpg"];
+  return venue.profileImages?.[0] ? [venue.profileImages[0]] : ['/restaurant.jpg'];
 };

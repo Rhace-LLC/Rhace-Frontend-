@@ -1,14 +1,14 @@
-import { Check, Mail, Clock, X, Plus } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { useNavigate, useParams } from "react-router";
-import { useEffect, useState } from "react";
-import { toast } from "react-toastify";
-import { paymentService } from "@/services/payment.service";
-import UniversalLoader from "@/components/user/ui/LogoLoader";
-import Success from "@/public/images/success.gif";
-import { format } from "date-fns";
-import { Edit3 } from "@/public/icons/icons";
-import { cn } from "@/lib/utils";
+import { Check, Mail, Clock, X, Plus } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { useNavigate, useParams } from 'react-router';
+import { useEffect, useState } from 'react';
+import { toast } from 'react-toastify';
+import { paymentService } from '@/services/payment.service';
+import UniversalLoader from '@/components/user/ui/LogoLoader';
+import Success from '@/public/images/success.gif';
+import { format } from 'date-fns';
+import { Edit3 } from '@/public/icons/icons';
+import { cn } from '@/lib/utils';
 
 export default function ConfirmPage() {
   const navigate = useNavigate();
@@ -27,7 +27,7 @@ export default function ConfirmPage() {
       setState((prev) => ({
         ...prev,
         isLoading: false,
-        error: "No transaction reference found",
+        error: 'No transaction reference found',
       }));
       return;
     }
@@ -52,11 +52,11 @@ export default function ConfirmPage() {
           error: null,
         });
 
-        localStorage.removeItem("resData");
-        sessionStorage.removeItem("pendingPayment");
+        localStorage.removeItem('resData');
+        sessionStorage.removeItem('pendingPayment');
 
         if (result.isNewBooking) {
-          toast.success("Reservation confirmed successfully!");
+          toast.success('Reservation confirmed successfully!');
         }
         // Note: We simply don't call setTimeout here, so polling stops.
       } catch (err) {
@@ -73,8 +73,7 @@ export default function ConfirmPage() {
         }
 
         // FATAL ERROR LOGIC
-        const errorMessage =
-          err.response?.data?.message || "Failed to confirm reservation";
+        const errorMessage = err.response?.data?.message || 'Failed to confirm reservation';
 
         setState({
           reservation: null,
@@ -119,14 +118,9 @@ export default function ConfirmPage() {
                 <X className="w-8 h-8 text-red-500" />
               </div>
             </div>
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">
-              Reservation Failed
-            </h2>
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">Reservation Failed</h2>
             <p className="text-gray-600 mb-6">{state.error}</p>
-            <Button
-              onClick={() => navigate(0)}
-              className="bg-[#0A6C6D] hover:bg-teal-800"
-            >
+            <Button onClick={() => navigate(0)} className="bg-[#0A6C6D] hover:bg-teal-800">
               Retry
             </Button>
           </div>
@@ -156,35 +150,32 @@ export default function ConfirmPage() {
             Your Reservation is confirmed & your payment received
           </h1>
           <p className="text-[#6B7280] text-sm">
-            Thank you for completing your booking process. we look forward to
-            seeing you
+            Thank you for completing your booking process. we look forward to seeing you
           </p>
         </div>
 
         {/* Reservation Details */}
         <div className="bg-white rounded-2xl border border-gray-200 mb-6">
-          <h2 className="text-lg font-semibold text-[#111827] py-4 px-5">
-            Reservation Details
-          </h2>
+          <h2 className="text-lg font-semibold text-[#111827] py-4 px-5">Reservation Details</h2>
 
           <hr className="border-gray-200 mb-4" />
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-4 px-4">
             <div
               className={cn(
-                "w-full justify-between text-left font-normal md:bg-[#F9FAFB] md:border border-[#E5E7EB] items-center rounded-xl md:px-6! min-w-[150px] flex h-[60px]",
+                'w-full justify-between text-left font-normal md:bg-[#F9FAFB] md:border border-[#E5E7EB] items-center rounded-xl md:px-6! min-w-[150px] flex h-[60px]'
               )}
             >
               <div className="gap-2 flex flex-col">
                 <div htmlFor="date" className="text-black text-xs">
                   Date
                 </div>
-                {format(data.date, "do MMM, yyyy")}
+                {format(data.date, 'do MMM, yyyy')}
               </div>
             </div>
             <div
               className={cn(
-                "w-full justify-between text-left font-normal md:bg-[#F9FAFB] md:border border-[#E5E7EB] items-center rounded-xl md:px-6! min-w-[150px] flex h-[60px]",
+                'w-full justify-between text-left font-normal md:bg-[#F9FAFB] md:border border-[#E5E7EB] items-center rounded-xl md:px-6! min-w-[150px] flex h-[60px]'
               )}
             >
               <div className="gap-2 flex flex-col">
@@ -196,22 +187,20 @@ export default function ConfirmPage() {
             </div>
             <div
               className={cn(
-                "w-full justify-between text-left font-normal md:bg-[#F9FAFB] md:border border-[#E5E7EB] items-center rounded-xl md:px-6! min-w-[150px] flex h-[60px]",
+                'w-full justify-between text-left font-normal md:bg-[#F9FAFB] md:border border-[#E5E7EB] items-center rounded-xl md:px-6! min-w-[150px] flex h-[60px]'
               )}
             >
               <div className="gap-2 flex flex-col">
                 <div htmlFor="date" className="text-black text-xs">
                   Table
                 </div>
-                {data.tables.length > 0 ? data.tables[0].tableType.name : "N/A"}{" "}
-                {data.tables.length > 0
-                  ? `+${data.tables.length - 1} more`
-                  : ""}
+                {data.tables.length > 0 ? data.tables[0].tableType.name : 'N/A'}{' '}
+                {data.tables.length > 0 ? `+${data.tables.length - 1} more` : ''}
               </div>
             </div>
             <div
               className={cn(
-                "w-full justify-between text-left font-normal md:bg-[#F9FAFB] md:border border-[#E5E7EB] items-center rounded-xl md:px-6! min-w-[150px] flex h-[60px]",
+                'w-full justify-between text-left font-normal md:bg-[#F9FAFB] md:border border-[#E5E7EB] items-center rounded-xl md:px-6! min-w-[150px] flex h-[60px]'
               )}
             >
               <div className="gap-2 flex flex-col">
@@ -228,9 +217,7 @@ export default function ConfirmPage() {
         <div className="rounded-2xl border border-gray-200 mb-6 bg-white">
           <div className="flex p-4 text-black justify-between">
             <h3 className="text-lg font-semibold">Add Ons</h3>
-            <button
-              className="flex gap-2 font-medium text-[#0A6C6D]"
-            >
+            <button className="flex gap-2 font-medium text-[#0A6C6D]">
               <Plus /> Add more
             </button>
           </div>
@@ -249,20 +236,14 @@ export default function ConfirmPage() {
                 <div className="flex justify-between items-end gap-3">
                   <div className="grid md:flex line-clamp-1 grid-cols-2 grid-rows-2 gap-x-4 gap-y-1">
                     {data.combos.slice(0, 4).map((item) => (
-                      <span
-                        key={item._id}
-                        className="text-xs text-[#111827] truncate"
-                      >
+                      <span key={item._id} className="text-xs text-[#111827] truncate">
                         <span className="font-medium">1x </span>
                         {item.name}
                       </span>
                     ))}
                   </div>
                   <p className="text-sm font-medium text-[#111827] whitespace-nowrap">
-                    ₦
-                    {data.combos
-                      .reduce((sum, i) => sum + (i.setPrice || 0), 0)
-                      .toLocaleString()}
+                    ₦{data.combos.reduce((sum, i) => sum + (i.setPrice || 0), 0).toLocaleString()}
                   </p>
                 </div>
               </div>
@@ -280,10 +261,7 @@ export default function ConfirmPage() {
                 <div className="flex justify-between items-end gap-3">
                   <div className="grid md:flex line-clamp-1 grid-cols-2 grid-rows-2 gap-x-4 gap-y-1">
                     {data.tables.slice(0, 4).map((item) => (
-                      <span
-                        key={item._id}
-                        className="text-xs text-[#111827] truncate"
-                      >
+                      <span key={item._id} className="text-xs text-[#111827] truncate">
                         {item.quantity > 0 && (
                           <span className="font-medium">{item.quantity}x </span>
                         )}
@@ -294,11 +272,7 @@ export default function ConfirmPage() {
                   <p className="text-sm font-medium text-[#111827] whitespace-nowrap">
                     ₦
                     {data.tables
-                      .reduce(
-                        (sum, i) =>
-                          sum + (i.tableType.price || 0) * (i.quantity || 1),
-                        0,
-                      )
+                      .reduce((sum, i) => sum + (i.tableType.price || 0) * (i.quantity || 1), 0)
                       .toLocaleString()}
                   </p>
                 </div>
@@ -317,10 +291,7 @@ export default function ConfirmPage() {
                 <div className="flex justify-between items-end gap-3">
                   <div className="grid md:flex line-clamp-1 grid-cols-2 grid-rows-2 gap-x-4 gap-y-1">
                     {data.drinks.slice(0, 4).map((item) => (
-                      <span
-                        key={item._id}
-                        className="text-xs text-[#111827] truncate"
-                      >
+                      <span key={item._id} className="text-xs text-[#111827] truncate">
                         {item.quantity > 0 && (
                           <span className="font-medium">{item.quantity}x </span>
                         )}
@@ -331,11 +302,7 @@ export default function ConfirmPage() {
                   <p className="text-sm font-medium text-[#111827] whitespace-nowrap">
                     ₦
                     {data.drinks
-                      .reduce(
-                        (sum, i) =>
-                          sum + (i.drink.price || 0) * (i.quantity || 0),
-                        0,
-                      )
+                      .reduce((sum, i) => sum + (i.drink.price || 0) * (i.quantity || 0), 0)
                       .toLocaleString()}
                   </p>
                 </div>
@@ -343,14 +310,11 @@ export default function ConfirmPage() {
             )}
 
             {/* Empty state */}
-            {data.combos.length === 0 &&
-              data.tables.length === 0 &&
-              data.drinks.length === 0 && (
-                <div className="text-center py-8 text-gray-500">
-                  No items selected yet. Click "Add more" to add items to your
-                  reservation.
-                </div>
-              )}
+            {data.combos.length === 0 && data.tables.length === 0 && data.drinks.length === 0 && (
+              <div className="text-center py-8 text-gray-500">
+                No items selected yet. Click "Add more" to add items to your reservation.
+              </div>
+            )}
           </div>
         </div>
 
@@ -360,8 +324,7 @@ export default function ConfirmPage() {
             <div className="flex items-start gap-3">
               <Mail className="w-5 h-5 text-[#0A6C6D] mt-0.5 shrink-0" />
               <p className="text-sm">
-                You will receive a confirmation email with your reservation
-                details
+                You will receive a confirmation email with your reservation details
               </p>
             </div>
           </div>
@@ -370,7 +333,7 @@ export default function ConfirmPage() {
         {/* Action Button */}
         <div className="flex flex-col md:flex-row w-full gap-3">
           <Button
-            onClick={() => navigate("/bookings")}
+            onClick={() => navigate('/bookings')}
             className="w-full h-10 text-sm font-medium rounded-xl px-6 bg-[#0A6C6D] hover:bg-teal-800"
           >
             View My Bookings

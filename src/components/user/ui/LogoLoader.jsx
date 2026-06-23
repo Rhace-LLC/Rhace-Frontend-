@@ -315,26 +315,22 @@ const shimmerStyle = `
 `;
 
 // Reusable shimmer block — drop-in replacement for the old static sk divs
-function Sk({ className = "" }) {
+function Sk({ className = '' }) {
   return <div className={`skeleton-shine ${className}`} />;
 }
 
-export function UniversalLoader({
-  fullscreen = false,
-  size = 48,
-  type = "default",
-}) {
+export function UniversalLoader({ fullscreen = false, size = 48, type = 'default' }) {
   return (
     <>
       <style>{shimmerStyle}</style>
 
       {/* ─── DEFAULT SPINNER ─────────────────────────────────────── */}
-      {type === "default" && (
+      {type === 'default' && (
         <div
           className={`${
             fullscreen
-              ? "fixed inset-0 flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm z-50"
-              : "flex items-center justify-center"
+              ? 'fixed inset-0 flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm z-50'
+              : 'flex items-center justify-center'
           }`}
         >
           <div
@@ -345,7 +341,7 @@ export function UniversalLoader({
       )}
 
       {/* ─── CARDS ───────────────────────────────────────────────── */}
-      {type === "cards" && (
+      {type === 'cards' && (
         <div className="flex flex-nowrap sm:grid grid-cols-1 sm:grid-cols-2 overflow-auto hide-scrollbar lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6 m-6">
           {Array.from({ length: 4 }).map((_, i) => (
             <div
@@ -372,7 +368,7 @@ export function UniversalLoader({
       )}
 
       {/* ─── ROOM CARDS ──────────────────────────────────────────── */}
-      {type === "room-cards" && (
+      {type === 'room-cards' && (
         <div className="flex flex-nowrap sm:grid grid-cols-1 sm:grid-cols-2 overflow-auto hide-scrollbar lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6 m-6">
           {Array.from({ length: 4 }).map((_, i) => (
             <div
@@ -396,7 +392,7 @@ export function UniversalLoader({
       )}
 
       {/* ─── PRESELECT MEAL ──────────────────────────────────────── */}
-      {type === "preselect-meal" && (
+      {type === 'preselect-meal' && (
         <div className="min-h-screen bg-white">
           {/* Reservation summary bar */}
           <div className="w-full border-b border-gray-100">
@@ -470,7 +466,7 @@ export function UniversalLoader({
       )}
 
       {/* ─── VENDOR PAGE ─────────────────────────────────────────── */}
-      {type === "vendor-page" && (
+      {type === 'vendor-page' && (
         <div className="min-h-screen bg-white">
           {/* Header (desktop) */}
           <div className="hidden md:block h-[85px] border-b px-6">
@@ -493,10 +489,7 @@ export function UniversalLoader({
                 {/* Thumbnails */}
                 <div className="hidden md:flex gap-2 px-4 md:px-0">
                   {Array.from({ length: 4 }).map((_, i) => (
-                    <Sk
-                      key={i}
-                      className="h-20 w-28 rounded-xl flex-shrink-0"
-                    />
+                    <Sk key={i} className="h-20 w-28 rounded-xl flex-shrink-0" />
                   ))}
                 </div>
 
@@ -522,10 +515,7 @@ export function UniversalLoader({
                 {/* Tabs */}
                 <div className="flex gap-2 px-4 md:px-0 overflow-x-auto hide-scrollbar">
                   {Array.from({ length: 5 }).map((_, i) => (
-                    <Sk
-                      key={i}
-                      className="h-8 w-24 rounded-full flex-shrink-0"
-                    />
+                    <Sk key={i} className="h-8 w-24 rounded-full flex-shrink-0" />
                   ))}
                 </div>
 
@@ -547,10 +537,7 @@ export function UniversalLoader({
                 <div className="px-4 md:px-0 space-y-4">
                   <Sk className="h-5 w-32 rounded" />
                   {Array.from({ length: 3 }).map((_, i) => (
-                    <div
-                      key={i}
-                      className="flex gap-4 bg-white rounded-2xl shadow-sm p-4"
-                    >
+                    <div key={i} className="flex gap-4 bg-white rounded-2xl shadow-sm p-4">
                       <Sk className="h-20 w-24 rounded-xl flex-shrink-0" />
                       <div className="flex-1 space-y-2">
                         <Sk className="h-4 w-36 rounded" />
@@ -612,7 +599,7 @@ export function UniversalLoader({
         </div>
       )}
 
-      {type === "dashboard-2" && (
+      {type === 'dashboard-2' && (
         <div className="w-full min-h-screen p-4 md:p-6 space-y-6">
           {/* HEADER */}
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -709,7 +696,7 @@ export function UniversalLoader({
         </div>
       )}
 
-      {type === "dashboard-1" && (
+      {type === 'dashboard-1' && (
         <div className="p-4 md:p-6 space-y-6">
           {/* HEADER */}
           <div className="space-y-2">
@@ -767,12 +754,7 @@ export function UniversalLoader({
               {/* Fake chart bars */}
               <div className="flex items-end gap-4 h-40 mt-6">
                 {Array.from({ length: 6 }).map((_, i) => (
-                  <Sk
-                    key={i}
-                    className={`w-10 rounded-t-xl ${
-                      i % 2 === 0 ? "h-24" : "h-32"
-                    }`}
-                  />
+                  <Sk key={i} className={`w-10 rounded-t-xl ${i % 2 === 0 ? 'h-24' : 'h-32'}`} />
                 ))}
               </div>
             </div>
@@ -780,7 +762,7 @@ export function UniversalLoader({
         </div>
       )}
 
-      {type === "dashboard-3" && (
+      {type === 'dashboard-3' && (
         <div className="p-4 md:p-6 space-y-6">
           {/* HEADER */}
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">

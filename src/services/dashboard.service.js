@@ -32,7 +32,7 @@ export const getTodaysReservations = async () => {
     const { data } = await apiClient.get('/dashboard/todays-reservations');
     return data;
   } catch (error) {
-    throw new Error(error.response?.data?.message || 'Failed to fetch today\'s reservations');
+    throw new Error(error.response?.data?.message || "Failed to fetch today's reservations");
   }
 };
 

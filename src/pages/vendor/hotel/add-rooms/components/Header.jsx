@@ -1,24 +1,27 @@
-"use client"
+'use client';
 // import {
 //   SidebarTrigger,
 // } from "@/app/components/ui/sidebar"
-import { Button } from "@/components/ui/button"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 // import { AuthService } from "@/lib/api/services/auth.service"
-import { ArrowLeft, BellDot, ChevronDown, LogOut } from "lucide-react"
+import { ArrowLeft, BellDot, ChevronDown, LogOut } from 'lucide-react';
 // import { api } from '@/lib/axios-config'
 // import WebSocketStatus from '@/components/WebSocketStatus'
-import { useNavigate } from 'react-router'
+import { useNavigate } from 'react-router';
 // import API from '@/lib/api/axios'
 
 //logo image
 import logo from '@/public/images/Rhace-11.png';
 
+function Header({ title }) {
+  const navigate = useNavigate();
 
-
-function Header({title}) {
-  const navigate = useNavigate()
-  
   // const [profile, setProfile] = useState(null)
   // const [loading, setLoading] = useState(true)
 
@@ -26,7 +29,7 @@ function Header({title}) {
   //   const fetchVendorData = async () => {
   //     try {
   //       setLoading(true)
-        
+
   //       // Get the user data from AuthService
   //       const user = AuthService.getUser()
   //       if (!user) {
@@ -64,7 +67,7 @@ function Header({title}) {
   //       }
   //     } catch (error) {
   //       console.error("Failed to fetch vendor data:", error)
-       
+
   //       if (error && typeof error === 'object' && 'response' in error) {
   //         const apiError = error ;
   //         console.error("Error response:", apiError.response.status, apiError.response.data);
@@ -73,24 +76,24 @@ function Header({title}) {
   //       setLoading(false)
   //     }
   //   }
-    
+
   //   fetchVendorData()
   // }, [])
 
   const handleLogout = async (e) => {
-    e.preventDefault()
+    e.preventDefault();
     try {
       // await AuthService.logout()
-      navigate("/auth/vendor/login")
+      navigate('/auth/vendor/login');
     } catch (error) {
-      console.error("Failed to logout:", error)
+      console.error('Failed to logout:', error);
     }
-  }
+  };
 
   // const getInitials = () => {
   //   if (profile?.businessName) {
   //     const nameParts = profile.businessName.split(' ')
-  //     return nameParts.length > 1 
+  //     return nameParts.length > 1
   //       ? `${nameParts[0].charAt(0)}${nameParts[1].charAt(0).toUpperCase()}`
   //       : profile.businessName.charAt(0).toUpperCase()
   //   }
@@ -105,16 +108,21 @@ function Header({title}) {
           <span></span>
           <div className="flex items-center justify-center gap-16">
             <h3 className="font-semibold space-x-2 flex text-[20px]/[30px] tracking-[0.15px] text-[#0a0a0a]">
-             <a href="/dashboard/restaurant">
-              <img 
-                src={logo} 
-                alt="Rhace Logo" 
-                className="h-6 w-auto object-contain transition-all duration-300"
-              />
-             </a> 
+              <a href="/dashboard/restaurant">
+                <img
+                  src={logo}
+                  alt="Rhace Logo"
+                  className="h-6 w-auto object-contain transition-all duration-300"
+                />
+              </a>
             </h3>
             <div className="font-semibold space-x-2 flex items-center justify-center text-[16px]/[21px] tracking-[0.25px] text-[#111827]">
-              <ArrowLeft onClick={() => {navigate("/dashboard/hotel/rooms")}}/> <span>{title}</span> 
+              <ArrowLeft
+                onClick={() => {
+                  navigate('/dashboard/hotel/rooms');
+                }}
+              />{' '}
+              <span>{title}</span>
             </div>
           </div>
         </div>
@@ -125,21 +133,18 @@ function Header({title}) {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="flex items-center gap-2 p-2">
                 <div className="bg-gray-500 w-8 h-8 rounded-full flex items-center justify-center">
-                  <span className="text-white font-bold">
-                    {/* { getInitials()} */} BV
-                  </span>
+                  <span className="text-white font-bold">{/* { getInitials()} */} BV</span>
                 </div>
                 <div className="hidden md:block text-left">
                   <p className="text-xs text-muted-foreground">
                     {/* {loading ? "" : (
                       profile?.businessName || "Business")} */}
-                      Business
+                    Business
                   </p>
                   <p className="text-sm font-medium">
                     {/* {loading ? "Loading..." : `Hi, ${profile?.name || "Vendor"}`} */}
                     Vendor
                   </p>
-                  
                 </div>
                 <div className="w-8 h-8 rounded-ful flex items-center justify-center">
                   <ChevronDown className="" />
@@ -156,7 +161,7 @@ function Header({title}) {
         </div>
       </div>
     </header>
-  )
+  );
 }
 
-export default Header
+export default Header;

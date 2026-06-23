@@ -1,148 +1,158 @@
 import React, { useEffect, useState } from 'react';
-import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts"
-import {
-    ChartContainer,
-    ChartTooltip,
-    ChartTooltipContent,
-} from "@/components/ui/chart"
+import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts';
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { paymentService } from '@/services/payment.service';
 import { toast } from 'react-toastify';
 
 const FinancialDashboard = ({ info }) => {
-    const [time, setTime] = useState('weekly');
-    const [trend, setTrends] = useState({ "trends": [], "totalEarnings": 0, "percentChange": 0 });
-    const [loading, setLoading] = useState(false)
-    const availableBalance = info.balance;
-    const currencySymbol = '₦';
-    const lastPaymentDate = info.lastPaymentDate;
-    const accountHolder = info.accountName;
-    const lastFourDigits = info.accountNumber;
-    const earningsValue = trend.totalEarnings.toLocaleString('en-US');
-    const earningsChange = `${trend.percentChange.toFixed(2)}%`;
-    const branches = ['Restaurant 1 - HQ'];
+  const [time, setTime] = useState('weekly');
+  const [trend, setTrends] = useState({ trends: [], totalEarnings: 0, percentChange: 0 });
+  const [loading, setLoading] = useState(false);
+  const availableBalance = info.balance;
+  const currencySymbol = '₦';
+  const lastPaymentDate = info.lastPaymentDate;
+  const accountHolder = info.accountName;
+  const lastFourDigits = info.accountNumber;
+  const earningsValue = trend.totalEarnings.toLocaleString('en-US');
+  const earningsChange = `${trend.percentChange.toFixed(2)}%`;
+  const branches = ['Restaurant 1 - HQ'];
 
-    const fetchTrends = async () => {
-        try {
-            setLoading(true);
-            const res = await paymentService.getTrends({ range: time });
-            setTrends(res);
-        } catch (error) {
-
-            toast.error(error.response?.message || "Failed to fetch payment trends");
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        fetchTrends()
-    }, [time])
-
-    const chartData = trend.trends.map(item => ({
-        date: item.label, // ← just use the label
-        earnings: item.value
-    }));
-
-
-    console.log(trend.trends)
-
-    const chartConfig = {
-        desktop: {
-            label: "Desktop",
-            color: "var(--chart-1)",
-        },
+  const fetchTrends = async () => {
+    try {
+      setLoading(true);
+      const res = await paymentService.getTrends({ range: time });
+      setTrends(res);
+    } catch (error) {
+      toast.error(error.response?.message || 'Failed to fetch payment trends');
+    } finally {
+      setLoading(false);
     }
+  };
 
-    return (
-        <div className="flex flex-col lg:flex-row gap-4 md:gap-5 px-2 mx-auto" >
+  useEffect(() => {
+    fetchTrends();
+  }, [time]);
 
-            {/* 1. Account Summary Panel (Left) */}
-            < div className="flex-1 p-5 bg-white rounded-2xl border" >
-                <div className="flex justify-between items-start mb-5">
-                    <div>
-                        <h3 className="text-sm text-gray-500 font-medium mb-1">Available Balance</h3>
-                        <div className="text-4xl font-extrabold text-gray-800">{currencySymbol}{availableBalance.toLocaleString()}</div>
-                        <p className="text-xs text-gray-400 mt-1">Last payment processed on {new Date(info.lastPayment).toLocaleDateString('en-NG') || lastPaymentDate}</p>
-                    </div>
-                </div>
+  const chartData = trend.trends.map((item) => ({
+    date: item.label, // ← just use the label
+    earnings: item.value,
+  }));
 
-                {/* Zenith Bank Card */}
-                <div className="bg-[#1E1E1E] h-[178px] flex flex-col justify-between text-white p-4 rounded-lg mb-4" >
-                    <div className="flex justify-between items-center mb-3">
-                        <div className="flex items-center">
-                            <div className='relative w-10 h-10 mr-3'>
-                                <img src={info.bankLogo} alt={info.bankName} className='absolute size-full object-contain' />
-                            </div>
-                            <div>
-                                <p className="text-sm font-bold m-0">{info.bankName}</p>
-                                <p className="text-xs flex items-center gap-1"> <span className='size-2 flex rounded-full bg-[#37703F]' /> Verified Account</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div>
+  console.log(trend.trends);
 
-                        <div className="text-xl items-center flex font-medium">{lastFourDigits}</div>
-                        <p className="text-sm m-0">{accountHolder}</p>
-                    </div>
-                </div >
-            </div >
+  const chartConfig = {
+    desktop: {
+      label: 'Desktop',
+      color: 'var(--chart-1)',
+    },
+  };
 
-            <div className="flex-1 p-5 bg-white rounded-2xl border">
-                <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-lg font-semibold text-gray-800">Earnings Trends</h3>
-                    <div className="flex items-center space-x-3">
-                        <span className="text-sm text-blue-500 cursor-pointer hover:text-blue-600">View All</span>
-                        <select value={time} onChange={(e) => setTime(e.target.value)} className="p-1 text-sm border border-gray-200 rounded-md focus:ring-blue-500 focus:border-blue-500">
-                            <option value="weekly">Weekly</option>
-                            <option value="monthly">Monthly</option>
-                            <option value="quarterly">Quarterly</option>
-                        </select>
-                    </div>
-                </div>
-                {!loading ? (
-                    <>
-                        <div className="mb-4 flex gap-3">
-                            <div>
+  return (
+    <div className="flex flex-col lg:flex-row gap-4 md:gap-5 px-2 mx-auto">
+      {/* 1. Account Summary Panel (Left) */}
+      <div className="flex-1 p-5 bg-white rounded-2xl border">
+        <div className="flex justify-between items-start mb-5">
+          <div>
+            <h3 className="text-sm text-gray-500 font-medium mb-1">Available Balance</h3>
+            <div className="text-4xl font-extrabold text-gray-800">
+              {currencySymbol}
+              {availableBalance.toLocaleString()}
+            </div>
+            <p className="text-xs text-gray-400 mt-1">
+              Last payment processed on{' '}
+              {new Date(info.lastPayment).toLocaleDateString('en-NG') || lastPaymentDate}
+            </p>
+          </div>
+        </div>
 
-                                <span className="text-3xl font-extrabold text-gray-800 mr-2">{currencySymbol}{earningsValue}</span>
-                                <span className="text-sm text-emerald-600 font-semibold">
-                                    ↑{earningsChange} vs last week
-                                </span>
-                            </div>
-                            <div className="mt-4 flex flex-wrap gap-4 text-xs text-gray-600">
-                                {branches.map((branch, index) => (
-                                    <span key={index} className="flex items-center">
-                                        <span
-                                            className={`text-lg mr-1 size-2 rounded-full ${index === 0 ? 'bg-emerald-500' : 'bg-gray-400'}`}
-                                        />
-                                        {branch}
-                                    </span>
-                                ))}
-                            </div>
-                        </div>
+        {/* Zenith Bank Card */}
+        <div className="bg-[#1E1E1E] h-[178px] flex flex-col justify-between text-white p-4 rounded-lg mb-4">
+          <div className="flex justify-between items-center mb-3">
+            <div className="flex items-center">
+              <div className="relative w-10 h-10 mr-3">
+                <img
+                  src={info.bankLogo}
+                  alt={info.bankName}
+                  className="absolute size-full object-contain"
+                />
+              </div>
+              <div>
+                <p className="text-sm font-bold m-0">{info.bankName}</p>
+                <p className="text-xs flex items-center gap-1">
+                  {' '}
+                  <span className="size-2 flex rounded-full bg-[#37703F]" /> Verified Account
+                </p>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div className="text-xl items-center flex font-medium">{lastFourDigits}</div>
+            <p className="text-sm m-0">{accountHolder}</p>
+          </div>
+        </div>
+      </div>
 
-                        <ChartContainer config={chartConfig}>
-                            <AreaChart
-                                accessibilityLayer
-                                data={chartData}
-                                margin={{
-                                    left: 12,
-                                    right: 12,
-                                }}
-                            >
-                                <CartesianGrid vertical={false} />
-                                <XAxis
-                                    dataKey="date"
-                                    tickLine={false}
-                                    axisLine={false}
-                                    tickMargin={8}
-                                    tickFormatter={(value) => value.slice(0, 3)}
-                                />
-                                <ChartTooltip
-                                    cursor={false}
-                                    formatter={(value) => `₦${value.toLocaleString()}`}
-                                />
-                                {/* <defs>
+      <div className="flex-1 p-5 bg-white rounded-2xl border">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-semibold text-gray-800">Earnings Trends</h3>
+          <div className="flex items-center space-x-3">
+            <span className="text-sm text-blue-500 cursor-pointer hover:text-blue-600">
+              View All
+            </span>
+            <select
+              value={time}
+              onChange={(e) => setTime(e.target.value)}
+              className="p-1 text-sm border border-gray-200 rounded-md focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="weekly">Weekly</option>
+              <option value="monthly">Monthly</option>
+              <option value="quarterly">Quarterly</option>
+            </select>
+          </div>
+        </div>
+        {!loading ? (
+          <>
+            <div className="mb-4 flex gap-3">
+              <div>
+                <span className="text-3xl font-extrabold text-gray-800 mr-2">
+                  {currencySymbol}
+                  {earningsValue}
+                </span>
+                <span className="text-sm text-emerald-600 font-semibold">
+                  ↑{earningsChange} vs last week
+                </span>
+              </div>
+              <div className="mt-4 flex flex-wrap gap-4 text-xs text-gray-600">
+                {branches.map((branch, index) => (
+                  <span key={index} className="flex items-center">
+                    <span
+                      className={`text-lg mr-1 size-2 rounded-full ${index === 0 ? 'bg-emerald-500' : 'bg-gray-400'}`}
+                    />
+                    {branch}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            <ChartContainer config={chartConfig}>
+              <AreaChart
+                accessibilityLayer
+                data={chartData}
+                margin={{
+                  left: 12,
+                  right: 12,
+                }}
+              >
+                <CartesianGrid vertical={false} />
+                <XAxis
+                  dataKey="date"
+                  tickLine={false}
+                  axisLine={false}
+                  tickMargin={8}
+                  tickFormatter={(value) => value.slice(0, 3)}
+                />
+                <ChartTooltip cursor={false} formatter={(value) => `₦${value.toLocaleString()}`} />
+                {/* <defs>
                                     <linearGradient id="fillDesktop" x1="0" y1="0" x2="0" y2="1">
                                         <stop
                                             offset="5%"
@@ -156,24 +166,24 @@ const FinancialDashboard = ({ info }) => {
                                         />
                                     </linearGradient>
                                 </defs> */}
-                                <Area
-                                    dataKey="earnings"
-                                    type="linear"
-                                    fill="#319246"
-                                    fillOpacity={0.8}
-                                    stroke="#75e444"
-                                />
-                            </AreaChart>
-                        </ChartContainer>
-                    </>
-                ) : (
-                    <div className='aspect-video text-gray-400 text-sm flex items-center justify-center'>
-                        Loading data...
-                    </div>
-                )}
-            </div>
-        </div >
-    );
+                <Area
+                  dataKey="earnings"
+                  type="linear"
+                  fill="#319246"
+                  fillOpacity={0.8}
+                  stroke="#75e444"
+                />
+              </AreaChart>
+            </ChartContainer>
+          </>
+        ) : (
+          <div className="aspect-video text-gray-400 text-sm flex items-center justify-center">
+            Loading data...
+          </div>
+        )}
+      </div>
+    </div>
+  );
 };
 
 export default FinancialDashboard;

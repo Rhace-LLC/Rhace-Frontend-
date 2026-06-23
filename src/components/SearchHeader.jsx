@@ -1,49 +1,35 @@
-import { useNavigate } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
-import { useRef, useState } from "react";
-import {
-  Bell,
-  ChevronDown,
-  ChevronUp,
-  Heart,
-  LogIn,
-  Search,
-  User,
-  X,
-} from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { UserProfileMenu } from "@/components/layout/headers/user-header";
-import { SvgIcon, SvgIcon2, SvgIcon3 } from "@/public/icons/icons";
-import logoBlack from "@/public/images/Rhace-11.png";
-import { logout } from "@/redux/slices/authSlice";
-import { SearchBar, SearchPopup } from "./SearchBar";
-import { LocationPill } from "./LocationPill";
+import { useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { useRef, useState } from 'react';
+import { Bell, ChevronDown, ChevronUp, Heart, LogIn, Search, User, X } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { UserProfileMenu } from '@/components/layout/headers/user-header';
+import { SvgIcon, SvgIcon2, SvgIcon3 } from '@/public/icons/icons';
+import logoBlack from '@/public/images/Rhace-11.png';
+import { logout } from '@/redux/slices/authSlice';
+import { SearchBar, SearchPopup } from './SearchBar';
+import { LocationPill } from './LocationPill';
 
 const TABS = [
-  { val: "", label: "All" },
+  { val: '', label: 'All' },
   {
-    val: "restaurant",
-    label: "Restaurants",
+    val: 'restaurant',
+    label: 'Restaurants',
     icon: (active) => <SvgIcon isActive={true} />,
   },
   {
-    val: "hotel",
-    label: "Hotels",
-    icon: (active) => <SvgIcon2 className="text-amber-200" isActive={true}  />,
+    val: 'hotel',
+    label: 'Hotels',
+    icon: (active) => <SvgIcon2 className="text-amber-200" isActive={true} />,
   },
   {
-    val: "club",
-    label: "Clubs",
+    val: 'club',
+    label: 'Clubs',
     icon: (active) => <SvgIcon3 isActive={true} />,
   },
 ];
 
-export const SearchHeader = ({
-  searchProps,
-  filters,
-  updateFilter,
-  locationState,
-}) => {
+export const SearchHeader = ({ searchProps, filters, updateFilter, locationState }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const user = useSelector((s) => s.auth);
@@ -57,22 +43,14 @@ export const SearchHeader = ({
     dispatch(logout());
   };
 
-
   return (
     <div className="z-40 relative bg-white/95 shadow-sm">
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 pt-2.5 sm:pt-3">
         {/* ── Row 1: Logo + Search + User ──────────────────────────── */}
         <div className="flex z-10 gap-2 flex-wrap justify-between">
           {/* Logo */}
-          <div
-            onClick={() => navigate("/")}
-            className="flex items-center cursor-pointer space-x-2"
-          >
-            <img
-              src={logoBlack}
-              alt="Rhace Logo"
-              className="h-6 w-auto object-contain"
-            />
+          <div onClick={() => navigate('/')} className="flex items-center cursor-pointer space-x-2">
+            <img src={logoBlack} alt="Rhace Logo" className="h-6 w-auto object-contain" />
           </div>
 
           {/* Search bar + button */}
@@ -83,19 +61,23 @@ export const SearchHeader = ({
             <div className="w-full relative">
               <button
                 type="button"
-                onClick={e => {
+                onClick={(e) => {
                   setShowSearch(true);
                 }}
                 className="w-full flex items-center gap-2 cursor-pointer sm:cursor-text bg-gray-50 border rounded-full px-3 py-2.5 sm:py-3.5 border-gray-200 hover:border-gray-400"
               >
                 <Search className="w-4 h-4 text-gray-400 shrink-0" />
-                <div className={`flex-1 bg-transparent text-gray-400 overflow-hidden line-clamp-1 text-sm min-w-0 text-start ${searchProps.inputValue ? "text-gray-900" : ""}`}>
-                  {searchProps.inputValue ? searchProps.inputValue : "Search for restaurants, hotels, clubs..."}
+                <div
+                  className={`flex-1 bg-transparent text-gray-400 overflow-hidden line-clamp-1 text-sm min-w-0 text-start ${searchProps.inputValue ? 'text-gray-900' : ''}`}
+                >
+                  {searchProps.inputValue
+                    ? searchProps.inputValue
+                    : 'Search for restaurants, hotels, clubs...'}
                 </div>
                 {searchProps.inputValue && (
                   <button
                     onMouseDown={(e) => e.preventDefault()}
-                    onClick={() => searchProps.setInputValue("")}
+                    onClick={() => searchProps.setInputValue('')}
                     className="text-gray-400 hover:text-gray-700 shrink-0"
                   >
                     <X className="w-3.5 h-3.5" />
@@ -150,7 +132,7 @@ export const SearchHeader = ({
             </div>
           ) : (
             <button
-              onClick={() => navigate("/auth/user/login")}
+              onClick={() => navigate('/auth/user/login')}
               className="text-xs flex gap-2 items-center sm:text-sm rounded-full py-2 px-4 sm:px-6 sm:py-3 tracking-wide text-white bg-gradient-to-b from-[#0A6C6D] to-[#08577C] hover:from-[#084F4F] hover:to-[#064E5C] transition-all duration-200 shadow-sm"
             >
               Login <LogIn className="size-4" />
@@ -166,14 +148,14 @@ export const SearchHeader = ({
               {TABS.map(({ val, label, icon }) => (
                 <button
                   key={val}
-                  onClick={() => updateFilter("type", val)}
+                  onClick={() => updateFilter('type', val)}
                   className="relative cursor-pointer h-full hover:bg-gray-50 transition-colors duration-300"
                 >
                   <div
                     className={`flex items-center px-[18px] md:px-10 lg:px-16 gap-1.5 w-full h-full whitespace-nowrap transition-all ${
                       filters.type === val
-                        ? "text-[#0A6C6D] font-bold"
-                        : "text-gray-500 hover:text-[#0A6C6D] font-medium"
+                        ? 'text-[#0A6C6D] font-bold'
+                        : 'text-gray-500 hover:text-[#0A6C6D] font-medium'
                     }`}
                   >
                     {icon && (
@@ -185,7 +167,7 @@ export const SearchHeader = ({
                   </div>
                   <div
                     className={`h-1 w-full absolute bottom-0 z-30 rounded bg-[#0A6C6D] transition-opacity ${
-                      filters.type === val ? "opacity-100" : "opacity-0"
+                      filters.type === val ? 'opacity-100' : 'opacity-0'
                     }`}
                   />
                 </button>
@@ -201,7 +183,13 @@ export const SearchHeader = ({
         </div>
       </div>
       {/* Mobile search bar */}
-      <SearchPopup searchProps={searchProps} filters={filters} show={showSearch} inputRef={inputRef}  setShow={setShowSearch} />
+      <SearchPopup
+        searchProps={searchProps}
+        filters={filters}
+        show={showSearch}
+        inputRef={inputRef}
+        setShow={setShowSearch}
+      />
     </div>
   );
 };

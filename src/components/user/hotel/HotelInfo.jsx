@@ -1,9 +1,9 @@
-"use client";
-import React from "react";
-import Rooms from "./Rooms";
-import RestaurantReviews from "../restaurant/RestaurantReview";
-import HotelOverview from "./HotelOverview";
-import Policies from "./Policies";
+'use client';
+import React from 'react';
+import Rooms from './Rooms';
+import RestaurantReviews from '../restaurant/RestaurantReview';
+import HotelOverview from './HotelOverview';
+import Policies from './Policies';
 // import HotelAvalableSlot from "./HotelAvailableSlot";
 // import HotelOverview from "./HotelOverview";
 
@@ -20,20 +20,20 @@ const HotelInfo = ({
 }) => {
   const tabs = [
     {
-      name: "Details",
-      tab: "details",
+      name: 'Details',
+      tab: 'details',
     },
     {
-      name: "Rooms",
-      tab: "rooms",
+      name: 'Rooms',
+      tab: 'rooms',
     },
     {
-      name: "Policies",
-      tab: "policies",
+      name: 'Policies',
+      tab: 'policies',
     },
     {
-      name: "Reviews",
-      tab: "reviews",
+      name: 'Reviews',
+      tab: 'reviews',
     },
   ];
 
@@ -47,8 +47,8 @@ const HotelInfo = ({
               onClick={() => setActiveTab(tab.tab)}
               className={`p-3 w-max cursor-pointer font-semibold ${
                 activeTab === tab.tab
-                  ? "border-b-2 text-[#0A6C6D] border-[#0A6C6D]"
-                  : "text-[#606368]"
+                  ? 'border-b-2 text-[#0A6C6D] border-[#0A6C6D]'
+                  : 'text-[#606368]'
               }`}
             >
               {tab.name}
@@ -57,11 +57,9 @@ const HotelInfo = ({
         </div>
       </div>
       <div className="mt-4 px-4 md:px-0">
-        {activeTab === "details" && (
-          <HotelOverview desc={data.businessDescription} />
-        )}
-        {activeTab === "policies" && <Policies data={data.policies} />}
-        {activeTab === "rooms" && (
+        {activeTab === 'details' && <HotelOverview desc={data.businessDescription} />}
+        {activeTab === 'policies' && <Policies data={data.policies} />}
+        {activeTab === 'rooms' && (
           <Rooms
             setShow={setShow}
             selectedRooms={selectedRooms}
@@ -71,7 +69,7 @@ const HotelInfo = ({
             id={id}
           />
         )}
-        {activeTab === "reviews" && <RestaurantReviews restaurantId={id} />}
+        {activeTab === 'reviews' && <RestaurantReviews restaurantId={id} />}
       </div>
     </div>
   );

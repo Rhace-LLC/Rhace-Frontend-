@@ -1,29 +1,34 @@
-import { useEffect, useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
-import { Loader2 } from "lucide-react"
-import HeroImage from '../../../components/auth/HeroImage'
-import { authService } from "@/services/auth.service"
-import { useNavigate, useSearchParams } from "react-router"
-import { toast } from "react-toastify"
-import { InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot } from "@/components/ui/input-otp"
-import logo from "../../../public/images/Rhace-11.png"
+import { useEffect, useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
+import { Loader2 } from 'lucide-react';
+import HeroImage from '../../../components/auth/HeroImage';
+import { authService } from '@/services/auth.service';
+import { useNavigate, useSearchParams } from 'react-router';
+import { toast } from 'react-toastify';
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSeparator,
+  InputOTPSlot,
+} from '@/components/ui/input-otp';
+import logo from '../../../public/images/Rhace-11.png';
 
 const getCurrentYear = () => new Date().getFullYear();
 
 const Otp = () => {
   const [searchParams] = useSearchParams();
-  const email = searchParams.get("email") || "john@example.com";
+  const email = searchParams.get('email') || 'john@example.com';
   const navigate = useNavigate();
-  const [value, setValue] = useState("")
+  const [value, setValue] = useState('');
   const [isLoading, setIsloading] = useState(false);
   const [isResending, setIsResending] = useState(false);
   const [countdown, setCountdown] = useState(0);
   const [showModal, setShowModal] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    let timer
+    let timer;
     if (countdown > 0) {
       timer = setInterval(() => setCountdown((prev) => prev - 1), 1000);
     }
@@ -36,46 +41,42 @@ const Otp = () => {
       const res = await authService.resendOTP(email);
       setShowModal(true);
       setCountdown(60);
-      toast.success(res.message)
+      toast.success(res.message);
     } catch (err) {
       toast.error(err.response?.data.message);
     } finally {
-      setIsResending(false)
+      setIsResending(false);
     }
   };
 
   const handleSubmit = async () => {
     try {
       setIsloading(true);
-      setError("");
+      setError('');
       if (value.length !== 6) {
-        setError("Please enter the 6-digit OTP.");
+        setError('Please enter the 6-digit OTP.');
         setIsloading(false);
         return;
       }
       const res = await authService.verifyOTP(email, value);
-      toast.success(res.message)
-      navigate(`/auth/user/login`)
+      toast.success(res.message);
+      navigate(`/auth/user/login`);
     } catch (err) {
-      setError(err.response?.data.message || "Invalid OTP.");
+      setError(err.response?.data.message || 'Invalid OTP.');
       toast.error(err.response?.data.message);
     } finally {
-      setIsloading(false)
+      setIsloading(false);
     }
   };
 
   return (
-    <div className='w-full h-screen flex p-4 bg-white'>
-      <div className='flex-1 h-full overflow-y-auto hide-scrollbar'>
+    <div className="w-full h-screen flex p-4 bg-white">
+      <div className="flex-1 h-full overflow-y-auto hide-scrollbar">
         <div className="min-h-screen flex items-center justify-center">
           <Card className="w-full max-w-md bg-white shadow-none p-0 border-none">
             <CardHeader className="text-center pb-6">
               <div className="flex items-center justify-center gap-2">
-                <img
-                  src={logo} 
-                  alt="Rhace Logo"
-                  className="w-20 h-20 object-contain"
-                />
+                <img src={logo} alt="Rhace Logo" className="w-20 h-20 object-contain" />
               </div>
               <h1 className="text-2xl font-semibold text-gray-900 mb-2">Verify your email</h1>
               <p className="text-sm text-gray-600">
@@ -84,16 +85,9 @@ const Otp = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700 block mb-2">
-                  Enter OTP
-                </label>
+                <label className="text-sm font-medium text-gray-700 block mb-2">Enter OTP</label>
                 <div className="flex justify-center gap-2 mb-2">
-                  <InputOTP
-                    maxLength={6}
-                    value={value}
-                    onChange={setValue}
-                    className="w-full"
-                  >
+                  <InputOTP maxLength={6} value={value} onChange={setValue} className="w-full">
                     <InputOTPGroup>
                       <InputOTPSlot index={0} />
                       <InputOTPSlot index={1} />
@@ -119,7 +113,7 @@ const Otp = () => {
                     Loading <Loader2 className="animate-spin" />
                   </span>
                 ) : (
-                  "Verify OTP"
+                  'Verify OTP'
                 )}
               </Button>
               <Button
@@ -128,12 +122,12 @@ const Otp = () => {
                 variant="outline"
                 className="w-full h-10 sm:h-12 rounded-md border-gray-200 mt-2 text-sm font-light"
               >
-                {countdown > 0 ? `Resend in ${countdown}s` : "Resend OTP"}
+                {countdown > 0 ? `Resend in ${countdown}s` : 'Resend OTP'}
               </Button>
             </CardContent>
             <CardFooter className="flex flex-col space-y-4 pt-6">
-                          <p className="text-sm text-center text-gray-600">
-                Already verified?{" "}
+              <p className="text-sm text-center text-gray-600">
+                Already verified?{' '}
                 <a href="/auth/user/login" className="text-[#0a646d] hover:underline font-medium">
                   Login
                 </a>
@@ -148,7 +142,7 @@ const Otp = () => {
           </Card>
         </div>
       </div>
-      <HeroImage role='user' />
+      <HeroImage role="user" />
       {showModal && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
           <div className="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full text-center">
@@ -164,7 +158,7 @@ const Otp = () => {
         </div>
       )}
     </div>
-  )
-}
+  );
+};
 
-export default Otp
+export default Otp;

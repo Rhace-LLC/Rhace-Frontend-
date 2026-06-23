@@ -1,7 +1,7 @@
-import { ArrowRight } from "lucide-react";
-import { ImageWithFallback } from "./figma/ImageWithFallback";
-import { motion } from "framer-motion";
-import { useNavigate } from "react-router";
+import { ArrowRight } from 'lucide-react';
+import { ImageWithFallback } from './figma/ImageWithFallback';
+import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router';
 
 export function CTA() {
   const navigate = useNavigate();
@@ -40,8 +40,8 @@ export function CTA() {
               transition={{ duration: 0.6, delay: 0.3 }}
               className="text-xl text-teal-50 mb-10 max-w-2xl mx-auto"
             >
-              Join thousands of hotels, restaurants, and clubs managing
-              everything from one powerful dashboard.
+              Join thousands of hotels, restaurants, and clubs managing everything from one powerful
+              dashboard.
             </motion.p>
 
             <motion.div
@@ -55,7 +55,7 @@ export function CTA() {
                 className="px-8 py-4 bg-white text-teal-600 rounded-lg hover:bg-gray-50 transition-all flex items-center justify-center gap-2"
                 whileHover={{
                   scale: 1.05,
-                  boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.2)",
+                  boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.2)',
                 }}
                 whileTap={{ scale: 0.95 }}
               >
@@ -63,11 +63,11 @@ export function CTA() {
                 <ArrowRight className="w-5 h-5" />
               </motion.button>
               <motion.button
-                onClick={() => navigate("/contact")}
+                onClick={() => navigate('/contact')}
                 className="px-8 py-4 border-2 border-white text-white rounded-lg hover:bg-white/10 transition-all"
                 whileHover={{
                   scale: 1.05,
-                  backgroundColor: "rgba(255, 255, 255, 0.1)",
+                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
                 }}
                 whileTap={{ scale: 0.95 }}
               >

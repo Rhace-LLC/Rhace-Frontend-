@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 
 const Policies = ({ data }) => {
   return (
@@ -9,7 +9,7 @@ const Policies = ({ data }) => {
           {Object.entries(data).map(([key, value]) => (
             <div key={key} className="border-b flex gap-1 items-cente pb-3">
               <h3 className="font-medium text-gray-800 capitalize text-sm">
-                {key.replace("_", " ")}.
+                {key.replace('_', ' ')}.
               </h3>
               <p className="text-gray-600 font-medium text-sm">{value}</p>
             </div>
