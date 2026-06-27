@@ -211,6 +211,49 @@ export const updateSettings = (data) => api.put('/settings', data);
 export const getAccountSettings = () => api.get('/settings/account');
 export const updateAccountSettings = (data) => api.put('/settings/account', data);
 
+// ============================================================
+// NEW DIRECT EXPORT FUNCTIONS (No Cloudinary, no job queue)
+// ============================================================
+
+// Direct export reservations report
+export const exportReservationsDirect = (params) =>
+  api.post('/reports/export/reservations', params, {
+    responseType: 'blob',
+    headers: { Accept: 'application/octet-stream' },
+  });
+
+// Direct export vendor earnings report
+export const exportVendorEarningsDirect = (params) =>
+  api.post('/reports/export/vendor-earnings', params, {
+    responseType: 'blob',
+    headers: { Accept: 'application/octet-stream' },
+  });
+
+// Direct export payments report
+export const exportPaymentsDirect = (params) =>
+  api.post('/reports/export/payments', params, {
+    responseType: 'blob',
+    headers: { Accept: 'application/octet-stream' },
+  });
+
+// Direct export users report
+export const exportUsersDirect = (params) =>
+  api.post('/reports/export/users', params, {
+    responseType: 'blob',
+    headers: { Accept: 'application/octet-stream' },
+  });
+
+// Direct export vendors report
+export const exportVendorsDirect = (params) =>
+  api.post('/reports/export/vendors', params, {
+    responseType: 'blob',
+    headers: { Accept: 'application/octet-stream' },
+  });
+
+// ============================================================
+// LEGACY REPORT FUNCTIONS (Kept for backward compatibility)
+// ============================================================
+
 export const generateVendorEarningsReport = (data) => api.post('/reports/vendor-earnings', data);
 export const generateReservationsReport = (data) => api.post('/reports/reservations', data);
 export const generatePaymentsReport = (data) => api.post('/reports/payments', data);
