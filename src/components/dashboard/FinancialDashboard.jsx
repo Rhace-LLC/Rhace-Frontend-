@@ -53,11 +53,7 @@ const FinancialDashboard = ({ info }) => {
       <div className="flex-1 p-5 bg-white rounded-2xl border">
         <div className="flex justify-between items-start mb-5">
           <div>
-            <h3 className="text-sm text-gray-500 font-medium mb-1">Available Balance</h3>
-            <div className="text-4xl font-extrabold text-gray-800">
-              {currencySymbol}
-              {availableBalance.toLocaleString()}
-            </div>
+ 
             <p className="text-xs text-gray-400 mt-1">
               Last payment processed on{' '}
               {new Date(info.lastPayment).toLocaleDateString('en-NG') || lastPaymentDate}

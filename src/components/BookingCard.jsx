@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { SvgIcon, SvgIcon2, SvgIcon3 } from '@/public/icons/icons';
+import RenderCustomerQR from './RenderCustomerQR';
 
 function BookingCard({ booking, onEdit, onCancel }) {
   const [showDropdown, setShowDropdown] = useState(false);
@@ -197,6 +198,10 @@ function BookingCard({ booking, onEdit, onCancel }) {
         >
           {booking.reservationStatus.split('_').join(' ')}
         </span>
+        
+      <div>
+        <RenderCustomerQR reservation={booking} />
+        </div>
 
         <button
           className="px-6 py-3 rounded-full text-sm font-medium transition-colors w-full sm:w-auto bg-teal-700 hover:bg-teal-800 text-white"
@@ -244,7 +249,7 @@ function BookingCard({ booking, onEdit, onCancel }) {
                 <div className="py-2">
                   <button
                     onClick={handleDownloadInvoice}
-                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left"
+                    className="w-full hidden items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left"
                   >
                     <Download className="w-5 h-5 text-gray-600" />
                     <span className="text-sm font-medium text-gray-900">Download Invoice</span>

@@ -141,6 +141,7 @@ class UserService {
     const res = await api.post(`/bookings/${reservationId}/confirm`, payload);
     return res.data;
   }
+
   async getReservationStatus({ reservationId }) {
     // if (!reservationId) throw new Error("reservationId is required");
     // if (!vendorId) throw new Error("vendorId is required");
@@ -155,6 +156,15 @@ class UserService {
     });
     return res.data;
   }
+
+  async confirmReservation(bookingId) {
+  if (!bookingId) {
+    throw new Error("bookingId required");
+  }
+
+  const res = await api.post(`/bookings/${bookingId}/confirm`);
+  return res.data;
+}
 
   async fetchReservationsStats() {
     const res = await api.get(`/bookings/stats`);

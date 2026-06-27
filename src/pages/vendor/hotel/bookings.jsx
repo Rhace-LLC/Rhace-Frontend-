@@ -61,6 +61,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import { useWebSocket } from '@/contexts/WebSocketContext';
+import { QRScanDialog } from '@/components/QRScanDialog';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -108,6 +109,22 @@ const BookingManagement = () => {
     display: false,
     details: {},
   });
+
+  
+  ////////////////////////////////////////////////////////////
+
+const [qrScanIsOpen, setQRScanIsOpen] = useState(false);
+
+const handleOpenQRScan = () => {
+  setQRScanIsOpen(true);
+};
+
+const handleCloseQRScan = () => {
+  setQRScanIsOpen(false);
+};
+
+
+  /////////////////////////////////////////////////////
 
   const reservationStatusOptions = (status) => {
     switch (status) {
@@ -630,6 +647,7 @@ const BookingManagement = () => {
 
   if (isLoading) return <UniversalLoader fullscreen />;
 
+
   return (
     <DashboardLayout type={vendor.vendorType} settings={false} section="bookings">
       <div className="min-h-screen bg-gray-50 p-6 mb-12">
@@ -637,6 +655,14 @@ const BookingManagement = () => {
           <div className="md:flex hidden justify-between items-center mb-6">
             <h2 className="text-[#111827] font-semibold">All Bookings</h2>
             <div className="flex gap-6">
+              <QRScanDialog 
+                isOpen={qrScanIsOpen} 
+                onClose={handleCloseQRScan} 
+                onSuccess={()=> console.log("scan complete")}
+              />
+              <Button onClick={handleOpenQRScan}>
+                Scan Reservation QR
+              </Button>
               <DashboardButton
                 onClick={() => setHideTab(!hideTab)}
                 variant="secondary"
