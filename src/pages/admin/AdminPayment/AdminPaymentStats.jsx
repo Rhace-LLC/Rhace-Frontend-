@@ -53,6 +53,10 @@ const AdminPaymentStats = () => {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+      {
+        stats && (
+          <>
+          
 <PaymentStatCard
   title="Gross Sales"
   icon={Wallet}
@@ -109,6 +113,9 @@ const AdminPaymentStats = () => {
   isCurrency={false}
 />
 
+          </>
+        )
+      }
     </div>
   );
 };

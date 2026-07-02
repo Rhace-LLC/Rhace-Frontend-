@@ -53,6 +53,7 @@ import { useWebSocket } from '@/contexts/WebSocketContext';
 import { toast } from 'sonner';
 import { paymentService } from '@/services/payment.service';
 import PaymentStatCard from './AdminPayment/PaymentStatCart';
+import AdminEarningTrends from "./AdminPayment/AdminEarningTrends";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -90,6 +91,8 @@ export default function Dashboard() {
         const res = await paymentService.getPaymentStats();
   
         setStats(res);
+        console.log('==============================')
+        console.log(res)
       } catch (error) {
         toast.error(
           error?.response?.data?.message ??
@@ -470,6 +473,10 @@ export default function Dashboard() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {
+          stats && (
+            <>
+            
 <PaymentStatCard
   title="Gross Sales"
   icon={Wallet}
@@ -506,84 +513,13 @@ export default function Dashboard() {
   color="#EF4444"
   isCurrency={false}
 />
+            </>
+          )
+        }
 
       </div>
 
-      <Card className="">
-        <CardHeader className="flex flex-row items-center justify-between pb-2">
-          <CardTitle className="text-lg">Earnings Trends</CardTitle>
-          <div className="flex gap-2">
-            <Button
-              variant="link"
-              size="sm"
-              className="text-primary p-0 h-auto"
-              onClick={() => navigate('/dashboard/admin/reports')}
-            >
-              View All <ExternalLink className="w-3 h-3 ml-1" />
-            </Button>
-            <span className="text-xs px-2 py-1 border rounded bg-background">Monthly</span>
-          </div>
-        </CardHeader>
-        <CardContent className="">
-          <div className="mb-4">
-            <p className="text-2xl md:text-3xl font-bold">{formatNaira(lastRevenue)}</p>
-            <p className="text-xs text-muted-foreground flex items-center gap-1">
-              {trendUp ? (
-                <span className="text-success flex items-center">
-                  ↑ {pctChange.toFixed(1)}% vs previous
-                </span>
-              ) : (
-                <span className="text-destructive flex items-center">
-                  ↓ {Math.abs(pctChange).toFixed(1)}% vs previous
-                </span>
-              )}
-            </p>
-          </div>
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={recent}>
-                <defs>
-                  <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-                <XAxis
-                  dataKey="label"
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
-                />
-                <YAxis
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
-                  tickFormatter={(value) => `₦${(value / 1000).toFixed(0)}k`}
-                />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: 'hsl(var(--background))',
-                    border: '1px solid hsl(var(--border))',
-                    borderRadius: '6px',
-                    boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
-                  }}
-                  formatter={(value: any) => [formatNaira(value), 'Revenue']}
-                  labelStyle={{ color: 'hsl(var(--foreground))' }}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="value"
-                  stroke="hsl(var(--primary))"
-                  fillOpacity={1}
-                  fill="url(#colorRevenue)"
-                  strokeWidth={2}
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        </CardContent>
-      </Card>
+        <AdminEarningTrends />
 
       <Card className="bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-950/50 dark:to-indigo-900/50 border-0 shadow-xl">
         <CardHeader className="flex flex-row items-center justify-between pb-4">
