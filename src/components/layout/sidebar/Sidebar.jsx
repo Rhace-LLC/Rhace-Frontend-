@@ -4,6 +4,7 @@ import { Menu, Search, X } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ClubList, HotelList, RestaurantList } from './SideMenuList';
 import { ConfirmationDialog } from '@/components/ConfirmationDialog';
+import logo from "../../../public/images/Rhace-09.png";
 
 // Hook to get current menu configuration
 const useMenuConfig = (businessType) => {
@@ -95,7 +96,7 @@ const Sidebar = ({ isOpen, onClose, onNavigate, type }) => {
           <div className="flex items-center h-16 px-4">
             <div className="flex items-center">
               <img
-                src={'/images/Rhace-09.png'}
+                src={logo}
                 alt="Rhace Logo"
                 className="w-20 h-20 object-contain"
               />

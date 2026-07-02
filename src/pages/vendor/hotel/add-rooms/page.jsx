@@ -19,7 +19,7 @@ export default function AddRooms() {
     roomTypes: [
       {
         id: '1',
-        name: 'Room Type 1',
+        name: 'Add Room Name',
         description: '',
         pricePerNight: 100000,
         adultsCapacity: 2,

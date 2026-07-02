@@ -1,10 +1,10 @@
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { useSelector } from 'react-redux';
 
-import PaymentStats from "./NewPaymentDashboard/PaymentStats"
-import PaymentInformation from "./NewPaymentDashboard/PaymentInformation"
-import EarningsTrends from "./NewPaymentDashboard/EarningTrends";
-import TransactionHistory from "./NewPaymentDashboard/TransactionHistory"
+import PaymentStats from "./PaymentStats"
+import PaymentInformation from "./PaymentInformation"
+import EarningsTrends from './EarningTrends';
+import TransactionHistory from "./TransactionHistory"
 
 const VendorPaymentOverview = () => {
   const vendor = useSelector((state) => state.auth.vendor);
@@ -17,7 +17,7 @@ const VendorPaymentOverview = () => {
 
         <PaymentStats />
 
-        <div className="grid grid-cols-1 gap-6">
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
           <PaymentInformation />
           <EarningsTrends />
         </div>

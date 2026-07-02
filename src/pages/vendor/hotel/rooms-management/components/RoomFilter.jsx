@@ -142,15 +142,6 @@ const RoomFilter = forwardRef(({ onFilterChange, view, setView }, ref) => {
         <div className="gap-3 flex items-center">
           {/* Category Dropdown */}
           <div className="relative">
-            <Button
-              onClick={() => setCategoryDropdownOpen(!categoryDropdownOpen)}
-              className="px-4 py-3 border border-gray-200 rounded-lg bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-teal-500 flex items-center gap-2 min-w-[160px] justify-between transition-colors"
-            >
-              <span className="text-gray-700 text-sm">
-                {categories.find((c) => c.value === selectedCategory)?.label}
-              </span>
-              <ChevronDown size={18} className="text-gray-500" />
-            </Button>
 
             {categoryDropdownOpen && (
               <>
@@ -177,30 +168,7 @@ const RoomFilter = forwardRef(({ onFilterChange, view, setView }, ref) => {
             )}
           </div>
 
-          {/* Advanced Filter Button */}
-          <Button
-            onClick={() => setShowAdvancedFilter(!showAdvancedFilter)}
-            className={`px-4 -3 border rounded-lg flex items-center gap-2 transition-colors ${
-              showAdvancedFilter
-                ? 'bg-teal-50 border-teal-200 text-teal-600'
-                : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
-            }`}
-          >
-            <SlidersHorizontal size={18} />
-            <span className="text-sm">Advanced filter</span>
-          </Button>
-
-          {/* Clear All Filters Button */}
-          {hasActiveFilters && (
-            <button
-              onClick={resetAllFilters}
-              className="px-4 py-3 border border-red-200 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 flex items-center gap-2 transition-colors"
-              title="Clear all filters"
-            >
-              <X size={18} />
-              <span className="text-sm">Clear</span>
-            </button>
-          )}
+   
           <ViewToggle view={view} onViewChange={setView} />
         </div>
       </div>

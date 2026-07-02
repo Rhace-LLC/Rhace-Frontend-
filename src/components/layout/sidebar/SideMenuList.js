@@ -35,12 +35,12 @@ export const AdminList = {
       path: '/dashboard/admin/reservations',
       icon: BookingsIcon,
     },
-    /*    
     {
       label: 'Payments',
       path: '/dashboard/admin/payments',
       icon: PaymentIcon,
     },
+    /*    
     */
     {
       label: 'Reports',

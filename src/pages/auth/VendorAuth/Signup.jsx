@@ -1,11 +1,8 @@
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
-import { Eye, EyeOff, Loader2, Lock, Mail, Store } from 'lucide-react';
+import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import HeroImage from '../../../components/auth/HeroImage';
-import { authService } from '@/services/auth.service';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router';
 import logo from '../../../public/images/Rhace-11.png';
@@ -37,7 +34,6 @@ const Signup = () => {
       }
       setError({ email: '', password: '', businessName: '', confirmPassword: '' });
       setIsloading(true);
-      const user = await authService.vendorRegister(formData);
 
       toast.success('Congratulations!. Next: verify your email');
       // FIX: Keep the structural URL layout raw, and ONLY encode the raw dynamic email variable
@@ -211,24 +207,25 @@ const Signup = () => {
                 </div>
               )}
               <button
-                disabled={
-                  !formData.businessName ||
-                  !formData.email ||
-                  !formData.password ||
-                  !formData.confirmPassword ||
-                  strength < 3
-                }
-                onClick={handleRegister}
-                className="w-full py-6 rounded-md bg-[#0A6C6D] text-white text-sm font-light transition-transform duration-200 hover:shadow-lg hover:bg-[#0A6C6D]"
-              >
-                {isLoading ? (
-                  <span className="flex items-center gap-1">
-                    Loading <Loader2 className="animate-spin" />
-                  </span>
-                ) : (
-                  'Register'
-                )}
-              </button>
+              disabled={
+                !formData.businessName ||
+                !formData.email ||
+                !formData.password ||
+                !formData.confirmPassword ||
+                strength < 3
+              }
+              onClick={handleRegister}
+              className="w-full py-6 rounded-md bg-[#0A6C6D] text-white text-sm font-light transition-transform duration-200 hover:shadow-lg hover:bg-[#0A6C6D] disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              {isLoading ? (
+                <span className="flex w-full items-center justify-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>Loading...</span>
+                </span>
+              ) : (
+                "Register"
+              )}
+            </button>
             </CardContent>
             <CardFooter className="flex flex-col space-y-4 pt-6">
               <p className="text-sm text-center text-[#0A6C6D] hover:text-[#074f55] transition-all font-light">

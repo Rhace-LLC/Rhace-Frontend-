@@ -417,7 +417,7 @@ const RoomsManagementComponent = ({ currentPage = 1, itemsPerPage = 12, onTotalI
             </div>
           </div>
         ) : view === 'grid' ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {paginatedRooms.map((room) => (
               <RoomCard key={room._id} room={room} onViewDetails={handleViewDetails} />
             ))}

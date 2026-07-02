@@ -37,7 +37,7 @@ const RoomCard = ({ room, onViewDetails }) => {
       <div className="pt-4">
         {/* Title Row */}
         <div className="flex justify-between items-start">
-          <h3 className="text-mb font-normal text-[#111827]">{room.name}</h3>
+          <h3 className="text-mb font-bold capitalize text-[#111827]">{room.name}</h3>
 
           <button
             onClick={() => onViewDetails(room)}

@@ -93,54 +93,6 @@ const STEPS = [
   },
 ];
 
-// --- SVG ICONS ---
-const SvgIcon = ({ isActive }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    className="w-6 h-6"
-    fill={isActive ? '#0A6C6D' : 'none'}
-    stroke={isActive ? '#fff' : '#0A6C6D'}
-    strokeWidth={1.5}
-    viewBox="0 0 24 24"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M3 10h18M4 10V7a1 1 0 011-1h14a1 1 0 011 1v3m-1 0v9a1 1 0 01-1 1H5a1 1 0 01-1-1v-9m4 5h8"
-    />
-  </svg>
-);
-
-const SvgIcon2 = ({ isActive }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    className="w-6 h-6"
-    fill={isActive ? '#0A6C6D' : 'none'}
-    stroke={isActive ? '#fff' : '#0A6C6D'}
-    strokeWidth={1.5}
-    viewBox="0 0 24 24"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M3 4h18M4 4v16a1 1 0 001 1h14a1 1 0 001-1V4M8 10h8M8 14h4"
-    />
-  </svg>
-);
-
-const SvgIcon3 = ({ isActive }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    className="w-6 h-6"
-    fill={isActive ? '#0A6C6D' : 'none'}
-    stroke={isActive ? '#fff' : '#0A6C6D'}
-    strokeWidth={1.5}
-    viewBox="0 0 24 24"
-  >
-    <path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14M12 5v14" />
-  </svg>
-);
-
 const NIGERIAN_BANKS = [
   { name: 'Access Bank', code: '044' },
   { name: 'Citibank Nigeria', code: '023' },
@@ -227,6 +179,14 @@ export function Onboard() {
     }
   }, [formData.openingTime, formData.closingTime]);
 
+const removeImage = (imageUrl) => {
+  updateFormData({
+    profileImages: formData.profileImages.filter((img) => img !== imageUrl),
+  });
+};
+
+
+
   const handleImageUpload = useCallback(
     async (files) => {
       const fileArray = Array.from(files).slice(0, 5); // Limit to 5 images
@@ -267,6 +227,8 @@ export function Onboard() {
       updateFormData({
         profileImages: [...formData.profileImages, ...uploadedUrls],
       });
+
+setUploadProgress({});
     },
     [formData.profileImages]
   );
@@ -538,7 +500,30 @@ export function Onboard() {
                         <Progress value={progress} className="h-2" />
                       </div>
                     ))}
+                    {formData.profileImages.length > 0 && (
+                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+                        {formData.profileImages.map((image, index) => (
+                          <div
+                            key={`${image}-${index}`}
+                            className="relative group aspect-square overflow-hidden rounded-lg border bg-muted"
+                          >
+                            <img
+                              src={image}
+                              alt={`Business ${index + 1}`}
+                              className="absolute inset-0 h-full w-full object-cover"
+                            />
 
+                            <button
+                              type="button"
+                              onClick={() => removeImage(image)}
+                              className="absolute top-2 right-2 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-red-600 text-white opacity-0 transition-opacity group-hover:opacity-100"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                     <p className="text-sm text-muted-foreground">
                       {formData.profileImages.length} images uploaded
                     </p>

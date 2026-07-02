@@ -242,32 +242,6 @@ const RoomTypeForm = React.memo(
             ))}
           </div>
 
-          {/* Add Custom Amenity */}
-          <div className="flex gap-2">
-            <Input
-              placeholder="Add new amenity"
-              value={customAmenities[room.id] || ''}
-              onChange={(e) =>
-                setCustomAmenities((prev) => ({ ...prev, [room.id]: e.target.value }))
-              }
-              className="flex-1"
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  e.preventDefault();
-                  handleAddCustomAmenity(room.id);
-                }
-              }}
-            />
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => handleAddCustomAmenity(room.id)}
-            >
-              <Edit className="h-4 w-4" />
-              Edit
-            </Button>
-          </div>
         </div>
 
         {/* Room Images */}

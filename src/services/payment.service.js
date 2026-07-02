@@ -16,10 +16,21 @@ class PaymentService {
     return res.data;
   }
 
-  async getTrends({ range }) {
-    const res = await api.get(`/payments/earnings-trend?range=${range}`);
-    return res.data;
-  }
+async getTrends({
+  metric,
+  range,
+}) {
+  const params = new URLSearchParams({
+    range,
+    ...(metric ? { metric } : {}),
+  });
+
+  const res = await api.get(
+    `/payments/earnings-trend?${params.toString()}`
+  );
+
+  return res.data;
+}
 
   async getPaymentInfo() {
     const vendorId = localStorage.getItem('vendorId');

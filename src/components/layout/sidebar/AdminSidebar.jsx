@@ -6,7 +6,6 @@ import { logout } from '../../../redux/slices/authSlice';
 import { AdminList } from './SideMenuList';
 import { X } from 'lucide-react';
 import { RhaceIcon } from '@/public/icons/icons';
-
 import { ConfirmationDialog } from '@/components/ConfirmationDialog';
 
 const AdminSidebar = ({ isOpen, onClose }) => {
@@ -66,7 +65,7 @@ const AdminSidebar = ({ isOpen, onClose }) => {
           <div className="flex items-center h-16 px-4">
             <div className="flex items-center">
               <RhaceIcon />
-              <span className="text-xl font-bold">rhace Admin</span>
+              <span className="text-xl font-bold">Rhace Admin</span>
             </div>
           </div>
 
