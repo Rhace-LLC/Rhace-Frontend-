@@ -33,25 +33,6 @@ function BookingCard({ booking, onEdit, onCancel }) {
     });
   };
 
-  // const getStatusColor = (status) => {
-  //   switch (status) {
-  //     case 'paid':
-  //       return 'bg-green-100 text-green-800 border-green-200';
-  //     case 'not_paid':
-  //       return 'bg-amber-100 text-amber-800 border-amber-200';
-  //     case 'cancelled':
-  //       return 'bg-red-100 text-red-800 border-red-200';
-  //     case 'part_paid':
-  //       return 'bg-emerald-100 text-emerald-800 border-emerald-200';
-  //     default:
-  //       return 'bg-gray-100 text-gray-800 border-gray-200';
-  //   }
-  // };
-
-  // Temporary normalization added because backend paymentStatus values
-  // are not yet standardized (case/format mismatch).
-  // Once backend aligns paymentStatus to consistent values
-  // like: 'paid', 'part_paid', 'not_paid', this logic can be simplified.
   const getStatusColor = (status) => {
     if (!status) return 'bg-gray-100 text-gray-800 border-gray-200';
 

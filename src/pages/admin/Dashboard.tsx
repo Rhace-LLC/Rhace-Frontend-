@@ -11,6 +11,14 @@ import {
   RefreshCw,
 } from 'lucide-react';
 import {
+  Wallet,
+  Building2,
+  Landmark,
+  CreditCard,
+  CheckCircle2,
+  Clock3,
+} from 'lucide-react';
+import {
   AreaChart,
   Area,
   XAxis,
@@ -42,6 +50,9 @@ import {
   getUsers,
 } from '@/services/admin.service';
 import { useWebSocket } from '@/contexts/WebSocketContext';
+import { toast } from 'sonner';
+import { paymentService } from '@/services/payment.service';
+import PaymentStatCard from './AdminPayment/PaymentStatCart';
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -64,20 +75,34 @@ export default function Dashboard() {
     'connecting'
   );
 
-  const fetchKPIs = async () => {
-    try {
-      const kRes = await getDashboardKPIs();
-      const k = kRes?.data?.data || kRes?.data || kRes || null;
-      setKpis(k);
-    } catch (err) {
-      console.error('Failed to load KPIs', err);
-    }
-  };
-
+    const [loading, setLoading] = useState(true);
+  
+    const [stats, setStats] = useState(null);
+  
+    useEffect(() => {
+      fetchStats();
+    }, []);
+  
+    const fetchStats = async () => {
+      try {
+        setLoading(true);
+  
+        const res = await paymentService.getPaymentStats();
+  
+        setStats(res);
+      } catch (error) {
+        toast.error(
+          error?.response?.data?.message ??
+            'Unable to load payment statistics'
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
   useEffect(() => {
     const fetchInitialData = () => {
       Promise.all([
-        fetchKPIs(),
+        fetchStats(),
         fetchRevenueTrends(),
         fetchTodaysReservations(),
         fetchTransactions(),
@@ -89,7 +114,7 @@ export default function Dashboard() {
 
     // Poll dashboard data periodically as a fallback for realtime updates
     const polling = setInterval(() => {
-      fetchKPIs();
+      fetchStats();
       fetchTotalUsers();
       fetchTodaysReservations();
       fetchTopVendors();
@@ -250,7 +275,7 @@ export default function Dashboard() {
     setIsRefreshing(true);
     try {
       await Promise.all([
-        fetchKPIs(),
+        fetchStats(),
         fetchTotalUsers(),
         fetchTransactions(),
         fetchRevenueTrends(),
@@ -269,7 +294,7 @@ export default function Dashboard() {
     const handleUserCreated = (payload?: any) => {
       // optimistic increment for immediate UX
       setTotalUsers((prev) => (Number(prev) || 0) + 1);
-      fetchKPIs();
+      fetchStats();
       // if payload contains authoritative count, use it
       if (payload && (payload.total || payload.count || payload.totalUsers)) {
         const t = payload.total ?? payload.count ?? payload.totalUsers;
@@ -279,7 +304,7 @@ export default function Dashboard() {
 
     const handleUserDeleted = (payload?: any) => {
       setTotalUsers((prev) => Math.max(0, (Number(prev) || 0) - 1));
-      fetchKPIs();
+      fetchStats();
       if (payload && (payload.total || payload.count || payload.totalUsers)) {
         const t = payload.total ?? payload.count ?? payload.totalUsers;
         setTotalUsers(Number(t));
@@ -288,7 +313,7 @@ export default function Dashboard() {
 
     const handleUserUpdated = (updatedUser: any) => {
       // If user status changes from active to inactive or vice versa, refetch totals
-      fetchKPIs();
+      fetchStats();
       fetchTotalUsers();
     };
 
@@ -300,7 +325,7 @@ export default function Dashboard() {
 
     const handlePayoutUpdate = (payout: any) => {
       // Payouts might affect pending payments or revenue
-      fetchKPIs();
+      fetchStats();
     };
 
     const handleReservationCreated = (reservation: any) => {
@@ -308,33 +333,33 @@ export default function Dashboard() {
       if (reservation.date === today || reservation.checkInDate === today) {
         fetchTodaysReservations();
       }
-      fetchKPIs(); // Update totalBookings
+      fetchStats(); // Update totalBookings
       fetchTransactions(); // Update recent transactions
       fetchTopVendors(); // Update top vendors when new reservations are created
     };
 
     const handleReservationUpdated = (reservation: any) => {
       fetchTodaysReservations();
-      fetchKPIs();
+      fetchStats();
       fetchTransactions();
       fetchTopVendors(); // Update top vendors when reservations are updated
     };
 
     const handleReservationDeleted = (reservation: any) => {
       fetchTodaysReservations();
-      fetchKPIs(); // Update totalBookings
+      fetchStats(); // Update totalBookings
       fetchTransactions();
       fetchTopVendors(); // Update top vendors when reservations are deleted
     };
 
     const handlePaymentCreated = (payment: any) => {
-      fetchKPIs();
+      fetchStats();
       fetchTransactions();
       fetchRevenueTrends();
     };
 
     const handlePaymentUpdated = (payment: any) => {
-      fetchKPIs();
+      fetchStats();
       fetchTransactions();
       fetchRevenueTrends();
     };
@@ -348,13 +373,13 @@ export default function Dashboard() {
       // Update today's reservations and top vendors when reservation status changes
       fetchTodaysReservations();
       fetchTopVendors();
-      fetchKPIs();
+      fetchStats();
     };
 
     const handlePayoutProcessed = (payout: any) => {
       // Update revenue trends and KPIs when payouts are processed
       fetchRevenueTrends();
-      fetchKPIs();
+      fetchStats();
       fetchTransactions();
     };
 
@@ -445,50 +470,43 @@ export default function Dashboard() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard
-          title="Total Payouts"
-          value={formatNaira(transactions.reduce((sum, t) => sum + (Number(t.amount) || 0), 0))}
-          change="+0% from last year"
-          icon={DollarSign}
-          iconBg="bg-green-100"
-          iconColor="text-success"
-          trend="up"
-        />
-        <StatCard
-          title="Pending Payouts"
-          value={formatNaira(
-            transactions
-              .filter((t) => t.status !== 'Paid')
-              .reduce((sum, t) => sum + (Number(t.amount) || 0), 0)
-          )}
-          change="+0% vs last week"
-          icon={AlertCircle}
-          iconBg="bg-yellow-100"
-          iconColor="text-warning"
-          trend="up"
-        />
-        <StatCard
-          title="Successful Payouts"
-          value={formatNaira(
-            transactions
-              .filter((t) => t.status === 'Paid')
-              .reduce((sum, t) => sum + (Number(t.amount) || 0), 0)
-          )}
-          change="+0% vs last week"
-          icon={TrendingUp}
-          iconBg="bg-blue-100"
-          iconColor="text-blue-600"
-          trend="up"
-        />
-        <StatCard
-          title="Last Payout"
-          value={transactions.length > 0 ? formatNaira(Number(transactions[0].amount) || 0) : '₦0'}
-          change="-0% vs last week"
-          icon={ArrowDownRight}
-          iconBg="bg-red-100"
-          iconColor="text-destructive"
-          trend="down"
-        />
+<PaymentStatCard
+  title="Gross Sales"
+  icon={Wallet}
+  value={stats.sales.thisWeek}
+  comparison={`Last Week: ₦${stats.sales.lastWeek.toLocaleString()}`}
+  change={stats.sales.change}
+  color="#0A6C6D"
+/>
+
+<PaymentStatCard
+  title="Vendor Revenue"
+  icon={Building2}
+  value={stats.vendorRevenue.thisWeek}
+  comparison={`Last Week: ₦${stats.vendorRevenue.lastWeek.toLocaleString()}`}
+  change={stats.vendorRevenue.change}
+  color="#2563EB"
+/>
+<PaymentStatCard
+  title="Completed Payments"
+  icon={CheckCircle2}
+  value={stats.payments.completed.thisWeek}
+  comparison={`Last Week: ${stats.payments.completed.lastWeek}`}
+  change={stats.payments.completed.change}
+  color="#10B981"
+  isCurrency={false}
+/>
+
+<PaymentStatCard
+  title="Pending Payments"
+  icon={Clock3}
+  value={stats.payments.pending.thisWeek}
+  comparison={`Last Week: ${stats.payments.pending.lastWeek}`}
+  change={stats.payments.pending.change}
+  color="#EF4444"
+  isCurrency={false}
+/>
+
       </div>
 
       <Card className="">

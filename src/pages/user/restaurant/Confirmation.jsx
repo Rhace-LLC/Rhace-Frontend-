@@ -12,6 +12,9 @@ export default function ConfirmPage() {
   const navigate = useNavigate();
   const { id } = useParams();
 
+  const [searchParams] = useState(() => new URLSearchParams(window.location.search));
+  const reference = searchParams.get('reference');
+
   const [state, setState] = useState({
     reservation: null,
     payment: null,
@@ -37,6 +40,12 @@ export default function ConfirmPage() {
 
     const completeReservation = async () => {
       try {
+               // Step 1: Verify the payment with Paystack first
+                if (reference) {
+                  toast.info('Verifying payment...');
+                  await paymentService.verifyPayment(reference);
+                }
+                
         const result = await paymentService.completeReservation(id);
 
         // If component unmounted, stop everything

@@ -51,6 +51,23 @@ async getTrends({
     return response.data;
   }
 
+  async initializeSubsequentPayment(reservationId) {
+  const res = await api.post(
+    `/payments/${reservationId}/subsequent-payment`
+  );
+
+  return res.data;
+}
+
+async recordOfflinePayment(reservationId, body) {
+  const res = await api.post(
+    `/payments/${reservationId}/offline-payment`,
+    body
+  );
+
+  return res.data;
+}
+
   async completeReservation(trxref) {
     const response = await api.post('/bookings/complete-payment', {
       trxref,
@@ -60,3 +77,37 @@ async getTrends({
 }
 
 export const paymentService = new PaymentService();
+
+
+/*
+export async function submitInitializeBalancePayment(
+  reservationId
+) {
+  try {
+    const response =
+      await paymentService.initializeSubsequentPayment(
+        reservationId
+      );
+
+    return response;
+  } catch (error) {
+    throw error;
+  }
+}
+
+export async function submitRecordOfflinePayment(
+  reservationId,
+  body
+) {
+  try {
+    const response =
+      await paymentService.recordOfflinePayment(
+        reservationId,
+        body
+      );
+    return response;
+  } catch (error) {
+    throw error;
+  }
+}
+*/

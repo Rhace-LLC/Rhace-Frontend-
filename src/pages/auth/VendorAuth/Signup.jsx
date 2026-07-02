@@ -6,6 +6,7 @@ import HeroImage from '../../../components/auth/HeroImage';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router';
 import logo from '../../../public/images/Rhace-11.png';
+import { authService } from '@/services/auth.service';
 
 const getCurrentYear = () => new Date().getFullYear();
 
@@ -34,7 +35,7 @@ const Signup = () => {
       }
       setError({ email: '', password: '', businessName: '', confirmPassword: '' });
       setIsloading(true);
-
+      await authService.vendorRegister(formData);
       toast.success('Congratulations!. Next: verify your email');
       // FIX: Keep the structural URL layout raw, and ONLY encode the raw dynamic email variable
       const safeEmail = encodeURIComponent(formData.email);
