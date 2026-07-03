@@ -117,104 +117,6 @@ const NIGERIAN_BANKS = [
 
 const CUISINE_OPTIONS = ['nigerian', 'italian', 'continental', 'chinese'];
 
-// --- Validation Helpers ---
-
-const PHONE_REGEX = /^(\+?234|0)[789]\d{9}$/;
-const URL_REGEX = /^https?:\/\/.+/;
-const ACCOUNT_NUMBER_REGEX = /^\d{10}$/;
-
-const validateStep = (step, data) => {
-  const errors = {};
-
-  switch (step) {
-    case 1: {
-      if (data.profileImages.length < 5) {
-        errors.profileImages = `Upload at least 5 business photos (${data.profileImages.length} uploaded)`;
-      }
-      if (!data.businessDescription.trim()) {
-        errors.businessDescription = 'Business description is required';
-      }
-      if (!data.vendorType) {
-        errors.vendorType = 'Select a business type';
-      }
-      if (!data.phone.trim()) {
-        errors.phone = 'Phone number is required';
-      } else if (!PHONE_REGEX.test(data.phone.trim())) {
-        errors.phone = 'Enter a valid Nigerian phone number (e.g. +2348012345678)';
-      }
-      if (!data.address.trim()) {
-        errors.address = 'Business address is required';
-      } else if (data.address.trim().length < 10) {
-        errors.address = 'Please enter a complete address (at least 10 characters)';
-      }
-      if (data.website.trim() && !URL_REGEX.test(data.website.trim())) {
-        errors.website = 'Enter a valid URL starting with http:// or https://';
-      }
-      break;
-    }
-    case 2: {
-      if (!data.bankCode) {
-        errors.bankCode = 'Select a bank';
-      }
-      if (!data.accountNumber.trim()) {
-        errors.accountNumber = 'Account number is required';
-      } else if (!ACCOUNT_NUMBER_REGEX.test(data.accountNumber.trim())) {
-        errors.accountNumber = 'Account number must be exactly 10 digits';
-      }
-      if (!data.accountName.trim()) {
-        errors.accountName = 'Verify your account first';
-      }
-      break;
-    }
-    case 3: {
-      if (data.priceRange === '' || data.priceRange === null || data.priceRange === undefined) {
-        errors.priceRange = 'Price range is required';
-      } else if (Number(data.priceRange) < 100) {
-        errors.priceRange = 'Enter a valid minimum price (₦100 or more)';
-      }
-      if (data.vendorType === 'restaurant' || data.vendorType === 'club') {
-        if (!data.openingTime) {
-          errors.openingTime = 'Opening time is required';
-        }
-        if (!data.closingTime) {
-          errors.closingTime = 'Closing time is required';
-        }
-        if (data.openingTime && data.closingTime && data.openingTime >= data.closingTime) {
-          errors.closingTime = 'Closing time must be after opening time';
-        }
-        if (data.vendorType === 'restaurant' && data.availableSlots.length === 0) {
-          errors.availableSlots = 'Select at least one available booking slot';
-        }
-        if (data.vendorType === 'restaurant' && data.cuisines.length === 0) {
-          errors.cuisines = 'Select at least one cuisine';
-        }
-        if (data.vendorType === 'club') {
-          if (data.categories.length === 0) {
-            errors.categories = 'Add at least one category';
-          }
-          if (data.dressCode.length === 0) {
-            errors.dressCode = 'Add at least one dress code requirement';
-          }
-          if (!data.ageLimit) {
-            errors.ageLimit = 'Select an age limit requirement';
-          }
-          if (!data.slots || data.slots < 1) {
-            errors.slots = 'Available slots must be at least 1';
-          }
-        }
-      }
-      break;
-    }
-    default:
-      break;
-  }
-
-  let errLogs = { isValid: Object.keys(errors).length === 0, errors };
-//  console.log("======================== errors ========================");
-//  console.log(errLogs)
-  return errLogs;
-};
-
 export function Onboard() {
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
@@ -239,28 +141,7 @@ export function Onboard() {
     ageLimit: '',
     slots: 0,
   });
-  const [errors, setErrors] = useState({
-    profileImages: '',
-    businessDescription: '',
-    vendorType: '',
-    phone: '',
-    website: '',
-    address: '',
-    bankCode: '',
-    accountNumber: '',
-    accountName: '',
-    priceRange: '',
-    openingTime: '',
-    closingTime: '',
-    cuisines: '',
-    availableSlots: '',
-    categories: '',
-    dressCode: '',
-    ageLimit: '',
-    slots: '',
-  });
   const [uploadProgress, setUploadProgress] = useState({});
-  const [uploadErrors, setUploadErrors] = useState([]);
   const [isVerifyingBank, setIsVerifyingBank] = useState(false);
   const [isLoading, setIsloading] = useState(false);
   const [bankVerified, setBankVerified] = useState(false);
@@ -268,14 +149,6 @@ export function Onboard() {
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  const clearError = (field) => {
-    setErrors((prev) => {
-      const next = { ...prev };
-      delete next[field];
-      return next;
-    });
-  };
 
   const updateFormData = (updates) => {
     setFormData((prev) => ({ ...prev, ...updates }));
@@ -319,7 +192,6 @@ const removeImage = (imageUrl) => {
       const fileArray = Array.from(files).slice(0, 5); // Limit to 5 images
 
       const uploadedUrls = [];
-      const newUploadErrors = [];
 
       for (const file of fileArray) {
         const fileName = file.name;
@@ -349,13 +221,7 @@ const removeImage = (imageUrl) => {
         } catch (error) {
           console.error('Upload failed for', fileName, error);
           setUploadProgress((prev) => ({ ...prev, [fileName]: -1 })); // -1 to indicate failure
-          newUploadErrors.push(fileName);
-          toast.error(`Failed to upload ${fileName}`);
         }
-      }
-
-      if (newUploadErrors.length > 0) {
-        setUploadErrors((prev) => [...prev, ...newUploadErrors]);
       }
 
       updateFormData({
@@ -427,16 +293,6 @@ setUploadProgress({});
   const handleBankVerification = async () => {
     if (!formData.bankCode || !formData.accountNumber) return;
 
-    // Client-side validation: account number must be 10 digits
-    if (!ACCOUNT_NUMBER_REGEX.test(formData.accountNumber.trim())) {
-      setErrors((prev) => ({
-        ...prev,
-        accountNumber: 'Account number must be exactly 10 digits',
-      }));
-      toast.warn('Please enter a valid 10-digit account number before verifying.');
-      return;
-    }
-
     setIsVerifyingBank(true);
     setBankVerified(false);
 
@@ -457,14 +313,9 @@ setUploadProgress({});
       });
 
       setBankVerified(true);
-      clearError('accountNumber');
-      clearError('bankCode');
-      clearError('accountName');
     } catch (error) {
       console.error('Account verification failed:', error);
-      const errorMsg = error.response?.data?.error || 'Verification failed. Please try again.';
-      setErrors((prev) => ({ ...prev, accountNumber: errorMsg }));
-      toast.error(errorMsg);
+      alert(error.response?.data?.error || 'Verification failed. Please try again.');
       setBankVerified(false);
     } finally {
       setIsVerifyingBank(false);
@@ -475,7 +326,6 @@ setUploadProgress({});
     const currentArray = formData[field];
     if (!currentArray.includes(value) && value.trim()) {
       updateFormData({ [field]: [...currentArray, value.trim()] });
-      clearError(field);
     }
   };
 
@@ -504,73 +354,19 @@ setUploadProgress({});
   };
 
   const handleNext = () => {
-    const { isValid, errors: stepErrors } = validateStep(currentStep, formData);
-    if (!isValid) {
-      setErrors(stepErrors);
-      toast.warn('Please fix the highlighted fields before continuing.');
-      return;
-    }
-    if (currentStep < 3) {
+    if (canProceedToNext() && currentStep < 3) {
       setCurrentStep(currentStep + 1);
-      setErrors({
-        profileImages: '',
-        businessDescription: '',
-        vendorType: '',
-        phone: '',
-        website: '',
-        address: '',
-        bankCode: '',
-        accountNumber: '',
-        accountName: '',
-        priceRange: '',
-        openingTime: '',
-        closingTime: '',
-        cuisines: '',
-        availableSlots: '',
-        categories: '',
-        dressCode: '',
-        ageLimit: '',
-        slots: '',
-      });
     }
   };
 
   const handleBack = () => {
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
-      setErrors({
-        profileImages: '',
-        businessDescription: '',
-        vendorType: '',
-        phone: '',
-        website: '',
-        address: '',
-        bankCode: '',
-        accountNumber: '',
-        accountName: '',
-        priceRange: '',
-        openingTime: '',
-        closingTime: '',
-        cuisines: '',
-        availableSlots: '',
-        categories: '',
-        dressCode: '',
-        ageLimit: '',
-        slots: '',
-      });
     }
   };
   const navigate = useNavigate();
 
   const handleSubmit = async () => {
-    // Validate step 3 before submitting
-    const { isValid, errors: stepErrors } = validateStep(3, formData);
-    if (!isValid) {
-      setErrors(stepErrors);
-      toast.warn('Please fix the highlighted fields before continuing.');
-      return;
-    }
-
     setIsloading(true);
 
     try {
@@ -608,16 +404,6 @@ setUploadProgress({});
 
     fetchBanks();
   }, []);
-
-  // --- onBlur validation handlers ---
-  const handleBlur = (field) => {
-    const stepErrors = validateStep(currentStep, formData).errors;
-    if (stepErrors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: stepErrors[field] }));
-    } else {
-      clearError(field);
-    }
-  };
 
   return (
     <div className="w-full h-screen flex p-4 bg-white">
@@ -684,10 +470,7 @@ setUploadProgress({});
                     <Label className="text-base font-medium">
                       Business Photos (Upload at least 5)
                     </Label>
-                    <div className={cn(
-                      'border-2 border-dashed bg-white rounded-lg p-8 text-center hover:border-primary/50 transition-colors',
-                      errors.profileImages ? 'border-red-500' : 'border-border'
-                    )}>
+                    <div className="border-2 border-dashed border-border  bg-white rounded-lg p-8 text-center hover:border-primary/50 transition-colors">
                       <Upload className="w-8 h-8 text-muted-foreground mx-auto mb-4" />
                       <p className="text-sm text-muted-foreground mb-4">
                         Drag and drop your images here, or click to browse
@@ -696,12 +479,7 @@ setUploadProgress({});
                         type="file"
                         multiple
                         accept="image/*"
-                        onChange={(e) => {
-                          if (e.target.files) {
-                            handleImageUpload(e.target.files);
-                            clearError('profileImages');
-                          }
-                        }}
+                        onChange={(e) => e.target.files && handleImageUpload(e.target.files)}
                         className="hidden"
                         id="image-upload"
                       />
@@ -711,36 +489,17 @@ setUploadProgress({});
                         </label>
                       </Button>
                     </div>
-                    {errors.profileImages && (
-                      <p className="text-red-500 text-xs mt-1">{errors.profileImages}</p>
-                    )}
 
                     {/* Upload Progress */}
                     {Object.entries(uploadProgress).map(([fileName, progress]) => (
                       <div key={fileName} className="space-y-2">
                         <div className="flex justify-between text-sm">
                           <span className="truncate">{fileName}</span>
-                          {progress === -1 ? (
-                            <span className="text-red-500 font-medium">Failed</span>
-                          ) : (
-                            <span>{Math.round(progress)}%</span>
-                          )}
+                          <span>{Math.round(progress)}%</span>
                         </div>
-                        <Progress
-                          value={progress === -1 ? 0 : progress}
-                          className={cn('h-2', progress === -1 && 'bg-red-200')}
-                        />
+                        <Progress value={progress} className="h-2" />
                       </div>
                     ))}
-                    {uploadErrors.length > 0 && (
-                      <div className="space-y-1">
-                        {uploadErrors.map((name) => (
-                          <p key={name} className="text-red-500 text-xs">
-                            ✕ Failed to upload {name}
-                          </p>
-                        ))}
-                      </div>
-                    )}
                     {formData.profileImages.length > 0 && (
                       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
                         {formData.profileImages.map((image, index) => (
@@ -779,22 +538,12 @@ setUploadProgress({});
                       id="description"
                       placeholder="Tell customers what makes your business special..."
                       value={formData.businessDescription}
-                      onChange={(e) => {
-                        updateFormData({ businessDescription: e.target.value });
-                        clearError('businessDescription');
-                      }}
-                      onBlur={() => handleBlur('businessDescription')}
-                      className={cn(
-                        'min-h-[120px] resize-none w-full h-10 sm:h-12 rounded-md bg-white/50 text-black text-sm placeholder-[#a0a3a8] focus:outline-none focus:ring-1 transition-all duration-300 ease-in-out pl-3',
-                        errors.businessDescription
-                          ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
-                          : 'border-[#0A6C6D] focus:border-[#0A6C6D] focus:ring-[#0A6C6D] hover:border-[#0A6C6D]'
-                      )}
-                      aria-invalid={!!errors.businessDescription}
+                      onChange={(e) => updateFormData({ businessDescription: e.target.value })}
+                      className="min-h-[120px] resize-none w-full h-10 sm:h-12 rounded-md border-[#0A6C6D] bg-white/50
+                          text-black text-sm placeholder-[#a0a3a8]
+                          focus:outline-none focus:border-[#0A6C6D] focus:ring-1 focus:ring-[#0A6C6D]
+                          hover:border-[#0A6C6D] transition-all duration-300 ease-in-out pl-3"
                     />
-                    {errors.businessDescription && (
-                      <p className="text-red-500 text-xs mt-1">{errors.businessDescription}</p>
-                    )}
                   </div>
 
                   {/* Vendor Category */}
@@ -813,17 +562,12 @@ setUploadProgress({});
                         <button
                           key={value}
                           type="button"
-                          onClick={() => {
-                            updateFormData({ vendorType: value });
-                            clearError('vendorType');
-                          }}
+                          onClick={() => updateFormData({ vendorType: value })}
                           className={cn(
                             'p-4 rounded-lg border-2 transition-all flex gap-2 text-left hover:border-primary/50',
                             formData.vendorType === value
                               ? 'border-primary bg-primary/5'
-                              : errors.vendorType
-                                ? 'border-red-500'
-                                : 'border-border'
+                              : 'border-border'
                           )}
                         >
                           <Icon className="w-6 h-6 text-primary" />
@@ -831,9 +575,6 @@ setUploadProgress({});
                         </button>
                       ))}
                     </div>
-                    {errors.vendorType && (
-                      <p className="text-red-500 text-xs mt-1">{errors.vendorType}</p>
-                    )}
                   </div>
 
                   {/* Contact Information */}
@@ -851,22 +592,12 @@ setUploadProgress({});
                         type="tel"
                         placeholder="+234 800 000 0000"
                         value={formData.phone}
-                        onChange={(e) => {
-                          updateFormData({ phone: e.target.value });
-                          clearError('phone');
-                        }}
-                        onBlur={() => handleBlur('phone')}
-                        className={cn(
-                          'w-full h-10 sm:h-12 rounded-md bg-white text-black text-sm placeholder-[#a0a3a8] focus:outline-none focus:ring-1 transition-all duration-300 ease-in-out pl-3',
-                          errors.phone
-                            ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
-                            : 'border-[#0A6C6D] focus:border-[#0A6C6D] focus:ring-[#0A6C6D] hover:border-[#0A6C6D]'
-                        )}
-                        aria-invalid={!!errors.phone}
+                        onChange={(e) => updateFormData({ phone: e.target.value })}
+                        className="w-full h-10 sm:h-12 rounded-md border-[#0A6C6D] bg-white 
+                          text-black text-sm placeholder-[#a0a3a8]
+                          focus:outline-none focus:border-[#0A6C6D] focus:ring-1 focus:ring-[#0A6C6D]
+                          hover:border-[#0A6C6D] transition-all duration-300 ease-in-out pl-3"
                       />
-                      {errors.phone && (
-                        <p className="text-red-500 text-xs mt-1">{errors.phone}</p>
-                      )}
                     </div>
 
                     <div className="space-y-2">
@@ -882,22 +613,12 @@ setUploadProgress({});
                         type="url"
                         placeholder="https://yourwebsite.com"
                         value={formData.website}
-                        onChange={(e) => {
-                          updateFormData({ website: e.target.value });
-                          clearError('website');
-                        }}
-                        onBlur={() => handleBlur('website')}
-                        className={cn(
-                          'w-full h-10 sm:h-12 rounded-md bg-white text-black text-sm placeholder-[#a0a3a8] focus:outline-none focus:ring-1 transition-all duration-300 ease-in-out pl-3',
-                          errors.website
-                            ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
-                            : 'border-[#0A6C6D] focus:border-[#0A6C6D] focus:ring-[#0A6C6D] hover:border-[#0A6C6D]'
-                        )}
-                        aria-invalid={!!errors.website}
+                        onChange={(e) => updateFormData({ website: e.target.value })}
+                        className="w-full h-10 sm:h-12 rounded-md border-[#0A6C6D] bg-white
+                          text-black text-sm placeholder-[#a0a3a8]
+                          focus:outline-none focus:border-[#0A6C6D] focus:ring-1 focus:ring-[#0A6C6D]
+                          hover:border-[#0A6C6D] transition-all duration-300 ease-in-out pl-3"
                       />
-                      {errors.website && (
-                        <p className="text-red-500 text-xs mt-1">{errors.website}</p>
-                      )}
                     </div>
                   </div>
 
@@ -913,22 +634,12 @@ setUploadProgress({});
                       id="address"
                       placeholder="Enter your complete business address..."
                       value={formData.address}
-                      onChange={(e) => {
-                        updateFormData({ address: e.target.value });
-                        clearError('address');
-                      }}
-                      onBlur={() => handleBlur('address')}
-                      className={cn(
-                        'min-h-20 resize-none w-full h-10 sm:h-12 rounded-md bg-white text-black text-sm placeholder-[#a0a3a8] focus:outline-none focus:ring-1 transition-all duration-300 ease-in-out pl-3',
-                        errors.address
-                          ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
-                          : 'border-[#0A6C6D] focus:border-[#0A6C6D] focus:ring-[#0A6C6D] hover:border-[#0A6C6D]'
-                      )}
-                      aria-invalid={!!errors.address}
+                      onChange={(e) => updateFormData({ address: e.target.value })}
+                      className="min-h-20 resize-none w-full h-10 sm:h-12 rounded-md border-[#0A6C6D] bg-white 
+                          text-black text-sm placeholder-[#a0a3a8]
+                          focus:outline-none focus:border-[#0A6C6D] focus:ring-1 focus:ring-[#0A6C6D]
+                          hover:border-[#0A6C6D] transition-all duration-300 ease-in-out pl-3"
                     />
-                    {errors.address && (
-                      <p className="text-red-500 text-xs mt-1">{errors.address}</p>
-                    )}
                   </div>
                 </div>
               )}
@@ -948,14 +659,9 @@ setUploadProgress({});
                           bankName: bank?.name || '',
                         });
                         setBankVerified(false);
-                        clearError('bankCode');
                       }}
                     >
-                      <SelectTrigger
-                        className={cn(
-                          errors.bankCode && 'border-red-500 focus:border-red-500 focus:ring-red-500'
-                        )}
-                      >
+                      <SelectTrigger className="">
                         {loading ? (
                           <>
                             <span>Loading Banks...</span>
@@ -972,9 +678,6 @@ setUploadProgress({});
                         ))}
                       </SelectContent>
                     </Select>
-                    {errors.bankCode && (
-                      <p className="text-red-500 text-xs mt-1">{errors.bankCode}</p>
-                    )}
                   </div>
 
                   {/* Account Number */}
@@ -983,33 +686,24 @@ setUploadProgress({});
                       Account Number
                     </Label>
                     <div className="flex gap-3">
-                      <div className="flex-1">
-                        <Input
-                          id="accountNumber"
-                          placeholder="Enter your 10-digit account number"
-                          value={formData.accountNumber}
-                          onChange={(e) => {
-                            updateFormData({ accountNumber: e.target.value });
-                            setBankVerified(false);
-                            clearError('accountNumber');
-                          }}
-                          onBlur={() => handleBlur('accountNumber')}
-                          maxLength={10}
-                          className={cn(
-                            'w-full h-10 sm:h-11 rounded-md bg-white text-black text-sm placeholder-[#a0a3a8] focus:outline-none focus:ring-1 transition-all duration-300 ease-in-out pl-3',
-                            errors.accountNumber
-                              ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
-                              : 'border-[#0A6C6D] focus:border-[#0A6C6D] focus:ring-[#0A6C6D] hover:border-[#0A6C6D]'
-                          )}
-                          aria-invalid={!!errors.accountNumber}
-                        />
-                        {errors.accountNumber && (
-                          <p className="text-red-500 text-xs mt-1">{errors.accountNumber}</p>
-                        )}
-                      </div>
+                      <Input
+                        id="accountNumber"
+                        placeholder="Enter your 10-digit account number"
+                        value={formData.accountNumber}
+                        onChange={(e) => {
+                          updateFormData({ accountNumber: e.target.value });
+                          setBankVerified(false);
+                        }}
+                        maxLength={10}
+                        className="w-full h-10 sm:h-11 rounded-md border-[#0A6C6D] bg-white 
+                          text-black text-sm placeholder-[#a0a3a8]
+                          focus:outline-none focus:border-[#0A6C6D] focus:ring-1 focus:ring-[#0A6C6D]
+                          hover:border-[#0A6C6D] transition-all duration-300 ease-in-out pl-3"
+                      />
                       <Button
                         onClick={handleBankVerification}
                         disabled={!formData.bankCode || !formData.accountNumber || isVerifyingBank}
+                        // variant="outline"
                         className="w-[100px] h-[25px] py-5 rounded-md bg-[#0A6C6D] text-white text-sm font-normal transition-transform duration-200 hover:shadow-lg hover:bg-[#0A6C6D]"
                       >
                         {isVerifyingBank ? (
@@ -1058,20 +752,12 @@ setUploadProgress({});
                         updateFormData({
                           priceRange: value === '' ? '' : Number(value),
                         });
-                        clearError('priceRange');
                       }}
-                      onBlur={() => handleBlur('priceRange')}
-                      className={cn(
-                        'w-full h-10 sm:h-11 rounded-md bg-white text-black text-sm placeholder-[#a0a3a8] focus:outline-none focus:ring-1 transition-all duration-300 ease-in-out pl-3',
-                        errors.priceRange
-                          ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
-                          : 'border-[#0A6C6D] focus:border-[#0A6C6D] focus:ring-[#0A6C6D] hover:border-[#0A6C6D]'
-                      )}
-                      aria-invalid={!!errors.priceRange}
+                      className="w-full h-10 sm:h-11 rounded-md border-[#0A6C6D] bg-white 
+                          text-black text-sm placeholder-[#a0a3a8]
+                          focus:outline-none focus:border-[#0A6C6D] focus:ring-1 focus:ring-[#0A6C6D]
+                          hover:border-[#0A6C6D] transition-all duration-300 ease-in-out pl-3"
                     />
-                    {errors.priceRange && (
-                      <p className="text-red-500 text-xs mt-1">{errors.priceRange}</p>
-                    )}
                   </div>
 
                   {/* General Offer */}
@@ -1103,22 +789,12 @@ setUploadProgress({});
                             id="openingTime"
                             type="time"
                             value={formData.openingTime}
-                            onChange={(e) => {
-                              updateFormData({ openingTime: e.target.value });
-                              clearError('openingTime');
-                            }}
-                            onBlur={() => handleBlur('openingTime')}
-                            className={cn(
-                              'w-full h-10 sm:h-11 rounded-md bg-white text-black text-sm placeholder-[#a0a3a8] focus:outline-none focus:ring-1 transition-all duration-300 ease-in-out pl-3',
-                              errors.openingTime
-                                ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
-                                : 'border-[#0A6C6D] focus:border-[#0A6C6D] focus:ring-[#0A6C6D] hover:border-[#0A6C6D]'
-                            )}
-                            aria-invalid={!!errors.openingTime}
+                            onChange={(e) => updateFormData({ openingTime: e.target.value })}
+                            className="w-full h-10 sm:h-11 rounded-md border-[#0A6C6D] bg-white 
+                          text-black text-sm placeholder-[#a0a3a8]
+                          focus:outline-none focus:border-[#0A6C6D] focus:ring-1 focus:ring-[#0A6C6D]
+                          hover:border-[#0A6C6D] transition-all duration-300 ease-in-out pl-3"
                           />
-                          {errors.openingTime && (
-                            <p className="text-red-500 text-xs mt-1">{errors.openingTime}</p>
-                          )}
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="closingTime" className="text-base font-medium">
@@ -1128,37 +804,20 @@ setUploadProgress({});
                             id="closingTime"
                             type="time"
                             value={formData.closingTime}
-                            onChange={(e) => {
-                              updateFormData({ closingTime: e.target.value });
-                              clearError('closingTime');
-                            }}
-                            onBlur={() => handleBlur('closingTime')}
-                            className={cn(
-                              'w-full h-10 sm:h-11 rounded-md bg-white text-black text-sm placeholder-[#a0a3a8] focus:outline-none focus:ring-1 transition-all duration-300 ease-in-out pl-3',
-                              errors.closingTime
-                                ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
-                                : 'border-[#0A6C6D] focus:border-[#0A6C6D] focus:ring-[#0A6C6D] hover:border-[#0A6C6D]'
-                            )}
-                            aria-invalid={!!errors.closingTime}
+                            onChange={(e) => updateFormData({ closingTime: e.target.value })}
+                            className="w-full h-10 sm:h-11 rounded-md border-[#0A6C6D] bg-white 
+                          text-black text-sm placeholder-[#a0a3a8]
+                          focus:outline-none focus:border-[#0A6C6D] focus:ring-1 focus:ring-[#0A6C6D]
+                          hover:border-[#0A6C6D] transition-all duration-300 ease-in-out pl-3"
                           />
-                          {errors.closingTime && (
-                            <p className="text-red-500 text-xs mt-1">{errors.closingTime}</p>
-                          )}
                         </div>
                       </div>
 
                       {/* Cuisine Selection from List */}
                       <div className="space-y-3">
                         <Label className="text-base font-medium">Cuisines</Label>
-                        <Select
-                          onValueChange={(value) => addTag('cuisines', value)}
-                        >
-                          <SelectTrigger
-                            className={cn(
-                              'w-full h-10 sm:h-12 text-black placeholder:text-black',
-                              errors.cuisines && 'border-red-500 focus:border-red-500 focus:ring-red-500'
-                            )}
-                          >
+                        <Select onValueChange={(value) => addTag('cuisines', value)}>
+                          <SelectTrigger className="w-full h-10 sm:h-12 border-[#0A6C6D] text-black placeholder:text-black">
                             <SelectValue placeholder="Select a cuisine to add" />
                           </SelectTrigger>
                           <SelectContent>
@@ -1171,9 +830,6 @@ setUploadProgress({});
                             ))}
                           </SelectContent>
                         </Select>
-                        {errors.cuisines && (
-                          <p className="text-red-500 text-xs mt-1">{errors.cuisines}</p>
-                        )}
 
                         {/* Display Selected Cuisines as Badges */}
                         <div className="flex flex-wrap gap-2 mt-2">
@@ -1206,20 +862,14 @@ setUploadProgress({});
                             Please set opening and closing times first.
                           </p>
                         ) : (
-                          <div className={cn(
-                            'grid grid-cols-3 sm:grid-cols-4 gap-2',
-                            errors.availableSlots && 'p-2 border border-red-500 rounded-md'
-                          )}>
+                          <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
                             {availableTimeOptions.map((slot) => {
                               const isSelected = formData.availableSlots.includes(slot);
                               return (
                                 <button
                                   key={slot}
                                   type="button"
-                                  onClick={() => {
-                                    toggleSlot(slot);
-                                    clearError('availableSlots');
-                                  }}
+                                  onClick={() => toggleSlot(slot)}
                                   className={cn(
                                     'py-2 px-1 text-xs rounded-md border transition-all',
                                     isSelected
@@ -1232,9 +882,6 @@ setUploadProgress({});
                               );
                             })}
                           </div>
-                        )}
-                        {errors.availableSlots && (
-                          <p className="text-red-500 text-xs mt-1">{errors.availableSlots}</p>
                         )}
 
                         {/* Show count of selected slots */}
@@ -1256,22 +903,8 @@ setUploadProgress({});
                             id="openingTime"
                             type="time"
                             value={formData.openingTime}
-                            onChange={(e) => {
-                              updateFormData({ openingTime: e.target.value });
-                              clearError('openingTime');
-                            }}
-                            onBlur={() => handleBlur('openingTime')}
-                            className={cn(
-                              'w-full h-10 sm:h-11 rounded-md bg-white text-black text-sm placeholder-[#a0a3a8] focus:outline-none focus:ring-1 transition-all duration-300 ease-in-out pl-3',
-                              errors.openingTime
-                                ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
-                                : 'border-[#0A6C6D] focus:border-[#0A6C6D] focus:ring-[#0A6C6D] hover:border-[#0A6C6D]'
-                            )}
-                            aria-invalid={!!errors.openingTime}
+                            onChange={(e) => updateFormData({ openingTime: e.target.value })}
                           />
-                          {errors.openingTime && (
-                            <p className="text-red-500 text-xs mt-1">{errors.openingTime}</p>
-                          )}
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="closingTime" className="text-base font-medium">
@@ -1280,23 +913,11 @@ setUploadProgress({});
                           <Input
                             id="closingTime"
                             type="time"
+                            // defaultValue="10:30:00"
+                            // step="1"
                             value={formData.closingTime}
-                            onChange={(e) => {
-                              updateFormData({ closingTime: e.target.value });
-                              clearError('closingTime');
-                            }}
-                            onBlur={() => handleBlur('closingTime')}
-                            className={cn(
-                              'w-full h-10 sm:h-11 rounded-md bg-white text-black text-sm placeholder-[#a0a3a8] focus:outline-none focus:ring-1 transition-all duration-300 ease-in-out pl-3',
-                              errors.closingTime
-                                ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
-                                : 'border-[#0A6C6D] focus:border-[#0A6C6D] focus:ring-[#0A6C6D] hover:border-[#0A6C6D]'
-                            )}
-                            aria-invalid={!!errors.closingTime}
+                            onChange={(e) => updateFormData({ closingTime: e.target.value })}
                           />
-                          {errors.closingTime && (
-                            <p className="text-red-500 text-xs mt-1">{errors.closingTime}</p>
-                          )}
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="slots" className="text-base font-medium">
@@ -1308,24 +929,12 @@ setUploadProgress({});
                             min="1"
                             placeholder="e.g., 100"
                             value={formData.slots || ''}
-                            onChange={(e) => {
+                            onChange={(e) =>
                               updateFormData({
                                 slots: Number.parseInt(e.target.value) || 0,
-                              });
-                              clearError('slots');
-                            }}
-                            onBlur={() => handleBlur('slots')}
-                            className={cn(
-                              'w-full h-10 sm:h-11 rounded-md bg-white text-black text-sm placeholder-[#a0a3a8] focus:outline-none focus:ring-1 transition-all duration-300 ease-in-out pl-3',
-                              errors.slots
-                                ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
-                                : 'border-[#0A6C6D] focus:border-[#0A6C6D] focus:ring-[#0A6C6D] hover:border-[#0A6C6D]'
-                            )}
-                            aria-invalid={!!errors.slots}
+                              })
+                            }
                           />
-                          {errors.slots && (
-                            <p className="text-red-500 text-xs mt-1">{errors.slots}</p>
-                          )}
                         </div>
                       </div>
 
@@ -1335,7 +944,6 @@ setUploadProgress({});
                         tags={formData.categories}
                         onAdd={(value) => addTag('categories', value)}
                         onRemove={(value) => removeTag('categories', value)}
-                        error={errors.categories}
                       />
 
                       <TagInput
@@ -1344,23 +952,15 @@ setUploadProgress({});
                         tags={formData.dressCode}
                         onAdd={(value) => addTag('dressCode', value)}
                         onRemove={(value) => removeTag('dressCode', value)}
-                        error={errors.dressCode}
                       />
 
                       <div className="space-y-2">
                         <Label className="text-base font-medium">Age Limit</Label>
                         <Select
                           value={formData.ageLimit}
-                          onValueChange={(value) => {
-                            updateFormData({ ageLimit: value });
-                            clearError('ageLimit');
-                          }}
+                          onValueChange={(value) => updateFormData({ ageLimit: value })}
                         >
-                          <SelectTrigger
-                            className={cn(
-                              errors.ageLimit && 'border-red-500 focus:border-red-500 focus:ring-red-500'
-                            )}
-                          >
+                          <SelectTrigger>
                             <SelectValue placeholder="Select age requirement" />
                           </SelectTrigger>
                           <SelectContent>
@@ -1368,9 +968,6 @@ setUploadProgress({});
                             <SelectItem value="18">18 years and above</SelectItem>
                           </SelectContent>
                         </Select>
-                        {errors.ageLimit && (
-                          <p className="text-red-500 text-xs mt-1">{errors.ageLimit}</p>
-                        )}
                       </div>
                     </div>
                   )}
@@ -1426,7 +1023,7 @@ setUploadProgress({});
   );
 }
 
-function TagInput({ label, placeholder, tags, onAdd, onRemove, error }) {
+function TagInput({ label, placeholder, tags, onAdd, onRemove }) {
   const [inputValue, setInputValue] = useState('');
 
   const handleKeyDown = (e) => {
@@ -1446,12 +1043,10 @@ function TagInput({ label, placeholder, tags, onAdd, onRemove, error }) {
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           onKeyDown={handleKeyDown}
-          className={cn(
-            'w-full h-10 sm:h-12 rounded-md bg-white text-black text-sm placeholder-[#a0a3a8] focus:outline-none focus:ring-1 transition-all duration-300 ease-in-out pl-3',
-            error
-              ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
-              : 'border-[#0A6C6D] focus:border-[#0A6C6D] focus:ring-[#0A6C6D] hover:border-[#0A6C6D]'
-          )}
+          className="w-full h-10 sm:h-12 rounded-md border-[#0A6C6D] bg-white
+                          text-black text-sm placeholder-[#a0a3a8]
+                          focus:outline-none focus:border-[#0A6C6D] focus:ring-1 focus:ring-[#0A6C6D]
+                          hover:border-[#0A6C6D] transition-all duration-300 ease-in-out pl-3"
         />
         <button
           onClick={() => {
@@ -1466,9 +1061,6 @@ function TagInput({ label, placeholder, tags, onAdd, onRemove, error }) {
           </div>
         </button>
       </div>
-      {error && (
-        <p className="text-red-500 text-xs mt-1">{error}</p>
-      )}
       {tags.length > 0 && (
         <div className="flex flex-wrap gap-2 mt-2">
           {tags.map((tag) => (
