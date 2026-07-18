@@ -344,9 +344,10 @@ const TAB_TO_TYPE = {
 };
 
 // ─── getUserLocation (best-effort) ───────────────────────────────────────────
+const LS_LOCATION_KEY = 'rhace_user_location';
 const getUserLocation = () => {
   try {
-    const raw = localStorage.getItem('userLocation');
+    const raw = localStorage.getItem(LS_LOCATION_KEY);
     if (raw) return JSON.parse(raw);
   } catch {
     /* ignore */
@@ -466,7 +467,7 @@ const SearchSection = ({ activeTab, onSearch }) => {
 
   const placeholder =
     activeTab === 'restaurants'
-      ? 'Enter Restaurant or Cuisine'
+      ? 'Search Restaurants, Cuisine...'
       : activeTab === 'hotels'
         ? 'Enter Hotel name or area'
         : 'Enter Club name or area';
@@ -504,7 +505,7 @@ const SearchSection = ({ activeTab, onSearch }) => {
                 }
                 if (e.key === 'Escape') setIsFocused(false);
               }}
-              className="w-full focus:outline-none text-text-primary placeholder:text-text-secondary text-sm sm:text-base bg-transparent py-1"
+              className="w-full text-[10px] focus:outline-none text-text-primary placeholder:text-[14px] placeholder:text-text-secondary text-sm sm:text-base bg-transparent py-1"
             />
             {inputValue && (
               <button

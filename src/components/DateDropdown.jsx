@@ -4,8 +4,10 @@ import {
   endOfMonth,
   endOfWeek,
   format,
+  isBefore,
   isSameDay,
   isSameMonth,
+  startOfDay,
   startOfMonth,
   startOfWeek,
   subMonths,
@@ -54,16 +56,19 @@ export const DateDropdown = ({ selectedDate, onChange }) => {
           <div
             key={cloneDay.toString()}
             className={`
-             w-8 h-8 sm:w-12.5 sm:h-12 flex items-center justify-center text-black text-sm font-normal cursor-pointer  outline-1  outline-gray-300 
+             w-8 h-8 sm:w-12.5 sm:h-12 flex items-center justify-center text-black text-sm font-normal outline-1  outline-gray-300 
              ${
                !isSameMonth(cloneDay, monthStart)
                  ? 'text-neutral-400 '
-                 : isSameDay(cloneDay, selectedDate || new Date())
-                   ? 'bg-indigo-800 text-white'
-                   : 'text-gray-700 hover:bg-indigo-50 bg-gray-100'
+                 : isBefore(cloneDay, startOfDay(new Date()))
+                   ? 'text-gray-300 cursor-not-allowed'
+                   : isSameDay(cloneDay, selectedDate || new Date())
+                     ? 'bg-indigo-800 text-white cursor-pointer'
+                     : 'text-gray-700 hover:bg-indigo-50 bg-gray-100 cursor-pointer'
              }
            `}
             onClick={() => {
+              if (isBefore(cloneDay, startOfDay(new Date()))) return;
               onChange(cloneDay);
               setShow(false);
             }}

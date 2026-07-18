@@ -9,7 +9,6 @@ import { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router';
 import './landing.css'; // Make sure to import the CSS file
-// import LocationModal from "@/components/LocationModal";
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useRestaurantData } from '@/hooks/favorites';
 import { logout } from '@/redux/slices/authSlice';
@@ -108,7 +107,7 @@ function UserLandingPage() {
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     const totalGuests = guests.adults + guests.children + guests.infants;
-    const location = localStorage.getItem('userLocation') || '';
+    const location = localStorage.getItem('rhace_user_location') || '';
     const searchData = {
       query: searchQuery,
       //   tab: activeTab,

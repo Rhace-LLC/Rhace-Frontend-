@@ -6,7 +6,6 @@ import { useEffect, useRef, useState } from 'react';
 import Club from '../../public/images/find-club.png';
 import Hotel from '../../public/images/find-hotel.jpg';
 import Restaurant from '../../public/images/find.png';
-// import LocationModal from "@/components/LocationModal";
 import { SvgIcon, SvgIcon2, SvgIcon3 } from '@/public/icons/icons';
 
 
@@ -163,7 +162,6 @@ function ReservationHomePage() {
       )}
 
       <Footer />
-      {/* <LocationModal /> */}
     </div>
   );
 }

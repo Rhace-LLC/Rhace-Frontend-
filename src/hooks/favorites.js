@@ -235,7 +235,7 @@ export const useRestaurantData = (vendorType, type) => {
       try {
         setIsLoading(true);
         if (type && type === 'nearby') {
-          const location = localStorage.getItem('userLocation');
+          const location = localStorage.getItem('rhace_user_location');
           const loc = JSON.parse(location);
           const res = await userService.getNearest({
             longitude: loc.lng,

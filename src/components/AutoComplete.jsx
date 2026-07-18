@@ -51,7 +51,7 @@ export const SearchAutocomplete = ({
     const fetchSuggestions = async () => {
       setIsLoading(true);
       try {
-        const location = localStorage.getItem('userLocation');
+        const location = localStorage.getItem('rhace_user_location');
         const loc = JSON.parse(location);
         console.log('User location from localStorage:', loc);
         const res = await restaurantService.getSuggestions({
@@ -121,7 +121,7 @@ export const SearchAutocomplete = ({
     0
   );
   return (
-    <div className="relative w-full z-30" ref={dropdownRef}>
+    <div className="relative w-full text-sm z-30" ref={dropdownRef}>
       <input
         ref={inputRef}
         type="text"
@@ -129,7 +129,7 @@ export const SearchAutocomplete = ({
         onChange={handleInputChange}
         onFocus={handleInputFocus}
         placeholder={placeholder}
-        className="w-full focus:outline-none text-text-primary placeholder:text-text-secondary text-sm sm:text-base"
+        className="w-full text-xs focus:outline-none text-text-primary placeholder:text-text-secondary text-sm sm:text-base"
       />
 
       {isOpen && (

@@ -176,9 +176,9 @@ export const SearchHeader = ({ searchProps, filters, updateFilter, locationState
             <div className="w-full absolute rounded bottom-0 bg-gray-100 h-1" />
           </div>
 
-          {/* Location pill — shows detected city */}
+          {/* Location pill — shows detected city, click to change */}
           <div className="hidden sm:flex shrink-0 pb-2 ml-4">
-            <LocationPill {...locationState} />
+            <LocationPill {...locationState} updateFilter={updateFilter} />
           </div>
         </div>
       </div>

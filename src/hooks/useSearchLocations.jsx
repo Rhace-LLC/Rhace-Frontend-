@@ -1,4 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { useDispatch } from 'react-redux';
+import { setLocation as reduxSetLocation } from '@/redux/slices/locationSlice';
 
 const LS_KEY = 'rhace_user_location';
 const IP_API = 'https://ipapi.co/json/'; // free, no-key IP geolocation
@@ -19,6 +21,7 @@ const load = () => {
 };
 
 export const useSearchLocation = () => {
+  const dispatch = useDispatch();
   const [location, setLocation] = useState({ lat: null, lng: null, city: '', country: '' });
   const [status, setStatus] = useState('idle'); // idle | detecting | granted | denied | ip
   const [error, setError] = useState(null);
@@ -29,7 +32,8 @@ export const useSearchLocation = () => {
     setLocation(loc);
     persist(loc);
     setStatus('granted');
-  }, []);
+    dispatch(reduxSetLocation({ ...loc, status: 'granted', error: null }));
+  }, [dispatch]);
 
   /** Reverse-geocode coords → city name via ipapi (free, no API key needed) */
   const reverseGeocode = useCallback(
@@ -76,11 +80,13 @@ export const useSearchLocation = () => {
       setLocation(loc);
       persist(loc);
       setStatus('ip');
+      dispatch(reduxSetLocation({ ...loc, status: 'ip', error: null }));
     } catch {
       setStatus('denied');
       setError('Could not detect location');
+      dispatch(reduxSetLocation({ lat: null, lng: null, city: '', country: '', status: 'denied', error: 'Could not detect location' }));
     }
-  }, []);
+  }, [dispatch]);
 
   /** Silent geolocation check (no prompt) */
   const trySilentGeo = useCallback(async () => {
@@ -126,6 +132,21 @@ export const useSearchLocation = () => {
     );
   }, [reverseGeocode, detectByIP]);
 
+  /** Programmatically set a city (no geo) */
+  const setCity = useCallback((city, lat = null, lng = null, country = '') => {
+    const loc = { lat, lng, city, country };
+    setLocation(loc);
+    persist(loc);
+    setStatus(lat ? 'granted' : 'ip');
+    dispatch(reduxSetLocation({ ...loc, status: lat ? 'granted' : 'ip', error: null }));
+  }, [dispatch]);
+
+  /** Programmatically set full location (no geo) */
+  const setLocationManually = useCallback((loc) => {
+    const { lat, lng, city = '', country = '' } = loc;
+    setCity(city, lat, lng, country);
+  }, [setCity]);
+
   useEffect(() => {
     if (attempted.current) return;
     attempted.current = true;
@@ -135,6 +156,7 @@ export const useSearchLocation = () => {
     if (cached) {
       setLocation(cached);
       setStatus(cached.lat ? 'granted' : 'ip');
+      dispatch(reduxSetLocation({ ...cached, status: cached.lat ? 'granted' : 'ip', error: null }));
       return;
     }
 
@@ -142,13 +164,15 @@ export const useSearchLocation = () => {
     trySilentGeo().then((handled) => {
       if (!handled) detectByIP(); // fall back to IP detection
     });
-  }, [trySilentGeo, detectByIP]);
+  }, [trySilentGeo, detectByIP, dispatch]);
 
   return {
     location, // { lat, lng, city, country }
     status, // "idle" | "detecting" | "granted" | "denied" | "ip"
     error,
     requestLocation,
+    setCity,
+    setLocation: setLocationManually,
     hasLocation: location.lat != null,
     isDetecting: status === 'detecting',
   };

@@ -1,18 +1,18 @@
-import { useUserLocation } from '@/contexts/LocationContext.jsx';
-import React, { useState, useEffect } from 'react';
+import { useSearchLocation } from '@/hooks/useSearchLocations.jsx';
+import { useState, useEffect } from 'react';
 
 const LocationModal = () => {
-  const { location, requestLocation, isLoading } = useUserLocation();
+  const { location, requestLocation, isDetecting } = useSearchLocation();
   const [isOpen, setIsOpen] = useState(false);
   const [dontAskAgain, setDontAskAgain] = useState(false);
 
   useEffect(() => {
     const suppressPrompt = localStorage.getItem('suppressLocationPrompt');
-    if (!isLoading && !location.lat && !suppressPrompt) {
+    if (!isDetecting && !location.lat && !suppressPrompt) {
       const timer = setTimeout(() => setIsOpen(true), 1500);
       return () => clearTimeout(timer);
     }
-  }, [location, isLoading]);
+  }, [location, isDetecting]);
 
   const handleAllow = () => {
     requestLocation();
@@ -29,14 +29,10 @@ const LocationModal = () => {
   if (!isOpen) return null;
 
   return (
-    // Overlay
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-      {/* Modal Container */}
       <div className="bg-white w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden transform transition-all scale-100">
-        {/* Header / Icon */}
         <div className="bg-green-50 p-6 flex justify-center">
           <div className="bg-green-100 p-4 rounded-full">
-            {/* Simple Map Pin SVG Icon */}
             <svg
               className="w-8 h-8 text-[#0A6C6D]"
               fill="none"
@@ -59,7 +55,6 @@ const LocationModal = () => {
           </div>
         </div>
 
-        {/* Content */}
         <div className="p-6 text-center">
           <h2 className="text-xl font-bold text-gray-800 mb-2">Enable Location Services?</h2>
           <p className="text-gray-500 text-sm mb-6 leading-relaxed">
@@ -67,7 +62,6 @@ const LocationModal = () => {
             to your location.
           </p>
 
-          {/* Checkbox */}
           <div className="flex items-center justify-center space-x-2 mb-6">
             <input
               type="checkbox"
@@ -81,7 +75,6 @@ const LocationModal = () => {
             </label>
           </div>
 
-          {/* Buttons */}
           <div className="flex gap-3">
             <button
               onClick={handleClose}

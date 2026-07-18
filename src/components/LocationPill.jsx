@@ -1,11 +1,25 @@
 import { MapPin, Loader2, Navigation } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { LocationPicker } from './LocationPicker';
 
 /**
  * LocationPill
  * Shows the currently detected city + a subtle "Use my location" affordance.
- * Industry pattern: show the resolved name, let user re-trigger if wrong.
+ * Clicking opens a dropdown to search/pick a city.
+ * Industry pattern: Uber Eats / DoorDash location picker.
  */
-export const LocationPill = ({ location, status, isDetecting, requestLocation, error }) => {
+export const LocationPill = ({ location, status, isDetecting, requestLocation, setCity, updateFilter }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const wrapperRef = useRef(null);
+
+  useEffect(() => {
+    const handle = (e) => {
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target)) setIsOpen(false);
+    };
+    document.addEventListener('mousedown', handle);
+    return () => document.removeEventListener('mousedown', handle);
+  }, []);
+
   const label =
     status === 'detecting'
       ? 'Detecting…'
@@ -16,28 +30,41 @@ export const LocationPill = ({ location, status, isDetecting, requestLocation, e
           : 'Enable location';
 
   return (
-    <button
-      onClick={requestLocation}
-      title={
-        status === 'granted' ? `Using location: ${location.city}` : 'Click to use your location'
-      }
-      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-[11px] font-semibold transition-all ${
-        status === 'granted'
-          ? 'border-[#0A6C6D]/30 bg-[#0A6C6D]/5 text-[#0A6C6D] cursor-default'
-          : status === 'detecting'
-            ? 'border-gray-200 bg-gray-50 text-gray-400 cursor-wait'
-            : 'border-gray-200 bg-white text-gray-500 hover:border-[#0A6C6D] hover:text-[#0A6C6D] cursor-pointer'
-      }`}
-    >
-      {isDetecting ? (
-        <Loader2 className="w-3 h-3 animate-spin" />
-      ) : status === 'granted' ? (
-        <MapPin className="w-3 h-3" />
-      ) : (
-        <Navigation className="w-3 h-3" />
+    <div className="relative" ref={wrapperRef}>
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        title={
+          status === 'granted' ? `Using location: ${location.city}` : 'Click to set your location'
+        }
+        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-[11px] font-semibold transition-all cursor-pointer ${
+          status === 'granted'
+            ? 'border-[#0A6C6D]/30 bg-[#0A6C6D]/5 text-[#0A6C6D]'
+            : status === 'detecting'
+              ? 'border-gray-200 bg-gray-50 text-gray-400 cursor-wait'
+              : 'border-gray-200 bg-white text-gray-500 hover:border-[#0A6C6D] hover:text-[#0A6C6D]'
+        }`}
+      >
+        {isDetecting ? (
+          <Loader2 className="w-3 h-3 animate-spin" />
+        ) : status === 'granted' ? (
+          <MapPin className="w-3 h-3" />
+        ) : (
+          <Navigation className="w-3 h-3" />
+        )}
+        <span className="max-w-[120px] truncate">{label}</span>
+      </button>
+
+      {isOpen && (
+        <div className="absolute right-0 mt-2 z-50">
+          <LocationPicker
+            requestLocation={requestLocation}
+            setCity={setCity}
+            updateFilter={updateFilter}
+            onClose={() => setIsOpen(false)}
+          />
+        </div>
       )}
-      <span className="max-w-[120px] truncate">{label}</span>
-    </button>
+    </div>
   );
 };
 
