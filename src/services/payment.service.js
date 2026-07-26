@@ -64,7 +64,7 @@ async recordOfflinePayment(reservationId, body) {
     `/payments/${reservationId}/offline-payment`,
     body
   );
-
+  
   return res.data;
 }
 

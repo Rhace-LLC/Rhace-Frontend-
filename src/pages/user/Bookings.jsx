@@ -377,7 +377,7 @@ function FilterPanel({
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 function BookingsPage() {
-  const [activeTab, setActiveTab] = useState('upcoming');
+  const [activeTab, setActiveTab] = useState('today'); // Defaulting to 'today' or 'upcoming'
   const [topTab, setTopTab] = useState('bookings');
   const [bookings, setBookings] = useState({});
   const user = useSelector((state) => state.auth.user);
@@ -397,10 +397,20 @@ function BookingsPage() {
   const [showSearch, setShowSearch] = useState(false);
   const [showFilter, setShowFilter] = useState(false);
 
+  // Extract today, upcoming, and past arrays safely
+  const todayBookings = bookings.today ?? [];
   const upcomingBookings = bookings.upcoming ?? [];
   const pastBookings = bookings.past ?? [];
-  const allBookings = [...upcomingBookings, ...pastBookings];
-  const rawBookings = activeTab === 'upcoming' ? upcomingBookings : pastBookings;
+  
+  const allBookings = [...todayBookings, ...upcomingBookings, ...pastBookings];
+  
+  // Select active array based on activeTab state
+  const rawBookings =
+    activeTab === 'today'
+      ? todayBookings
+      : activeTab === 'upcoming'
+      ? upcomingBookings
+      : pastBookings;
 
   const handleCancel = async (id) => {
     try {
@@ -408,10 +418,12 @@ function BookingsPage() {
       if (res.success) {
         setBookings((prev) => {
           const updated = { ...prev };
-          ['upcoming', 'past'].forEach((key) => {
-            updated[key] = updated[key].map((b) =>
-              b._id === id ? { ...b, reservationStatus: 'Cancelled' } : b
-            );
+          ['today', 'upcoming', 'past'].forEach((key) => {
+            if (updated[key]) {
+              updated[key] = updated[key].map((b) =>
+                b._id === id ? { ...b, reservationStatus: 'Cancelled' } : b
+              );
+            }
           });
           return updated;
         });
@@ -514,6 +526,7 @@ function BookingsPage() {
     };
     fetchBookings();
   }, []);
+
   const navigates = (path) => {
     navigate(path);
   };
@@ -639,7 +652,7 @@ function BookingsPage() {
             <h1 className="text-sm sm:text-base font-semibold tracking-tight">
               Reservations History
             </h1>
-            <p className="text-xs sm:text-sm text-gray-400">View past and upcoming Reservations</p>
+            <p className="text-xs sm:text-sm text-gray-400">View active, past and upcoming Reservations</p>
           </div>
         </div>
 
@@ -652,7 +665,7 @@ function BookingsPage() {
               value={topTab}
               onValueChange={(value) => {
                 setTopTab(value);
-                setActiveTab(value === 'bookings' ? 'upcoming' : 'past');
+                setActiveTab(value === 'bookings' ? 'today' : 'past');
               }}
               className="mb-6 flex justify-center items-center"
             >
@@ -684,6 +697,28 @@ function BookingsPage() {
               <div className="border rounded-t-2xl border-gray-200">
                 <div className="flex items-center justify-between px-4 sm:px-6">
                   <div className="flex items-center gap-6 overflow-x-auto">
+                    {/* Today Bookings Tab */}
+                    <button
+                      onClick={() => setActiveTab('today')}
+                      className={`flex items-center gap-2 pb-4 pt-4 px-2 border-b-2 transition-colors duration-200 whitespace-nowrap ${
+                        activeTab === 'today'
+                          ? 'border-[#0A6C6D] text-[#0A6C6D]'
+                          : 'border-transparent text-gray-600 hover:text-gray-900'
+                      }`}
+                    >
+                      <span className="font-medium">Today</span>
+                      <span
+                        className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                          activeTab === 'today'
+                            ? 'bg-teal-50 text-[#0A6C6D]'
+                            : 'bg-gray-100 text-gray-700'
+                        }`}
+                      >
+                        {todayBookings.length}
+                      </span>
+                    </button>
+
+                    {/* Upcoming Bookings Tab */}
                     <button
                       onClick={() => setActiveTab('upcoming')}
                       className={`flex items-center gap-2 pb-4 pt-4 px-2 border-b-2 transition-colors duration-200 whitespace-nowrap ${
@@ -696,7 +731,7 @@ function BookingsPage() {
                       <span
                         className={`px-2 py-0.5 rounded-full text-xs font-medium ${
                           activeTab === 'upcoming'
-                            ? 'bg-gray-100 text-[#0A6C6D]'
+                            ? 'bg-teal-50 text-[#0A6C6D]'
                             : 'bg-gray-100 text-gray-700'
                         }`}
                       >
@@ -704,9 +739,10 @@ function BookingsPage() {
                       </span>
                     </button>
 
+                    {/* Past Bookings Tab */}
                     <button
                       onClick={() => setActiveTab('past')}
-                      className={`flex items-center gap-2 pb-4 pt-2 px-2 border-b-2 transition-colors duration-200 whitespace-nowrap ${
+                      className={`flex items-center gap-2 pb-4 pt-4 px-2 border-b-2 transition-colors duration-200 whitespace-nowrap ${
                         activeTab === 'past'
                           ? 'border-[#0A6C6D] text-[#0A6C6D]'
                           : 'border-transparent text-gray-600 hover:text-gray-900'
@@ -716,7 +752,7 @@ function BookingsPage() {
                       <span
                         className={`px-2 py-0.5 rounded-full text-xs font-medium ${
                           activeTab === 'past'
-                            ? 'bg-gray-100 text-[#0A6C6D]'
+                            ? 'bg-teal-50 text-[#0A6C6D]'
                             : 'bg-gray-100 text-gray-700'
                         }`}
                       >
@@ -859,7 +895,6 @@ function BookingsPage() {
                           console.log('Cancel', id);
                           await handleCancel(id);
                         }}
-                        // onDelete={handleDelete}
                       />
                     ))}
                   </div>

@@ -62,6 +62,7 @@ import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import { useWebSocket } from '@/contexts/WebSocketContext';
 import { QRScanDialog } from '@/components/QRScanDialog';
+import RecordOfflinePaymentModal from '@/pages/vendor/RecordOfflinePayment';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -123,6 +124,11 @@ const handleCloseQRScan = () => {
   setQRScanIsOpen(false);
 };
 
+
+const [offlinePaymentOpen, setOfflinePaymentOpen] = useState(false);
+
+const handleOpenOfflinePayment = () => setOfflinePaymentOpen(true);
+const handleCloseOfflinePayment = () => setOfflinePaymentOpen(false);
 
   /////////////////////////////////////////////////////
 
@@ -663,6 +669,9 @@ const handleCloseQRScan = () => {
               <Button onClick={handleOpenQRScan}>
                 Scan Reservation QR
               </Button>
+              <Button onClick={handleOpenOfflinePayment}>
+                Record Offline Payment
+              </Button>
               <DashboardButton
                 onClick={() => setHideTab(!hideTab)}
                 variant="secondary"
@@ -1142,6 +1151,12 @@ const handleCloseQRScan = () => {
           </div>
         </div>
       )}
+
+      <RecordOfflinePaymentModal
+        isOpen={offlinePaymentOpen}
+        onClose={handleCloseOfflinePayment}
+        onSuccess={() => toast.success('Offline payment recorded successfully')}
+      />
 
       {/* Mark as Completed confirmation dialog — uses original handleConfirmArrival logic */}
       <ConfirmReservation

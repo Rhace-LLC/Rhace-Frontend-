@@ -319,10 +319,14 @@ const latestSuccessfulPayment =
               View Vendor
             </button>
           </div>
+          
           <Badge className={paymentStatus.color}>
             {paymentStatus.label}
           </Badge>
         </div>
+                <div className="text-white bg-black text-center">
+                Booking ID: {booking?._id}
+                </div>
       </div>
 
       {/* Body */}
@@ -338,7 +342,6 @@ const latestSuccessfulPayment =
             {booking.reservationStatus?.replaceAll('_', ' ')}
           </Badge>
         </div>
-
         {/* Info grid  if HOTEL IS THE RESERVATION TYPE
         <div className="grid md:grid-cols-2 gap-3">
           <div className="flex items-center gap-3">
@@ -553,6 +556,7 @@ const latestSuccessfulPayment =
 
   </div>
 )}
+
 
         {/* Bottom actions */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 pt-2">
