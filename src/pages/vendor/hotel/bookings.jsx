@@ -2,6 +2,7 @@ import { StatCard } from '@/components/dashboard/stats/mainStats';
 
 import DashboardButton from '@/components/dashboard/ui/DashboardButton';
 import DashboardLayout from '@/components/layout/DashboardLayout';
+import BookingOverviewVendorPOV from '@/components/BookingOverviewVendorPOV';
 import NoDataFallback from '@/components/NoDataFallback';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import {
@@ -66,11 +67,12 @@ import RecordOfflinePaymentModal from '@/pages/vendor/RecordOfflinePayment';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-const normalizePaymentStatus = (status = '') => {
+const normalizePaymentStatus = (status = '', payLater = false) => {
   const s = status.toLowerCase();
   if (s === 'paid' || s === 'success') return 'Fully Paid';
-  if (s === 'part paid') return 'Part Paid';
-  if (s.includes('not paid')) return 'Unpaid';
+  if (s === 'partly_paid') return 'Partly Paid';
+  if (payLater) return 'Pay Later';
+  if (s.includes('not_paid')) return 'Unpaid';
   return 'Unpaid';
 };
 
@@ -79,10 +81,12 @@ const getPaymentStatusColor = (status) => {
   switch (normalized) {
     case 'Fully Paid':
       return 'bg-green-100 text-green-800 border';
-    case 'Part Paid':
+    case 'Partly Paid':
       return 'bg-yellow-100 text-yellow-800 border';
     case 'Unpaid':
       return 'bg-gray-100 text-gray-800 border';
+    case 'Pay Later':
+      return 'bg-blue-100 text-blue-800 border';
     default:
       return 'bg-gray-100 text-gray-800 border';
   }
@@ -108,7 +112,7 @@ const BookingManagement = () => {
   const [hideTab, setHideTab] = useState(false);
   const [showPopup, setShowPopup] = useState({
     display: false,
-    details: {},
+    bookingId: null,
   });
 
   
@@ -126,6 +130,7 @@ const handleCloseQRScan = () => {
 
 
 const [offlinePaymentOpen, setOfflinePaymentOpen] = useState(false);
+const [rowOfflinePaymentId, setRowOfflinePaymentId] = useState(null);
 
 const handleOpenOfflinePayment = () => setOfflinePaymentOpen(true);
 const handleCloseOfflinePayment = () => setOfflinePaymentOpen(false);
@@ -400,12 +405,13 @@ const handleCloseOfflinePayment = () => setOfflinePaymentOpen(false);
         accessorKey: 'paymentStatus',
         header: 'Payment Status',
         cell: ({ row }) => {
-          const paymentStatus = row.getValue('paymentStatus');
+          const paymentStatus = row.original.paymentStatus;
+          const payLater = row.original.payLater;
           return (
             <span
               className={`inline-flex px-3 py-2.5 text-xs font-medium rounded-full ${getPaymentStatusColor(paymentStatus)}`}
             >
-              {normalizePaymentStatus(paymentStatus)}
+              {normalizePaymentStatus(paymentStatus, payLater)}
             </span>
           );
         },
@@ -445,24 +451,31 @@ const handleCloseOfflinePayment = () => setOfflinePaymentOpen(false);
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem
-                  onClick={() =>
-                    setShowPopup({
-                      display: true,
-                      details: booking,
-                    })
-                  }
-                >
-                  <Eye2 /> View Reservation
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => {
-                    setSelectedBooking(booking);
-                    setOpen(true);
-                  }}
-                >
-                  <CheckCircle /> Confirm Reservation
-                </DropdownMenuItem>
+                                        <DropdownMenuItem
+                                          onClick={() =>
+                                            setShowPopup({
+                                              display: true,
+                                              bookingId: booking._id,
+                                            })
+                                          }
+                                        >
+                                          <Eye2 /> View Reservation
+                                        </DropdownMenuItem>
+                                        {['Partly Paid', 'Pay Later', 'Unpaid'].includes(normalizePaymentStatus(booking.paymentStatus, booking.payLater)) && (
+                                          <DropdownMenuItem
+                                            onClick={() => setRowOfflinePaymentId(booking._id)}
+                                          >
+                                            <Cash2 /> Record Offline Payment
+                                          </DropdownMenuItem>
+                                        )}
+                 <DropdownMenuItem
+                   onClick={() => {
+                     setSelectedBooking(booking);
+                     setOpen(true);
+                   }}
+                 >
+                   <CheckCircle /> Confirm Reservation
+                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem className="text-[#EF4444]">
                   <XCircle /> Cancel Booking
@@ -565,7 +578,7 @@ const handleCloseOfflinePayment = () => setOfflinePaymentOpen(false);
 
       const matchesPaymentStatus =
         selectedPaymentStatus === 'all' ||
-        normalizePaymentStatus(booking.paymentStatus) === selectedPaymentStatus;
+        normalizePaymentStatus(booking.paymentStatus, booking.payLater) === selectedPaymentStatus;
 
       const matchesRoomType = selectedRoomType === 'all' || booking.room?.name === selectedRoomType;
 
@@ -760,17 +773,17 @@ const handleCloseOfflinePayment = () => setOfflinePaymentOpen(false);
               </div>
               <div className="w-px bg-gray-200 my-4" />
               <div className="flex-1">
-                <StatCard
-                  title="Total Revenue"
-                  value={`₦ ${bookings
-                    .filter((r) => r.paymentStatus === 'paid' || r.paymentStatus === 'success')
-                    .reduce((sum, r) => sum + (r.totalAmount || 0), 0)
-                    .toLocaleString()}`}
-                  change={-5}
-                  color="green"
-                  IconColor="#E1B505"
-                  icon={<Cash2 className="text-[#06CD02]" />}
-                />
+          <StatCard
+            title="Total Revenue"
+            value={`₦ ${bookings
+              .filter((r) => normalizePaymentStatus(r.paymentStatus, r.payLater) === 'Fully Paid')
+              .reduce((sum, r) => sum + (r.totalAmount || 0), 0)
+              .toLocaleString()}`}
+            change={-5}
+            color="green"
+            IconColor="#E1B505"
+            icon={<Cash2 className="text-[#06CD02]" />}
+          />
               </div>
             </div>
           )}
@@ -850,8 +863,9 @@ const handleCloseOfflinePayment = () => setOfflinePaymentOpen(false);
                         </button>
                         {[
                           { label: 'Fully Paid', color: 'bg-green-500' },
-                          { label: 'Part Paid', color: 'bg-yellow-500' },
+                          { label: 'Partly Paid', color: 'bg-yellow-500' },
                           { label: 'Unpaid', color: 'bg-gray-500' },
+                          { label: 'Pay Later', color: 'bg-blue-500' },
                         ].map(({ label, color }) => (
                           <button
                             key={label}
@@ -1014,140 +1028,17 @@ const handleCloseOfflinePayment = () => setOfflinePaymentOpen(false);
       )}
 
       {showPopup.display && (
-        <div className="inset-0 fixed top-0 left-o w-full h-screen overflow-y-auto bg-black/80">
-          <div className="bg-gray-50 px-4 max-w-4xl mx-auto rounded-lg my-10 py-6 md:px-6 md:py-8">
-            <div className="max-w-4xl mx-auto">
-              {/* Reservation Details */}
-              <div className="bg-white rounded-2xl border border-gray-200 mb-6">
-                <h2 className="text-lg font-semibold text-[#111827] py-4 px-5">
-                  Reservation Details
-                </h2>
-
-                <hr className="border-gray-200 mb-2" />
-                <div className=" divide-y px-4">
-                  {showPopup.details.rooms.length > 0 &&
-                    showPopup.details.rooms.map((item, index) => (
-                      <div key={index} className="py-2">
-                        <div className="mb-2 text-xs text-medium">
-                          Superion {item.roomId.category || item.roomId.roomCategory}{' '}
-                          {item.roomId.name}
-                        </div>
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
-                          <div>
-                            <p className="text-sm text-gray-600 mb-1">Check In Date</p>
-                            <p className="font-medium text-gray-900">
-                              {new Date(item.checkInDate).toLocaleDateString('en-NG', {
-                                year: 'numeric',
-                                month: 'short',
-                                day: 'numeric',
-                              })}
-                            </p>
-                          </div>
-                          <div>
-                            <p className="text-sm text-gray-600 mb-1">Check Out Date</p>
-                            <p className="font-medium text-gray-900">
-                              {new Date(item.checkOutDate).toLocaleDateString('en-NG', {
-                                year: 'numeric',
-                                month: 'short',
-                                day: 'numeric',
-                              })}
-                            </p>
-                          </div>
-                          <div>
-                            <p className="text-sm text-gray-600 mb-1">Guests Allowed</p>
-                            <p className="font-medium text-gray-900">{item.guests} Guests</p>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                </div>
-              </div>
-              <div className="rounded-2xl bg-white border border-gray-200 mb-6">
-                <div className=" divide-y">
-                  <div className="flex p-4 justify-between items-center">
-                    <h3 className="text-lg font-semibold">Room Summary</h3>
-                  </div>
-                  <div className="divide-y px-4">
-                    {showPopup.details.rooms.length > 0 &&
-                      showPopup.details.rooms.map((room, index) => (
-                        <div key={index} className="grid grid-cols-2 py-4 gap-4">
-                          <div className="space-y-1">
-                            <p className="text-xs text-gray-600">Room Name</p>
-                            <p className="text-sm  line-clamp-1 font-medium text-gray-900">
-                              Superion {room.roomId.category} {room.roomId.name}
-                            </p>
-                          </div>
-                          <div className="space-y-1">
-                            <p className="text-xs text-gray-600">Price per Night</p>
-                            <p className="text-sm font-medium text-gray-900">
-                              ₦
-                              {(
-                                room.roomId.pricePerNight -
-                                room.roomId.pricePerNight * (room.roomId.discount / 100)
-                              ).toLocaleString()}
-                            </p>
-                          </div>
-                          <div className="space-y-1">
-                            <p className="text-xs text-gray-600">Bed Type</p>
-                            <p className="text-sm font-medium text-gray-900">
-                              {room.roomId.bedType} Bed
-                            </p>
-                          </div>
-                          <div className="space-y-1">
-                            <p className="text-xs text-gray-600">Guests Allowed</p>
-                            <p className="text-sm font-medium text-gray-900">
-                              {room.roomId.adultsCapacity}
-                            </p>
-                          </div>
-                        </div>
-                      ))}
-                  </div>
-                </div>
-              </div>
-
-              {/* Info Cards - Changed to green background */}
-              <div className="bg-[#E7F0F0] border border-[#B3D1D2] rounded-2xl p-4 mb-8">
-                <div className="space-y-3">
-                  <div className="flex items-start gap-3">
-                    <Mail className="w-5 h-5 text-[#0A6C6D] mt-0.5 flex-shrink-0" />
-                    <p className="text-sm">
-                      You will receive a confirmation email with your reservation details
-                    </p>
-                  </div>
-
-                  <div className="flex items-start gap-3">
-                    <Clock className="w-5 h-5 text-[#0A6C6D] mt-0.5 flex-shrink-0" />
-                    <p className="text-sm">Please, arrive 10 mins early</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex flex-col md:flex-row w-full gap-3">
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setShowPopup({ display: false, details: {} });
-                  }}
-                  className="flex-1 h-10 text-sm rounded-xl font-medium px-6 border-gray-300"
-                >
-                  Close
-                </Button>
-                <form
-                  action={async () => {
-                    setShowPopup({ display: false, details: {} });
-                  }}
-                  className="flex-1"
-                >
-                  <Button
-                    type="submit"
-                    className="w-full h-10 text-sm font-medium rounded-xl px-6 bg-[#0A6C6D] hover:bg-teal-800"
-                  >
-                    Done
-                  </Button>
-                </form>
-              </div>
-            </div>
+        <div className="inset-0 fixed top-0 left-0 w-full h-screen overflow-y-auto bg-black/80 z-50">
+          <div className="bg-white px-4 max-w-4xl mx-auto rounded-lg my-10 py-6 md:px-6 md:py-8 relative">
+            <button
+              onClick={() => setShowPopup({ display: false, bookingId: null })}
+              className="absolute top-3 right-3 text-gray-500 hover:text-gray-700"
+            >
+              <XCircle size={24} />
+            </button>
+            {showPopup.bookingId && (
+              <BookingOverviewVendorPOV bookingId={showPopup.bookingId} />
+            )}
           </div>
         </div>
       )}
@@ -1156,6 +1047,16 @@ const handleCloseOfflinePayment = () => setOfflinePaymentOpen(false);
         isOpen={offlinePaymentOpen}
         onClose={handleCloseOfflinePayment}
         onSuccess={() => toast.success('Offline payment recorded successfully')}
+      />
+
+      <RecordOfflinePaymentModal
+        isOpen={!!rowOfflinePaymentId}
+        reservationId={rowOfflinePaymentId}
+        onClose={() => setRowOfflinePaymentId(null)}
+        onSuccess={() => {
+          toast.success('Offline payment recorded successfully');
+          setRowOfflinePaymentId(null);
+        }}
       />
 
       {/* Mark as Completed confirmation dialog — uses original handleConfirmArrival logic */}

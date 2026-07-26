@@ -447,7 +447,7 @@ function PaymentDetails({ booking, onPayBalance }) {
 
         {!fullyPaid && amountPaid > 0 && onPayBalance && (
           <Button
-            className="w-full mt-3"
+            className="w-full mt-3 min-h-12 rounded-full"
             onClick={onPayBalance}
           >
             <CreditCard className="mr-2 h-4 w-4" />

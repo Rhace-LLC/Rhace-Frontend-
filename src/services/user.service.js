@@ -203,6 +203,7 @@ class UserService {
       throw new Error('bookingId required');
     }
     const res = await api.get(`/bookings/${bookingId}`);
+    console.log("res", res)
     return res.data;
   }
 

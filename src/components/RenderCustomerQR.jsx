@@ -27,6 +27,7 @@ export default function RenderCustomerQR({ reservation }) {
       <Button
         variant="outline"
         onClick={() => setOpen(true)}
+        className="min-h-12 rounded-md flex-1"
       >
         <QrCode className="mr-2 h-4 w-4" />
         Reservation QR

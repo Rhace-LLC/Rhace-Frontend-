@@ -19,6 +19,7 @@ import {
   XCircle,
 } from '@/components/dashboard/ui/svg';
 import DashboardLayout from '@/components/layout/DashboardLayout';
+import BookingOverviewVendorPOV from '@/components/BookingOverviewVendorPOV';
 import NoDataFallback from '@/components/NoDataFallback';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -55,14 +56,16 @@ import { useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router';
 import { toast } from 'react-toastify';
+import RecordOfflinePaymentModal from '@/pages/vendor/RecordOfflinePayment';
 
-const normalizePaymentStatus = (status = '') => {
+const normalizePaymentStatus = (status = '', payLater = false) => {
   const s = status?.toLowerCase() || '';
 
   if (s === 'paid' || s === 'success') return 'Fully Paid';
-  if (s === 'partial' || s === 'part paid') return 'Part Paid';
+  if (s === 'partly_paid') return 'Partly Paid';
+  if (payLater) return 'Pay Later';
   if (s.includes('refunded')) return 'Refunded';
-  if (s.includes('unpaid') || s.includes('not paid')) return 'Unpaid';
+  if (s.includes('unpaid') || s.includes('not_paid')) return 'Unpaid';
 
   return 'Pending';
 };
@@ -138,10 +141,15 @@ const ClubReservationTable = () => {
   const [resID, setResID] = useState();
 
   const [hideTab, setHideTab] = useState(false);
-  const [showPopup, setShowPopup] = useState({
+    const [showPopup, setShowPopup] = useState({
     display: false,
-    details: {},
+    bookingId: null,
   });
+  const [offlinePaymentOpen, setOfflinePaymentOpen] = useState(false);
+  const [rowOfflinePaymentId, setRowOfflinePaymentId] = useState(null);
+  const handleOpenOfflinePayment = () => setOfflinePaymentOpen(true);
+  const handleCloseOfflinePayment = () => setOfflinePaymentOpen(false);
+
   const navigate = useNavigate();
 
   const totalPages = Math.ceil(totalItems / itemsPerPage);
@@ -293,7 +301,7 @@ const ClubReservationTable = () => {
     const totalReservations = reservations.length;
 
     const prepaidReservations = reservations.filter(
-      (res) => normalizePaymentStatus(res.paymentStatus) === 'Fully Paid'
+      (res) => normalizePaymentStatus(res.paymentStatus, res.payLater) === 'Fully Paid'
     ).length;
 
     const todayReservations = reservations.filter((res) => {
@@ -307,8 +315,9 @@ const ClubReservationTable = () => {
     const pendingPayments = reservations
       .filter(
         (res) =>
-          normalizePaymentStatus(res.paymentStatus) === 'Unpaid' ||
-          normalizePaymentStatus(res.paymentStatus) === 'Part Paid'
+          normalizePaymentStatus(res.paymentStatus, res.payLater) === 'Unpaid' ||
+          normalizePaymentStatus(res.paymentStatus, res.payLater) === 'Partly Paid' ||
+          normalizePaymentStatus(res.paymentStatus, res.payLater) === 'Pay Later'
       )
       .reduce((sum, res) => sum + (res.totalAmount || 0), 0);
 
@@ -353,7 +362,7 @@ const ClubReservationTable = () => {
 
     const matchesPaymentStatus =
       selectedPaymentStatus === 'all' ||
-      normalizePaymentStatus(reservation.paymentStatus) === selectedPaymentStatus;
+      normalizePaymentStatus(reservation.paymentStatus, reservation.payLater) === selectedPaymentStatus;
 
     const matchesTable = selectedTable === 'all' || reservation.table === selectedTable;
 
@@ -455,6 +464,8 @@ const ClubReservationTable = () => {
         return 'bg-[#FEF3C7] text-[#92400E]';
       case 'Unpaid':
         return 'bg-gray-100 text-gray-800';
+      case 'Pay Later':
+        return 'bg-blue-100 text-blue-800';
       case 'Refunded':
         return 'bg-gray-100 text-gray-800';
       default:
@@ -496,6 +507,12 @@ const ClubReservationTable = () => {
                     icon={hideTab ? <Eye /> : <EyeClose />}
                   />
                   <DashboardButton variant="secondary" text="Export" icon={<Export />} />
+                  <DashboardButton
+                    onClick={handleOpenOfflinePayment}
+                    variant="secondary"
+                    text="Record Offline Payment"
+                    icon={<Cash2 fill="black" />}
+                  />
                   <DashboardButton
                     onClick={() => navigate('/dashboard/club/reservation/new')}
                     variant="primary"
@@ -919,15 +936,13 @@ const ClubReservationTable = () => {
                                   ₦{reservation.totalAmount?.toLocaleString() || '0'}
                                 </span>
                               </TableCell>
-                              <TableCell>
-                                <div
-                                  className={` w-max ${reservationStatusOptions2(reservation.paymentStatus)} flex py-1.5 px-3 border rounded-full`}
-                                >
-                                  {reservation.paymentStatus === 'not_paid'
-                                    ? 'Pay at Restaurant'
-                                    : reservation.paymentStatus.split('_').join(' ')}
-                                </div>
-                              </TableCell>
+                               <TableCell>
+                                 <div
+                                   className={` w-max ${getPaymentStatusColor(reservation.paymentStatus)} flex py-1.5 px-3 border rounded-full`}
+                                 >
+                                   {normalizePaymentStatus(reservation.paymentStatus, reservation.payLater)}
+                                 </div>
+                               </TableCell>
                               <TableCell>
                                 <div
                                   className={`w-max 
@@ -965,25 +980,23 @@ const ClubReservationTable = () => {
             >
               Copy payment ID
             </DropdownMenuItem> */}
-                                    <DropdownMenuItem
-                                      onClick={() =>
-                                        setShowPopup({
-                                          display: true,
-                                          details: reservation,
-                                        })
-                                      }
-                                    >
-                                      <Eye2 /> View Reservation
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem>
-                                      <Pencil /> Edit Reservation
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem>
-                                      <Phone /> Contact Customer
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem>
-                                      <Printer /> Print Receipt
-                                    </DropdownMenuItem>
+                                      <DropdownMenuItem
+                                        onClick={() =>
+                                          setShowPopup({
+                                            display: true,
+                                            bookingId: reservation._id,
+                                          })
+                                        }
+                                      >
+                                        <Eye2 /> View Reservation
+                                      </DropdownMenuItem>
+                                      {['Partly Paid', 'Pay Later', 'Unpaid'].includes(normalizePaymentStatus(reservation.paymentStatus, reservation.payLater)) && (
+                                        <DropdownMenuItem
+                                          onClick={() => setRowOfflinePaymentId(reservation._id)}
+                                        >
+                                          <Cash2 /> Record Offline Payment
+                                        </DropdownMenuItem>
+                                      )}
                                     <DropdownMenuItem>
                                       <span
                                         className="relative flex cursor-pointer items-center gap-2 rounded-sm  py-1.5"
@@ -995,18 +1008,6 @@ const ClubReservationTable = () => {
                                       >
                                         <CheckCircle /> Mark as Completed
                                       </span>
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem>
-                                      <CheckCircle /> Mark as No-Show
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem
-                                      onClick={() => navigator.clipboard.writeText(reservation.id)}
-                                    >
-                                      <Copy /> Dupllicate Reservation
-                                    </DropdownMenuItem>
-                                    <DropdownMenuSeparator />
-                                    <DropdownMenuItem className="text-[#EF4444]">
-                                      <XCircle /> Cancel Reservation
                                     </DropdownMenuItem>
                                   </DropdownMenuContent>
                                 </DropdownMenu>
@@ -1080,183 +1081,35 @@ const ClubReservationTable = () => {
           {/* Popup Modal */}
           {showPopup.display && (
             <div className="inset-0 fixed top-0 left-0 w-full h-screen overflow-y-auto bg-black/80 z-50">
-              <div className="bg-gray-50 px-4 max-w-4xl mx-auto rounded-lg my-10 py-6 md:px-6 md:py-8">
-                <div className="max-w-4xl mx-auto">
-                  {/* Reservation Details */}
-                  <>
-                    <div className="bg-white rounded-2xl border border-gray-200 mb-6">
-                      <h2 className="text-lg font-semibold text-[#111827] py-4 px-5">
-                        Reservation Details
-                      </h2>
-
-                      <hr className="border-gray-200 mb-4" />
-
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-4 px-4">
-                        <div
-                          className={cn(
-                            'w-full justify-between text-left font-normal md:bg-[#F9FAFB] md:border border-[#E5E7EB] items-center rounded-xl md:px-6! min-w-[150px] flex h-[60px]'
-                          )}
-                        >
-                          <div className="gap-2 flex flex-col">
-                            <div htmlFor="date" className="text-black text-xs">
-                              Date
-                            </div>
-                            {format(showPopup.details.date, 'do MMM, yyyy')}
-                          </div>
-                        </div>
-                        <div
-                          className={cn(
-                            'w-full justify-between text-left font-normal md:bg-[#F9FAFB] md:border border-[#E5E7EB] items-center rounded-xl md:px-6! min-w-[150px] flex h-[60px]'
-                          )}
-                        >
-                          <div className="gap-2 flex flex-col">
-                            <div htmlFor="date" className="text-black text-xs">
-                              Time
-                            </div>
-                            {showPopup.details.time}
-                          </div>
-                        </div>
-                        <div
-                          className={cn(
-                            'w-full justify-between text-left font-normal md:bg-[#F9FAFB] md:border border-[#E5E7EB] items-center rounded-xl md:px-6! min-w-[150px] flex h-[60px]'
-                          )}
-                        >
-                          <div className="gap-2 flex flex-col">
-                            <div htmlFor="date" className="text-black text-xs">
-                              Table
-                            </div>
-                            {showPopup.details.tables.length > 0
-                              ? showPopup.details.tables[0].tableType.name
-                              : 'N/A'}{' '}
-                            {showPopup.details.tables.length > 0
-                              ? `+${showPopup.details.tables.length - 1} more`
-                              : ''}
-                          </div>
-                        </div>
-                        <div
-                          className={cn(
-                            'w-full justify-between text-left font-normal md:bg-[#F9FAFB] md:border border-[#E5E7EB] items-center rounded-xl md:px-6! min-w-[150px] flex h-[60px]'
-                          )}
-                        >
-                          <div className="gap-2 flex flex-col">
-                            <div htmlFor="date" className="text-black text-xs">
-                              Guest
-                            </div>
-                            {showPopup.details.guests} People
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="rounded-2xl border border-gray-200 mb-6 bg-white">
-                      <h2 className="text-lg font-semibold text-[#111827] py-4 px-5">Add Ons</h2>
-
-                      <hr className="border-gray-200 mb-4" />
-                      <div className="py-4 px-5 space-y-4">
-                        {showPopup.details.combos.map((item, i) => (
-                          <div
-                            key={i}
-                            className="space-y-4 px-2 py-3 rounded-2xl border border-[#E5E7EB] bg-[#F9FAFB]"
-                          >
-                            <div className="flex justify-between items-center">
-                              <p className="text-sm text-[#111827]">{item.name}</p>
-                            </div>
-                            <div className="flex justify-between items-center">
-                              <p className="text-xs text-[#111827]">{item.addOns.join(' ')}</p>
-                              <p className="text-sm text-[#111827]">
-                                ₦{item.setPrice.toLocaleString()}
-                              </p>
-                            </div>
-                          </div>
-                        ))}
-                        {showPopup.details.tables.length > 0 &&
-                          showPopup.details.tables.map((item, i) => (
-                            <div
-                              key={i}
-                              className="space-y-4 px-2 py-3 rounded-2xl border border-[#E5E7EB] bg-[#F9FAFB]"
-                            >
-                              <div className="flex justify-between items-center">
-                                <p className="text-sm text-[#111827]">{item.tableType.name}</p>
-                              </div>
-                              <div className="flex justify-between items-center">
-                                <p className="text-sm text-[#111827]">
-                                  ₦{item.tableType.price.toLocaleString()}
-                                </p>
-                              </div>
-                            </div>
-                          ))}
-                        {showPopup.details.drinks.map((item, i) => (
-                          <div
-                            key={i}
-                            className="space-y-4 px-2 py-3 rounded-2xl border border-[#E5E7EB] bg-[#F9FAFB]"
-                          >
-                            <div className="flex justify-between items-center">
-                              <p className="text-sm text-[#111827]">{item.drink.name}</p>
-                            </div>
-                            <div className="flex justify-between items-center">
-                              <p className="text-xs text-[#111827]">
-                                {item.drink.volume}ml x {item.quantity}
-                              </p>
-                              <p className="text-sm text-[#111827]">
-                                ₦{item.drink.price.toLocaleString()}
-                              </p>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </>
-
-                  {/* Info Cards - Changed to green background */}
-                  <div className="bg-[#E7F0F0] border border-[#B3D1D2] rounded-2xl p-4 mb-8">
-                    <div className="space-y-3">
-                      <div className="flex items-start gap-3">
-                        <Mail className="w-5 h-5 text-[#0A6C6D] mt-0.5 flex-shrink-0" />
-                        <div>
-                          <p className="text-sm font-medium text-gray-900">Customer Contact</p>
-                          <p className="text-sm text-gray-700">
-                            {showPopup.details.customerEmail || 'N/A'}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="flex items-start gap-3">
-                        <Clock className="w-5 h-5 text-[#0A6C6D] mt-0.5 flex-shrink-0" />
-                        <p className="text-sm">
-                          Please remind guests to arrive 15 mins early for VIP processing
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Action Buttons */}
-                  <div className="flex flex-col md:flex-row w-full gap-3">
-                    <button
-                      onClick={() => {
-                        setShowPopup({ display: false, details: {} });
-                      }}
-                      className="flex-1 h-10 text-sm rounded-xl font-medium px-6 border border-gray-300 bg-white hover:bg-gray-50 transition-colors"
-                    >
-                      Close
-                    </button>
-                    <button
-                      onClick={() => {
-                        if (showPopup.details.bookingCode || showPopup.details._id) {
-                          navigator.clipboard.writeText(
-                            showPopup.details.bookingCode || showPopup.details._id
-                          );
-                          toast.success('Booking code copied to clipboard');
-                        }
-                      }}
-                      className="flex-1 h-10 text-sm font-medium rounded-xl px-6 bg-[#0A6C6D] hover:bg-teal-800 text-white transition-colors"
-                    >
-                      Copy Booking Code
-                    </button>
-                  </div>
-                </div>
+              <div className="bg-white px-4 max-w-4xl mx-auto rounded-lg my-10 py-6 md:px-6 md:py-8 relative">
+                <button
+                  onClick={() => setShowPopup({ display: false, bookingId: null })}
+                  className="absolute top-3 right-3 text-gray-500 hover:text-gray-700"
+                >
+                  <XCircle size={24} />
+                </button>
+                {showPopup.bookingId && (
+                  <BookingOverviewVendorPOV bookingId={showPopup.bookingId} />
+                )}
               </div>
             </div>
           )}
+          <RecordOfflinePaymentModal
+            isOpen={offlinePaymentOpen}
+            onClose={handleCloseOfflinePayment}
+            onSuccess={() => toast.success('Offline payment recorded successfully')}
+          />
+
+          <RecordOfflinePaymentModal
+            isOpen={!!rowOfflinePaymentId}
+            reservationId={rowOfflinePaymentId}
+            onClose={() => setRowOfflinePaymentId(null)}
+            onSuccess={() => {
+              toast.success('Offline payment recorded successfully');
+              setRowOfflinePaymentId(null);
+            }}
+          />
+
           <ConfirmReservation
             onConfirm={async () => {
               if (!vendor?._id) {

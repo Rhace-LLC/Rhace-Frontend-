@@ -251,7 +251,7 @@ const Header = ({ onClick = () => {}, activeTab = null }) => {
 
   return hideNavigation ? (
     <nav
-      className={`fixed top-0 z-90 w-full transition-all duration-300 ${
+      className={`fixed top-0 z-10 w-full transition-all duration-300 ${
         scrolled || !isHomePage ? 'bg-[#F9FAFB] ' : 'bg-transparent'
       }`}
     >

@@ -108,9 +108,9 @@ function BookingCard({ booking, onEdit, onCancel }) {
     .filter(Boolean)
     .join(', ');
 
-  const actionButtonText = ['confirmed', 'cancelled'].includes(booking?.reservationStatus)
-    ? 'Leave Review'
-    : 'View Details';
+  const actionButtonText = 'View Booking';
+
+  const shouldShowLeaveReviewButton = ['confirmed', 'cancelled'].includes(booking?.reservationStatus);
 
   function formatCurrency(amount = 0) {
     return new Intl.NumberFormat('en-NG', {
@@ -319,12 +319,13 @@ const latestSuccessfulPayment =
             <h2 className="text-white text-xl font-bold">
               {booking.vendor.businessName}
             </h2>
-            <button
+            <Button
+              variant="link"
               onClick={handleOpenVendor}
-              className="text-white/90 hover:text-white text-sm underline"
+              className="text-white/90 hover:text-white text-sm px-0 py-0 min-h-fit h-auto"
             >
               View Vendor
-            </button>
+            </Button>
           </div>
           
           <Badge className={paymentStatus.color}>
@@ -461,7 +462,7 @@ const latestSuccessfulPayment =
 
         {shouldShowBalanceButton && (
           <Button
-            className="w-full"
+            className="w-full min-h-12 rounded-full"
             onClick={() => setShowPaymentDialog(true)}
           >
             <CreditCard className="mr-2 h-4 w-4" />
@@ -477,17 +478,12 @@ const latestSuccessfulPayment =
         )}
 
         {/* Bottom actions */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 pt-2">
+        <div className="flex w-full gap-4 pt-2">
           <RenderCustomerQR reservation={booking} />
-          <div className="flex items-center gap-3">
-            <Button variant="outline" onClick={() => setShowDetailsModal(true)}>
-              <Eye className="mr-2 h-4 w-4" />
-              Details
-            </Button>
-            <Button onClick={handleViewBooking}>
-              {actionButtonText}
-            </Button>
-          </div>
+          <Button variant="outline" onClick={() => setShowDetailsModal(true)} className="min-h-12 rounded-md flex-1">
+            <Eye className="mr-2 h-4 w-4" />
+            Details
+          </Button>
         </div>
       </div>
 
@@ -505,6 +501,7 @@ const latestSuccessfulPayment =
             size="icon"
             variant="secondary"
             onClick={() => setShowDropdown(!showDropdown)}
+            className="min-h-12 w-12 rounded-full"
           >
             <MoreVertical className="w-5 h-5" />
           </Button>
@@ -530,23 +527,35 @@ const latestSuccessfulPayment =
                 </button>
                     */
                 }
+                {shouldShowLeaveReviewButton && (
+                  <Button
+                    variant="ghost"
+                    onClick={() => { setShowDropdown(false); handleViewBooking(); }}
+                    className="flex w-full items-center justify-start gap-3 px-4 py-3 text-left min-h-12 rounded-full"
+                  >
+                    <Edit className="w-4 h-4" />
+                    Leave Review
+                  </Button>
+                )}
                 
                 {shouldShowBalanceButton && (
-                  <button
+                  <Button
+                    variant="ghost"
                     onClick={() => { setShowDropdown(false); setShowPaymentDialog(true); }}
-                    className="flex w-full items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left"
+                    className="flex w-full items-center justify-start gap-3 px-4 py-3 text-left min-h-12 rounded-full"
                   >
                     <Wallet className="w-4 h-4" />
                     Pay Balance
-                  </button>
+                  </Button>
                 )}
-                <button
+                <Button
+                  variant="ghost"
                   onClick={() => { setShowDropdown(false); setShowCancel(true); }}
-                  className="flex w-full items-center gap-3 px-4 py-3 text-red-600 hover:bg-red-50 transition-colors text-left"
+                  className="flex w-full items-center justify-start gap-3 px-4 py-3 text-red-600 hover:bg-red-50 transition-colors text-left min-h-12 rounded-full"
                 >
                   <X className="w-4 h-4" />
                   Cancel Booking
-                </button>
+                </Button>
               </div>
             </>
           )}
@@ -565,11 +574,11 @@ const latestSuccessfulPayment =
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={cancelLoading}>Keep Reservation</AlertDialogCancel>
+            <AlertDialogCancel disabled={cancelLoading} className="min-h-12 rounded-full">Keep Reservation</AlertDialogCancel>
             <AlertDialogAction
               disabled={cancelLoading}
               onClick={handleCancelBooking}
-              className="bg-red-600 hover:bg-red-700"
+              className="bg-red-600 hover:bg-red-700 min-h-12 rounded-full"
             >
               {cancelLoading ? (
                 <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Cancelling...</>
@@ -607,10 +616,11 @@ const latestSuccessfulPayment =
             </div>
           </div>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={paymentLoading}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={paymentLoading} className="min-h-12 rounded-full">Cancel</AlertDialogCancel>
             <AlertDialogAction
               disabled={paymentLoading}
               onClick={handleBalancePayment}
+              className="min-h-12 rounded-full"
             >
               {paymentLoading ? (
                 <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Initializing...</>
