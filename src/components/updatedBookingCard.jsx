@@ -2,20 +2,25 @@ import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
 import {
   AlertTriangle,
+  Building2,
   Calendar,
   CheckCircle2,
   ChevronDown,
   ChevronUp,
+  Clock,
   Copy,
   CreditCard,
   Download,
   Edit,
+  Eye,
   Home,
   Loader2,
   MapPin,
   MoreVertical,
   Receipt,
+  Table2,
   Users,
+  UtensilsCrossed,
   Wallet,
   X,
 } from 'lucide-react';
@@ -33,6 +38,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { paymentService } from '@/services/payment.service';
 import RenderCustomerQR from './RenderCustomerQR';
+import BookingOverviewUserPOV from './BookingOverviewUserPOV';
 import { SvgIcon, SvgIcon2, SvgIcon3 } from '@/public/icons/icons';
 import { toast } from 'sonner';
 
@@ -66,6 +72,7 @@ function BookingCard({ booking, onEdit, onCancel }) {
 
   const [showDropdown, setShowDropdown] = useState(false);
   const [showCancel, setShowCancel] = useState(false);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [cancelLoading, setCancelLoading] = useState(false);
   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
   const [paymentLoading, setPaymentLoading] = useState(false);
@@ -332,7 +339,6 @@ const latestSuccessfulPayment =
       {/* Body */}
       <div className="p-5 space-y-5">
 
-        {/* Badges row */}
         <div className="flex flex-wrap gap-2">
           <Badge variant="outline" className="gap-2">
             {getReservationIcon(booking.reservationType)}
@@ -342,36 +348,96 @@ const latestSuccessfulPayment =
             {booking.reservationStatus?.replaceAll('_', ' ')}
           </Badge>
         </div>
-        {/* Info grid  if HOTEL IS THE RESERVATION TYPE
+
         <div className="grid md:grid-cols-2 gap-3">
-          <div className="flex items-center gap-3">
-            <Calendar className="w-5 h-5 text-teal-700" />
-            <div>
-              <p className="text-xs text-gray-500">Reservation Date</p>
-              <p className="font-medium">
-                {checkInContext
-                  ? `${checkInContext}${daysUntilCheckIn >= 0 && daysUntilCheckIn !== null ? ` (${formatDate(checkInDate)})` : ''}`
-                  : formatDate(checkInDate)}
-              </p>
+          {booking.reservationType?.toLowerCase().includes('hotel') && booking.rooms?.length > 0 ? (
+            <>
+              <div className="flex items-center gap-3">
+                <Building2 className="w-5 h-5 text-teal-700" />
+                <div>
+                  <p className="text-xs text-gray-500">Room</p>
+                  <p className="font-medium truncate">
+                    {booking.rooms.map(r => r.roomId?.name).filter(Boolean).join(', ')}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <Calendar className="w-5 h-5 text-teal-700" />
+                <div>
+                  <p className="text-xs text-gray-500">Check-in – Check-out</p>
+                  <p className="font-medium">
+                    {formatDate(booking.rooms[0].checkInDate)} – {formatDate(booking.rooms[0].checkOutDate)}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <Users className="w-5 h-5 text-teal-700" />
+                <div>
+                  <p className="text-xs text-gray-500">Guests & Rooms</p>
+                  <p className="font-medium">
+                    {booking.rooms.reduce((s, r) => s + (r.guests || 0), 0)} Guest
+                    {booking.rooms.reduce((s, r) => s + (r.guests || 0), 0) > 1 ? 's' : ''},{' '}
+                    {booking.rooms.reduce((s, r) => s + (r.quantity || 1), 0)} Room
+                    {booking.rooms.reduce((s, r) => s + (r.quantity || 1), 0) > 1 ? 's' : ''}
+                  </p>
+                </div>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="flex items-center gap-3">
+                <Calendar className="w-5 h-5 text-teal-700" />
+                <div>
+                  <p className="text-xs text-gray-500">Date</p>
+                  <p className="font-medium">{formatDate(booking.date)}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <Clock className="w-5 h-5 text-teal-700" />
+                <div>
+                  <p className="text-xs text-gray-500">Time</p>
+                  <p className="font-medium">{booking.time || '—'}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <Users className="w-5 h-5 text-teal-700" />
+                <div>
+                  <p className="text-xs text-gray-500">Guests</p>
+                  <p className="font-medium">{booking.guests} Guest{booking.guests > 1 ? 's' : ''}</p>
+                </div>
+              </div>
+            </>
+          )}
+
+          {booking.reservationType?.toLowerCase().includes('club') && booking.tables?.length > 0 && (
+            <div className="flex items-center gap-3">
+              <Table2 className="w-5 h-5 text-teal-700" />
+              <div>
+                <p className="text-xs text-gray-500">Table</p>
+                <p className="font-medium truncate">
+                  {booking.tables.map(t => t.tableType?.name).filter(Boolean).join(', ')}
+                </p>
+              </div>
             </div>
-          </div>
+          )}
+
+          {booking.reservationType?.toLowerCase().includes('restaurant') && booking.menus?.length > 0 && (
+            <div className="flex items-center gap-3">
+              <UtensilsCrossed className="w-5 h-5 text-teal-700" />
+              <div>
+                <p className="text-xs text-gray-500">Menu Items</p>
+                <p className="font-medium truncate">
+                  {booking.menus.map(m => m.menu?.name).filter(Boolean).join(', ')}
+                </p>
+              </div>
+            </div>
+          )}
 
           <div className="flex items-center gap-3">
             <MapPin className="w-5 h-5 text-teal-700" />
             <div>
               <p className="text-xs text-gray-500">Location</p>
               <p className="font-medium truncate">{booking.location}</p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <Users className="w-5 h-5 text-teal-700" />
-            <div>
-              <p className="text-xs text-gray-500">Guests & Room</p>
-              <p className="font-medium">
-                {booking.guests} Guest{booking.guests > 1 ? 's' : ''}
-                {roomNames ? `, ${roomNames}` : ''}
-              </p>
             </div>
           </div>
 
@@ -392,191 +458,45 @@ const latestSuccessfulPayment =
             </div>
           </div>
         </div>
-*/}
-        {/* Payment section */}
-        {payment && (
-          <div className="rounded-xl border bg-gradient-to-br from-slate-50 to-white">
-            <div className="p-4">
-              <div className="flex justify-between items-center">
-                <div className="flex items-center gap-2">
-                  <Wallet className="text-teal-700 w-5 h-5" />
-                  <h3 className="font-semibold">Payment Summary</h3>
-                </div>
-                <Badge className={paymentStatus.color}>
-                  {paymentStatus.label}
-                </Badge>
-              </div>
 
-              <div className="grid sm:grid-cols-3 gap-4 mt-5">
-                <div>
-                  <p className="text-xs uppercase tracking-wide text-gray-500">Total</p>
-                  <p className="text-xl font-bold">{formatCurrency(totalAmount)}</p>
-                </div>
-                <div>
-                  <p className="text-xs uppercase tracking-wide text-gray-500">Paid</p>
-                  <p className="text-lg font-semibold text-green-700">{formatCurrency(amountPaid)}</p>
-                </div>
-                <div>
-                  <p className="text-xs uppercase tracking-wide text-gray-500">Balance</p>
-                  <p className="text-lg font-bold text-red-600">{formatCurrency(balance)}</p>
-                </div>
-              </div>
-
-              {/* Progress bar */}
-              {totalAmount > 0 && (
-                <div className="mt-4">
-                  <div className="flex justify-between text-sm mb-1">
-                    <span className="font-medium text-gray-700">{paymentPercentage}% Paid</span>
-                    <span className="text-gray-500">{formatCurrency(amountPaid)} of {formatCurrency(totalAmount)}</span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2.5">
-                    <div
-                      className="bg-teal-700 h-2.5 rounded-full transition-all duration-500"
-                      style={{ width: `${paymentPercentage}%` }}
-                    />
-                  </div>
-                </div>
-              )}
-
-              {/* Awaiting Balance banner */}
-              {shouldShowAwaitingBanner && (
-                <div className="mt-4 flex items-center justify-center gap-2 rounded-lg border border-amber-200 bg-amber-50 py-3 text-amber-700">
-                  <AlertTriangle className="w-5 h-5" />
-                  <span className="font-semibold">Awaiting Balance Payment</span>
-                </div>
-              )}
-
-              {/* Fully Paid banner */}
-              {fullyPaid && (
-                <div className="mt-4 flex items-center justify-center gap-2 rounded-lg border border-green-200 bg-green-50 py-3 text-green-700">
-                  <CheckCircle2 className="w-5 h-5" />
-                  <span className="font-semibold">Reservation Fully Paid</span>
-                </div>
-              )}
-              {/* Pay Balance button */}
-              {shouldShowBalanceButton && (
-                <Button
-                  className="mt-5 w-full"
-                  onClick={() => setShowPaymentDialog(true)}
-                >
-                  <CreditCard className="mr-2 h-4 w-4" />
-                  Pay Remaining Balance ({formatCurrency(balance)})
-                </Button>
-              )}
-
-              {/* Pending balance payment hint */}
-              {hasPendingBalancePayment && !fullyPaid && (
-                <div className="mt-4 flex items-center justify-center gap-2 rounded-lg border border-gray-200 bg-gray-50 py-3 text-gray-500">
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  <span className="text-sm">Balance payment pending</span>
-                </div>
-              )}
-            </div>
-          </div>
+        {shouldShowBalanceButton && (
+          <Button
+            className="w-full"
+            onClick={() => setShowPaymentDialog(true)}
+          >
+            <CreditCard className="mr-2 h-4 w-4" />
+            Pay Remaining Balance ({formatCurrency(balance)})
+          </Button>
         )}
 
-              <button
-  onClick={() => setShowPaymentBreakdown(!showPaymentBreakdown)}
-  className="text-sm text-gray-600 hover:text-black transition-colors duration-200"
->
-  {showPaymentBreakdown ? "Hide Payment Breakdown" : "Show Payment Breakdown"}
-</button>
-{showPaymentBreakdown && (
-  <div className="mt-5 border-t pt-5 space-y-4">
-
-    {payments.map((payment, index) => (
-      <div
-        key={payment._id}
-        className="rounded-lg border p-4 bg-white"
-      >
-        <div className="flex justify-between items-center">
-
-          <div>
-            <p className="font-semibold">
-              Payment #{index + 1}
-            </p>
-
-            <p className="text-xs text-gray-500">
-              {paymentModeMap[payment.paymentMode]?.label ??
-                payment.paymentMode}
-            </p>
+        {hasPendingBalancePayment && !fullyPaid && (
+          <div className="flex items-center justify-center gap-2 rounded-lg border border-gray-200 bg-gray-50 py-3 text-gray-500">
+            <Loader2 className="w-4 h-4 animate-spin" />
+            <span className="text-sm">Balance payment pending</span>
           </div>
-
-          <Badge
-            className={
-              paymentStatusMap[payment.status]?.color ??
-              "bg-gray-100"
-            }
-          >
-            {paymentStatusMap[payment.status]?.label ??
-              payment.status}
-          </Badge>
-
-        </div>
-
-        <div className="grid grid-cols-2 gap-y-2 text-sm mt-4">
-
-          <span className="text-gray-500">
-            Amount
-          </span>
-
-          <span className="font-medium text-right">
-            {formatCurrency(payment.amountPaid)}
-          </span>
-
-          <span className="text-gray-500">
-            Method
-          </span>
-
-          <span className="text-right capitalize">
-            {formatMethodLabel(
-              payment.paymentMethod
-            )}
-          </span>
-
-          <span className="text-gray-500">
-            Reference
-          </span>
-
-          <span className="text-right font-mono text-xs break-all">
-            {payment.paystackReference}
-          </span>
-
-          <span className="text-gray-500">
-            Paid
-          </span>
-
-          <span className="text-right">
-            {formatDate(payment.paidAt)}
-          </span>
-
-        </div>
-      </div>
-    ))}
-
-  </div>
-)}
-
+        )}
 
         {/* Bottom actions */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 pt-2">
           <RenderCustomerQR reservation={booking} />
           <div className="flex items-center gap-3">
-            {
-                /*
-                
-            <Button variant="outline" onClick={handleDownloadInvoice}>
-              <Download className="mr-2 h-4 w-4" />
-              Invoice
+            <Button variant="outline" onClick={() => setShowDetailsModal(true)}>
+              <Eye className="mr-2 h-4 w-4" />
+              Details
             </Button>
-                */
-            }
             <Button onClick={handleViewBooking}>
               {actionButtonText}
             </Button>
           </div>
         </div>
       </div>
+
+      <BookingOverviewUserPOV
+        booking={booking}
+        open={showDetailsModal}
+        onOpenChange={setShowDetailsModal}
+        onPayBalance={handleBalancePayment}
+      />
 
       {/* Top-right dropdown */}
       <div className="absolute top-4 right-4">

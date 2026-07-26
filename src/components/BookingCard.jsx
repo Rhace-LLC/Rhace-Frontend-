@@ -2,6 +2,7 @@ import { useState } from 'react';
 import {
   Building2,
   Calendar,
+  Clock,
   Download,
   Edit,
   Eye,
@@ -10,17 +11,21 @@ import {
   Loader2,
   MapPin,
   MoreVertical,
+  Table2,
   Trash2,
   Users,
+  UtensilsCrossed,
   X,
 } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { SvgIcon, SvgIcon2, SvgIcon3 } from '@/public/icons/icons';
 import RenderCustomerQR from './RenderCustomerQR';
+import BookingOverviewUserPOV from './BookingOverviewUserPOV';
 
 function BookingCard({ booking, onEdit, onCancel }) {
   const [showDropdown, setShowDropdown] = useState(false);
   const [showCancel, setShowCancel] = useState(false);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [cancelLoading, setCancelLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -135,38 +140,74 @@ function BookingCard({ booking, onEdit, onCancel }) {
 
           <div className="space-y-2 mb-4">
             <div className="flex items-center gap-2 text-gray-700">
-              {booking.reservationType === 'Hotels' ? (
-                <Building2 className="w-4 h-4 flex-shrink-0" />
-              ) : (
-                <Home className="w-4 h-4 flex-shrink-0" />
-              )}
-              {/* {getReservationIcon(booking.reservationType)} */}
-              <span className="text-sm">
-                {/* {booking.reservationType.split("R")[0]} */}
+              {getReservationIcon(booking.reservationType)}
+              <span className="text-sm font-medium">
                 {formatReservationType(booking.reservationType)}
               </span>
             </div>
 
-            <div className="flex items-center gap-2 text-gray-700">
-              <Calendar className="w-4 h-4 flex-shrink-0" />
-              <span className="text-sm">
-                {booking.reservationType.toLowerCase().includes('hotel') &&
-                booking.rooms?.length > 0
-                  ? `${formatDate(booking.rooms[0].checkInDate)} - ${formatDate(booking.rooms[0].checkOutDate)}`
-                  : formatDate(booking.date)}
-              </span>
-            </div>
+            {booking.reservationType?.toLowerCase().includes('hotel') && booking.rooms?.length > 0 ? (
+              <>
+                <div className="flex items-center gap-2 text-gray-700">
+                  <Building2 className="w-4 h-4 flex-shrink-0" />
+                  <span className="text-sm truncate">
+                    {booking.rooms.map(r => r.roomId?.name).filter(Boolean).join(', ')}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 text-gray-700">
+                  <Calendar className="w-4 h-4 flex-shrink-0" />
+                  <span className="text-sm">
+                    {formatDate(booking.rooms[0].checkInDate)} – {formatDate(booking.rooms[0].checkOutDate)}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 text-gray-700">
+                  <Users className="w-4 h-4 flex-shrink-0" />
+                  <span className="text-sm">
+                    {booking.rooms.reduce((sum, r) => sum + (r.guests || 0), 0)} Guest
+                    {booking.rooms.reduce((sum, r) => sum + (r.guests || 0), 0) > 1 ? 's' : ''},{' '}
+                    {booking.rooms.reduce((sum, r) => sum + (r.quantity || 1), 0)} Room
+                    {booking.rooms.reduce((sum, r) => sum + (r.quantity || 1), 0) > 1 ? 's' : ''}
+                  </span>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="flex items-center gap-2 text-gray-700">
+                  <Calendar className="w-4 h-4 flex-shrink-0" />
+                  <span className="text-sm">{formatDate(booking.date)}</span>
+                </div>
+                <div className="flex items-center gap-2 text-gray-700">
+                  <Clock className="w-4 h-4 flex-shrink-0" />
+                  <span className="text-sm">{booking.time || '—'}</span>
+                </div>
+                <div className="flex items-center gap-2 text-gray-700">
+                  <Users className="w-4 h-4 flex-shrink-0" />
+                  <span className="text-sm">{booking.guests} Guest{booking.guests > 1 ? 's' : ''}</span>
+                </div>
+              </>
+            )}
+
+            {booking.reservationType?.toLowerCase().includes('club') && booking.tables?.length > 0 && (
+              <div className="flex items-center gap-2 text-gray-700">
+                <Table2 className="w-4 h-4 flex-shrink-0" />
+                <span className="text-sm truncate">
+                  {booking.tables.map(t => t.tableType?.name).filter(Boolean).join(', ')}
+                </span>
+              </div>
+            )}
+
+            {booking.reservationType?.toLowerCase().includes('restaurant') && booking.menus?.length > 0 && (
+              <div className="flex items-center gap-2 text-gray-700">
+                <UtensilsCrossed className="w-4 h-4 flex-shrink-0" />
+                <span className="text-sm truncate">
+                  {booking.menus.map(m => m.menu?.name).filter(Boolean).join(', ')}
+                </span>
+              </div>
+            )}
 
             <div className="flex items-center gap-2 text-gray-700">
               <MapPin className="w-4 h-4 flex-shrink-0" />
               <span className="text-sm truncate">{booking.location}</span>
-            </div>
-
-            <div className="flex items-center gap-2 text-gray-700">
-              <Users className="w-4 h-4 flex-shrink-0" />
-              <span className="text-sm">
-                {booking.guests} Guest{booking.guests > 1 ? 's' : ''}, {booking.room_info}
-              </span>
             </div>
           </div>
         </div>
@@ -184,20 +225,28 @@ function BookingCard({ booking, onEdit, onCancel }) {
         <RenderCustomerQR reservation={booking} />
         </div>
 
-        <button
-          className="px-6 py-3 rounded-full text-sm font-medium transition-colors w-full sm:w-auto bg-teal-700 hover:bg-teal-800 text-white"
-          onClick={() => {
-            if (getButtonText(booking.reservationStatus) === 'Leave Review') {
-              navigate(
-                `/${booking.reservationType.slice(0, booking.reservationType.indexOf('Reservation')).toLowerCase()}s/${booking.vendor._id}#reviews`
-              );
-            } else {
-              navigate(`/bookings/${booking._id}`);
-            }
-          }}
-        >
-          {getButtonText(booking.reservationStatus)}
-        </button>
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          <button
+            onClick={() => setShowDetailsModal(true)}
+            className="px-6 py-3 rounded-full text-sm font-medium transition-colors bg-white border border-teal-700 text-teal-700 hover:bg-teal-50 w-full sm:w-auto"
+          >
+            View Details
+          </button>
+          <button
+            className="px-6 py-3 rounded-full text-sm font-medium transition-colors w-full sm:w-auto bg-teal-700 hover:bg-teal-800 text-white"
+            onClick={() => {
+              if (getButtonText(booking.reservationStatus) === 'Leave Review') {
+                navigate(
+                  `/${booking.reservationType.slice(0, booking.reservationType.indexOf('Reservation')).toLowerCase()}s/${booking.vendor._id}#reviews`
+                );
+              } else {
+                navigate(`/bookings/${booking._id}`);
+              }
+            }}
+          >
+            {getButtonText(booking.reservationStatus)}
+          </button>
+        </div>
       </div>
       <div className="flex border border-[#B9C2DB] items-center bg-[#E9EBF3] absolute top-0 right-0 rounded-bl-xl gap-2 flex-shrink-0">
         <button
@@ -251,6 +300,12 @@ function BookingCard({ booking, onEdit, onCancel }) {
           )}
         </div>
       </div>
+      <BookingOverviewUserPOV
+        booking={booking}
+        open={showDetailsModal}
+        onOpenChange={setShowDetailsModal}
+      />
+
       {showCancel && (
         <div className="absolute top-0 inset-0 z-30 flex items-center justify-center bg-black/50">
           <div className="bg-white relative rounded-lg p-4 w-full max-w-sm">
