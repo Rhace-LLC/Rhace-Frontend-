@@ -289,7 +289,7 @@ const LogoutIcon = ({ className }) => (
   </svg>
 );
 
-const SvgIcon = ({ isActive }) => (
+const SvgIcon = ({ isActive = false, className }) => (
   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16">
     <path
       fill={isActive ? '#111827' : '#ffffff'}
@@ -300,7 +300,7 @@ const SvgIcon = ({ isActive }) => (
   </svg>
 );
 
-const SvgIcon2 = ({ isActive }) => (
+const SvgIcon2 = ({ isActive = false, className }) => (
   <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 18 18">
     <path
       fill={isActive ? '#111827' : '#ffffff'}
@@ -311,7 +311,7 @@ const SvgIcon2 = ({ isActive }) => (
   </svg>
 );
 
-const SvgIcon3 = ({ isActive }) => (
+const SvgIcon3 = ({ isActive = false, className }) => (
   <svg xmlns="http://www.w3.org/2000/svg" width="14" height="18" viewBox="0 0 14 18" fill="none">
     <path
       fill={isActive ? '#111827' : '#ffffff'}

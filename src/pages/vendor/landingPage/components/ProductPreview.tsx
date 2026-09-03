@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { motion, type Variants } from 'framer-motion';
 
 // ── Abstract SVG illustrations ─────────────────────────────────────────────
 
@@ -220,7 +220,7 @@ function PricingIllustration() {
 
 // ── Bento card ─────────────────────────────────────────────────────────────
 
-const cardVariants = {
+const cardVariants: Variants = {
   hidden: { opacity: 0, y: 28 },
   visible: (i: number) => ({
     opacity: 1,

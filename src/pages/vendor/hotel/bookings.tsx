@@ -1,0 +1,1073 @@
+import { StatCard } from '@/components/dashboard/stats/mainStats';
+
+import DashboardButton from '@/components/dashboard/ui/DashboardButton';
+import DashboardLayout from '@/components/layout/DashboardLayout';
+import BookingOverviewVendorPOV from '@/components/BookingOverviewVendorPOV';
+import NoDataFallback from '@/components/NoDataFallback';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { useMemo } from 'react';
+
+import {
+  Calendar,
+  CardPay,
+  Cash2,
+  CheckCircle,
+  Export,
+  Eye,
+  Eye2,
+  EyeClose,
+  Filter2,
+  XCircle,
+} from '@/components/dashboard/ui/svg';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import ConfirmReservation, {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
+import UniversalLoader from '@/components/user/ui/LogoLoader';
+import { userService } from '@/services/user.service';
+import { formatDate } from '@/utils/formatDate';
+import {
+  flexRender,
+  getCoreRowModel,
+  getFilteredRowModel,
+  getSortedRowModel,
+  useReactTable,
+} from '@tanstack/react-table';
+import {
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  CheckCircle2,
+  MoreHorizontal,
+  ScanLine,
+  Search,
+  Mail,
+  Clock,
+} from 'lucide-react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useSelector } from 'react-redux';
+import { toast } from 'react-toastify';
+import type { RootState } from '@/redux/store';
+import { useWebSocket } from '@/contexts/WebSocketContext';
+import { QRScanDialog } from '@/components/QRScanDialog';
+import RecordOfflinePaymentModal from '@/pages/vendor/RecordOfflinePayment';
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+const normalizePaymentStatus = (status = '', payLater = false) => {
+  const s = status.toLowerCase();
+  if (s === 'paid' || s === 'success') return 'Fully Paid';
+  if (s === 'partly_paid') return 'Partly Paid';
+  if (payLater) return 'Pay Later';
+  if (s.includes('not_paid')) return 'Unpaid';
+  return 'Unpaid';
+};
+
+const getPaymentStatusColor = (status) => {
+  const normalized = normalizePaymentStatus(status);
+  switch (normalized) {
+    case 'Fully Paid':
+      return 'bg-green-100 text-green-800 border';
+    case 'Partly Paid':
+      return 'bg-yellow-100 text-yellow-800 border';
+    case 'Unpaid':
+      return 'bg-gray-100 text-gray-800 border';
+    case 'Pay Later':
+      return 'bg-blue-100 text-blue-800 border';
+    default:
+      return 'bg-gray-100 text-gray-800 border';
+  }
+};
+
+// ─── BookingManagement ────────────────────────────────────────────────────────
+const BookingManagement = () => {
+  const [activeTab, setActiveTab] = useState('All');
+  const vendor = useSelector((state: RootState) => state.auth.vendor);
+  const [bookings, setBookings] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(8);
+  const [totalItems, setTotalItems] = useState(0);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sorting, setSorting] = useState([]);
+  const [columnFilters, setColumnFilters] = useState([]);
+  const [columnVisibility, setColumnVisibility] = useState({});
+  const [rowSelection, setRowSelection] = useState({});
+  const [selectedDate, setSelectedDate] = useState('all');
+  const [selectedPaymentStatus, setSelectedPaymentStatus] = useState('all');
+  const [selectedRoomType, setSelectedRoomType] = useState('all');
+  const [hideTab, setHideTab] = useState(false);
+  const [showPopup, setShowPopup] = useState<{ display: boolean; bookingId: string | null }>({
+    display: false,
+    bookingId: null,
+  });
+
+  
+  ////////////////////////////////////////////////////////////
+
+const [qrScanIsOpen, setQRScanIsOpen] = useState(false);
+
+const handleOpenQRScan = () => {
+  setQRScanIsOpen(true);
+};
+
+const handleCloseQRScan = () => {
+  setQRScanIsOpen(false);
+};
+
+
+const [offlinePaymentOpen, setOfflinePaymentOpen] = useState(false);
+const [rowOfflinePaymentId, setRowOfflinePaymentId] = useState(null);
+
+const handleOpenOfflinePayment = () => setOfflinePaymentOpen(true);
+const handleCloseOfflinePayment = () => setOfflinePaymentOpen(false);
+
+  /////////////////////////////////////////////////////
+
+  const reservationStatusOptions = (status: string) => {
+    switch (status) {
+      case 'upcoming':
+        return 'bg-[#E7F0F0] text-[#0A6C6D] border-[#B3D1D2]';
+      case 'confirmed':
+        return 'bg-[#D1FAE5] text-[#37703F] border-[#B8FFC2]';
+      case 'canceled':
+      case 'cancelled':
+        return 'bg-[#FCE6E6] text-[#EF4444] border-[#FAE48A]';
+      case 'no-show':
+        return 'bg-[#FCE6E6] text-[#EF4444] border-[#FAE48A]';
+      default:
+        return 'bg-gray-100 text-gray-800 border-gray-300';
+    }
+  };
+
+  // ── Mark as Completed dialog state ─────────────────────────────────────────
+  const [open, setOpen] = useState(false);
+  // Store the full booking object so handleConfirmArrival has everything it needs
+  const [selectedBooking, setSelectedBooking] = useState(null);
+
+  // ── Arrival confirmation state ───────────────────────────────────────────────
+  const [confirmingIds, setConfirmingIds] = useState(new Set());
+
+  // ── Confirm arrival handler ──────────────────────────────────────────────────
+  // Errors are re-thrown after toasting so ConfirmReservation's try/finally
+  // keeps the loader spinner visible for the full duration of the API call.
+  const handleConfirmArrival = useCallback(
+    async (booking: any) => {
+      const bookingId = booking._id;
+      if (confirmingIds.has(bookingId)) return;
+
+      setConfirmingIds((prev) => new Set(prev).add(bookingId));
+
+      try {
+        const resId = booking.resId || booking._id;
+
+        const normalizeStatus = (status) => (status || '').toLowerCase();
+        const paymentStatus = normalizeStatus(booking.paymentStatus);
+        const isPaid =
+          paymentStatus.includes('paid') ||
+          paymentStatus.includes('pay_later') ||
+          paymentStatus.includes('partly_paid') ||
+          paymentStatus.includes('success');
+
+        let paymentRef = null;
+        if (isPaid) {
+          paymentRef =
+            booking.paymentRef ??
+            booking.reference ??
+            booking.payment_ref ??
+            booking.payment?.id ??
+            booking.paymentId ??
+            booking.payment?._id;
+        }
+
+        console.log('🔍 Confirm attempt:', {
+          bookingId,
+          resId,
+          paymentRef,
+          paymentStatus: booking.paymentStatus,
+          isPaid,
+          availableKeys: Object.keys(booking).filter(
+            (k) =>
+              k.includes('pay') || k.includes('ref') || k.includes('resId') || k.includes('payment')
+          ),
+        });
+
+        if (!isPaid) {
+          throw new Error('Cannot confirm arrival: Payment not completed');
+        }
+
+        await userService.updateReservationStatus({
+          reservationId: bookingId,
+          vendorId: vendor?._id,
+          resId,
+          paymentRef,
+        });
+
+        setBookings((prev) =>
+          prev.map((b) => (b._id === bookingId ? { ...b, reservationStatus: 'confirmed' } : b))
+        );
+        toast.success('✅ Arrival confirmed!');
+      } catch (err) {
+        const msg = err?.response?.data?.message || err?.message || '';
+        if (msg.includes('Missing') && msg.includes('data'))
+          toast.error(
+            "Backend missing payment data. Admin: Add .populate('payment') to /bookings endpoint."
+          );
+        else if (msg.includes('Missing required fields'))
+          toast.error('Missing resId or paymentId — check booking data.');
+        else if (msg.includes('resId'))
+          toast.error(`resId mismatch: ${err?.response?.data?.providedResId || msg}`);
+        else if (msg.includes('paymentId') || msg.includes('payment'))
+          toast.error(`Payment issue: ${msg}. Backend needs payment population.`);
+        else if (msg.includes('Payment must be successful')) toast.error('Payment incomplete.');
+        else if (msg.includes('hotelReservation')) toast.error('Use hotel-specific flow.');
+        else toast.error(msg || 'Failed to confirm arrival.');
+      } finally {
+        setConfirmingIds((prev) => {
+          const next = new Set(prev);
+          next.delete(bookingId);
+          return next;
+        });
+      }
+    },
+    [confirmingIds, vendor?._id]
+  );
+
+  // ── QR scan confirmation ────────────────────────────────────────────────────
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const qrBookingId = params.get('bookingId');
+    if (qrBookingId) {
+      handleConfirmArrival({ _id: qrBookingId });
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  }, [handleConfirmArrival]);
+
+  // ── Columns ──────────────────────────────────────────────────────────────────
+  const columns = useMemo(
+    () => [
+      {
+        id: 'select',
+        header: ({ table }) => (
+          <Checkbox
+            checked={
+              table.getIsAllPageRowsSelected() ||
+              (table.getIsSomePageRowsSelected() && 'indeterminate')
+            }
+            onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+            aria-label="Select all"
+            className="bg-white"
+          />
+        ),
+        cell: ({ row }) => (
+          <Checkbox
+            checked={row.getIsSelected()}
+            onCheckedChange={(value) => row.toggleSelected(!!value)}
+            aria-label="Select row"
+          />
+        ),
+        enableSorting: false,
+        enableHiding: false,
+      },
+      {
+        accessorKey: 'customerName',
+        header: 'Customer name',
+        cell: ({ row }) => {
+          const booking = row.original;
+          return (
+            <div className="flex items-center gap-3">
+              <Avatar>
+                <AvatarFallback>
+                  {booking.customerName?.split(' ').map((i) => i.slice(0, 1).toUpperCase()) ||
+                    'N/A'}
+                </AvatarFallback>
+              </Avatar>
+              <div>
+                <div className="font-medium text-gray-900">{booking.customerName || 'Unknown'}</div>
+                <div className="text-sm text-gray-500">
+                  ID: #{booking._id?.slice(0, 8) || 'N/A'}
+                </div>
+              </div>
+            </div>
+          );
+        },
+      },
+      {
+        accessorKey: 'checkInDate',
+        header: 'Check-In Date',
+        cell: ({ row }) => {
+          const { rooms } = row.original;
+
+          return (
+            <div className="flex gap-2 items-center">
+              <div className="text-sm text-gray-900 space-y-0.5">
+                {rooms && rooms.length > 0
+                  ? rooms.slice(0, 2).map((room, i) => (
+                      <div key={i} className="mr-2">
+                        {formatDate(room.checkInDate)}
+                      </div>
+                    ))
+                  : 'N/A'}
+              </div>
+              {rooms && rooms.length > 2 && (
+                <span className="text-xs text-gray-500">+{rooms.length - 2} more</span>
+              )}
+            </div>
+          );
+        },
+      },
+      {
+        accessorKey: 'checkOutDate',
+        header: 'Check-Out Date',
+        cell: ({ row }) => {
+          const { rooms } = row.original;
+
+          return (
+            <div className="flex gap-2 items-center">
+              <div className="text-sm text-gray-900 space-y-0.5">
+                {rooms && rooms.length > 0
+                  ? rooms.slice(0, 2).map((room, i) => (
+                      <div key={i} className="mr-2">
+                        {formatDate(room.checkOutDate)}
+                      </div>
+                    ))
+                  : 'N/A'}
+              </div>
+              {rooms && rooms.length > 2 && (
+                <span className="text-xs text-gray-500">+{rooms.length - 2} more</span>
+              )}
+            </div>
+          );
+        },
+      },
+      {
+        accessorKey: 'room.name',
+        header: 'Room Type',
+        cell: ({ row }) => {
+          const { rooms } = row.original;
+
+          return (
+            <div className="flex gap-2 items-center">
+              <div className="text-sm text-gray-900 space-y-0.5">
+                {rooms && rooms.length > 0
+                  ? rooms.slice(0, 2).map((room, i) => (
+                      <div key={i} className="text-sm text-gray-900">
+                        {room.roomId.name || 'N/A'}
+                      </div>
+                    ))
+                  : 'N/A'}
+              </div>
+              {rooms && rooms.length > 2 && (
+                <span className="text-xs text-gray-500">+{rooms.length - 2} more</span>
+              )}
+            </div>
+          );
+        },
+      },
+      {
+        accessorKey: 'guests',
+        header: 'No of Guests',
+        cell: ({ row }) => {
+          const { rooms } = row.original;
+
+          return (
+            <div className="flex gap-2 items-center">
+              <div className="text-sm text-gray-900 space-y-0.5">
+                {rooms && rooms.length > 0
+                  ? rooms.slice(0, 2).map((room, i) => (
+                      <div key={i} className="mr-2">
+                        {room.guests} guests
+                      </div>
+                    ))
+                  : 'N/A'}
+              </div>
+              {rooms && rooms.length > 2 && (
+                <span className="text-xs text-gray-500">+{rooms.length - 2} more</span>
+              )}
+            </div>
+          );
+        },
+      },
+      {
+        accessorKey: 'paymentStatus',
+        header: 'Payment Status',
+        cell: ({ row }) => {
+          const paymentStatus = row.original.paymentStatus;
+          const payLater = row.original.payLater;
+          return (
+            <span
+              className={`inline-flex px-3 py-2.5 text-xs font-medium rounded-full ${getPaymentStatusColor(paymentStatus)}`}
+            >
+              {normalizePaymentStatus(paymentStatus, payLater)}
+            </span>
+          );
+        },
+      },
+      {
+        accessorKey: 'reservationStatus',
+        header: () => {
+          return <div>Reservation Status</div>;
+        },
+        cell: ({ row }) => (
+          <div
+            className={`w-max 
+            ${reservationStatusOptions(row.getValue('reservationStatus'))} 
+              flex py-1.5 px-3 border rounded-full`}
+          >
+            {row.getValue('reservationStatus') === 'upcoming' && 'Upcoming'}
+            {row.getValue('reservationStatus') === 'confirmed' && 'Confirmed'}
+            {['canceled', 'cancelled'].includes(row.getValue('reservationStatus')) && 'Canceled'}
+            {row.getValue('reservationStatus') === 'no-show' && 'No Show'}
+            {!['upcoming', 'confirmed', 'canceled', 'cancelled', 'no-show'].includes(
+              row.getValue('reservationStatus')
+            ) && row.getValue('reservationStatus')}
+          </div>
+        ),
+      },
+      {
+        id: 'actions',
+        enableHiding: false,
+        cell: ({ row }) => {
+          const booking = row.original;
+          return (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="h-8 w-8 p-0">
+                  <span className="sr-only">Open menu</span>
+                  <MoreHorizontal size={16} />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                                        <DropdownMenuItem
+                                          onClick={() =>
+                                            setShowPopup({
+                                              display: true,
+                                              bookingId: booking._id,
+                                            })
+                                          }
+                                        >
+                                          <Eye2 className="" /> View Reservation
+                                        </DropdownMenuItem>
+                                        {['Partly Paid', 'Pay Later', 'Unpaid'].includes(normalizePaymentStatus(booking.paymentStatus, booking.payLater)) && (
+                                          <DropdownMenuItem
+                                            onClick={() => setRowOfflinePaymentId(booking._id)}
+                                          >
+                                            <Cash2 className="" /> Record Offline Payment
+                                          </DropdownMenuItem>
+                                        )}
+                 <DropdownMenuItem
+                   onClick={() => {
+                     setSelectedBooking(booking);
+                     setOpen(true);
+                   }}
+                 >
+                   <CheckCircle className="" /> Confirm Reservation
+                 </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem className="text-[#EF4444]">
+                  <XCircle className="" /> Cancel Booking
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          );
+        },
+      },
+    ],
+    [confirmingIds, handleConfirmArrival]
+  );
+
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+
+  const handlePageChange = (page: number) => {
+    if (page >= 1 && page <= totalPages) setCurrentPage(page);
+  };
+
+  const getPageNumbers = () => {
+    const pages = [];
+    const maxVisible = 3;
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+      pages.push(1);
+      if (currentPage > maxVisible) pages.push('ellipsis-start');
+      const start = Math.max(2, currentPage - 1);
+      const end = Math.min(totalPages - 1, currentPage + 1);
+      for (let i = start; i <= end; i++) pages.push(i);
+      if (currentPage < totalPages - maxVisible + 1) pages.push('ellipsis-end');
+      pages.push(totalPages);
+    }
+    return pages;
+  };
+
+  const tabs = ['All', 'Upcoming', 'Completed', 'Canceled', 'No shows'];
+
+  // Replace native WebSocket with Socket.IO WebSocketContext
+  const { subscribe, unsubscribe } = useWebSocket();
+
+  useEffect(() => {
+    const handleNewReservation = (data) => {
+      toast.success(`🆕 New reservation from ${data.customerName}`);
+      setBookings((prev) => [data, ...prev]);
+    };
+
+    subscribe('reservation-created', handleNewReservation);
+
+    return () => {
+      unsubscribe('reservation-created');
+    };
+  }, [subscribe, unsubscribe]);
+
+  useEffect(() => {
+    const fetchReservations = async () => {
+      try {
+        const res = await userService.fetchReservations({
+          vendorId: vendor._id,
+        });
+        const data = res?.data || [];
+        setBookings(data);
+      } catch (error) {
+        console.error(error);
+        toast.error(error.response?.data?.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchReservations();
+  }, [vendor?._id]);
+
+  const filteredBookings = useMemo(() => {
+    return bookings.filter((booking) => {
+      const matchesSearch =
+        !searchTerm ||
+        booking.customerName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        booking._id?.toLowerCase().includes(searchTerm.toLowerCase());
+
+      let matchesTab = true;
+      if (activeTab !== 'All') {
+        const status = (booking.reservationStatus || booking.status || '').toLowerCase();
+        switch (activeTab) {
+          case 'Upcoming':
+            matchesTab = status === 'upcoming';
+            break;
+          case 'Completed':
+            matchesTab = status === 'completed' || status === 'paid';
+            break;
+          case 'Canceled':
+            matchesTab = status === 'canceled' || status === 'cancelled';
+            break;
+          case 'No shows':
+            matchesTab = status === 'no shows' || status === 'no-shows';
+            break;
+          default:
+            matchesTab = true;
+        }
+      }
+
+      const matchesPaymentStatus =
+        selectedPaymentStatus === 'all' ||
+        normalizePaymentStatus(booking.paymentStatus, booking.payLater) === selectedPaymentStatus;
+
+      const matchesRoomType = selectedRoomType === 'all' || booking.room?.name === selectedRoomType;
+
+      let matchesDate = true;
+      if (selectedDate !== 'all') {
+        const checkInDate = new Date(booking.checkInDate);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        if (selectedDate === 'Today') {
+          checkInDate.setHours(0, 0, 0, 0);
+          matchesDate = checkInDate.getTime() === today.getTime();
+        }
+        if (selectedDate === 'This Week') {
+          const weekStart = new Date(today);
+          weekStart.setDate(today.getDate() - today.getDay());
+          const weekEnd = new Date(weekStart);
+          weekEnd.setDate(weekStart.getDate() + 6);
+          matchesDate = checkInDate >= weekStart && checkInDate <= weekEnd;
+        }
+        if (selectedDate === 'This Month') {
+          matchesDate =
+            checkInDate.getMonth() === today.getMonth() &&
+            checkInDate.getFullYear() === today.getFullYear();
+        }
+        if (selectedDate === 'Last 30 Days') {
+          const thirtyDaysAgo = new Date(today);
+          thirtyDaysAgo.setDate(today.getDate() - 30);
+          matchesDate = checkInDate >= thirtyDaysAgo;
+        }
+      }
+
+      return matchesSearch && matchesTab && matchesPaymentStatus && matchesRoomType && matchesDate;
+    });
+  }, [bookings, searchTerm, activeTab, selectedPaymentStatus, selectedRoomType, selectedDate]);
+
+  const confirmedCount = useMemo(() => {
+    return bookings.filter((b) =>
+      ['confirmed', 'completed'].includes((b.reservationStatus || b.status || '').toLowerCase())
+    ).length;
+  }, [bookings]);
+
+  const data = filteredBookings;
+
+  useEffect(() => {
+    setTotalItems(filteredBookings.length);
+    const maxPage = Math.max(1, Math.ceil(filteredBookings.length / itemsPerPage));
+    setCurrentPage((prev) => Math.min(prev, maxPage));
+  }, [filteredBookings.length, itemsPerPage]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeTab, searchTerm]);
+
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedBookings = data.slice(startIndex, startIndex + itemsPerPage);
+
+  const table = useReactTable({
+    data: paginatedBookings,
+    columns,
+    onSortingChange: setSorting,
+    onColumnFiltersChange: setColumnFilters,
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    onColumnVisibilityChange: setColumnVisibility,
+    onRowSelectionChange: setRowSelection,
+    manualPagination: true,
+    pageCount: totalPages,
+    state: { sorting, columnFilters, columnVisibility, rowSelection },
+  });
+
+  const useDebounce = (callback: (...args: any[]) => void, delay: number) => {
+    const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    return useCallback(
+      (...args: any[]) => {
+        if (timeoutRef.current) clearTimeout(timeoutRef.current);
+        timeoutRef.current = setTimeout(() => callback(...args), delay);
+      },
+      [callback, delay]
+    );
+  };
+
+  const [searchInput, setSearchInput] = useState('');
+  const debouncedSearch = useDebounce((value) => setSearchTerm(value), 300);
+
+  if (isLoading) return <UniversalLoader fullscreen />;
+
+
+  return (
+    <DashboardLayout type={vendor.vendorType} settings={false} section="bookings">
+      <div className="min-h-screen bg-gray-50 p-6 mb-12">
+        <div className="max-w-7xl mx-auto">
+          <div className="md:flex hidden justify-between items-center mb-6">
+            <h2 className="text-[#111827] font-semibold">All Bookings</h2>
+            <div className="flex gap-6">
+              <QRScanDialog 
+                isOpen={qrScanIsOpen} 
+                onClose={handleCloseQRScan} 
+                onSuccess={()=> console.log("scan complete")}
+              />
+              <Button onClick={handleOpenQRScan}>
+                Scan Reservation QR
+              </Button>
+              <Button onClick={handleOpenOfflinePayment}>
+                Record Offline Payment
+              </Button>
+              <DashboardButton
+                onClick={() => setHideTab(!hideTab)}
+                variant="secondary"
+                text={hideTab ? 'Open tabs' : 'Hide tabs'}
+                icon={hideTab ? <Eye /> : <EyeClose />}
+              />
+              <DashboardButton
+                variant="secondary"
+                text="Export"
+                icon={<Export />}
+                onClick={() => {
+                  try {
+                    const headers = [
+                      'Customer Name',
+                      'Email',
+                      'Check In',
+                      'Check Out',
+                      'Room Type',
+                      'Status',
+                      'Payment',
+                      'Amount',
+                    ];
+                    const rows = filteredBookings.map((b) => [
+                      b.customerName || '',
+                      b.email || '',
+                      b.checkInDate ? new Date(b.checkInDate).toLocaleDateString() : '',
+                      b.checkOutDate ? new Date(b.checkOutDate).toLocaleDateString() : '',
+                      b.rooms?.map((r) => r.roomId?.name).join('; ') || '',
+                      b.reservationStatus || '',
+                      b.paymentStatus || '',
+                      b.totalAmount || 0,
+                    ]);
+                    const csv = [
+                      headers.join(','),
+                      ...rows.map((r) => r.map((c) => `"${c}"`).join(',')),
+                    ].join('\n');
+                    const blob = new Blob([csv], { type: 'text/csv' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `bookings-${new Date().toISOString().slice(0, 10)}.csv`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    toast.success('Bookings exported successfully');
+                  } catch {
+                    toast.error('Failed to export bookings');
+                  }
+                }}
+              />
+            </div>
+          </div>
+
+          {!hideTab && (
+            <div className="flex mb-8 rounded-lg bg-white border border-gray-200">
+              <div className="flex-1">
+                <StatCard
+                  title="Total Reservations"
+                  value={bookings?.length}
+                  change={12}
+                  color="blue"
+                  icon={<Calendar />}
+                />
+              </div>
+              <div className="w-px bg-gray-200 my-4" />
+              <div className="flex-1">
+                <StatCard
+                  title="Confirmed"
+                  value={confirmedCount}
+                  change={8}
+                  color="green"
+                  icon={<CardPay />}
+                />
+              </div>
+              <div className="w-px bg-gray-200 my-4" />
+              <div className="flex-1">
+                <StatCard
+                  title="Pending"
+                  value={bookings.filter((r) => r.reservationStatus === 'Upcoming').length}
+                  change={8}
+                  icon={<Cash2 className="text-[#CD16C3]" />}
+                  color="pink"
+                />
+              </div>
+              <div className="w-px bg-gray-200 my-4" />
+              <div className="flex-1">
+          <StatCard
+            title="Total Revenue"
+            value={`₦ ${bookings
+              .filter((r) => normalizePaymentStatus(r.paymentStatus, r.payLater) === 'Fully Paid')
+              .reduce((sum, r) => sum + (r.totalAmount || 0), 0)
+              .toLocaleString()}`}
+            change={-5}
+            color="green"
+            icon={<Cash2 className="text-[#06CD02]" />}
+          />
+              </div>
+            </div>
+          )}
+
+          {/* Tabs and Filters */}
+          <div>
+            <div className="flex md:items-center flex-col-reverse md:flex-row gap-4 justify-between py-4 px-4">
+              <div className="flex flex-1 items-center">
+                {tabs.map((tab) => (
+                  <button
+                    key={tab}
+                    onClick={() => setActiveTab(tab)}
+                    className={`p-2 text-xs md:text-sm rounded-lg border font-medium cursor-pointer ${
+                      activeTab === tab
+                        ? 'border-[#B3D1D2] bg-[#E7F0F0] text-[#111827]'
+                        : 'border-transparent text-[#606368]'
+                    }`}
+                  >
+                    {tab}
+                  </button>
+                ))}
+              </div>
+
+              <div className="flex items-center justify-between gap-4">
+                <div className="relative items-center flex flex-1">
+                  <Search className="absolute left-2 text-[#606368] size-5" />
+                  <Input
+                    type="text"
+                    placeholder="Search by guest name or ID"
+                    value={searchInput}
+                    onChange={(e) => {
+                      setSearchInput(e.target.value);
+                      debouncedSearch(e.target.value);
+                    }}
+                    className="max-w-sm pl-10 bg-[#F9FAFB] border-[#DAE9E9]"
+                  />
+                </div>
+
+                <div className="md:flex gap-2 hidden">
+                  {/* Date filter */}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" className="ml-auto text-[#606368]">
+                        {selectedDate === 'all' ? 'Date' : selectedDate} <ChevronDown />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-48">
+                      <div className="p-2">
+                        {['all', 'Today', 'This Week', 'This Month', 'Last 30 Days'].map((d) => (
+                          <button
+                            key={d}
+                            onClick={() => setSelectedDate(d)}
+                            className={`w-full text-left px-3 py-2 rounded-md hover:bg-gray-100 ${selectedDate === d ? 'bg-gray-100 font-medium' : ''}`}
+                          >
+                            {d === 'all' ? 'All Dates' : d}
+                          </button>
+                        ))}
+                      </div>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+
+                  {/* Payment status filter */}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" className="ml-auto text-[#606368]">
+                        {selectedPaymentStatus === 'all' ? 'Payment Status' : selectedPaymentStatus}{' '}
+                        <ChevronDown />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-48">
+                      <div className="p-2">
+                        <button
+                          onClick={() => setSelectedPaymentStatus('all')}
+                          className={`w-full text-left px-3 py-2 rounded-md hover:bg-gray-100 ${selectedPaymentStatus === 'all' ? 'bg-gray-100 font-medium' : ''}`}
+                        >
+                          All Status
+                        </button>
+                        {[
+                          { label: 'Fully Paid', color: 'bg-green-500' },
+                          { label: 'Partly Paid', color: 'bg-yellow-500' },
+                          { label: 'Unpaid', color: 'bg-gray-500' },
+                          { label: 'Pay Later', color: 'bg-blue-500' },
+                        ].map(({ label, color }) => (
+                          <button
+                            key={label}
+                            onClick={() => setSelectedPaymentStatus(label)}
+                            className={`w-full text-left px-3 py-2 rounded-md hover:bg-gray-100 ${selectedPaymentStatus === label ? 'bg-gray-100 font-medium' : ''}`}
+                          >
+                            <span className="inline-flex items-center gap-2">
+                              <span className={`w-2 h-2 rounded-full ${color}`} />
+                              {label}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+
+                  {/* Advanced filter */}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" className="ml-auto text-[#606368]">
+                        Advanced filter <Filter2 fill="black" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-64">
+                      <div className="p-4 space-y-4">
+                        <div>
+                          <label className="text-sm font-medium text-gray-700 mb-2 block">
+                            Room Type
+                          </label>
+                          <select
+                            value={selectedRoomType}
+                            onChange={(e) => setSelectedRoomType(e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
+                          >
+                            <option value="all">All Room Types</option>
+                            {Array.from(
+                              new Set(bookings.map((b) => b.room?.name).filter(Boolean))
+                            ).map((roomType) => (
+                              <option key={roomType} value={roomType}>
+                                {roomType}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                        <div className="pt-2 border-t">
+                          <button
+                            onClick={() => {
+                              setSelectedDate('all');
+                              setSelectedPaymentStatus('all');
+                              setSelectedRoomType('all');
+                            }}
+                            className="w-full px-3 py-2 text-sm text-teal-600 hover:bg-teal-50 rounded-md font-medium"
+                          >
+                            Clear All Filters
+                          </button>
+                        </div>
+                      </div>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+
+                <div className="md:hidden">
+                  <Button variant="outline" size="sm" className="ml-auto">
+                    <Filter2 fill="black" />
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            {/* Table */}
+            {data.length > 0 ? (
+              <div className="overflow-hidden hidden md:block rounded-md border mb-4">
+                <Table>
+                  <TableHeader className="bg-[#E6F2F2]">
+                    {table.getHeaderGroups().map((headerGroup) => (
+                      <TableRow key={headerGroup.id}>
+                        {headerGroup.headers.map((header) => (
+                          <TableHead key={header.id}>
+                            {header.isPlaceholder
+                              ? null
+                              : flexRender(header.column.columnDef.header, header.getContext())}
+                          </TableHead>
+                        ))}
+                      </TableRow>
+                    ))}
+                  </TableHeader>
+                  <TableBody>
+                    {table.getRowModel().rows?.length ? (
+                      table.getRowModel().rows.map((row) => (
+                        <TableRow
+                          key={row.id}
+                          data-state={row.getIsSelected() && 'selected'}
+                          className="hover:bg-gray-50"
+                        >
+                          {row.getVisibleCells().map((cell) => (
+                            <TableCell key={cell.id}>
+                              {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                            </TableCell>
+                          ))}
+                        </TableRow>
+                      ))
+                    ) : (
+                      <TableRow>
+                        <TableCell colSpan={columns.length} className="h-24 text-center">
+                          No bookings found.
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            ) : (
+              <NoDataFallback />
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Pagination */}
+      {totalItems > 0 && (
+        <div className="absolute hidden md:flex bottom-0 border-t border-[#E5E7EB] left-0 right-0 bg-white">
+          <div className="flex items-center w-full px-8 justify-between space-x-2 py-4">
+            <div className="text-muted-foreground text-sm">
+              Page {currentPage} of {totalPages} ({totalItems} total items)
+            </div>
+            <div className="flex items-center gap-2">
+              {getPageNumbers().map((page, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => typeof page === 'number' && handlePageChange(page)}
+                  disabled={page === 'ellipsis-start' || page === 'ellipsis-end'}
+                  className={`px-3 py-1 rounded-md ${
+                    currentPage === page
+                      ? 'bg-teal-600 text-white'
+                      : 'bg-white text-gray-700 border border-gray-200'
+                  } ${page === 'ellipsis-start' || page === 'ellipsis-end' ? 'cursor-default' : 'hover:bg-gray-100'}`}
+                >
+                  {page === 'ellipsis-start' || page === 'ellipsis-end' ? '…' : page}
+                </button>
+              ))}
+            </div>
+            <div className="gap-2 flex">
+              <button
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="px-3 py-2 bg-white border rounded-md hover:bg-gray-50 disabled:opacity-50"
+              >
+                <ChevronLeft />
+              </button>
+              <button
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages || totalPages === 0}
+                className="px-3 py-2 bg-white border rounded-md hover:bg-gray-50 disabled:opacity-50"
+              >
+                <ChevronRight />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showPopup.display && (
+        <div className="inset-0 fixed top-0 left-0 w-full h-screen overflow-y-auto bg-black/80 z-50">
+          <div className="bg-white px-4 max-w-4xl mx-auto rounded-lg my-10 py-6 md:px-6 md:py-8 relative">
+            <button
+              onClick={() => setShowPopup({ display: false, bookingId: null })}
+              className="absolute top-3 right-3 text-gray-500 hover:text-gray-700"
+            >
+              <XCircle className="" />
+            </button>
+            {showPopup.bookingId && (
+              <BookingOverviewVendorPOV bookingId={showPopup.bookingId} />
+            )}
+          </div>
+        </div>
+      )}
+
+      <RecordOfflinePaymentModal
+        isOpen={offlinePaymentOpen}
+        onClose={handleCloseOfflinePayment}
+        onSuccess={() => toast.success('Offline payment recorded successfully')}
+      />
+
+      <RecordOfflinePaymentModal
+        isOpen={!!rowOfflinePaymentId}
+        reservationId={rowOfflinePaymentId}
+        onClose={() => setRowOfflinePaymentId(null)}
+        onSuccess={() => {
+          toast.success('Offline payment recorded successfully');
+          setRowOfflinePaymentId(null);
+        }}
+      />
+
+      {/* Mark as Completed confirmation dialog — uses original handleConfirmArrival logic */}
+      <ConfirmReservation
+        onConfirm={async () => {
+          if (selectedBooking) {
+            handleConfirmArrival(selectedBooking);
+          }
+        }}
+        setOpen={setOpen}
+        open={open}
+      />
+    </DashboardLayout>
+  );
+};
+
+export default BookingManagement;

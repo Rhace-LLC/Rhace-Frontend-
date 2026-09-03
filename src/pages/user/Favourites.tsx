@@ -572,8 +572,8 @@ const Favorites: React.FC = () => {
 
                     <div className="mt-2 sm:mt-4 w-full flex justify- items-en-safe">
                       <Button
-                        variant={'primary'}
-                        size={'big'}
+                        variant={'default'}
+                        size={'default'}
                         onClick={() => handleClick(venueId)}
                         className=" hidden sm:flex
                       w-full text-xs sm:text-sm font-semibold 
@@ -586,8 +586,8 @@ const Favorites: React.FC = () => {
                         {getButtonText()}
                       </Button>
                       <Button
-                        variant={'primary'}
-                        size={'small'}
+                        variant={'default'}
+                        size={'sm'}
                         onClick={() => handleClick(venueId)}
                         className=" flex sm:hidden
                       w-full text-[10px] sm:text-sm font-medium

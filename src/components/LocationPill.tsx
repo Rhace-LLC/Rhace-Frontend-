@@ -1,0 +1,121 @@
+import { MapPin, Loader2, Navigation } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { LocationPicker } from './LocationPicker';
+
+/**
+ * LocationPill
+ * Shows the currently detected city + a subtle "Use my location" affordance.
+ * Clicking opens a dropdown to search/pick a city.
+ * Industry pattern: Uber Eats / DoorDash location picker.
+ */
+interface LocationPillProps {
+  location: { city?: string };
+  status: string;
+  isDetecting?: boolean;
+  requestLocation: () => void;
+  setCity: (city: string, lat?: number | null, lng?: number | null, country?: string) => void;
+  updateFilter?: (key: string, value: unknown) => void;
+}
+
+export const LocationPill = ({ location, status, isDetecting, requestLocation, setCity, updateFilter }: LocationPillProps) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handle = (e: MouseEvent) => {
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) setIsOpen(false);
+    };
+    document.addEventListener('mousedown', handle);
+    return () => document.removeEventListener('mousedown', handle);
+  }, []);
+
+  const label =
+    status === 'detecting'
+      ? 'Detecting…'
+      : location.city
+        ? location.city
+        : status === 'denied'
+          ? 'Location denied'
+          : 'Enable location';
+
+  return (
+    <div className="relative" ref={wrapperRef}>
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        title={
+          status === 'granted' ? `Using location: ${location.city}` : 'Click to set your location'
+        }
+        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-[11px] font-semibold transition-all cursor-pointer ${
+          status === 'granted'
+            ? 'border-[#0A6C6D]/30 bg-[#0A6C6D]/5 text-[#0A6C6D]'
+            : status === 'detecting'
+              ? 'border-gray-200 bg-gray-50 text-gray-400 cursor-wait'
+              : 'border-gray-200 bg-white text-gray-500 hover:border-[#0A6C6D] hover:text-[#0A6C6D]'
+        }`}
+      >
+        {isDetecting ? (
+          <Loader2 className="w-3 h-3 animate-spin" />
+        ) : status === 'granted' ? (
+          <MapPin className="w-3 h-3" />
+        ) : (
+          <Navigation className="w-3 h-3" />
+        )}
+        <span className="max-w-[120px] truncate">{label}</span>
+      </button>
+
+      {isOpen && (
+        <div className="absolute right-0 mt-2 z-50">
+          <LocationPicker
+            requestLocation={requestLocation}
+            setCity={setCity}
+            updateFilter={updateFilter}
+            onClose={() => setIsOpen(false)}
+          />
+        </div>
+      )}
+    </div>
+  );
+};
+
+/**
+ * LocationBanner (shown on discovery home when location is unknown)
+ * Friendly, non-blocking prompt — user can dismiss.
+ */
+interface LocationBannerProps {
+  requestLocation: () => void;
+  isDetecting?: boolean;
+  onDismiss?: () => void;
+}
+
+export const LocationBanner = ({ requestLocation, isDetecting, onDismiss }: LocationBannerProps) => (
+  <div className="flex items-center justify-between gap-3 bg-gradient-to-r from-[#0A6C6D]/8 to-transparent border border-[#0A6C6D]/15 rounded-xl px-4 py-3 mb-6">
+    <div className="flex items-center gap-3">
+      <div className="w-8 h-8 bg-[#0A6C6D]/10 rounded-full flex items-center justify-center shrink-0">
+        <MapPin className="w-4 h-4 text-[#0A6C6D]" />
+      </div>
+      <div>
+        <p className="text-sm font-semibold text-gray-800">See what's near you</p>
+        <p className="text-xs text-gray-500">Enable location for personalised results</p>
+      </div>
+    </div>
+    <div className="flex items-center gap-2 shrink-0">
+      <button
+        onClick={requestLocation}
+        disabled={isDetecting}
+        className="px-3 py-1.5 bg-[#0A6C6D] text-white text-xs font-semibold rounded-full hover:bg-[#084F4F] disabled:opacity-60 transition-colors flex items-center gap-1.5"
+      >
+        {isDetecting ? (
+          <Loader2 className="w-3 h-3 animate-spin" />
+        ) : (
+          <Navigation className="w-3 h-3" />
+        )}
+        {isDetecting ? 'Detecting…' : 'Use location'}
+      </button>
+      {onDismiss && (
+        <button onClick={onDismiss} className="text-xs text-gray-400 hover:text-gray-600 px-2">
+          Not now
+        </button>
+      )}
+    </div>
+  </div>
+);
