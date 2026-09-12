@@ -26,8 +26,6 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
-  Edit,
-  MoreVertical,
   Plus,
   Search,
 } from 'lucide-react';
@@ -35,7 +33,6 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { toast } from 'react-toastify';
 import { AddDrinkModal } from './components/AddDrinkModal';
-import { AddTablesModal } from './components/AddTablesModal';
 
 const Cash2Icon = (props: any) => <Cash2 {...props} />;
 
@@ -57,7 +54,6 @@ interface Stat {
 
 export function DrinksTable() {
   const [drinks, setDrinks] = useState<any[]>([]);
-  const [tables, setTables] = useState<any[]>([]);
   const [bottleSets, setBottleSets] = useState<any[]>([]);
   const [selectedTab, setSelectedTab] = useState('drinks');
   const [searchTerm, setSearchTerm] = useState('');
@@ -66,9 +62,6 @@ export function DrinksTable() {
   const [itemsPerPage] = useState(10);
   const [totalItems, setTotalItems] = useState(0);
   const [showAddDrinkModal, setShowAddDrinkModal] = useState(false);
-  const [showTablesModal, setShowTablesModal] = useState(false);
-  const [showTablesEditModal, setShowTablesEditModal] = useState(false);
-  const [initialTableData, setInitialTableData] = useState<any>(null);
   const { vendor } = useAuth();
   const navigate = useNavigate();
 
@@ -140,18 +133,6 @@ export function DrinksTable() {
       setIsLoading(false);
     };
 
-    const fetchTables = async () => {
-      try {
-        setIsLoading(true);
-        const data = await clubService.getTables(vendor._id);
-        setTables(data.tables || []);
-      } catch (error) {
-        console.error('Error fetching tables:', error);
-        toast.error('Failed to fetch tables');
-      }
-      setIsLoading(false);
-    };
-
     const fetchBottleSets = async () => {
       try {
         const data = await clubService.getBottleSet(vendor._id);
@@ -163,31 +144,28 @@ export function DrinksTable() {
     };
 
     fetchDrinks();
-    fetchTables();
     fetchBottleSets();
   }, [vendor?._id]);
 
   // Calculate stats
   useEffect(() => {
     const totalDrinks = drinks.length;
-    const totalTables = tables.length;
     const totalSets = bottleSets.length;
-    const activeItems = [...drinks, ...bottleSets, ...tables].filter(
+    const activeItems = [...drinks, ...bottleSets].filter(
       (item) => normalizeStatus(item.status) === 'Active'
     ).length;
-    const totalValue = [...drinks, ...bottleSets, ...tables].reduce(
+    const totalValue = [...drinks, ...bottleSets].reduce(
       (sum, item) => sum + (item.price || item.setPrice || 0),
       0
     );
 
     setStats({
       totalDrinks: { count: totalDrinks, change: 0 },
-      totalTables: { count: totalTables, change: 0 },
       totalSets: { count: totalSets, change: 0 },
       totalValue: { count: totalValue, change: 0 },
       activeItems: { count: activeItems, change: 0 },
     });
-  }, [drinks, bottleSets, tables]);
+  }, [drinks, bottleSets]);
 
   // Filter items based on selected tab and filters
   const filterItems = (items: any[], isDrink = true) => {
@@ -195,8 +173,7 @@ export function DrinksTable() {
       const matchesSearch =
         !searchTerm ||
         item.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (isDrink && item.category?.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (!isDrink && item.name?.toLowerCase().includes(searchTerm.toLowerCase()));
+        (isDrink && item.category?.toLowerCase().includes(searchTerm.toLowerCase()));
 
       const matchesStatus =
         selectedStatus === 'all' || normalizeStatus(item.status) === selectedStatus;
@@ -211,15 +188,9 @@ export function DrinksTable() {
   };
 
   const filteredDrinks = filterItems(drinks, true);
-  const filteredTables = filterItems(tables, false);
   const filteredSets = filterItems(bottleSets, false);
 
-  const currentData =
-    selectedTab === 'drinks'
-      ? filteredDrinks
-      : selectedTab === 'sets'
-        ? filteredSets
-        : filteredTables;
+  const currentData = selectedTab === 'drinks' ? filteredDrinks : filteredSets;
   const data = currentData;
 
   // Update total items based on filtered data
@@ -295,13 +266,6 @@ export function DrinksTable() {
                     <Plus size={18} />
                     <span>Add New Drink</span>
                   </button>
-                  <button
-                    onClick={() => setShowTablesModal(true)}
-                    className="flex items-center gap-2 px-4 py-2 bg-teal-700 text-white rounded-lg hover:bg-teal-800 transition-colors"
-                  >
-                    <Plus size={18} />
-                    <span>Add New Table</span>
-                  </button>
                 </div>
               </div>
 
@@ -353,7 +317,7 @@ export function DrinksTable() {
               <div className="bg-white rounded-lg border border-gray-200">
                 <div className="flex md:items-center flex-col-reverse md:flex-row gap-4 justify-between py-4 px-4 border-b border-gray-200">
                   <div className="flex flex-1 items-center">
-                    {['drinks', 'sets', 'tables'].map((tab) => (
+                    {['drinks', 'sets'].map((tab) => (
                       <button
                         key={tab}
                         onClick={() => setSelectedTab(tab)}
@@ -363,7 +327,7 @@ export function DrinksTable() {
                             : 'text-gray-500 hover:text-gray-700'
                         }`}
                       >
-                        {tab === 'drinks' ? 'Drinks' : tab === 'sets' ? 'Drinks Sets' : 'Tables'}
+                        {tab === 'drinks' ? 'Drinks' : 'Drinks Sets'}
                       </button>
                     ))}
                   </div>
@@ -372,13 +336,7 @@ export function DrinksTable() {
                       <Search className="absolute left-2 text-[#606368] size-5" />
                       <Input
                         type="text"
-                        placeholder={
-                          selectedTab === 'drinks'
-                            ? 'Search drinks'
-                            : selectedTab === 'tables'
-                              ? 'Search tables'
-                              : 'Search sets'
-                        }
+                        placeholder={selectedTab === 'drinks' ? 'Search drinks' : 'Search sets'}
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         className="max-w-sm pl-10 bg-[#F9FAFB] border-[#DAE9E9]"
@@ -536,11 +494,9 @@ export function DrinksTable() {
                     <table className="w-full">
                       <thead className="bg-gray-50">
                         <tr>
-                          {selectedTab !== 'tables' && (
-                            <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              Image
-                            </th>
-                          )}
+                          <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Image
+                          </th>
                           <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Name
                           </th>
@@ -568,32 +524,25 @@ export function DrinksTable() {
                             </th>
                           )}
                           {selectedTab === 'sets' && (
-                            <>
-                              <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Drinks
-                              </th>
-                            </>
-                          )}
-                          {selectedTab !== 'tables' && (
                             <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              Status
+                              Drinks
                             </th>
                           )}
-                          <th className="w-12 px-4 py-3"></th>
+                          <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Status
+                          </th>
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
                         {paginatedItems.map((item) => (
                           <tr key={item._id} className="hover:bg-gray-50">
-                            {selectedTab !== 'tables' && (
-                              <td className="px-4 py-4">
-                                <img
-                                  src={selectedTab === 'drinks' ? item.images?.[0] : item.image}
-                                  alt={item.name}
-                                  className="w-12 h-12 rounded-lg object-cover"
-                                />
-                              </td>
-                            )}
+                            <td className="px-4 py-4">
+                              <img
+                                src={selectedTab === 'drinks' ? item.images?.[0] : item.image}
+                                alt={item.name}
+                                className="w-12 h-12 rounded-lg object-cover"
+                              />
+                            </td>
                             <td className="px-4 py-4">
                               <div className="flex items-center gap-3">
                                 <div>
@@ -644,29 +593,14 @@ export function DrinksTable() {
                                 </td>
                               </>
                             )}
-                            {(selectedTab === 'drinks' || selectedTab === 'sets') && (
-                              <td className="px-4 py-4">
-                                <span
-                                  className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(
-                                    item.status
-                                  )}`}
-                                >
-                                  {normalizeStatus(item.status)}
-                                </span>
-                              </td>
-                            )}
                             <td className="px-4 py-4">
-                              <button
-                                onClick={() => {
-                                  if (selectedTab === 'tables') {
-                                    setInitialTableData(item);
-                                    setShowTablesEditModal(true);
-                                  }
-                                }}
-                                className="text-gray-400 hover:text-gray-600"
+                              <span
+                                className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(
+                                  item.status
+                                )}`}
                               >
-                                <Edit size={16} />
-                              </button>
+                                {normalizeStatus(item.status)}
+                              </span>
                             </td>
                           </tr>
                         ))}
@@ -746,44 +680,6 @@ export function DrinksTable() {
             />
           )}
 
-          {showTablesModal && (
-            <AddTablesModal
-              onClose={() => setShowTablesModal(false)}
-              onSuccess={() => {
-                // Refresh drinks list
-                const fetchTables = async () => {
-                  try {
-                    const data = await clubService.getTables(vendor._id);
-                    setTables(data.tables || []);
-                  } catch (error) {
-                    console.error('Error fetching tables:', error);
-                  }
-                };
-                fetchTables();
-                setShowTablesModal(false);
-              }}
-            />
-          )}
-          {showTablesEditModal && (
-            <AddTablesModal
-              onClose={() => setShowTablesEditModal(false)}
-              onSuccess={() => {
-                // Refresh drinks list
-                const fetchTables = async () => {
-                  try {
-                    const data = await clubService.getTables(vendor._id);
-                    setTables(data.tables || []);
-                  } catch (error) {
-                    console.error('Error fetching tables:', error);
-                  }
-                };
-                fetchTables();
-                setShowTablesEditModal(false);
-              }}
-              initialData={initialTableData}
-              editMode={true}
-            />
-          )}
         </>
     );
 }

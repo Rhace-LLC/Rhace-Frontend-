@@ -5,6 +5,7 @@ import {
   CalendarCheck,
   CreditCard,
   LayoutDashboard,
+  LayoutGrid,
   LogOut,
   Settings,
   Users,
@@ -18,6 +19,8 @@ export interface SideMenuItem {
   label: string;
   path: string;
   icon: ComponentType<{ className?: string; color?: string }>;
+  active?: boolean;
+  children?: SideMenuItem[];
 }
 
 export interface SideMenuListConfig {
@@ -90,6 +93,23 @@ export const ClubList: SideMenuListConfig = {
       icon: UtensilsCrossed,
     },
     {
+      label: 'Tables',
+      path: '/dashboard/club/tables',
+      icon: LayoutGrid,
+      children: [
+        {
+          label: 'Manage Tables',
+          path: '/dashboard/club/tables',
+          icon: UtensilsCrossed,
+        },
+        {
+          label: 'Floor Layout',
+          path: '/dashboard/club/tables/layout',
+          icon: LayoutGrid,
+        },
+      ],
+    },
+    {
       label: 'Payments',
       path: '/dashboard/club/payments',
       icon: CreditCard,
@@ -122,9 +142,21 @@ export const HotelList: SideMenuListConfig = {
       icon: CalendarCheck,
     },
     {
-      label: 'Rooms Management',
+      label: 'Rooms',
       path: '/dashboard/hotel/rooms',
       icon: Building2,
+      children: [
+        {
+          label: 'Room Management',
+          path: '/dashboard/hotel/rooms',
+          icon: Building2,
+        },
+        {
+          label: 'Room Layout',
+          path: '/dashboard/hotel/rooms/layout',
+          icon: LayoutGrid,
+        },
+      ],
     },
     {
       label: 'Payments',

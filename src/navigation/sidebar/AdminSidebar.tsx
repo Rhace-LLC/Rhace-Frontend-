@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
 import { useAuth } from '@/contexts/AuthContext';
 import { AdminList, type SideMenuItem } from './SideMenuList';
 import { X } from 'lucide-react';
@@ -21,7 +20,7 @@ const AdminSidebar = ({ isOpen, onClose }: AdminSidebarProps) => {
   const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false);
   const [pendingLogoutItem, setPendingLogoutItem] = useState<SideMenuItem | null>(null);
 
-  const executeLogout = (item: SideMenuItem) => {
+  const executeLogout = (_item: SideMenuItem) => {
     console.log('Admin Sidebar: logging out verified');
     logout('admin');
 

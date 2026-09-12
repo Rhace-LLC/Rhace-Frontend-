@@ -18,6 +18,8 @@ import BottleServiceManager from '@/pages/vendor/club/drinks/add';
 import ClubDashboard from '@/pages/vendor/club/dashboard';
 import { DrinksTable } from '@/pages/vendor/club/drinks';
 import ClubReservationTable from '@/pages/vendor/club/reservations';
+import ManageTables from '@/pages/vendor/club/tables';
+import ClubFloorLayout from '@/pages/vendor/club/tables/layout';
 
 // Vendor - Hotel
 import AddRooms from '@/pages/vendor/hotel/rooms/add';
@@ -25,6 +27,7 @@ import BookingManagement from '@/pages/vendor/hotel/bookings';
 import HotelDashboard from '@/pages/vendor/hotel/dashboard';
 import HotelProfile from '@/pages/vendor/hotel/profile';
 import RoomsManagement from '@/pages/vendor/hotel/rooms';
+import HotelRoomLayout from '@/pages/vendor/hotel/rooms/layout';
 import HotelSettings from '@/pages/vendor/hotel/settings';
 
 const dashboardRestaurantRoutes: RouteObject[] = [
@@ -43,6 +46,7 @@ const hotelVendorRoutes: RouteObject[] = [
   { path: 'hotel', element: <HotelDashboard /> },
   { path: 'hotel/bookings', element: <BookingManagement /> },
   { path: 'hotel/rooms', element: <RoomsManagement /> },
+  { path: 'hotel/rooms/layout', element: <HotelRoomLayout /> },
   { path: 'hotel/payments', element: <PaymentDashboard /> },
   { path: 'hotel/staffs', element: <StaffManagementSystem /> },
   { path: 'hotel/profile', element: <HotelProfile /> },
@@ -52,6 +56,8 @@ const hotelVendorRoutes: RouteObject[] = [
 const clubVendorRoutes: RouteObject[] = [
   { path: 'club', element: <ClubDashboard /> },
   { path: 'club/drinks', element: <DrinksTable /> },
+  { path: 'club/tables', element: <ManageTables /> },
+  { path: 'club/tables/layout', element: <ClubFloorLayout /> },
   { path: 'club/reservations', element: <ClubReservationTable /> },
   { path: 'club/payments', element: <PaymentDashboard /> },
   { path: 'club/staffs', element: <StaffManagementSystem /> },
