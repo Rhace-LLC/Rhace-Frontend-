@@ -1,3 +1,5 @@
+
+import { useAuth } from '@/contexts/AuthContext';
 import {
   createContext,
   useContext,
@@ -6,6 +8,7 @@ import {
   type Dispatch,
   type SetStateAction,
 } from 'react';
+
 import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import type { AuthUser } from '@/types';
@@ -89,7 +92,7 @@ export function ReservationsProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(false);
   const [booking, setBooking] = useState<Record<string, unknown> | null>(null);
 
-  const user = useSelector((state: { auth: { user: AuthUser | null } }) => state.auth.user);
+  const { user } = useAuth();
   const [partPay, setPartPay] = useState(false);
 
   // Calculate nights for a specific room based on its dates

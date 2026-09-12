@@ -11,7 +11,7 @@ import {
   Music,
 } from 'lucide-react';
 import { DiscoveryListCard, DiscoverySkeletonList, type VendorLike } from './VenueCard';
-import { FoodIcon } from '@/public/icons/icons';
+import { FoodIcon } from '@/components/icons/icons';
 
 // ── Recent searches pill row ───────────────────────────────────────────────────
 interface RecentSearchPillsProps {

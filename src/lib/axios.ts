@@ -1,5 +1,5 @@
 import { envConfig } from '@/envloader';
-import { logoutAsync } from '@/redux/slices/authSlice';
+import { clearAuthStorage } from '@/contexts/authSession';
 import axios from 'axios';
 
 // Force absolute protocol sanitization to prevent accidental HTTPS upgrades on localhost
@@ -76,7 +76,7 @@ api.interceptors.response.use(
         'jwt expired'
     ) {
       // FIX 3: Ensure your dispatch handler catches this action profile smoothly
-      logoutAsync();
+      clearAuthStorage();
     }
 
     return Promise.reject(error);

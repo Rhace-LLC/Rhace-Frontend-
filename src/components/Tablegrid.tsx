@@ -4,7 +4,7 @@ import {
   useCarouselLogic,
   useRestaurantData,
 } from '@/hooks/favorites';
-import { HeartIcon } from '@/public/icons/icons';
+import { HeartIcon } from '@/components/icons/icons';
 import { userService } from '@/services/user.service';
 import { formatOfferText } from '@/utils/helper';
 import { useEffect, useState } from 'react';

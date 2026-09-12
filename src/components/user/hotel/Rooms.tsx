@@ -14,7 +14,7 @@ import {
   Group3,
   Wifi,
   DishCoverFill,
-} from '@/public/icons/icons';
+} from '@/components/icons/icons';
 
 const AMENITY_LIMIT = 5;
 

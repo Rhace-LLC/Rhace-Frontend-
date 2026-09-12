@@ -1,3 +1,5 @@
+
+import { useAuth } from '@/contexts/AuthContext';
 import {
   createContext,
   useContext,
@@ -111,7 +113,7 @@ export function ReservationsProvider({ children }: { children: ReactNode }) {
   const [comboLoading, setComboLoading] = useState(true);
   const [bottlesLoading, setBottlesLoading] = useState(true);
   const [tableLoading, setTableLoading] = useState(true);
-  const user = useSelector((state: { auth: { user: AuthUser | null } }) => state.auth.user);
+  const { user } = useAuth();
 
   const occasions = ['Birthday', 'Casual', 'Business', 'Anniversary', 'Other'];
 

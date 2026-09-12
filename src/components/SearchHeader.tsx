@@ -1,12 +1,11 @@
 import { useNavigate } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
 import { useRef, useState, type ReactNode } from 'react';
 import { Bell, ChevronDown, ChevronUp, Heart, LogIn, Search, User, X } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { UserProfileMenu } from '@/components/layout/headers/user-header';
-import { SvgIcon, SvgIcon2, SvgIcon3 } from '@/public/icons/icons';
+import { UserProfileMenu } from '@/navigation/user_layout/_sub_component/UserHeader';
+import { SvgIcon, SvgIcon2, SvgIcon3 } from '@/components/icons/icons';
 import logoBlack from '@/public/images/Rhace-11.png';
-import { logout } from '@/redux/slices/authSlice';
+import { useAuth } from '@/contexts/AuthContext';
 import { SearchBar, SearchPopup, type SearchBarProps } from './SearchBar';
 import { LocationPill } from './LocationPill';
 import type { FilterState } from '../utils/constants';
@@ -46,16 +45,15 @@ interface SearchHeaderProps {
 
 export const SearchHeader = ({ searchProps, filters, updateFilter, locationState }: SearchHeaderProps) => {
   const navigate = useNavigate();
-  const dispatch = useDispatch();
-  const user = useSelector((s: { auth: { user: AuthUser | null; isAuthenticated: boolean } }) => s.auth);
+  const { user, isAuthenticated, logout } = useAuth();
   const dropdownRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const profile = user.isAuthenticated ? user.user : null;
+  const profile = isAuthenticated ? user : null;
   const [showSearch, setShowSearch] = useState(false);
 
   const handleLogout = () => {
-    dispatch(logout());
+    logout('user');
   };
 
   return (
@@ -137,7 +135,7 @@ export const SearchHeader = ({ searchProps, filters, updateFilter, locationState
                     <UserProfileMenu
                       onClose={() => setIsMenuOpen(false)}
                       navigate={navigate}
-                      isAuthenticated={user.isAuthenticated}
+                      isAuthenticated={isAuthenticated}
                       handleLogout={handleLogout}
                       user={profile}
                     />

@@ -13,9 +13,7 @@ import { Link, useLocation } from 'react-router';
 // import { AuthService } from "@/app/lib/api/services/userAuth.service";
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 // import { SearchSectionTwo } from "./SearchSection";
-import { logout } from '@/redux/slices/authSlice';
-import { useDispatch, useSelector } from 'react-redux';
-import type { RootState, AppDispatch } from '@/redux/store';
+import { useAuth } from '@/contexts/AuthContext';
 import type { AuthUser } from '@/types';
 
 // logo imports —
@@ -28,7 +26,6 @@ interface HeaderProps {
 }
 
 const Header = ({ onClick = () => {}, activeTab = null }: HeaderProps) => {
-  const dispatch = useDispatch<AppDispatch>();
   const { pathname } = useLocation();
 
   const [scrolled, setScrolled] = useState(false);
@@ -40,7 +37,7 @@ const Header = ({ onClick = () => {}, activeTab = null }: HeaderProps) => {
   );
   const [onboarding, setOnboarding] = useState(pathname === '/onboarding');
   const [isverifyStaffPage, setIsVerifyStaffPage] = useState(pathname.startsWith('/verify-staff'));
-  const user = useSelector((state: RootState) => state.auth);
+  const { user, isAuthenticated, logout } = useAuth();
 
   // Check if the current path is a login slug
   useEffect(() => {
@@ -83,8 +80,8 @@ const Header = ({ onClick = () => {}, activeTab = null }: HeaderProps) => {
     const fetchUserData = async () => {
       try {
         setLoading(true);
-        if (user.isAuthenticated) {
-          setProfile(user.user);
+        if (isAuthenticated) {
+          setProfile(user);
           console.log(profile);
         }
       } catch (error) {
@@ -99,7 +96,7 @@ const Header = ({ onClick = () => {}, activeTab = null }: HeaderProps) => {
 
   const handleLogout = async () => {
     console.log('Attempting to logout');
-    dispatch(logout());
+    logout('user');
     setProfile(null);
   };
 

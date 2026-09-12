@@ -24,7 +24,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { SvgIcon, SvgIcon2, SvgIcon3 } from '@/public/icons/icons';
+import { SvgIcon, SvgIcon2, SvgIcon3 } from '@/components/icons/icons';
 import RenderCustomerQR from './RenderCustomerQR';
 import type { ReservationData } from '@/types';
 

@@ -11,6 +11,7 @@ import { GuestPicker } from '../ui/guestpicker';
 import { useSelector } from 'react-redux';
 import { userService } from '@/services/user.service';
 import type { AuthUser } from '@/types';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface BookingVendor {
   _id: string;
@@ -43,7 +44,7 @@ const BookingForm = ({ id, menu = false, reservation }: BookingFormProps) => {
   const [guests, setGuests] = useState('1');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-  const user = useSelector((state: { auth: { user?: AuthUser | null } }) => state.auth.user);
+  const { user } = useAuth();
 
   const parsedGuestCount = parseInt(guests, 10);
   if (isNaN(parsedGuestCount) || parsedGuestCount < 1) {

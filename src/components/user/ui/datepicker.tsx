@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
-import { Edit3 } from '@/public/icons/icons';
+import { Edit3 } from '@/components/icons/icons';
 import {
   addDays,
   addMonths,

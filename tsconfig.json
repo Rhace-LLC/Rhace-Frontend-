@@ -27,6 +27,6 @@
     "dist",
     "public",
     "src/public",
-    "src/pages/vendor/landingPage/components/ui"
+    "src/pages/public/partner/components/ui"
   ]
 }

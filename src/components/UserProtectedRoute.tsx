@@ -1,11 +1,8 @@
 import { Navigate, Outlet } from 'react-router-dom';
-import { useSelector } from 'react-redux';
-import type { AuthUser } from '@/types';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function UserProtectedRoute() {
-  const user = useSelector(
-    (state: { auth: { user?: AuthUser | null } }) => state.auth.user
-  );
+  const { user } = useAuth();
 
   const isAuthenticated = user;
 

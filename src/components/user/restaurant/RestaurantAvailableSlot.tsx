@@ -1,4 +1,4 @@
-import { Table } from '@/public/icons/icons';
+import { Table } from '@/components/icons/icons';
 import { Calendar } from 'lucide-react';
 import React from 'react';
 

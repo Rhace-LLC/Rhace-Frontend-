@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Label } from '../../ui/label';
 import { ChevronDown } from 'lucide-react';
-import { Edit3 } from '@/public/icons/icons';
+import { Edit3 } from '@/components/icons/icons';
 
 export interface TableOption {
   _id?: string;

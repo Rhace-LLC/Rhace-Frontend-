@@ -1,15 +1,15 @@
 // components/ProtectedRoute.tsx
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { authService } from '@/services/auth.service';
-import { setVendor } from '@/redux/slices/authSlice';
-import type { RootState, AppDispatch } from '@/redux/store';
+import { useAuth } from '@/contexts/AuthContext';
+import type { AppDispatch } from '@/redux/store';
 import type { AuthVendor } from '@/types';
 
 export default function ProtectedRoute() {
   const dispatch = useDispatch<AppDispatch>();
-  const { vendor, admin } = useSelector((state: RootState) => state.auth);
+  const { vendor, admin } = useAuth();
   const location = useLocation();
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [hasValidToken, setHasValidToken] = useState(false);

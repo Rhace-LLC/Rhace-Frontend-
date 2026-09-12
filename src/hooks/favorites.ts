@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import type { AuthUser, VendorBase } from '@/types';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface VendorRef {
   _id?: string;
@@ -262,7 +263,7 @@ export const useCarouselLogic = () => {
 export const useRestaurantData = (vendorType: string, type?: string) => {
   const [restaurants, setRestaurants] = useState<unknown[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const user = useSelector((state: { auth: { user: AuthUser | null } }) => state.auth.user);
+  const { user } = useAuth();
 
   useEffect(() => {
     const fetchRestaurant = async () => {

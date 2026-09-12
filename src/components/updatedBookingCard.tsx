@@ -39,7 +39,7 @@ import { Button } from '@/components/ui/button';
 import { paymentService } from '@/services/payment.service';
 import RenderCustomerQR from './RenderCustomerQR';
 import BookingOverviewUserPOV from './BookingOverviewUserPOV';
-import { SvgIcon, SvgIcon2, SvgIcon3 } from '@/public/icons/icons';
+import { SvgIcon, SvgIcon2, SvgIcon3 } from '@/components/icons/icons';
 import { toast } from 'sonner';
 import type { ReservationData } from '@/types';
 

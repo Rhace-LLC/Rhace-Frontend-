@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import UniversalLoader from '../ui/LogoLoader';
 import type { AuthUser } from '@/types';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface ReviewItem {
   rating: number;
@@ -27,7 +28,7 @@ const RestaurantReviews = ({ restaurantId }: RestaurantReviewsProps) => {
   const [comment, setComment] = useState('');
   const [loading, setLoading] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
-  const user = useSelector((state: { auth: { user?: AuthUser | null } }) => state.auth.user);
+  const { user } = useAuth();
 
   // Fetch reviews from backend
   useEffect(() => {

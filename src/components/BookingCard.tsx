@@ -18,7 +18,7 @@ import {
   X,
 } from 'lucide-react';
 import { useNavigate } from 'react-router';
-import { SvgIcon, SvgIcon2, SvgIcon3 } from '@/public/icons/icons';
+import { SvgIcon, SvgIcon2, SvgIcon3 } from '@/components/icons/icons';
 import RenderCustomerQR from './RenderCustomerQR';
 import BookingOverviewUserPOV from './BookingOverviewUserPOV';
 import type { ReservationData } from '@/types';

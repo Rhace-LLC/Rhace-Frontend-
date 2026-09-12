@@ -1,11 +1,8 @@
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
-import { useSelector } from 'react-redux';
-import type { AuthAdmin } from '@/types';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function AdminProtectedRoute() {
-  const { admin } = useSelector(
-    (state: { auth: { admin?: AuthAdmin | null } }) => state.auth
-  );
+  const { admin } = useAuth();
   const location = useLocation();
 
   // Check if user is authenticated as admin and has a valid token

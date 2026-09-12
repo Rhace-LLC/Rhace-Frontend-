@@ -1,11 +1,12 @@
 import { useFavorites } from '@/hooks/favorites';
-import { HeartIcon } from '@/public/icons/icons';
+import { HeartIcon } from '@/components/icons/icons';
 import { motion } from 'framer-motion';
 import { Heart } from 'lucide-react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router';
 import { toast } from 'react-toastify';
 import type { AuthUser } from '@/types';
+import { useAuth } from '@/contexts/AuthContext';
 
 export interface FavoriteVendor {
   _id?: string;
@@ -24,7 +25,7 @@ interface FavoriteButtonProps {
 
 export function FavoriteButton({ vendor, className = '' }: FavoriteButtonProps) {
   const { isFavorite, toggleFavorite } = useFavorites();
-  const user = useSelector((state: { auth: { user?: AuthUser | null } }) => state.auth.user);
+  const { user } = useAuth();
   const navigate = useNavigate();
   const isFav = isFavorite(vendor?._id || '');
 
@@ -98,7 +99,7 @@ export function FavoriteButton({ vendor, className = '' }: FavoriteButtonProps) 
 
 export function FavoriteButton2({ vendor, className = '' }: FavoriteButtonProps) {
   const { isFavorite, toggleFavorite } = useFavorites();
-  const user = useSelector((state: { auth: { user?: AuthUser | null } }) => state.auth.user);
+  const { user } = useAuth();
   const navigate = useNavigate();
   const isFav = isFavorite(vendor?._id || '');
 
@@ -190,7 +191,7 @@ export function FavoriteButton2({ vendor, className = '' }: FavoriteButtonProps)
 
 export function FavoriteButton3({ vendor, className = '' }: FavoriteButtonProps) {
   const { isFavorite, toggleFavorite } = useFavorites();
-  const user = useSelector((state: { auth: { user?: AuthUser | null } }) => state.auth.user);
+  const { user } = useAuth();
   const navigate = useNavigate();
   const isFav = isFavorite(vendor?._id || '');
 
