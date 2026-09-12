@@ -24,11 +24,11 @@ interface ReservationVendor {
 
 interface ReservationDetailsProps {
   id: string;
-  searchQuery: {
-    date: string;
-    time: string;
-    guests: string;
-    specialRequest: string;
+  searchQuery?: {
+    date?: string;
+    time?: string;
+    guests?: string;
+    specialRequest?: string;
   };
 }
 
@@ -69,10 +69,16 @@ export default function ReservationDetails({ id, searchQuery }: ReservationDetai
 
   useEffect(() => {
     fetchVendor();
-    setDate(new Date(searchQuery.date));
-    setTime(searchQuery.time);
-    setGuestCount(searchQuery.guests);
-    setSpecialRequest(searchQuery.specialRequest);
+    // Fallback only when legacy URL state is present; otherwise the wizard
+    // state comes from the persisted draft (single source of truth).
+    if (searchQuery?.date) {
+      const parsed = new Date(searchQuery.date);
+      if (!isNaN(parsed.getTime())) setDate(parsed);
+    }
+    if (searchQuery?.time) setTime(searchQuery.time);
+    if (searchQuery?.guests) setGuestCount(searchQuery.guests);
+    if (searchQuery?.specialRequest) setSpecialRequest(searchQuery.specialRequest);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const navigate = useNavigate();
 

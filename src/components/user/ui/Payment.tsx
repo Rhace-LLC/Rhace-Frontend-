@@ -2,6 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import paystackLogo from '@/public/images/paystack.svg';
 import { paymentService } from '@/services/payment.service';
+import { buildInitializePayload } from '@/features/reservation/payload';
 import { AlertTriangle, Lock, Shield } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
@@ -41,51 +42,17 @@ export default function PaymentPage({ booking, setPopupOpen, payLater }: Payment
   console.log(booking);
   const handlePayClick = async () => {
     if (isLoading) return;
+    if (!booking) {
+      toast.error('Reservation data is missing. Please start again.');
+      return;
+    }
 
     setIsLoading(true);
 
     try {
-      const res = await paymentService.initializePayment({
-        vendorId: booking?.vendor,
-        reservationType: booking?.reservationType,
-        location: booking?.location,
-        customerName: booking?.customerName,
-        customerEmail: booking?.customerEmail,
-        customerPhone: `${booking?.customerPhone || ''}`,
-        amount: displayAmount,
-        payLater,
-        partPaid: booking?.partPaid,
-        resId: booking?.resId,
-        ...(booking?.reservationType === 'restaurant' && {
-          date: booking.date,
-          time: booking.time,
-          guests: booking.guests,
-          mealPreselected: booking.mealPreselected,
-          menus: booking.menus?.map((m: { _id: string; quantity: number; specialRequest: string }) => ({
-            menuId: m._id,
-            quantity: m.quantity,
-            specialRequest: m.specialRequest,
-          })),
-          specialOccasion: booking.specialOccasion,
-          seatingPreference: booking.seatingPreference,
-          specialRequest: booking.specialRequest,
-        }),
-        ...(booking?.reservationType === 'hotel' && {
-          rooms: booking.rooms,
-          checkInDate: booking.checkInDate || booking.rooms?.[0]?.checkInDate,
-          checkOutDate: booking.checkOutDate || booking.rooms?.[0]?.checkOutDate,
-          guests: booking.guests || booking.rooms?.[0]?.guests,
-          specialRequest: booking.specialRequest || booking.rooms?.[0]?.specialRequest,
-        }),
-        ...(booking?.reservationType === 'club' && {
-          date: booking.date,
-          time: booking.time,
-          guests: booking.guests,
-          drinks: booking.drinks,
-          combos: booking.combos,
-          table: booking.table,
-        }),
-      });
+      const res = await paymentService.initializePayment(
+        buildInitializePayload(booking, { amount: displayAmount, payLater: !!payLater })
+      );
 
       // const reference = res.data.reference || res.data.reference;
       toast.success('Redirecting to Paystack...');

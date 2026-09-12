@@ -6,6 +6,8 @@ import { toast } from 'react-toastify';
 import DatePicker from '../ui/datepicker';
 import { GuestPicker } from '../ui/guestpicker';
 import type { HotelRoom } from './Rooms';
+import { createDraft } from '@/features/reservation/draft/draftStore';
+import type { HotelDraft } from '@/features/reservation/types';
 
 interface HotelBookingPopupProps {
   id: string;
@@ -143,24 +145,26 @@ const HotelBookingPopup = ({
       }
     }
 
-    // Build room data with all details
-    const roomData = selectedRooms.map((room) => ({
-      roomId: room._id,
-      quantity: room.quantity || 1,
-      checkInDate: room.checkInDate,
-      checkOutDate: room.checkOutDate,
-      guests: room.guests || 1,
-      nights: calculateNights(room),
-    }));
-
-    const params = new URLSearchParams({
-      rooms: JSON.stringify(roomData),
-    });
-
     setIsLoading(true);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      navigate(`/hotels/${id}/reservations?${params.toString()}`);
+      const draft = createDraft<HotelDraft>({
+        vertical: 'hotel',
+        vendorId: id,
+        step: 0,
+        specialRequest: '',
+        partPay: false,
+        vendorSnapshot: null,
+        booking: null,
+        roomSelections: selectedRooms.map((room) => ({
+          room: { ...room } as any,
+          quantity: room.quantity || 1,
+          checkInDate: room.checkInDate ? new Date(room.checkInDate).toISOString() : undefined,
+          checkOutDate: room.checkOutDate ? new Date(room.checkOutDate).toISOString() : undefined,
+          guests: room.guests || 1,
+          guestBreakdown: room.guestBreakdown ?? null,
+        })),
+      });
+      navigate(`/hotels/${id}/reservations?draft=${draft.id}`);
     } catch (err) {
       const errorMessage =
         err.response?.data?.message || err.message || 'An unexpected error occurred';

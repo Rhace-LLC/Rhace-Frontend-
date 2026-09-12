@@ -8,10 +8,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { Loader2, X } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router';
-import { useSelector } from 'react-redux';
 import { userService } from '@/services/user.service';
 import type { AuthUser } from '@/types';
 import { useAuth } from '@/contexts/AuthContext';
+import { createDraft } from '@/features/reservation/draft/draftStore';
+import type { RestaurantDraft } from '@/features/reservation/types';
 
 interface BookingVendor {
   _id: string;
@@ -47,20 +48,7 @@ const BookingPopup = ({ id, menu = false, reservation }: BookingPopupProps) => {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  const parsedGuestCount = parseInt(guests, 10);
-  if (isNaN(parsedGuestCount) || parsedGuestCount < 1) {
-    throw new Error('Please enter a valid number of guests.');
-  }
-
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const params = new URLSearchParams({
-      date: date ? date.toISOString() : '',
-      time,
-      guests,
-      specialRequest: request,
-    });
-    navigate(`/restaurants/${id}/reservations?${params.toString()}`);
     e.preventDefault();
     setIsLoading(true);
     try {
@@ -127,8 +115,23 @@ const BookingPopup = ({ id, menu = false, reservation }: BookingPopupProps) => {
         if (!date || !time) {
           throw new Error('Date and Time are required');
         }
-        await new Promise((resolve) => setTimeout(resolve, 3000));
-        navigate(`/restaurants/${id}/reservations?${params.toString()}`);
+        const draft = createDraft<RestaurantDraft>({
+          vertical: 'restaurant',
+          vendorId: id,
+          step: 0,
+          date: date.toISOString(),
+          time,
+          guests: parseInt(guests, 10) || 1,
+          seatingPreference: 'indoor',
+          occasion: '',
+          specialRequest: request,
+          additionalNote: '',
+          menuItems: [],
+          payLater: false,
+          vendorSnapshot: null,
+          booking: null,
+        });
+        navigate(`/restaurants/${id}/reservations?draft=${draft.id}`);
       }
     } catch (err) {
       if (err) {

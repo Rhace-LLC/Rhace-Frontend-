@@ -1,16 +1,20 @@
-
 import { useAuth } from '@/contexts/AuthContext';
 import {
   createContext,
   useContext,
+  useEffect,
+  useRef,
   useState,
   type ReactNode,
   type Dispatch,
   type SetStateAction,
 } from 'react';
-import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
-import type { AuthUser } from '@/types';
+import { readDraft, saveDraft } from '@/features/reservation/draft/draftStore';
+import { buildClubBooking, generateReservationId } from '@/features/reservation/payload';
+import { clubTotal } from '@/features/reservation/pricing';
+import { validateClub } from '@/features/reservation/validation';
+import type { ClubDraft } from '@/features/reservation/types';
 
 interface ComboItem {
   _id?: string;
@@ -49,6 +53,7 @@ interface VendorState {
 }
 
 interface ReservationContextValue {
+  draftId: string;
   comboItems: ComboItem[];
   setComboItems: Dispatch<SetStateAction<ComboItem[]>>;
   bottleItems: BottleItem[];
@@ -70,6 +75,7 @@ interface ReservationContextValue {
   setTime: Dispatch<SetStateAction<string>>;
   table: TableItem[];
   setTable: Dispatch<SetStateAction<TableItem[]>>;
+  tableId: string | undefined;
   vendor: VendorState | undefined;
   setVendor: Dispatch<SetStateAction<VendorState | undefined>>;
   handleSubmit: () => Promise<boolean | void>;
@@ -93,22 +99,38 @@ interface ReservationContextValue {
 
 const ReservationContext = createContext<ReservationContextValue | undefined>(undefined);
 
-export function ReservationsProvider({ children }: { children: ReactNode }) {
-  const [comboItems, setComboItems] = useState<ComboItem[]>([]);
-  const [bottleItems, setBottleItems] = useState<BottleItem[]>([]);
-  const [vipExtraItems, setVipExtraItems] = useState<VipExtraItem[]>([]);
-  const [guestCount, setGuestCount] = useState('1');
-  const [specialRequest, setSpecialRequest] = useState('');
+export function ReservationsProvider({
+  children,
+  draftId: draftIdProp,
+}: {
+  children: ReactNode;
+  draftId?: string;
+}) {
+  const fallbackId = useRef(generateReservationId()).current;
+  const draftId = draftIdProp || fallbackId;
+  const initial = useRef<ClubDraft | null>(readDraft<ClubDraft>(draftId)).current;
+
+  const [comboItems, setComboItems] = useState<ComboItem[]>(initial?.comboItems ?? []);
+  const [bottleItems, setBottleItems] = useState<BottleItem[]>(initial?.bottleItems ?? []);
+  const [vipExtraItems, setVipExtraItems] = useState<VipExtraItem[]>(
+    initial?.vipExtraItems ?? []
+  );
+  const [guestCount, setGuestCount] = useState(initial?.guests ? String(initial.guests) : '1');
+  const [specialRequest, setSpecialRequest] = useState(initial?.specialRequest ?? '');
   const [activeTab, setActiveTab] = useState('Starters');
-  const [page, setPage] = useState(0);
-  const [date, setDate] = useState<Date | undefined>();
-  const [time, setTime] = useState('');
-  const [table, setTable] = useState<TableItem[]>([]);
-  const [vendor, setVendor] = useState<VendorState | undefined>(undefined);
+  const [page, setPage] = useState(initial?.step ?? 0);
+  const [date, setDate] = useState<Date | undefined>(
+    initial?.date ? new Date(initial.date) : undefined
+  );
+  const [time, setTime] = useState(initial?.time ?? '');
+  const [table, setTable] = useState<TableItem[]>(initial?.table ?? []);
+  const [vendor, setVendor] = useState<VendorState | undefined>(
+    initial?.vendorSnapshot ?? undefined
+  );
   const [isLoading, setIsLoading] = useState(false);
   const [proposedPayment, setProposedPayment] = useState(0);
-  const [booking, setBooking] = useState<Record<string, unknown> | null>(null);
-  const [partPay, setPartPay] = useState(false);
+  const [booking, setBooking] = useState<Record<string, unknown> | null>(initial?.booking ?? null);
+  const [partPay, setPartPay] = useState(initial?.partPay ?? false);
   const [loading, setLoading] = useState(true);
   const [comboLoading, setComboLoading] = useState(true);
   const [bottlesLoading, setBottlesLoading] = useState(true);
@@ -123,67 +145,106 @@ export function ReservationsProvider({ children }: { children: ReactNode }) {
   const tableSelected = table.filter((t) => (t.quantity || 0) > 0);
 
   const totalPrice = vendor
-    ? bottles.reduce((total, item) => total + (item.price || 0) * (item.quantity || 1), 0) +
-      combos.reduce((total, item) => total + (item.setPrice || 0), 0) +
-      vipExtras.reduce((total, item) => total + (item.price || 0), 0) +
-      tableSelected?.reduce((total, item) => total + (item.price || 0) * (item.quantity || 1), 0)
+    ? clubTotal({
+        bottles: bottles as Record<string, unknown>[],
+        combos: combos as Record<string, unknown>[],
+        vipExtras: vipExtras as Record<string, unknown>[],
+        table: tableSelected as Record<string, unknown>[],
+      })
     : 0;
 
-  console.log(totalPrice);
-  const generateId = () => {
-    return Date.now().toString(36).substring(0, 8).toUpperCase();
-  };
+  // Persist the wizard draft on change.
+  useEffect(() => {
+    saveDraft<ClubDraft>({
+      id: draftId,
+      vertical: 'club',
+      vendorId: (vendor?._id as string) || '',
+      createdAt: initial?.createdAt ?? Date.now(),
+      updatedAt: Date.now(),
+      step: page,
+      date: date ? date.toISOString() : undefined,
+      time,
+      guests: parseInt(guestCount, 10) || 1,
+      specialRequest,
+      tableId: (initial?.tableId as string) || tableSelected[0]?._id,
+      partPay,
+      booking,
+      vendorSnapshot: (vendor as ClubDraft['vendorSnapshot']) ?? null,
+      comboItems: comboItems as Record<string, unknown>[],
+      bottleItems: bottleItems as Record<string, unknown>[],
+      vipExtraItems: vipExtraItems as Record<string, unknown>[],
+      table: table as Record<string, unknown>[],
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    draftId,
+    page,
+    date,
+    time,
+    guestCount,
+    specialRequest,
+    partPay,
+    booking,
+    comboItems,
+    bottleItems,
+    vipExtraItems,
+    table,
+    vendor,
+  ]);
 
   const handleSubmit = async () => {
     try {
       setIsLoading(true);
-      if (!date || !guestCount) {
-        throw new Error('Please fill in all required fields.');
-      }
-
-      if (bottles.length < 1) {
-        throw new Error('Please select a Bottle of Drink to continue!');
-      }
-
-      const parsedGuestCount = parseInt(guestCount, 10);
+      const error = validateClub({
+        date,
+        guests: guestCount,
+        selectedBottles: bottles.length,
+      });
+      if (error) throw new Error(error);
       if (!vendor) return;
 
-      const reservationData = {
-        resId: generateId(),
-        reservationType: 'club',
-        customerName: `${user?.firstName} ${user?.lastName}`.trim(),
-        customerEmail: user?.email,
-        customerId: user?._id,
-        date: date.toISOString(),
-        time,
-        guests: parsedGuestCount,
-        specialRequest,
-        combos: combos.map((item) => item._id),
-        drinks: bottles.map((item) => ({
-          drink: item._id,
-          quantity: item.quantity || 1,
-        })),
-        vipExtras: vipExtras.filter((item) => item.selected),
+      const next = buildClubBooking({
+        resId: draftId,
+        user,
+        vendor,
+        draft: { id: draftId } as ClubDraft,
+        combos: combos as Record<string, unknown>[],
+        bottles: bottles as Record<string, unknown>[],
+        vipExtras: vipExtras as Record<string, unknown>[],
+        tableSelected: tableSelected as Record<string, unknown>[],
         proposedPayment,
-        partPaid: partPay,
-        totalAmount: partPay ? totalPrice / 2 : totalPrice,
-        vendor: vendor?._id,
-        businessName: vendor?.businessName,
-        table: tableSelected?.map((item) => ({
-          _id: item._id,
-          quantity: item.quantity || 1,
-        })),
-        location: vendor?.address,
-        image: vendor?.profileImages?.[0],
-      };
+        partPay,
+        totalAmount: totalPrice,
+      });
+      next.date = date ? date.toISOString() : undefined;
+      next.time = time;
+      next.guests = parseInt(guestCount, 10) || 1;
+      next.specialRequest = specialRequest;
 
-      const resDatas = JSON.parse(localStorage.getItem('resData') || '[]');
-      localStorage.setItem('resData', JSON.stringify([...resDatas, reservationData]));
-      setBooking(reservationData as Record<string, unknown>);
+      setBooking(next);
+      saveDraft<ClubDraft>({
+        id: draftId,
+        vertical: 'club',
+        vendorId: (vendor?._id as string) || '',
+        createdAt: initial?.createdAt ?? Date.now(),
+        updatedAt: Date.now(),
+        step: page,
+        date: next.date as string | undefined,
+        time,
+        guests: parseInt(guestCount, 10) || 1,
+        specialRequest,
+        tableId: tableSelected[0]?._id,
+        partPay,
+        booking: next,
+        vendorSnapshot: (vendor as ClubDraft['vendorSnapshot']) ?? null,
+        comboItems: comboItems as Record<string, unknown>[],
+        bottleItems: bottleItems as Record<string, unknown>[],
+        vipExtraItems: vipExtraItems as Record<string, unknown>[],
+        table: table as Record<string, unknown>[],
+      });
       toast.success('Reservation added successfully!');
       return true;
     } catch (error) {
-      console.error('Error submitting reservation:', error);
       toast.error(
         (error as { message?: string }).message || 'Failed to submit reservation. Please try again.'
       );
@@ -195,6 +256,7 @@ export function ReservationsProvider({ children }: { children: ReactNode }) {
   return (
     <ReservationContext.Provider
       value={{
+        draftId,
         comboItems,
         setComboItems,
         bottleItems,
@@ -216,6 +278,7 @@ export function ReservationsProvider({ children }: { children: ReactNode }) {
         setTime,
         table,
         setTable,
+        tableId: (initial?.tableId as string) || tableSelected[0]?._id,
         vendor,
         setVendor,
         handleSubmit,

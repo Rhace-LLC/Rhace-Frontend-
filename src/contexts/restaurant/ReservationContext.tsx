@@ -1,9 +1,21 @@
-import { createContext, useContext, useState, type ReactNode, type Dispatch, type SetStateAction } from 'react';
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+  type Dispatch,
+  type SetStateAction,
+} from 'react';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router';
-import { useSelector } from 'react-redux';
-import type { AuthUser } from '@/types';
 import { useAuth } from '@/contexts/AuthContext';
+import { readDraft, saveDraft } from '@/features/reservation/draft/draftStore';
+import { buildRestaurantBooking, generateReservationId } from '@/features/reservation/payload';
+import { restaurantMealTotal } from '@/features/reservation/pricing';
+import { validateRestaurant } from '@/features/reservation/validation';
+import type { RestaurantDraft } from '@/features/reservation/types';
 
 interface MenuItemState {
   selected?: boolean;
@@ -21,6 +33,7 @@ interface VendorState {
 }
 
 interface ReservationContextValue {
+  draftId: string;
   menuItems: MenuItemState[];
   setMenuItems: Dispatch<SetStateAction<MenuItemState[]>>;
   additionalNote: string;
@@ -44,6 +57,7 @@ interface ReservationContextValue {
   setTime: Dispatch<SetStateAction<string>>;
   vendor: VendorState | undefined;
   setVendor: Dispatch<SetStateAction<VendorState | undefined>>;
+  booking: Record<string, unknown> | null;
   handleSubmit: () => Promise<void>;
   handleSkip: () => Promise<void>;
   isSkipLoading: boolean;
@@ -52,18 +66,37 @@ interface ReservationContextValue {
 
 const ReservationContext = createContext<ReservationContextValue | undefined>(undefined);
 
-export function ReservationsProvider({ children }: { children: ReactNode }) {
-  const [menuItems, setMenuItems] = useState<MenuItemState[]>([]);
-  const [additionalNote, setAdditionalNote] = useState('');
-  const [selectedOccasion, setSelectedOccasion] = useState('');
-  const [seatingPreference, setSeatingPreference] = useState('indoor');
-  const [guestCount, setGuestCount] = useState('1');
-  const [specialRequest, setSpecialRequest] = useState('');
+export function ReservationsProvider({
+  children,
+  draftId: draftIdProp,
+}: {
+  children: ReactNode;
+  draftId?: string;
+}) {
+  const fallbackId = useRef(generateReservationId()).current;
+  const draftId = draftIdProp || fallbackId;
+
+  // Hydrate the wizard from the persisted draft (single source of truth).
+  const initial = useRef<RestaurantDraft | null>(readDraft<RestaurantDraft>(draftId)).current;
+
+  const [menuItems, setMenuItems] = useState<MenuItemState[]>(initial?.menuItems ?? []);
+  const [additionalNote, setAdditionalNote] = useState(initial?.additionalNote ?? '');
+  const [selectedOccasion, setSelectedOccasion] = useState(initial?.occasion ?? '');
+  const [seatingPreference, setSeatingPreference] = useState(
+    initial?.seatingPreference ?? 'indoor'
+  );
+  const [guestCount, setGuestCount] = useState(initial?.guests ? String(initial.guests) : '1');
+  const [specialRequest, setSpecialRequest] = useState(initial?.specialRequest ?? '');
   const [activeTab, setActiveTab] = useState('Starters');
-  const [page, setPage] = useState(0);
-  const [date, setDate] = useState<Date | undefined>();
-  const [time, setTime] = useState('');
-  const [vendor, setVendor] = useState<VendorState | undefined>(undefined);
+  const [page, setPage] = useState(initial?.step ?? 0);
+  const [date, setDate] = useState<Date | undefined>(
+    initial?.date ? new Date(initial.date) : undefined
+  );
+  const [time, setTime] = useState(initial?.time ?? '');
+  const [vendor, setVendor] = useState<VendorState | undefined>(
+    initial?.vendorSnapshot ?? undefined
+  );
+  const [booking, setBooking] = useState<Record<string, unknown> | null>(initial?.booking ?? null);
   const [isLoading, setIsLoading] = useState(false);
   const [isSkipLoading, setIsSkipLoading] = useState(false);
   const navigate = useNavigate();
@@ -71,61 +104,103 @@ export function ReservationsProvider({ children }: { children: ReactNode }) {
 
   const occasions = ['Birthday', 'Casual', 'Business', 'Anniversary', 'Other'];
 
-  const generateId = () => {
-    return Date.now().toString(36).substring(0, 8).toUpperCase();
+  // Persist the draft whenever the wizard state changes.
+  useEffect(() => {
+    const selectedItems = menuItems.filter(
+      (item) => item.selected && Number(item.quantity || 0) > 0
+    );
+    saveDraft<RestaurantDraft>({
+      id: draftId,
+      vertical: 'restaurant',
+      vendorId: (vendor?._id as string) || '',
+      createdAt: initial?.createdAt ?? Date.now(),
+      updatedAt: Date.now(),
+      step: page,
+      date: date ? date.toISOString() : undefined,
+      time,
+      guests: parseInt(guestCount, 10) || 1,
+      seatingPreference,
+      occasion: selectedOccasion,
+      specialRequest,
+      additionalNote,
+      menuItems: selectedItems as Record<string, unknown>[],
+      vendorSnapshot: (vendor as RestaurantDraft['vendorSnapshot']) ?? null,
+      booking,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    draftId,
+    page,
+    date,
+    time,
+    guestCount,
+    seatingPreference,
+    selectedOccasion,
+    specialRequest,
+    additionalNote,
+    menuItems,
+    vendor,
+    booking,
+  ]);
+
+  const selectedMeals = menuItems.filter(
+    (item) => item.selected && Number(item.quantity || 0) > 0
+  );
+
+  const persistBooking = (next: Record<string, unknown>) => {
+    setBooking(next);
+    saveDraft<RestaurantDraft>({
+      id: draftId,
+      vertical: 'restaurant',
+      vendorId: (vendor?._id as string) || '',
+      createdAt: initial?.createdAt ?? Date.now(),
+      updatedAt: Date.now(),
+      step: page,
+      date: date ? date.toISOString() : undefined,
+      time,
+      guests: parseInt(guestCount, 10) || 1,
+      seatingPreference,
+      occasion: selectedOccasion,
+      specialRequest,
+      additionalNote,
+      menuItems: selectedMeals as Record<string, unknown>[],
+      vendorSnapshot: (vendor as RestaurantDraft['vendorSnapshot']) ?? null,
+      booking: next,
+    });
+  };
+
+  const goToPrePayment = () => {
+    navigate(`/restaurants/pre-payment/${draftId}?draft=${draftId}`);
   };
 
   const handleSkip = async () => {
     try {
       setIsSkipLoading(true);
-      if (!date || !seatingPreference || !guestCount || !time) {
-        throw new Error('Please fill in all required fields.');
-      }
+      const error = validateRestaurant({ date, time, guests: guestCount, seatingPreference });
+      if (error) throw new Error(error);
+      if (!vendor?._id) throw new Error('Vendor information is missing.');
 
-      if (!vendor?._id) {
-        throw new Error('Vendor information is missing.');
-      }
-
-      const parsedGuestCount = parseInt(guestCount, 10);
-      if (isNaN(parsedGuestCount) || parsedGuestCount < 1) {
-        throw new Error('Please enter a valid number of guests.');
-      }
-
-      const reservationData = {
-        resId: generateId(),
-        reservationType: 'restaurant',
-        customerName: `${user?.firstName} ${user?.lastName}`.trim(),
-        customerEmail: user?.email,
-        customerId: user?._id,
-        date: date.toISOString(),
-        time,
-        guests: parsedGuestCount,
-        menus: [],
-        seatingPreference,
-        specialOccasion: selectedOccasion || 'other',
-        specialRequest,
-        totalAmount: 1000,
-        vendor: vendor._id,
+      const next = buildRestaurantBooking({
+        resId: draftId,
+        user,
+        vendor,
+        draft: {
+          date: date ? date.toISOString() : undefined,
+          time,
+          guests: parseInt(guestCount, 10),
+          seatingPreference,
+          occasion: selectedOccasion || 'other',
+          specialRequest,
+        } as RestaurantDraft,
+        selectedMeals: [],
         payLater: true,
-        location: vendor.address,
-        image: vendor.profileImages?.[0],
-      };
-
-      const resDatas = JSON.parse(localStorage.getItem('resData') || '[]');
-      localStorage.setItem('resData', JSON.stringify([...resDatas, reservationData]));
-
-      navigate(`/restaurants/pre-payment/${reservationData.resId}`);
+      });
+      persistBooking(next);
+      goToPrePayment();
     } catch (error) {
-      console.error(error);
-      let errorMessage = 'Failed to submit reservation. Please try again.';
-      if (error instanceof Error) {
-        errorMessage = error.message;
-      } else if (error && typeof error === 'object' && 'response' in error) {
-        errorMessage =
-          (error as { response?: { data?: { message?: string } } }).response?.data?.message ||
-          'Failed to submit reservation. Please try again.';
-      }
-      toast.error(errorMessage);
+      const message =
+        error instanceof Error ? error.message : 'Failed to submit reservation. Please try again.';
+      toast.error(message);
     } finally {
       setIsSkipLoading(false);
     }
@@ -134,78 +209,32 @@ export function ReservationsProvider({ children }: { children: ReactNode }) {
   const handleSubmit = async () => {
     try {
       setIsLoading(true);
+      const error = validateRestaurant({ date, time, guests: guestCount, seatingPreference });
+      if (error) throw new Error(error);
+      if (!vendor?._id) throw new Error('Vendor information is missing.');
 
-      // Validate required fields
-      if (!date || !seatingPreference || !guestCount || !time) {
-        throw new Error('Please fill in all required fields.');
-      }
-
-      if (!vendor?._id) {
-        throw new Error('Vendor information is missing.');
-      }
-
-      const parsedGuestCount = parseInt(guestCount, 10);
-      if (isNaN(parsedGuestCount) || parsedGuestCount < 1) {
-        throw new Error('Please enter a valid number of guests.');
-      }
-
-      const selectedMeals = menuItems.filter((item) => item.selected && (item.quantity || 0) > 0);
-
-      // Calculate total price
-      const totalPrice = selectedMeals.reduce(
-        (total, item) => total + (item.price || 0) * (item.quantity || 1),
-        0
-      );
-
-      // Prepare reservation data
-      const reservationData = {
-        resId: generateId(),
-        reservationType: 'restaurant',
-        customerName: `${user?.firstName} ${user?.lastName}`.trim(),
-        customerEmail: user?.email,
-        customerId: user?._id,
-        date: date.toISOString(),
-        time,
-        guests: parsedGuestCount,
-        seatingPreference,
-        specialOccasion: selectedOccasion || 'other',
-        specialRequest,
-        mealPreselected: selectedMeals.length > 0,
-        menus: selectedMeals,
-        totalAmount: totalPrice,
-        vendor: vendor._id,
-        location: vendor.address,
-        image: vendor.profileImages?.[0],
-      };
-
-      const resDatas = JSON.parse(localStorage.getItem('resData') || '[]');
-      localStorage.setItem('resData', JSON.stringify([...resDatas, reservationData]));
-
-      navigate(`/restaurants/pre-payment/${reservationData.resId}`);
+      const next = buildRestaurantBooking({
+        resId: draftId,
+        user,
+        vendor,
+        draft: {
+          date: date ? date.toISOString() : undefined,
+          time,
+          guests: parseInt(guestCount, 10),
+          seatingPreference,
+          occasion: selectedOccasion || 'other',
+          specialRequest,
+        } as RestaurantDraft,
+        selectedMeals,
+        payLater: false,
+      });
+      next.totalAmount = restaurantMealTotal(selectedMeals);
+      persistBooking(next);
+      goToPrePayment();
     } catch (error) {
-      console.error('Error submitting reservation:', error);
-
-      let errorMessage = 'Failed to submit reservation. Please try again.';
-      if (error instanceof Error) {
-        errorMessage = error.message;
-      } else if (error && typeof error === 'object' && 'response' in error) {
-        errorMessage =
-          (error as { response?: { data?: { message?: string } } }).response?.data?.message ||
-          'Failed to submit reservation. Please try again.';
-      }
-      toast.error(errorMessage);
-
-      if (
-        error &&
-        typeof error === 'object' &&
-        'response' in error &&
-        (error as { response?: { data?: unknown } }).response?.data
-      ) {
-        console.error(
-          'Server error details:',
-          (error as { response?: { data?: unknown } }).response?.data
-        );
-      }
+      const message =
+        error instanceof Error ? error.message : 'Failed to submit reservation. Please try again.';
+      toast.error(message);
     } finally {
       setIsLoading(false);
     }
@@ -214,6 +243,7 @@ export function ReservationsProvider({ children }: { children: ReactNode }) {
   return (
     <ReservationContext.Provider
       value={{
+        draftId,
         menuItems,
         setMenuItems,
         additionalNote,
@@ -237,6 +267,7 @@ export function ReservationsProvider({ children }: { children: ReactNode }) {
         setTime,
         vendor,
         setVendor,
+        booking,
         handleSubmit,
         handleSkip,
         isSkipLoading,
@@ -248,6 +279,7 @@ export function ReservationsProvider({ children }: { children: ReactNode }) {
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useReservations(): ReservationContextValue {
   const context = useContext(ReservationContext);
   if (context === undefined) {

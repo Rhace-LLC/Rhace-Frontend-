@@ -4,6 +4,7 @@ import { useNavigate, useParams } from 'react-router';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import { paymentService } from '@/services/payment.service';
+import { clearDraft, listDrafts } from '@/features/reservation/draft/draftStore';
 import { formatCustomDate } from '@/utils/formatDate';
 import UniversalLoader from '@/components/user/ui/LogoLoader';
 import Success from '@/public/images/success.gif';
@@ -66,6 +67,7 @@ export default function ConfirmPage() {
 
         localStorage.removeItem('resData');
         sessionStorage.removeItem('pendingPayment');
+        listDrafts('restaurant').forEach((draft) => clearDraft(draft.id));
 
         if (result.isNewBooking) {
           toast.success('Reservation confirmed successfully!');

@@ -1,44 +1,26 @@
 'use client';
 import ReservationDetails from '@/components/user/club/ReservationDetails';
 import { useReservations } from '@/contexts/club/ReservationContext';
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import ReservationSummary from '@/components/user/club/ReservationSummary';
-import { useLocation, useParams } from 'react-router';
+import { useParams } from 'react-router';
 import { userService } from '@/services/user.service';
 import { clubService } from '@/services/club.service';
-
-function useSearchParams() {
-  return new URLSearchParams(useLocation().search);
-}
 
 const Reservation = () => {
   const {
     setComboItems,
     setBottleItems,
-    setGuestCount,
-    setDate,
-    table,
     setTable,
-    setTime,
     setVendor,
     setLoading,
     setComboLoading,
     setBottlesLoading,
     setTableLoading,
+    tableId,
+    page,
   } = useReservations();
   const { id } = useParams();
-  const { page } = useReservations();
-  const searchParams = useSearchParams();
-  const dates = searchParams.get('date');
-  const times = searchParams.get('time');
-  const guestss = searchParams.get('guests');
-  const tables = searchParams.get('table');
-  const searchQuery = {
-    date: dates ?? '',
-    time: times ?? '',
-    guests: guestss ?? '',
-    table: tables ?? '',
-  };
 
   const fetchVendor = async () => {
     try {
@@ -51,49 +33,56 @@ const Reservation = () => {
       setLoading(false);
     }
   };
+
   const fetchCombos = async () => {
     try {
       setComboLoading(true);
       const res = await clubService.getBottleSet(id!);
-      console.log(res);
-      setComboItems(
-        res.bottleSets.map((item: any) => {
-          return { ...item, quantity: 0 };
-        })
-      );
+      setComboItems((prev) => {
+        const byId = new Map(prev.map((p) => [p._id, p]));
+        return res.bottleSets.map((item: any) => ({
+          ...item,
+          quantity: 0,
+          selected: byId.get(item._id)?.selected ?? false,
+        }));
+      });
     } catch (error) {
-      console.error('Error fetching vendor:', error);
+      console.error('Error fetching bottle sets:', error);
     } finally {
       setComboLoading(false);
     }
   };
+
   const fetchBottles = async () => {
     try {
       setBottlesLoading(true);
       const res = await clubService.getDrinks(id!);
-      console.log(res);
-      setBottleItems(
-        res.drinks.map((item: any) => {
-          return { ...item, quantity: 0 };
-        })
-      );
+      setBottleItems((prev) => {
+        const byId = new Map(prev.map((p) => [p._id, p]));
+        return res.drinks.map((item: any) => ({
+          ...item,
+          quantity: byId.get(item._id)?.quantity ?? 0,
+        }));
+      });
     } catch (error) {
-      console.error('Error fetching vendor:', error);
+      console.error('Error fetching drinks:', error);
     } finally {
       setBottlesLoading(false);
     }
   };
+
   const fetchTables = async () => {
     try {
       setTableLoading(true);
       const res = await clubService.getTables(id!);
-      setTable(
-        res.tables.map((item: any) => ({
-          ...item,
-          quantity: item._id === searchQuery.table ? 1 : 0,
-          selected: item._id === searchQuery.table,
-        }))
-      );
+      setTable((prev) => {
+        const byId = new Map(prev.map((p) => [p._id, p]));
+        return res.tables.map((item: any) => {
+          const persisted = byId.get(item._id);
+          const selected = persisted?.selected ?? item._id === tableId;
+          return { ...item, quantity: selected ? persisted?.quantity || 1 : 0, selected };
+        });
+      });
     } catch (error) {
       console.error('Error fetching tables:', error);
     } finally {
@@ -106,18 +95,12 @@ const Reservation = () => {
     fetchCombos();
     fetchBottles();
     fetchTables();
-    setDate(new Date(searchQuery.date));
-    setTime(searchQuery.time);
-    setGuestCount(searchQuery.guests);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
     <div className="">
-      {page === 1 ? (
-        <ReservationSummary />
-      ) : (
-        <ReservationDetails id={id} />
-      )}
+      {page === 1 ? <ReservationSummary /> : <ReservationDetails id={id} />}
     </div>
   );
 };

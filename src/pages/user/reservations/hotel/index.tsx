@@ -3,20 +3,15 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import UniversalLoader from '@/components/user/ui/LogoLoader';
 import { useReservations } from '@/contexts/hotel/ReservationContext';
-import { hotelService } from '@/services/hotel.service';
 import { userService } from '@/services/user.service';
 import { useIsMobile } from '@/utils/helper';
 import { ArrowLeft, MapPin, Minus, Plus, Star, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { useLocation, useNavigate, useParams } from 'react-router';
+import { useNavigate, useParams } from 'react-router';
 import ReservationHeader from '@/components/user/hotel/ReservationHeader';
 import DatePicker from '@/components/user/ui/datepicker';
 import { GuestPicker } from '@/components/user/ui/guestpicker';
 import PaymentPage from '@/components/user/ui/Payment';
-
-function useSearchParams() {
-  return new URLSearchParams(useLocation().search);
-}
 
 export default function ReservationSummary() {
   const isMobile = useIsMobile();
@@ -26,7 +21,6 @@ export default function ReservationSummary() {
   const showBookingDetails = !isMobile || next === false;
   const showPaymentStep = !isMobile || next === true;
 
-  const searchParams = useSearchParams();
   const [loading, setLoading] = useState(true);
   const { id } = useParams();
   const {
@@ -42,7 +36,6 @@ export default function ReservationSummary() {
     getTotalRooms,
     getTotalGuests,
     roomSelections: _roomSelections,
-    setRoomSelections,
     removeRoomSelection,
     calculateNightsForRoom,
     updateRoomSelection,
@@ -53,83 +46,14 @@ export default function ReservationSummary() {
 
   const navigate = useNavigate();
 
-  // Parse rooms from URL
-  const parseRoomsFromUrl = () => {
-    const roomsParam = searchParams.get('rooms');
-    if (roomsParam) {
-      try {
-        return JSON.parse(roomsParam);
-      } catch (error) {
-        console.error('Error parsing rooms:', error);
-        return [];
-      }
-    }
-    return [];
-  };
-
   console.log(booking);
-
-  useEffect(() => {
-    const requestParam = searchParams.get('specialRequest');
-    if (requestParam) {
-      setSpecialRequest(requestParam);
-    }
-  }, []);
 
   const fetchVendorAndRooms = async () => {
     try {
       setLoading(true);
-
       const response = await userService.getVendor(id);
       setVendor(response.data);
-
-      const roomsData = parseRoomsFromUrl();
-
-      if (roomsData.length > 0) {
-        const roomPromises = roomsData.map(async (roomData: any) => {
-          try {
-            const roomResponse = await hotelService.getRoomType(id!, roomData.roomId);
-
-            console.log('Raw room response shape:', JSON.stringify(roomResponse, null, 2));
-            // ✅ Unwrap the actual room object from the response
-            const room = roomResponse?.data || roomResponse;
-
-            return {
-              room,
-              quantity: roomData.quantity || 1,
-              checkInDate: roomData.checkInDate ? new Date(roomData.checkInDate) : null,
-              checkOutDate: roomData.checkOutDate ? new Date(roomData.checkOutDate) : null,
-              guests: roomData.guests || 1,
-
-              guestBreakdown: roomData.guestBreakdown || null,
-              maxAdults: room.maxAdults,
-              maxChildren: room.maxChildren,
-            };
-          } catch (error) {
-            console.error('Error fetching room:', error);
-            // ✅ Fallback uses data passed in URL so name/price aren't lost
-            return {
-              room: {
-                _id: roomData.roomId,
-                name: roomData.roomName, // ← from URL
-                pricePerNight: roomData.pricePerNight || 0,
-                discount: roomData.discount || 0,
-                totalUnits: roomData.totalUnits || 10,
-                maxAdults: roomData.maxAdults || 2,
-                maxChildren: roomData.maxChildren || 2,
-              },
-              quantity: roomData.quantity || 1,
-              checkInDate: roomData.checkInDate ? new Date(roomData.checkInDate) : null,
-              checkOutDate: roomData.checkOutDate ? new Date(roomData.checkOutDate) : null,
-              guests: roomData.guests || 1,
-              guestBreakdown: roomData.guestBreakdown || null,
-            };
-          }
-        });
-
-        const selections = await Promise.all(roomPromises);
-        setRoomSelections(selections);
-      }
+      // Room selections are hydrated from the persisted reservation draft.
     } catch (error) {
       console.error('Error fetching vendor:', error);
     } finally {
@@ -138,6 +62,7 @@ export default function ReservationSummary() {
   };
   useEffect(() => {
     fetchVendorAndRooms();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const handleContinue = async () => {
     if (next === false && isMobile) {

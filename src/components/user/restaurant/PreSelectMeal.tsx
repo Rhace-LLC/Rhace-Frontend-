@@ -75,14 +75,19 @@ export default function PreSelectMeal({ id }: PreSelectMealProps) {
     try {
       const data = await menuService.getMenuItems(id);
       console.log(data);
-      setMenuItems(
-        data.menuItems.map((item: any) => ({
-          ...item,
-          selected: false,
-          quantity: 0,
-          specialRequest: '',
-        }))
-      );
+      // Preserve any selections restored from the persisted draft.
+      setMenuItems((prev) => {
+        const prevById = new Map((prev as MenuCardItem[]).map((p) => [p._id, p]));
+        return data.menuItems.map((item: any) => {
+          const existing = prevById.get(item._id);
+          return {
+            ...item,
+            selected: existing?.selected ?? false,
+            quantity: existing?.quantity ?? 0,
+            specialRequest: existing?.specialRequest ?? '',
+          };
+        });
+      });
       if (data.length === 0) {
         toast.info('No menu items available at the moment.');
       }

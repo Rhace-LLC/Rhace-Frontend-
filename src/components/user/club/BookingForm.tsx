@@ -7,6 +7,8 @@ import DatePicker from '../ui/datepicker';
 import { TimePicker } from '../ui/timepicker';
 import { GuestPicker } from '../ui/guestpicker';
 import { TablePicker, type TableOption } from '../ui/tablepicker';
+import { createDraft } from '@/features/reservation/draft/draftStore';
+import type { ClubDraft } from '@/features/reservation/types';
 
 interface BookingFormProps {
   id?: string;
@@ -26,19 +28,29 @@ const BookingForm = ({ id, tables, loading }: BookingFormProps) => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleSubmit = async (e: any) => {
     e.preventDefault();
-    const params = new URLSearchParams({
-      date: date ? date.toISOString() : '',
-      time,
-      guests,
-      table: table?._id,
-    });
     setIsLoading(true);
     try {
       if (!date || !time) {
         throw new Error('Date and Time are required');
       }
-      await new Promise((resolve) => setTimeout(resolve, 3000));
-      navigate(`/clubs/${id}/reservations?${params.toString()}`);
+      const draft = createDraft<ClubDraft>({
+        vertical: 'club',
+        vendorId: id ?? '',
+        step: 0,
+        date: date.toISOString(),
+        time,
+        guests: parseInt(guests, 10) || 1,
+        specialRequest: '',
+        tableId: table?._id,
+        comboItems: [],
+        bottleItems: [],
+        vipExtraItems: [],
+        table: [],
+        partPay: false,
+        vendorSnapshot: null,
+        booking: null,
+      });
+      navigate(`/clubs/${id}/reservations?draft=${draft.id}`);
     } catch (err) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const e2 = err as any;

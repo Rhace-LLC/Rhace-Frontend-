@@ -1,11 +1,13 @@
 import { ReservationsProvider } from '@/contexts/restaurant/ReservationContext';
-import React from 'react';
-import { Outlet } from 'react-router';
+import { Outlet, useSearchParams } from 'react-router';
 
 const ReservationLayout = () => {
+  const [searchParams] = useSearchParams();
+  const draftId = searchParams.get('draft') ?? undefined;
+
   return (
     <div>
-      <ReservationsProvider>
+      <ReservationsProvider draftId={draftId}>
         <Outlet />
       </ReservationsProvider>
     </div>

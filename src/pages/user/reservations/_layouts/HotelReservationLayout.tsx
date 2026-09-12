@@ -1,15 +1,17 @@
 import { ReservationsProvider } from '@/contexts/hotel/ReservationContext';
-import React from 'react';
-import { Outlet } from 'react-router';
+import { Outlet, useSearchParams } from 'react-router';
 
-const ReservationLayout = () => {
+const HotelReservationLayout = () => {
+  const [searchParams] = useSearchParams();
+  const draftId = searchParams.get('draft') ?? undefined;
+
   return (
     <div>
-      <ReservationsProvider>
+      <ReservationsProvider draftId={draftId}>
         <Outlet />
       </ReservationsProvider>
     </div>
   );
 };
 
-export default ReservationLayout;
+export default HotelReservationLayout;

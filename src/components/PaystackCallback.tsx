@@ -6,6 +6,8 @@ import UniversalLoader from './user/ui/LogoLoader';
 import Receipt from './Receipt';
 import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { clearDraft, listDrafts } from '@/features/reservation/draft/draftStore';
+import type { ReservationVertical } from '@/features/reservation/types';
 import type { ReservationData } from '@/types';
 
 interface CallbackState {
@@ -60,9 +62,15 @@ const PaystackCallback = () => {
           toast.success('Reservation confirmed successfully!');
         }
 
+        const reservation = completeRes?.reservation || verifyRes?.reservation;
+        const vertical = reservation?.reservationType as ReservationVertical | undefined;
+        if (vertical) {
+          listDrafts(vertical).forEach((draft) => clearDraft(draft.id));
+        }
+
         // Set success data
         setResultData({
-          reservation: completeRes?.reservation || verifyRes?.reservation,
+          reservation,
           payment: verifyRes || completeRes?.payment,
           loading: false,
           error: null,
@@ -146,7 +154,11 @@ const PaystackCallback = () => {
   }
 
   // Success - Show Receipt
-  return <Receipt reservation={resultData.reservation} payment={resultData.payment} type="hotel" />;
+  const receiptType =
+    (resultData.reservation?.reservationType as ReservationVertical) || 'hotel';
+  return (
+    <Receipt reservation={resultData.reservation} payment={resultData.payment} type={receiptType} />
+  );
 };
 
 export default PaystackCallback;

@@ -4,18 +4,38 @@ import { Card, CardContent } from '@/components/ui/card';
 import ReservationHeader from '@/components/user/restaurant/ReservationHeader';
 import { useState } from 'react';
 import PaymentPage from '@/components/user/ui/Payment';
+import { readDraft } from '@/features/reservation/draft/draftStore';
+import type { RestaurantDraft } from '@/features/reservation/types';
 import { useParams } from 'react-router';
 
 export default function PrePaymentPage() {
   const [popupOpen, setPopupOpen] = useState(false);
   const { id } = useParams();
-  const storedData = localStorage.getItem('resData');
-  const data = JSON.parse(storedData);
+  const [searchParams] = useState(() => new URLSearchParams(window.location.search));
+  const draftId = searchParams.get('draft') ?? id ?? '';
+  const draft = readDraft<RestaurantDraft>(draftId);
+  const booking = (draft?.booking ?? null) as any;
   const [showConfirm, setShowConfirm] = useState(false);
-  const booking = data.find((booking: any) => booking.resId === id);
   const [payLater, setPayLater] = useState(booking ? booking.payLater : false);
   const categories: any[] =
     !booking || !booking.menus ? [] : [...new Set(booking.menus.map((meal: any) => meal.category))];
+
+  if (!booking) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+        <div className="text-center max-w-sm">
+          <h1 className="text-lg font-semibold text-gray-900 mb-2">Reservation not found</h1>
+          <p className="text-sm text-gray-600 mb-6">
+            This reservation session has expired or was already completed. Please start again.
+          </p>
+          <Button onClick={() => (window.location.href = '/')} className="bg-[#0A6C6D]">
+            Back to Home
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 ">
       <ReservationHeader title="Reservation Details" index={3} />

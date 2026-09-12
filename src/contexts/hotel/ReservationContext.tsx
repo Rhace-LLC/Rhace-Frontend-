@@ -1,17 +1,20 @@
-
 import { useAuth } from '@/contexts/AuthContext';
 import {
   createContext,
   useContext,
+  useEffect,
+  useRef,
   useState,
   type ReactNode,
   type Dispatch,
   type SetStateAction,
 } from 'react';
-
-import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
-import type { AuthUser } from '@/types';
+import { readDraft, saveDraft } from '@/features/reservation/draft/draftStore';
+import { buildHotelBooking, generateReservationId } from '@/features/reservation/payload';
+import { calculateNights, hotelTotal, hotelTotalGuests, hotelTotalRooms } from '@/features/reservation/pricing';
+import { validateHotel } from '@/features/reservation/validation';
+import type { HotelDraft } from '@/features/reservation/types';
 
 interface Room {
   _id: string;
@@ -28,6 +31,7 @@ interface RoomSelection {
   checkInDate?: Date;
   checkOutDate?: Date;
   guests?: number;
+  guestBreakdown?: Record<string, number> | null;
 }
 
 interface VendorState {
@@ -45,6 +49,7 @@ interface MenuItemState {
 }
 
 interface ReservationContextValue {
+  draftId: string;
   roomSelections: RoomSelection[];
   setRoomSelections: Dispatch<SetStateAction<RoomSelection[]>>;
   addRoomSelection: (room: Room, quantity?: number) => void;
@@ -78,69 +83,74 @@ interface ReservationContextValue {
 
 const ReservationContext = createContext<ReservationContextValue | undefined>(undefined);
 
-export function ReservationsProvider({ children }: { children: ReactNode }) {
+export function ReservationsProvider({
+  children,
+  draftId: draftIdProp,
+}: {
+  children: ReactNode;
+  draftId?: string;
+}) {
+  const fallbackId = useRef(generateReservationId()).current;
+  const draftId = draftIdProp || fallbackId;
+  const initial = useRef<HotelDraft | null>(readDraft<HotelDraft>(draftId)).current;
+
   const [menuItems, setMenuItems] = useState<MenuItemState[]>([]);
   const [additionalNote, setAdditionalNote] = useState('');
-  const [specialRequest, setSpecialRequest] = useState('');
+  const [specialRequest, setSpecialRequest] = useState(initial?.specialRequest ?? '');
   const [activeTab, setActiveTab] = useState('Starters');
-
-  // Changed to array where each room has its own dates and guests
-  const [roomSelections, setRoomSelections] = useState<RoomSelection[]>([]);
-
-  const [page, setPage] = useState(0);
-  const [vendor, setVendor] = useState<VendorState | undefined>(undefined);
+  const [roomSelections, setRoomSelections] = useState<RoomSelection[]>(
+    (initial?.roomSelections ?? []).map((s) => ({
+      room: s.room as Room,
+      quantity: s.quantity ?? 1,
+      checkInDate: s.checkInDate ? new Date(s.checkInDate) : undefined,
+      checkOutDate: s.checkOutDate ? new Date(s.checkOutDate) : undefined,
+      guests: s.guests ?? 1,
+      guestBreakdown: s.guestBreakdown ?? null,
+    }))
+  );
+  const [page, setPage] = useState(initial?.step ?? 0);
+  const [vendor, setVendor] = useState<VendorState | undefined>(
+    initial?.vendorSnapshot ?? undefined
+  );
   const [isLoading, setIsLoading] = useState(false);
-  const [booking, setBooking] = useState<Record<string, unknown> | null>(null);
-
+  const [booking, setBooking] = useState<Record<string, unknown> | null>(initial?.booking ?? null);
   const { user } = useAuth();
-  const [partPay, setPartPay] = useState(false);
+  const [partPay, setPartPay] = useState(initial?.partPay ?? false);
 
-  // Calculate nights for a specific room based on its dates
-  const calculateNightsForRoom = (roomSelection: RoomSelection): number => {
-    const { checkInDate, checkOutDate } = roomSelection;
-    if (!checkInDate || !checkOutDate) return 1;
+  const calculateNightsForRoom = (roomSelection: RoomSelection): number =>
+    calculateNights(roomSelection.checkInDate, roomSelection.checkOutDate) || 1;
 
-    const msPerDay = 1000 * 60 * 60 * 24;
-    return Math.max(
-      1,
-      Math.ceil(
-        ((checkOutDate instanceof Date
-          ? checkOutDate.getTime()
-          : new Date(checkOutDate).getTime()) -
-          (checkInDate instanceof Date ? checkInDate.getTime() : new Date(checkInDate).getTime())) /
-          msPerDay
-      )
-    );
-  };
+  const calculateTotalPrice = (): number => hotelTotal(roomSelections as any);
 
-  // Calculate total price for all rooms
-  const calculateTotalPrice = (): number => {
-    return roomSelections.reduce((total, roomSelection) => {
-      const { room, quantity = 1 } = roomSelection;
-      const discountedPrice =
-        (room.pricePerNight || 0) - (room.pricePerNight || 0) * ((room.discount || 0) / 100);
-      const nights = calculateNightsForRoom(roomSelection);
-      return total + discountedPrice * quantity * nights;
-    }, 0);
-  };
+  const getTotalRooms = (): number => hotelTotalRooms(roomSelections as any);
 
-  // Calculate total rooms
-  const getTotalRooms = (): number => {
-    return roomSelections.reduce(
-      (total, roomSelection) => total + Number(roomSelection.quantity || 1),
-      0
-    );
-  };
+  const getTotalGuests = (): number => hotelTotalGuests(roomSelections as any);
 
-  // Calculate total guests across all rooms
-  const getTotalGuests = (): number => {
-    return roomSelections.reduce(
-      (total, roomSelection) => total + Number(roomSelection.guests || 1),
-      0
-    );
-  };
+  // Persist the wizard draft on change.
+  useEffect(() => {
+    saveDraft<HotelDraft>({
+      id: draftId,
+      vertical: 'hotel',
+      vendorId: (vendor?._id as string) || '',
+      createdAt: initial?.createdAt ?? Date.now(),
+      updatedAt: Date.now(),
+      step: page,
+      specialRequest,
+      partPay,
+      booking,
+      vendorSnapshot: (vendor as HotelDraft['vendorSnapshot']) ?? null,
+      roomSelections: roomSelections.map((s) => ({
+        room: s.room,
+        quantity: s.quantity ?? 1,
+        checkInDate: s.checkInDate ? s.checkInDate.toISOString() : undefined,
+        checkOutDate: s.checkOutDate ? s.checkOutDate.toISOString() : undefined,
+        guests: s.guests ?? 1,
+        guestBreakdown: s.guestBreakdown ?? null,
+      })),
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [draftId, page, specialRequest, partPay, booking, roomSelections, vendor]);
 
-  // Update a specific room selection
   const updateRoomSelection = (roomId: string, updates: Partial<RoomSelection>) => {
     setRoomSelections((prev) =>
       prev.map((selection) =>
@@ -149,139 +159,80 @@ export function ReservationsProvider({ children }: { children: ReactNode }) {
     );
   };
 
-  // Add a room to selections
   const addRoomSelection = (room: Room, quantity = 1) => {
     const existingIndex = roomSelections.findIndex((s) => s.room._id === room._id);
-
     if (existingIndex >= 0) {
-      // Update quantity if already exists
       updateRoomSelection(room._id, { quantity });
     } else {
-      // Add new room selection with default dates and guests
       const today = new Date();
       const tomorrow = new Date(today);
       tomorrow.setDate(tomorrow.getDate() + 1);
-
       setRoomSelections((prev) => [
         ...prev,
-        {
-          room,
-          quantity,
-          checkInDate: today,
-          checkOutDate: tomorrow,
-          guests: 1,
-        },
+        { room, quantity, checkInDate: today, checkOutDate: tomorrow, guests: 1 },
       ]);
     }
   };
 
-  // Remove a room from selections
   const removeRoomSelection = (roomId: string) => {
     setRoomSelections((prev) => prev.filter((s) => s.room._id !== roomId));
   };
 
-  // Clear all selections
-  const clearAllSelections = () => {
-    setRoomSelections([]);
-  };
+  const clearAllSelections = () => setRoomSelections([]);
 
   const occasions = ['Birthday', 'Casual', 'Business', 'Anniversary', 'Other'];
-
-  const generateId = () => {
-    return Date.now().toString(36).substring(0, 8).toUpperCase();
-  };
 
   const handleSubmit = async (): Promise<number> => {
     try {
       setIsLoading(true);
-
-      // Validate all room selections
-      if (roomSelections.length === 0) {
-        throw new Error('Please select at least one room.');
-      }
-
-      for (const selection of roomSelections) {
-        if (!selection.checkInDate || !selection.checkOutDate) {
-          throw new Error(
-            `Please select check-in and check-out dates for ${selection.room.name}.`
-          );
-        }
-
-        if (selection.checkOutDate <= selection.checkInDate) {
-          throw new Error(
-            `Check-out date must be after check-in date for ${selection.room.name}.`
-          );
-        }
-
-        if (!selection.guests || selection.guests < 1) {
-          throw new Error(`Please select number of guests for ${selection.room.name}.`);
-        }
-      }
-
-      if (!vendor?._id) {
-        throw new Error('Vendor information is missing.');
-      }
+      const error = validateHotel(roomSelections as any);
+      if (error) throw new Error(error);
+      if (!vendor?._id) throw new Error('Vendor information is missing.');
 
       const totalAmount = calculateTotalPrice();
+      const next = buildHotelBooking({
+        resId: draftId,
+        user,
+        vendor,
+        draft: { id: draftId, specialRequest } as HotelDraft,
+        roomSelections: roomSelections.map((s) => ({
+          room: s.room,
+          quantity: s.quantity ?? 1,
+          checkInDate: s.checkInDate?.toISOString(),
+          checkOutDate: s.checkOutDate?.toISOString(),
+          guests: s.guests ?? 1,
+          guestBreakdown: s.guestBreakdown ?? null,
+        })) as any,
+        partPay,
+        totalAmount,
+      });
 
-      // Prepare reservation data with multiple rooms, each having own dates and guests
-      const reservationData = {
-        resId: generateId(),
-        reservationType: 'hotel',
-        customerName: `${user?.firstName} ${user?.lastName}`.trim(),
-        customerEmail: user?.email,
-        customerId: user?._id,
+      setBooking(next);
+      saveDraft<HotelDraft>({
+        id: draftId,
+        vertical: 'hotel',
+        vendorId: (vendor?._id as string) || '',
+        createdAt: initial?.createdAt ?? Date.now(),
+        updatedAt: Date.now(),
+        step: page,
         specialRequest,
-        rooms: roomSelections.map((selection) => {
-          const { room, quantity = 1, checkInDate, checkOutDate, guests } = selection;
-          const discountedPrice =
-            (room.pricePerNight || 0) - (room.pricePerNight || 0) * ((room.discount || 0) / 100);
-          const nights = calculateNightsForRoom(selection);
-
-          return {
-            roomId: room._id,
-            quantity,
-            pricePerNight: discountedPrice,
-            name: room.name,
-            category: room.category,
-            checkInDate: checkInDate!.toISOString(),
-            checkOutDate: checkOutDate!.toISOString(),
-            guests,
-            nights,
-            subtotal: discountedPrice * quantity * nights,
-          };
-        }),
-        partPaid: partPay,
-        totalAmount: partPay ? totalAmount / 2 : totalAmount,
-        vendor: vendor._id,
-        location: vendor.address,
-        image: vendor.profileImages?.[0],
-      };
-
-      setBooking(reservationData);
-      const resDatas = JSON.parse(localStorage.getItem('resData') || '[]');
-      localStorage.setItem('resData', JSON.stringify([...resDatas, reservationData]));
-
+        partPay,
+        booking: next,
+        vendorSnapshot: (vendor as HotelDraft['vendorSnapshot']) ?? null,
+        roomSelections: roomSelections.map((s) => ({
+          room: s.room,
+          quantity: s.quantity ?? 1,
+          checkInDate: s.checkInDate?.toISOString(),
+          checkOutDate: s.checkOutDate?.toISOString(),
+          guests: s.guests ?? 1,
+          guestBreakdown: s.guestBreakdown ?? null,
+        })),
+      });
       return 1;
     } catch (error) {
-      console.error('Error submitting reservation:', error);
-
-      let errorMessage = 'Failed to submit reservation. Please try again.';
-      if (error instanceof Error) {
-        errorMessage = error.message;
-      } else if (error && typeof error === 'object' && 'response' in error) {
-        errorMessage =
-          (error as { response?: { data?: { message?: string } } }).response?.data?.message ||
-          'Failed to submit reservation. Please try again.';
-      }
-      toast.error(errorMessage);
-
-      if (error && typeof error === 'object' && 'response' in error) {
-        const axiosError = error as { response?: { data?: unknown } };
-        if (axiosError.response?.data) {
-          console.error('Server error details:', axiosError.response.data);
-        }
-      }
+      const message =
+        error instanceof Error ? error.message : 'Failed to submit reservation. Please try again.';
+      toast.error(message);
       return 0;
     } finally {
       setIsLoading(false);
@@ -291,6 +242,7 @@ export function ReservationsProvider({ children }: { children: ReactNode }) {
   return (
     <ReservationContext.Provider
       value={{
+        draftId,
         roomSelections,
         setRoomSelections,
         addRoomSelection,

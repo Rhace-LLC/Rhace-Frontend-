@@ -9,6 +9,8 @@ import { Loader2, X } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router';
 import { TablePicker, type TableOption } from '../ui/tablepicker';
+import { createDraft } from '@/features/reservation/draft/draftStore';
+import type { ClubDraft } from '@/features/reservation/types';
 
 interface BookingPopupProps {
   id?: string;
@@ -29,20 +31,29 @@ const BookingPopup = ({ id, tables, loading }: BookingPopupProps) => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleSubmit = async (e: any) => {
     e.preventDefault();
-    const params = new URLSearchParams({
-      date: date ? date.toISOString() : '',
-      time,
-      guests,
-      table: table?._id,
-    });
-    navigate(`/clubs/${id}/reservations?${params.toString()}`);
-    e.preventDefault();
     setIsLoading(true);
     try {
       if (!date || !time) {
         throw new Error('Date and Time are required');
       }
-      await new Promise((resolve) => setTimeout(resolve, 3000));
+      const draft = createDraft<ClubDraft>({
+        vertical: 'club',
+        vendorId: id ?? '',
+        step: 0,
+        date: date.toISOString(),
+        time,
+        guests: parseInt(guests, 10) || 1,
+        specialRequest: '',
+        tableId: table?._id,
+        comboItems: [],
+        bottleItems: [],
+        vipExtraItems: [],
+        table: [],
+        partPay: false,
+        vendorSnapshot: null,
+        booking: null,
+      });
+      navigate(`/clubs/${id}/reservations?draft=${draft.id}`);
     } catch (err) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const e2 = err as any;
