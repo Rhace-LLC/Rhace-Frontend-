@@ -2,6 +2,7 @@ export { restaurantPlugin } from './plugins/restaurant.plugin';
 export { nightclubPlugin } from './plugins/nightclub.plugin';
 export { hotelPlugin } from './plugins/hotel.plugin';
 export { PrototypeManageView } from './components/PrototypeManageView';
+export { PrototypeInventoryManager } from './components/PrototypeInventoryManager';
 export { PrototypeFloorPlanView } from './components/PrototypeFloorPlanView';
 export { PrototypeWorkbench } from './components/PrototypeWorkbench';
 export { ManagerBoard } from './components/ManagerBoard';

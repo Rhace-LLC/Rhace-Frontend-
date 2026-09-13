@@ -52,6 +52,15 @@ const PrototypeManageRoomHotel = lazy(
 const PrototypeFloorPlanHotel = lazy(
   () => import('@/pages/vendor/prototype/hotel/FloorPlanHotel')
 );
+const PrototypeInventoryRestaurant = lazy(
+  () => import('@/pages/vendor/prototype/restaurant/InventoryRestaurant')
+);
+const PrototypeInventoryClub = lazy(
+  () => import('@/pages/vendor/prototype/club/InventoryClub')
+);
+const PrototypeInventoryHotel = lazy(
+  () => import('@/pages/vendor/prototype/hotel/InventoryHotel')
+);
 
 function PrototypeFallback() {
   return (
@@ -84,6 +93,10 @@ const dashboardRestaurantRoutes: RouteObject[] = [
     path: 'restaurant/table/layouts/prototype',
     element: withSuspense(<PrototypeFloorPlanRestaurant />),
   },
+  {
+    path: 'restaurant/inventory/prototype',
+    element: withSuspense(<PrototypeInventoryRestaurant />),
+  },
   { path: 'restaurant/settings', element: <RestaurantSettings /> },
 ];
 
@@ -97,6 +110,7 @@ const hotelVendorRoutes: RouteObject[] = [
     path: 'hotel/room/layouts/prototype',
     element: withSuspense(<PrototypeFloorPlanHotel />),
   },
+  { path: 'hotel/inventory/prototype', element: withSuspense(<PrototypeInventoryHotel />) },
   { path: 'hotel/payments', element: <PaymentDashboard /> },
   { path: 'hotel/staffs', element: <StaffManagementSystem /> },
   { path: 'hotel/profile', element: <HotelProfile /> },
@@ -113,6 +127,7 @@ const clubVendorRoutes: RouteObject[] = [
     path: 'club/table/layouts/prototype',
     element: withSuspense(<PrototypeFloorPlanClub />),
   },
+  { path: 'club/inventory/prototype', element: withSuspense(<PrototypeInventoryClub />) },
   { path: 'club/reservations', element: <ClubReservationTable /> },
   { path: 'club/payments', element: <PaymentDashboard /> },
   { path: 'club/staffs', element: <StaffManagementSystem /> },

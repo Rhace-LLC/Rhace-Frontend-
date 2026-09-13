@@ -1,6 +1,7 @@
 import type { ComponentType } from 'react';
 import {
   BarChart3,
+  Boxes,
   Building2,
   CalendarCheck,
   CreditCard,
@@ -122,6 +123,11 @@ export const ClubList: SideMenuListConfig = {
                 path: '/dashboard/club/table/layouts/prototype',
                 icon: LayoutGrid,
               },
+              {
+                label: 'Manage Inventory',
+                path: '/dashboard/club/inventory/prototype',
+                icon: Boxes,
+              },
             ]
           : []),
       ],
@@ -184,6 +190,11 @@ export const HotelList: SideMenuListConfig = {
                 label: 'Prototype Layout',
                 path: '/dashboard/hotel/room/layouts/prototype',
                 icon: LayoutGrid,
+              },
+              {
+                label: 'Manage Inventory',
+                path: '/dashboard/hotel/inventory/prototype',
+                icon: Boxes,
               },
             ]
           : []),
@@ -252,6 +263,11 @@ export const RestaurantList: SideMenuListConfig = {
                 label: 'Prototype Layout',
                 path: '/dashboard/restaurant/table/layouts/prototype',
                 icon: LayoutGrid,
+              },
+              {
+                label: 'Manage Inventory',
+                path: '/dashboard/restaurant/inventory/prototype',
+                icon: Boxes,
               },
             ]
           : []),
