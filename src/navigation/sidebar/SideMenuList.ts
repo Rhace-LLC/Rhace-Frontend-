@@ -128,6 +128,11 @@ export const ClubList: SideMenuListConfig = {
                 path: '/dashboard/club/inventory/prototype',
                 icon: Boxes,
               },
+              {
+                label: 'Reservation Calendar',
+                path: '/dashboard/club/timeline/prototype',
+                icon: CalendarCheck,
+              },
             ]
           : []),
       ],
@@ -195,6 +200,11 @@ export const HotelList: SideMenuListConfig = {
                 label: 'Manage Inventory',
                 path: '/dashboard/hotel/inventory/prototype',
                 icon: Boxes,
+              },
+              {
+                label: 'Reservation Calendar',
+                path: '/dashboard/hotel/timeline/prototype',
+                icon: CalendarCheck,
               },
             ]
           : []),
@@ -268,6 +278,11 @@ export const RestaurantList: SideMenuListConfig = {
                 label: 'Manage Inventory',
                 path: '/dashboard/restaurant/inventory/prototype',
                 icon: Boxes,
+              },
+              {
+                label: 'Reservation Calendar',
+                path: '/dashboard/restaurant/timeline/prototype',
+                icon: CalendarCheck,
               },
             ]
           : []),

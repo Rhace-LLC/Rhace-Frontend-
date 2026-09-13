@@ -5,6 +5,7 @@ export { PrototypeManageView } from './components/PrototypeManageView';
 export { PrototypeInventoryManager } from './components/PrototypeInventoryManager';
 export { PrototypeFloorPlanView } from './components/PrototypeFloorPlanView';
 export { PrototypeWorkbench } from './components/PrototypeWorkbench';
+export { PrototypeTimelineView } from './components/PrototypeTimelineView';
 export { ManagerBoard } from './components/ManagerBoard';
 export { GrandTimeline } from './components/GrandTimeline';
 export { OperationalDrawer } from './components/OperationalDrawer';

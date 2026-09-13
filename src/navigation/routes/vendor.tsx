@@ -61,6 +61,15 @@ const PrototypeInventoryClub = lazy(
 const PrototypeInventoryHotel = lazy(
   () => import('@/pages/vendor/prototype/hotel/InventoryHotel')
 );
+const PrototypeTimelineRestaurant = lazy(
+  () => import('@/pages/vendor/prototype/restaurant/TimelineRestaurant')
+);
+const PrototypeTimelineClub = lazy(
+  () => import('@/pages/vendor/prototype/club/TimelineClub')
+);
+const PrototypeTimelineHotel = lazy(
+  () => import('@/pages/vendor/prototype/hotel/TimelineHotel')
+);
 
 function PrototypeFallback() {
   return (
@@ -97,6 +106,14 @@ const dashboardRestaurantRoutes: RouteObject[] = [
     path: 'restaurant/inventory/prototype',
     element: withSuspense(<PrototypeInventoryRestaurant />),
   },
+  {
+    path: 'restaurant/inventory/prototype/:blueprintId',
+    element: withSuspense(<PrototypeInventoryRestaurant />),
+  },
+  {
+    path: 'restaurant/timeline/prototype',
+    element: withSuspense(<PrototypeTimelineRestaurant />),
+  },
   { path: 'restaurant/settings', element: <RestaurantSettings /> },
 ];
 
@@ -111,6 +128,11 @@ const hotelVendorRoutes: RouteObject[] = [
     element: withSuspense(<PrototypeFloorPlanHotel />),
   },
   { path: 'hotel/inventory/prototype', element: withSuspense(<PrototypeInventoryHotel />) },
+  {
+    path: 'hotel/inventory/prototype/:blueprintId',
+    element: withSuspense(<PrototypeInventoryHotel />),
+  },
+  { path: 'hotel/timeline/prototype', element: withSuspense(<PrototypeTimelineHotel />) },
   { path: 'hotel/payments', element: <PaymentDashboard /> },
   { path: 'hotel/staffs', element: <StaffManagementSystem /> },
   { path: 'hotel/profile', element: <HotelProfile /> },
@@ -128,6 +150,11 @@ const clubVendorRoutes: RouteObject[] = [
     element: withSuspense(<PrototypeFloorPlanClub />),
   },
   { path: 'club/inventory/prototype', element: withSuspense(<PrototypeInventoryClub />) },
+  {
+    path: 'club/inventory/prototype/:blueprintId',
+    element: withSuspense(<PrototypeInventoryClub />),
+  },
+  { path: 'club/timeline/prototype', element: withSuspense(<PrototypeTimelineClub />) },
   { path: 'club/reservations', element: <ClubReservationTable /> },
   { path: 'club/payments', element: <PaymentDashboard /> },
   { path: 'club/staffs', element: <StaffManagementSystem /> },

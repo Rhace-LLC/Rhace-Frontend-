@@ -52,15 +52,6 @@ class InventoryBlueprintService {
     );
     return res.data;
   }
-
-  /** Idempotently clones the built-in catalog for the vendor. */
-  async seedSystem(vertical: string) {
-    const res = await api.post<FloorPlanApiEnvelope<InventoryBlueprintDto[]>>(
-      '/inventory-blueprints/seed-system',
-      { vertical }
-    );
-    return res.data;
-  }
 }
 
 export const inventoryBlueprintService = new InventoryBlueprintService();

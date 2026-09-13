@@ -1,11 +1,13 @@
 import { useMemo, useState } from 'react';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
-import { Pencil, Plus } from 'lucide-react';
+import { Eye, Pencil, Plus } from 'lucide-react';
 import type { VerticalPlugin } from '../core/plugin';
 import { useBlueprints } from '../api/hooks';
 import { floorPlanKeys } from '../api/keys';
 import { toDomainBlueprint } from '../api/adapter';
 import { CreateBlueprintModal } from './CreateBlueprintModal';
+import { BlueprintDetailView } from './BlueprintDetailView';
 import type { InventoryBlueprint, Vertical } from '../domain/types';
 
 interface PrototypeInventoryManagerProps {
@@ -21,6 +23,9 @@ const CONFIG_LABEL: Record<Vertical, string> = {
 export function PrototypeInventoryManager({ plugin }: PrototypeInventoryManagerProps) {
   const vertical = plugin.id as Vertical;
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { blueprintId } = useParams<{ blueprintId?: string }>();
   const query = useBlueprints(vertical);
 
   const blueprints = useMemo(
@@ -34,6 +39,17 @@ export function PrototypeInventoryManager({ plugin }: PrototypeInventoryManagerP
   });
 
   const closeModal = () => setModal({ open: false, initial: null });
+
+  if (blueprintId) {
+    const basePath = location.pathname.replace(new RegExp(`/${blueprintId}$`), '');
+    return (
+      <BlueprintDetailView
+        plugin={plugin}
+        blueprint={blueprints.find((entry) => entry.id === blueprintId)}
+        onBack={() => navigate(basePath)}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-6">
@@ -94,7 +110,7 @@ export function PrototypeInventoryManager({ plugin }: PrototypeInventoryManagerP
                   <div className="grid grid-cols-2 gap-y-1 text-xs">
                     <span className="text-gray-500">Price</span>
                     <span className="text-right font-medium text-gray-900">
-                      ${blueprint.basePrice.toLocaleString()}
+                      ₦{blueprint.basePrice.toLocaleString()}
                     </span>
                     <span className="text-gray-500">Capacity</span>
                     <span className="text-right font-medium text-gray-900">
@@ -123,12 +139,20 @@ export function PrototypeInventoryManager({ plugin }: PrototypeInventoryManagerP
                     </div>
                   )}
 
-                  <button
-                    onClick={() => setModal({ open: true, initial: blueprint })}
-                    className="mt-auto flex items-center justify-center gap-1 rounded-lg border border-teal-200 bg-teal-50 px-3 py-2 text-xs font-medium text-teal-700 hover:bg-teal-100"
-                  >
-                    <Pencil size={13} /> Edit {CONFIG_LABEL[vertical]}
-                  </button>
+                  <div className="mt-auto flex flex-col gap-2">
+                    <button
+                      onClick={() => setModal({ open: true, initial: blueprint })}
+                      className="flex items-center justify-center gap-1 rounded-lg border border-teal-200 bg-teal-50 px-3 py-2 text-xs font-medium text-teal-700 hover:bg-teal-100"
+                    >
+                      <Pencil size={13} /> Edit {CONFIG_LABEL[vertical]}
+                    </button>
+                    <button
+                      onClick={() => navigate(`${location.pathname}/${blueprint.id}`)}
+                      className="flex items-center justify-center gap-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs font-medium text-gray-700 hover:bg-gray-50"
+                    >
+                      <Eye size={13} /> View
+                    </button>
+                  </div>
                 </div>
               </article>
             ))}

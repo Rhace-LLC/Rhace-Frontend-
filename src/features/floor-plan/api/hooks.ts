@@ -211,14 +211,6 @@ export function useDeleteBlueprint() {
   });
 }
 
-export function useSeedSystemBlueprints() {
-  const invalidate = useInvalidateFloorPlan();
-  return useMutation({
-    mutationFn: (vertical: string) => inventoryBlueprintService.seedSystem(vertical),
-    onSuccess: invalidate,
-  });
-}
-
 export function useCreateUnit() {
   const invalidate = useInvalidateFloorPlan();
   return useMutation({
