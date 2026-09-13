@@ -20,6 +20,7 @@ interface CanvasSurfaceProps {
   onEditEntity: (id: string) => void;
   onDropNew: (kind: string, x: number, y: number, alt?: boolean) => void;
   isEntityLocked?: (id: string) => boolean;
+  highlightUnitId?: string | null;
   fitSignal?: number;
 }
 
@@ -106,6 +107,7 @@ export function CanvasSurface({
   onEditEntity,
   onDropNew,
   isEntityLocked,
+  highlightUnitId,
   fitSignal,
 }: CanvasSurfaceProps) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -566,6 +568,9 @@ export function CanvasSurface({
                   <div className="absolute right-1 top-1 z-10">
                     <LockBadge />
                   </div>
+                )}
+                {highlightUnitId === entity.entityId && (
+                  <div className="pointer-events-none absolute inset-0 z-20 animate-pulse rounded-lg ring-4 ring-teal-400/80" />
                 )}
               </EntityNode>
             );

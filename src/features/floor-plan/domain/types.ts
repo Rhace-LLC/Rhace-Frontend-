@@ -1,5 +1,7 @@
 import type { EntityShape } from '../core/types';
 
+export type { EntityShape } from '../core/types';
+
 /**
  * Domain model v2 (additive).
  *
@@ -63,6 +65,11 @@ export interface InventoryBlueprintBase {
   amenities: Amenity[];
   images: string[];
   accent?: string;
+  /** Default canvas shape used when placing a unit of this blueprint. */
+  canvasShape?: EntityShape;
+  /** Default canvas size used when placing a unit. */
+  canvasWidth?: number;
+  canvasHeight?: number;
 }
 
 export interface HotelRoomBlueprint extends InventoryBlueprintBase {

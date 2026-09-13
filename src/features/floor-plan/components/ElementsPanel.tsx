@@ -6,6 +6,7 @@ interface ElementsPanelProps {
   disabled?: boolean;
   onAddEntity: (type: EntityTypeDefinition) => void;
   onAddCustom: (name: string) => void;
+  onCreateBlueprint?: () => void;
 }
 
 const SHAPE_ICON: Record<string, typeof Circle> = {
@@ -24,7 +25,7 @@ function iconFor(type: string) {
   return SHAPE_ICON[type] ?? (type === 'wall' ? Minus : type.includes('door') || type.includes('entrance') ? DoorOpen : PanelTop);
 }
 
-export function ElementsPanel({ plugin, disabled, onAddEntity, onAddCustom }: ElementsPanelProps) {
+export function ElementsPanel({ plugin, disabled, onAddEntity, onAddCustom, onCreateBlueprint }: ElementsPanelProps) {
   const objects = plugin.entityTypes.filter((t) => !t.structure);
   const structures = plugin.entityTypes.filter((t) => t.structure);
 
@@ -48,6 +49,17 @@ export function ElementsPanel({ plugin, disabled, onAddEntity, onAddCustom }: El
 
   return (
     <div className="flex h-full w-[220px] shrink-0 flex-col gap-6 overflow-y-auto border-r border-gray-200 bg-white px-4 py-5">
+      {onCreateBlueprint && (
+        <button
+          type="button"
+          disabled={disabled}
+          onClick={onCreateBlueprint}
+          className="flex items-center justify-center gap-1 rounded-lg bg-teal-700 px-3 py-2 text-xs font-medium text-white hover:bg-teal-800 disabled:opacity-40"
+        >
+          <Plus size={14} /> Create Blueprint
+        </button>
+      )}
+
       <div>
         <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-gray-400">
           Objects

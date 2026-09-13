@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { FloorEntity } from '../core/types';
 import type { EntityTypeDefinition, VerticalPlugin } from '../core/plugin';
 import { useCanvasState } from '../core/useCanvasState';
-import { useFloorPlanStore } from '../mock/mockStore';
+import { useFloorPlanStore, type FloorPlanStore } from '../mock/mockStore';
 import { uid } from '../mock/generator';
 import { CanvasSurface } from '../core/CanvasSurface';
 import { CanvasControls } from '../core/CanvasControls';
@@ -10,16 +10,35 @@ import { FloorPlanToolbar } from './FloorPlanToolbar';
 import { OperationalDrawer } from './OperationalDrawer';
 import { ElementsPanel } from './ElementsPanel';
 import { PropertiesPanel } from './PropertiesPanel';
-import { BlueprintPicker } from './BlueprintPicker';
+import { AddPhysicalUnitModal, type UnitPlacementInput } from './AddPhysicalUnitModal';
+import { CreateBlueprintModal } from './CreateBlueprintModal';
 import { CATEGORY_OBJECTS } from '../domain/adapter';
 import { defaultStateFor } from '../domain/states';
 import { isLocked } from '../domain/reservations';
 import { allBlueprints, loadLastBlueprintId, saveLastBlueprintId } from '../domain/blueprintStore';
 import { findBlueprint } from '../domain/blueprints';
-import type { InventoryBlueprint, Vertical } from '../domain/types';
+import type { InventoryBlueprint, Reservation, Vertical } from '../domain/types';
 
-export function FloorPlanWorkbench({ plugin }: { plugin: VerticalPlugin }) {
-  const store = useFloorPlanStore(plugin.id);
+interface FloorPlanWorkbenchProps {
+  plugin: VerticalPlugin;
+  store?: FloorPlanStore;
+  highlightUnitId?: string | null;
+  onHighlightUnit?: (id: string | null) => void;
+  reservations?: Reservation[];
+  onReservationChange?: (reservation: Reservation) => void;
+}
+
+export function FloorPlanWorkbench({
+  plugin,
+  store: externalStore,
+  highlightUnitId,
+  onHighlightUnit,
+  reservations,
+  onReservationChange,
+}: FloorPlanWorkbenchProps) {
+  const internalStore = useFloorPlanStore(plugin.id);
+  const store = externalStore ?? internalStore;
+  const vertical = plugin.id as Vertical;
   const canvas = useCanvasState('manage');
   const [activeOverlays, setActiveOverlays] = useState<string[]>([]);
   const [drawerEntityId, setDrawerEntityId] = useState<string | null>(null);
@@ -28,6 +47,10 @@ export function FloorPlanWorkbench({ plugin }: { plugin: VerticalPlugin }) {
     type: EntityTypeDefinition;
     position?: { x: number; y: number };
   } | null>(null);
+  const [blueprintModal, setBlueprintModal] = useState<{
+    open: boolean;
+    initial: InventoryBlueprint | null;
+  }>({ open: false, initial: null });
 
   const { plan } = store;
 
@@ -40,6 +63,14 @@ export function FloorPlanWorkbench({ plugin }: { plugin: VerticalPlugin }) {
   const drawerEntity = drawerEntityId
     ? plan.entities.find((e) => e.entityId === drawerEntityId) ?? null
     : null;
+
+  const selectedEntity =
+    canvas.selection.length === 1
+      ? plan.entities.find((e) => e.entityId === canvas.selection[0]) ?? null
+      : null;
+  const selectedBlueprint = selectedEntity
+    ? findBlueprint(allBlueprints(vertical), String(selectedEntity.businessData.blueprintId ?? ''))
+    : undefined;
 
   const fit = useCallback(() => setFitSignal((s) => s + 1), []);
 
@@ -69,6 +100,51 @@ export function FloorPlanWorkbench({ plugin }: { plugin: VerticalPlugin }) {
     [plan, plugin]
   );
 
+  const handlePlaceUnit = useCallback(
+    (input: UnitPlacementInput, position?: { x: number; y: number }) => {
+      const blueprint = findBlueprint(allBlueprints(vertical), input.blueprintId);
+      const object = CATEGORY_OBJECTS[vertical];
+      const width = blueprint?.canvasWidth ?? object.width;
+      const height = blueprint?.canvasHeight ?? object.height;
+      const anchor = position ?? pendingPlacement?.position;
+      const x = anchor ? Math.round(anchor.x - width / 2) : Math.round(plan.width / 2 - width / 2);
+      const y = anchor ? Math.round(anchor.y - height / 2) : Math.round(plan.height / 2 - height / 2);
+      const count = plan.entities.filter((e) => e.businessData.blueprintId === input.blueprintId).length;
+      const designation = input.designation || `${blueprint?.type ?? object.label} ${count + 1}`;
+
+      const base: FloorEntity = {
+        entityId: uid(object.type),
+        type: object.type,
+        businessData: {
+          name: designation,
+          status: input.state,
+          blueprintId: input.blueprintId,
+          capacity: blueprint?.capacity,
+          maxCapacity: blueprint?.maxCapacity,
+          area: input.section,
+          isReservable: true,
+        },
+        spatialData: {
+          floorPlanId: plan.floorPlanId,
+          x,
+          y,
+          width,
+          height,
+          rotation: 0,
+          shape: blueprint?.canvasShape ?? object.shape,
+          layer: 'entities',
+          floor: input.floor || plan.floor,
+        },
+      };
+      store.addEntity(base);
+      canvas.select(base.entityId);
+      onHighlightUnit?.(base.entityId);
+      setPendingPlacement(null);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    },
+    [vertical, plan, pendingPlacement, store.addEntity, canvas.select, onHighlightUnit]
+  );
+
   const handleAddEntity = useCallback(
     (type: EntityTypeDefinition) => {
       if (type.structure) {
@@ -93,50 +169,6 @@ export function FloorPlanWorkbench({ plugin }: { plugin: VerticalPlugin }) {
     [createEntity, store.addEntity, canvas.select]
   );
 
-  const createFromBlueprint = useCallback(
-    (blueprint: InventoryBlueprint, position?: { x: number; y: number }) => {
-      const vertical = plugin.id as Vertical;
-      const object = CATEGORY_OBJECTS[vertical];
-      const count = plan.entities.filter((e) => e.businessData.blueprintId === blueprint.id).length;
-      const x = position
-        ? Math.round(position.x - object.width / 2)
-        : Math.round(plan.width / 2 - object.width / 2);
-      const y = position
-        ? Math.round(position.y - object.height / 2)
-        : Math.round(plan.height / 2 - object.height / 2);
-
-      const base: FloorEntity = {
-        entityId: uid(object.type),
-        type: object.type,
-        businessData: {
-          name: `${blueprint.type} ${count + 1}`,
-          status: defaultStateFor(vertical),
-          blueprintId: blueprint.id,
-          capacity: blueprint.capacity,
-          maxCapacity: blueprint.maxCapacity,
-          area: plan.activeArea,
-          isReservable: true,
-        },
-        spatialData: {
-          floorPlanId: plan.floorPlanId,
-          x,
-          y,
-          width: object.width,
-          height: object.height,
-          rotation: 0,
-          shape: object.shape,
-          layer: 'entities',
-          floor: plan.floor,
-        },
-      };
-      const entity = plugin.decorateNewEntity ? plugin.decorateNewEntity(base, plan) : base;
-      store.addEntity(entity);
-      canvas.select(entity.entityId);
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [plan, plugin, store.addEntity, canvas.select]
-  );
-
   const handleDropNew = useCallback(
     (kind: string, x: number, y: number, alt?: boolean) => {
       const type = plugin.entityTypes.find((t) => t.type === kind);
@@ -147,34 +179,45 @@ export function FloorPlanWorkbench({ plugin }: { plugin: VerticalPlugin }) {
         canvas.select(entity.entityId);
         return;
       }
-
-      // Alt + drop fast-forwards with the last used blueprint.
       if (alt) {
-        const vertical = plugin.id as Vertical;
         const lastId = loadLastBlueprintId(vertical);
-        const blueprint = lastId
-          ? findBlueprint(allBlueprints(vertical), lastId)
-          : undefined;
+        const blueprint = lastId ? findBlueprint(allBlueprints(vertical), lastId) : undefined;
         if (blueprint) {
-          createFromBlueprint(blueprint, { x, y });
+          handlePlaceUnit(
+            {
+              designation: '',
+              blueprintId: blueprint.id,
+              floor: plan.floor ?? '',
+              section: plan.activeArea ?? '',
+              state: defaultStateFor(vertical),
+            },
+            { x, y }
+          );
           return;
         }
       }
-
       setPendingPlacement({ type, position: { x, y } });
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [plugin, createEntity, store.addEntity, canvas.select, createFromBlueprint]
+    [plugin, createEntity, store.addEntity, canvas.select, vertical, plan.floor, plan.activeArea, handlePlaceUnit]
   );
 
-  const handlePickBlueprint = useCallback(
+  const handleBlueprintSaved = useCallback(
     (blueprint: InventoryBlueprint) => {
-      saveLastBlueprintId(plugin.id as Vertical, blueprint.id);
-      createFromBlueprint(blueprint, pendingPlacement?.position);
-      setPendingPlacement(null);
+      saveLastBlueprintId(vertical, blueprint.id);
+      setBlueprintModal({ open: false, initial: null });
+      if (pendingPlacement) {
+        handlePlaceUnit({
+          designation: '',
+          blueprintId: blueprint.id,
+          floor: plan.floor ?? '',
+          section: plan.activeArea ?? '',
+          state: defaultStateFor(vertical),
+        });
+      }
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [plugin, createFromBlueprint, pendingPlacement]
+    [vertical, pendingPlacement, handlePlaceUnit, plan.floor, plan.activeArea]
   );
 
   const handleDuplicate = useCallback(
@@ -217,11 +260,6 @@ export function FloorPlanWorkbench({ plugin }: { plugin: VerticalPlugin }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [canvas.setMode]
   );
-
-  const handleEntityAction = useCallback(() => {
-    // Manage mode opens the operational modal (invoked from CanvasSurface).
-    // Edit mode already shows the properties panel via selection.
-  }, []);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -267,6 +305,10 @@ export function FloorPlanWorkbench({ plugin }: { plugin: VerticalPlugin }) {
     [plugin, plan, canvas.selection]
   );
 
+  const floors =
+    plan.sectionFloors?.[plan.activeArea ?? ''] ?? plan.floors ?? (plan.floor ? [plan.floor] : []);
+  const sections = plan.areas ?? [];
+
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-gray-200 bg-gray-50">
       <FloorPlanToolbar
@@ -299,6 +341,7 @@ export function FloorPlanWorkbench({ plugin }: { plugin: VerticalPlugin }) {
             plugin={plugin}
             onAddEntity={handleAddEntity}
             onAddCustom={handleAddCustom}
+            onCreateBlueprint={() => setBlueprintModal({ open: true, initial: null })}
           />
         )}
 
@@ -314,14 +357,11 @@ export function FloorPlanWorkbench({ plugin }: { plugin: VerticalPlugin }) {
             onCommitPositions={(positions) => store.applyPositions(positions, true)}
             onCommitGeometry={(id, geometry) => store.updateEntity(id, { spatialData: geometry })}
             onEditEntity={(id) => {
-              if (canvas.mode === 'manage') {
-                setDrawerEntityId(id);
-              } else {
-                handleEntityAction();
-              }
+              if (canvas.mode === 'manage') setDrawerEntityId(id);
             }}
             onDropNew={handleDropNew}
             isEntityLocked={isLocked}
+            highlightUnitId={highlightUnitId}
             fitSignal={fitSignal}
           />
           <CanvasControls canvas={canvas} onFit={fit} />
@@ -331,6 +371,12 @@ export function FloorPlanWorkbench({ plugin }: { plugin: VerticalPlugin }) {
           <PropertiesPanel
             plan={plan}
             selection={canvas.selection}
+            blueprint={selectedBlueprint ?? null}
+            onEditBlueprint={
+              selectedBlueprint
+                ? () => setBlueprintModal({ open: true, initial: selectedBlueprint })
+                : undefined
+            }
             onUpdate={(id, patch) => store.updateEntity(id, patch)}
             onUpdateMany={store.updateEntities}
             onDuplicate={handleDuplicate}
@@ -344,17 +390,35 @@ export function FloorPlanWorkbench({ plugin }: { plugin: VerticalPlugin }) {
         <OperationalDrawer
           entity={drawerEntity}
           plugin={plugin}
+          vertical={vertical}
+          reservations={reservations ?? []}
           onClose={() => setDrawerEntityId(null)}
           onDelete={(id) => handleDelete([id])}
           onUpdate={(patch) => store.updateEntity(drawerEntity.entityId, patch)}
+          onReservationChange={onReservationChange}
         />
       )}
 
-      <BlueprintPicker
-        vertical={plugin.id as Vertical}
+      <AddPhysicalUnitModal
+        vertical={vertical}
         isOpen={!!pendingPlacement}
+        blueprints={allBlueprints(vertical)}
+        floors={floors}
+        sections={sections}
+        defaultFloor={plan.floor}
+        defaultSection={plan.activeArea}
+        defaultBlueprintId={loadLastBlueprintId(vertical) ?? undefined}
+        defaultState={defaultStateFor(vertical)}
         onClose={() => setPendingPlacement(null)}
-        onSelect={handlePickBlueprint}
+        onPlace={(input) => handlePlaceUnit(input)}
+      />
+
+      <CreateBlueprintModal
+        vertical={vertical}
+        isOpen={blueprintModal.open}
+        initial={blueprintModal.initial}
+        onClose={() => setBlueprintModal({ open: false, initial: null })}
+        onSaved={handleBlueprintSaved}
       />
     </div>
   );

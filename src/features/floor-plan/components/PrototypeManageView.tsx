@@ -1,12 +1,13 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ExternalLink, RotateCcw } from 'lucide-react';
+import { ExternalLink, RotateCcw, Zap } from 'lucide-react';
 import type { VerticalPlugin } from '../core/plugin';
 import { useFloorPlanStore } from '../mock/mockStore';
 import { allBlueprints } from '../domain/blueprintStore';
 import { entityToUnit } from '../domain/adapter';
 import { isAvailableState, isLocked } from '../domain/reservations';
-import { seedReservations } from '../domain/reservations.fixture';
+import { seedReservations, simulateBooking } from '../domain/reservations.fixture';
+import { nowWindow } from '../domain/availability';
 import { canTransition, nextStates } from '../domain/transitions';
 import { stateMetaFor } from '../domain/states';
 import { LockBadge } from './LockBadge';
@@ -23,6 +24,7 @@ export function PrototypeManageView({ plugin, floorPlanPath, description }: Prot
   const vertical = plugin.id as Vertical;
   const plan = store.plan;
   const blueprints = allBlueprints(vertical);
+  const [, forceRender] = useState(0);
 
   const allUnits = plan.entities
     .filter((e) => e.spatialData.layer !== 'structure' && e.spatialData.layer !== 'area')
@@ -71,6 +73,15 @@ export function PrototypeManageView({ plugin, floorPlanPath, description }: Prot
       .map(({ entity }) => entity.entityId);
     if (!ids.length) return;
     store.updateEntities(ids, () => ({ businessData: { status: target } }));
+  };
+
+  const simulate = (blueprint: InventoryBlueprint) => {
+    const result = simulateBooking(allUnits, reservations, blueprint.id, nowWindow(vertical));
+    if (result) {
+      forceRender((n) => n + 1);
+    } else {
+      window.alert(`No available ${blueprint.name} units right now.`);
+    }
   };
 
   return (
@@ -166,6 +177,12 @@ export function PrototypeManageView({ plugin, floorPlanPath, description }: Prot
                       </div>
                     </div>
                     <div className="flex flex-wrap items-center gap-2 text-[11px]">
+                      <button
+                        onClick={() => simulate(blueprint)}
+                        className="flex items-center gap-1 rounded-full border border-teal-200 bg-teal-50 px-2.5 py-1 font-medium text-teal-700 hover:bg-teal-100"
+                      >
+                        <Zap size={11} /> Simulate booking
+                      </button>
                       <span className="rounded-full bg-gray-100 px-2 py-0.5 text-gray-600">
                         {entries.length} total
                       </span>

@@ -1,5 +1,6 @@
 import { Copy, RotateCw, Trash2, X } from 'lucide-react';
 import type { BusinessData, FloorEntity, FloorPlan, SpatialData } from '../core/types';
+import type { InventoryBlueprint } from '../domain/types';
 
 interface EntityPatch {
   businessData?: Partial<BusinessData>;
@@ -9,6 +10,8 @@ interface EntityPatch {
 interface PropertiesPanelProps {
   plan: FloorPlan;
   selection: string[];
+  blueprint?: InventoryBlueprint | null;
+  onEditBlueprint?: () => void;
   onUpdate: (id: string, patch: EntityPatch) => void;
   onUpdateMany: (ids: string[], patchFn: (entity: FloorEntity) => EntityPatch) => void;
   onDuplicate: (ids: string[]) => void;
@@ -33,6 +36,8 @@ const inputClass =
 export function PropertiesPanel({
   plan,
   selection,
+  blueprint,
+  onEditBlueprint,
   onUpdate,
   onUpdateMany,
   onDuplicate,
@@ -204,6 +209,15 @@ export function PropertiesPanel({
           />
           Available for booking
         </label>
+
+        {onEditBlueprint && blueprint && (
+          <button
+            onClick={onEditBlueprint}
+            className="w-full rounded-lg border border-teal-200 bg-teal-50 px-3 py-2 text-xs font-medium text-teal-700 hover:bg-teal-100"
+          >
+            Edit Blueprint · {blueprint.name}
+          </button>
+        )}
       </div>
 
       <div className="mt-auto flex gap-2 border-t border-gray-200 p-4">

@@ -1,5 +1,12 @@
 import { blueprintsFor } from './blueprints';
-import type { Amenity, InventoryBlueprint, Vertical } from './types';
+import type {
+  Amenity,
+  BookingPolicy,
+  EntityShape,
+  InventoryBlueprint,
+  PaymentStrategy,
+  Vertical,
+} from './types';
 
 /**
  * Blueprint catalog helpers. The built-in catalog is immutable; custom
@@ -38,7 +45,7 @@ export function allBlueprints(vertical: Vertical): InventoryBlueprint[] {
 }
 
 export function saveCustomBlueprint(blueprint: InventoryBlueprint): void {
-  const existing = loadCustomBlueprints(blueprint.vertical);
+  const existing = loadCustomBlueprints(blueprint.vertical).filter((b) => b.id !== blueprint.id);
   try {
     localStorage.setItem(KEY(blueprint.vertical), JSON.stringify([...existing, blueprint]));
   } catch {
@@ -55,6 +62,13 @@ export interface CustomBlueprintInput {
   maxCapacity?: number;
   minimumSpend?: number;
   amenities?: string[];
+  paymentStrategies?: PaymentStrategy[];
+  bookingPolicies?: BookingPolicy[];
+  images?: string[];
+  canvasShape?: EntityShape;
+  canvasWidth?: number;
+  canvasHeight?: number;
+  id?: string;
 }
 
 function toAmenities(labels: string[] | undefined): Amenity[] {
@@ -68,7 +82,7 @@ export function createCustomBlueprint(
   vertical: Vertical,
   input: CustomBlueprintInput
 ): InventoryBlueprint {
-  const id = `custom_${Math.random().toString(36).slice(2, 9)}`;
+  const id = input.id ?? `custom_${Math.random().toString(36).slice(2, 9)}`;
   const capacity = input.capacity ?? 2;
   const common = {
     id,
@@ -78,15 +92,24 @@ export function createCustomBlueprint(
     currency: 'USD',
     capacity,
     maxCapacity: input.maxCapacity ?? capacity,
-    allowedPaymentStrategies: ['pay_at_venue'] as const,
-    bookingPolicies: [],
+    allowedPaymentStrategies: input.paymentStrategies ?? (['pay_at_venue'] as PaymentStrategy[]),
+    bookingPolicies: input.bookingPolicies ?? [],
     amenities: toAmenities(input.amenities),
-    images: [],
+    images: input.images ?? [],
     accent: '#0d9488',
+    canvasShape: input.canvasShape,
+    canvasWidth: input.canvasWidth,
+    canvasHeight: input.canvasHeight,
   };
 
   if (vertical === 'hotel') {
-    return { ...common, vertical, category: 'room', type: input.type ?? input.name, roomType: input.type ?? input.name, allowedPaymentStrategies: ['pay_at_venue'] };
+    return {
+      ...common,
+      vertical,
+      category: 'room',
+      type: input.type ?? input.name,
+      roomType: input.type ?? input.name,
+    };
   }
   if (vertical === 'club') {
     return {
@@ -96,7 +119,6 @@ export function createCustomBlueprint(
       type: input.type ?? input.name,
       tier: input.type ?? 'Custom',
       minimumSpend: input.minimumSpend ?? input.basePrice ?? 0,
-      allowedPaymentStrategies: ['pay_at_venue'],
     };
   }
   return {
@@ -106,6 +128,5 @@ export function createCustomBlueprint(
     type: input.type ?? input.name,
     seatingArea: input.type,
     turnTimeMinutes: 90,
-    allowedPaymentStrategies: ['pay_at_venue'],
   };
 }
