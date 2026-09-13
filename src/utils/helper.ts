@@ -1,0 +1,82 @@
+import { useEffect, useState } from 'react';
+
+export function capitalize(word?: string): string {
+  if (!word) return ''; // handle empty strings safely
+  return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+}
+
+export const formatNaira = (value: string | number | null | undefined): string => {
+  const nairaSymbol = '\u20A6';
+
+  if (value === null || value === undefined || value === '') {
+    return `${nairaSymbol}0.00`;
+  }
+
+  const cleaned = String(value).replace(/[,\sNG]/gi, '');
+  const num = Math.abs(Number(cleaned));
+
+  if (Number.isNaN(num)) {
+    return `${nairaSymbol}0.00`;
+  }
+
+  return (
+    nairaSymbol +
+    num.toLocaleString('en-NG', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })
+  );
+};
+
+// Helper function to format offer text
+export const formatOfferText = (offer?: string): string => {
+  if (!offer) return '';
+
+  // Check if the string contains any digits
+  const hasNumber = /\d/.test(offer);
+
+  // If it contains numbers but doesn't already end with "% off" or similar, append "% off"
+  if (hasNumber) {
+    // Check if it already ends with percentage or off indicator
+    const hasPercentIndicator = /%\s*off$|%\s*off\s*$/i.test(offer);
+    const hasPercentSymbol = /%$/.test(offer);
+
+    if (!hasPercentIndicator) {
+      if (hasPercentSymbol) {
+        // If it ends with %, add " off"
+        return `${offer.trim()} off`;
+      } else {
+        // Otherwise add "% off"
+        return `${offer.trim()}% off`;
+      }
+    }
+  }
+
+  // If no numbers found or already formatted, return as is
+  return offer;
+};
+
+export const trimLongString = (str?: string, num?: number): string | undefined => {
+  if (str && num) {
+    const val = String(str)?.length > Number(num) ? `${String(str).slice(0, Number(num))}...` : str;
+    return val;
+  }
+};
+
+export function useIsMobile(): boolean {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 767px)');
+    setIsMobile(mq.matches);
+
+    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    mq.addEventListener('change', handler);
+
+    return () => mq.removeEventListener('change', handler);
+  }, []);
+
+  return isMobile;
+}
+
+export const routeIs = (path: string): boolean => window.location.pathname === path;
