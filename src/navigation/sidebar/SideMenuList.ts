@@ -15,6 +15,9 @@ import { RhaceIcon } from '@/components/icons/icons';
 
 export { RhaceIcon };
 
+// Toggle the mock floor-plan prototype entries in the vendor sidebar.
+export const SHOW_PROTOTYPE_ITEMS = true;
+
 export interface SideMenuItem {
   label: string;
   path: string;
@@ -107,6 +110,20 @@ export const ClubList: SideMenuListConfig = {
           path: '/dashboard/club/tables/layout',
           icon: LayoutGrid,
         },
+        ...(SHOW_PROTOTYPE_ITEMS
+          ? [
+              {
+                label: 'Prototype Manager',
+                path: '/dashboard/club/table/prototype',
+                icon: LayoutGrid,
+              },
+              {
+                label: 'Prototype Layout',
+                path: '/dashboard/club/table/layouts/prototype',
+                icon: LayoutGrid,
+              },
+            ]
+          : []),
       ],
     },
     {
@@ -156,6 +173,20 @@ export const HotelList: SideMenuListConfig = {
           path: '/dashboard/hotel/rooms/layout',
           icon: LayoutGrid,
         },
+        ...(SHOW_PROTOTYPE_ITEMS
+          ? [
+              {
+                label: 'Prototype Manager',
+                path: '/dashboard/hotel/room/prototype',
+                icon: LayoutGrid,
+              },
+              {
+                label: 'Prototype Layout',
+                path: '/dashboard/hotel/room/layouts/prototype',
+                icon: LayoutGrid,
+              },
+            ]
+          : []),
       ],
     },
     {
@@ -194,6 +225,37 @@ export const RestaurantList: SideMenuListConfig = {
       label: 'Menu Management',
       path: '/dashboard/restaurant/menu',
       icon: UtensilsCrossed,
+    },
+    {
+      label: 'Tables',
+      path: '/dashboard/restaurant/tables',
+      icon: LayoutGrid,
+      children: [
+        {
+          label: 'Manage Tables',
+          path: '/dashboard/restaurant/tables',
+          icon: UtensilsCrossed,
+        },
+        {
+          label: 'Floor Layout',
+          path: '/dashboard/restaurant/tables/layout',
+          icon: LayoutGrid,
+        },
+        ...(SHOW_PROTOTYPE_ITEMS
+          ? [
+              {
+                label: 'Prototype Manager',
+                path: '/dashboard/restaurant/table/prototype',
+                icon: LayoutGrid,
+              },
+              {
+                label: 'Prototype Layout',
+                path: '/dashboard/restaurant/table/layouts/prototype',
+                icon: LayoutGrid,
+              },
+            ]
+          : []),
+      ],
     },
     {
       label: 'Payments',
