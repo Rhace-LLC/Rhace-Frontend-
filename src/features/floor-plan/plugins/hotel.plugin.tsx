@@ -2,7 +2,6 @@
 import { Wrench } from 'lucide-react';
 import type { BusinessData, FloorEntity, FloorPlan, SpatialData } from '../core/types';
 import type { DrawerContext, TileContext, TopBarContext, ToolbarItem, VerticalPlugin } from '../core/plugin';
-import { createHotelPlan } from '../mock/fixtures/hotel';
 import { ScopeNav } from '../components/overlays/ScopeNav';
 import { BlueprintSpecs } from '../components/BlueprintSpecs';
 import { stateMetaFor } from '../domain/states';
@@ -298,5 +297,4 @@ export const hotelPlugin: VerticalPlugin = {
   ],
   renderTile,
   renderDrawer,
-  createMockPlan: createHotelPlan,
 };

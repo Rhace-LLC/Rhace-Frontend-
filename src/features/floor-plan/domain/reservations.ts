@@ -8,92 +8,12 @@ import type {
 } from './types';
 
 /**
- * Mock reservation engine: deterministic seed data, availability aggregation,
- * load-balanced unit assignment, and 5-minute atomic booking locks (persisted
- * in localStorage).
+ * Availability helpers + 5-minute atomic booking locks (localStorage).
+ * Reservation records are served by the API (`UnitReservation`); this module
+ * only provides availability predicates and lock-state helpers.
  */
 
 const LOCK_KEY = 'prototype:booking-locks';
-
-const GUEST_POOL = [
-  'A. Bello',
-  'M. Chen',
-  'J. Okafor',
-  'R. Patel',
-  'L. Gomez',
-  'K. Adeyemi',
-  'S. Ibrahim',
-  'N. Adeleke',
-  'T. Nakamura',
-  'F. Mensah',
-  'D. Rossi',
-  'H. Van Dijk',
-];
-
-function seedFrom(text: string): number {
-  let hash = 2166136261;
-  for (let i = 0; i < text.length; i += 1) {
-    hash ^= text.charCodeAt(i);
-    hash = Math.imul(hash, 16777619);
-  }
-  return hash >>> 0;
-}
-
-function rng(seed: number) {
-  let s = seed >>> 0;
-  return () => {
-    s = (s * 1664525 + 1013904223) >>> 0;
-    return s / 0xffffffff;
-  };
-}
-
-function startOfHour(date: Date): Date {
-  const d = new Date(date);
-  d.setMinutes(0, 0, 0);
-  return d;
-}
-
-export function createMockReservations(
-  vertical: Vertical,
-  units: PhysicalUnit[],
-  blueprints: InventoryBlueprint[]
-): Reservation[] {
-  const rand = rng(seedFrom(`${vertical}:${units.map((u) => u.id).join(',')}`));
-  const now = startOfHour(new Date());
-  const blueprintById = new Map(blueprints.map((b) => [b.id, b]));
-  const reservations: Reservation[] = [];
-
-  units.forEach((unit) => {
-    const blueprint = blueprintById.get(unit.blueprintId);
-    const perUnit = 2 + Math.floor(rand() * 3); // 2–4
-    for (let i = 0; i < perUnit; i += 1) {
-      const dayOffset = Math.floor(rand() * 7);
-      const startHour = 17 + Math.floor(rand() * 6); // 17:00–22:00
-      const duration = vertical === 'hotel' ? 24 * (1 + Math.floor(rand() * 3)) : 2;
-
-      const start = new Date(now);
-      start.setDate(start.getDate() + dayOffset);
-      start.setHours(startHour, 0, 0, 0);
-      const end = new Date(start);
-      end.setHours(end.getHours() + duration);
-
-      const active = dayOffset === 0 && i === 0;
-      reservations.push({
-        id: `res_${unit.id}_${i}`,
-        unitId: unit.id,
-        blueprintId: unit.blueprintId,
-        guestName: GUEST_POOL[Math.floor(rand() * GUEST_POOL.length)],
-        partySize: Math.max(1, Math.round((blueprint?.capacity ?? 2) * (0.5 + rand() * 0.5))),
-        start: start.toISOString(),
-        end: end.toISOString(),
-        status: active ? 'active' : 'upcoming',
-        posSpend: active ? Math.round(rand() * (blueprint?.basePrice || 1500)) : 0,
-      });
-    }
-  });
-
-  return reservations.sort((a, b) => a.start.localeCompare(b.start));
-}
 
 export function reservationsForUnit(reservations: Reservation[], unitId: string): Reservation[] {
   return reservations.filter((r) => r.unitId === unitId).sort((a, b) => a.start.localeCompare(b.start));

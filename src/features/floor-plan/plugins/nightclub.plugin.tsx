@@ -1,7 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 import type { BusinessData, FloorEntity, FloorPlan, SpatialData } from '../core/types';
 import type { DrawerContext, TileContext, TopBarContext, ToolbarItem, VerticalPlugin } from '../core/plugin';
-import { createClubPlan } from '../mock/fixtures/club';
 import { SpendTierHeatmap } from '../components/overlays/SpendTierHeatmap';
 import { ScopeNav } from '../components/overlays/ScopeNav';
 import { BlueprintSpecs } from '../components/BlueprintSpecs';
@@ -286,5 +285,4 @@ export const nightclubPlugin: VerticalPlugin = {
       render: (plan) => <SpendTierHeatmap plan={plan} />,
     },
   ],
-  createMockPlan: createClubPlan,
 };

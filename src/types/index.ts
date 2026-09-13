@@ -464,3 +464,6 @@ export interface AppRoute {
 }
 
 export type ToastType = 'success' | 'error' | 'warning' | 'info';
+
+// ─── Floor Plan / Inventory (API layer) ───────────────────────────────────────
+export * from './floorplan';

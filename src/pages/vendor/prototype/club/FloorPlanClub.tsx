@@ -1,5 +1,12 @@
+import { useSearchParams } from 'react-router-dom';
 import { PrototypeFloorPlanView, nightclubPlugin } from '@/features/floor-plan';
 
 export default function PrototypeFloorPlanClub() {
-  return <PrototypeFloorPlanView plugin={nightclubPlugin} />;
+  const [searchParams] = useSearchParams();
+  return (
+    <PrototypeFloorPlanView
+      plugin={nightclubPlugin}
+      planId={searchParams.get('planId') ?? undefined}
+    />
+  );
 }

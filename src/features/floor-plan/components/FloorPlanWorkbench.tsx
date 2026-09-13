@@ -2,8 +2,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { FloorEntity } from '../core/types';
 import type { EntityTypeDefinition, VerticalPlugin } from '../core/plugin';
 import { useCanvasState } from '../core/useCanvasState';
-import { useFloorPlanStore, type FloorPlanStore } from '../mock/mockStore';
-import { uid } from '../mock/generator';
+import type { FloorPlanStore } from '../core/store';
+import { uid } from '../core/ids';
 import { CanvasSurface } from '../core/CanvasSurface';
 import { CanvasControls } from '../core/CanvasControls';
 import { FloorPlanToolbar } from './FloorPlanToolbar';
@@ -21,7 +21,7 @@ import type { InventoryBlueprint, Reservation, Vertical } from '../domain/types'
 
 interface FloorPlanWorkbenchProps {
   plugin: VerticalPlugin;
-  store?: FloorPlanStore;
+  store: FloorPlanStore;
   highlightUnitId?: string | null;
   onHighlightUnit?: (id: string | null) => void;
   reservations?: Reservation[];
@@ -30,16 +30,14 @@ interface FloorPlanWorkbenchProps {
 
 export function FloorPlanWorkbench({
   plugin,
-  store: externalStore,
+  store,
   highlightUnitId,
   onHighlightUnit,
   reservations,
   onReservationChange,
 }: FloorPlanWorkbenchProps) {
-  const internalStore = useFloorPlanStore(plugin.id);
-  const store = externalStore ?? internalStore;
   const vertical = plugin.id as Vertical;
-  const canvas = useCanvasState('manage');
+  const canvas = useCanvasState('edit');
   const [activeOverlays, setActiveOverlays] = useState<string[]>([]);
   const [drawerEntityId, setDrawerEntityId] = useState<string | null>(null);
   const [fitSignal, setFitSignal] = useState(0);
@@ -103,6 +101,10 @@ export function FloorPlanWorkbench({
   const handlePlaceUnit = useCallback(
     (input: UnitPlacementInput, position?: { x: number; y: number }) => {
       const blueprint = findBlueprint(allBlueprints(vertical), input.blueprintId);
+      if (!blueprint) {
+        window.alert('Please select a valid blueprint before placing the unit.');
+        return;
+      }
       const object = CATEGORY_OBJECTS[vertical];
       const width = blueprint?.canvasWidth ?? object.width;
       const height = blueprint?.canvasHeight ?? object.height;

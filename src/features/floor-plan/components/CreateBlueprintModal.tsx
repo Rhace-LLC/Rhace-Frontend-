@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Modal } from '@/components/others/RhaceModal';
-import { createCustomBlueprint, saveCustomBlueprint } from '../domain/blueprintStore';
+import { inventoryBlueprintService } from '@/services/inventoryBlueprint.service';
+import { toDomainBlueprint } from '../api/adapter';
 import type { BookingPolicy, EntityShape, InventoryBlueprint, PaymentStrategy, Vertical } from '../domain/types';
+import type { BlueprintCategoryDto, FloorPlanVertical } from '@/types';
 
 interface CreateBlueprintModalProps {
   vertical: Vertical;
@@ -10,6 +12,18 @@ interface CreateBlueprintModalProps {
   onClose: () => void;
   onSaved: (blueprint: InventoryBlueprint) => void;
 }
+
+function categoryForVertical(vertical: Vertical): BlueprintCategoryDto {
+  if (vertical === 'hotel') return 'room';
+  if (vertical === 'club') return 'club_table';
+  return 'restaurant_table';
+}
+
+const CONFIG_LABEL: Record<Vertical, string> = {
+  hotel: 'Room Config',
+  club: 'Table Config',
+  restaurant: 'Table Config',
+};
 
 const PAYMENT_OPTIONS: Array<{ value: PaymentStrategy; label: string }> = [
   { value: 'full_prepayment', label: 'Full Prepayment' },
@@ -43,6 +57,7 @@ export function CreateBlueprintModal({
   onClose,
   onSaved,
 }: CreateBlueprintModalProps) {
+  const [saving, setSaving] = useState(false);
   const [name, setName] = useState('');
   const [type, setType] = useState('');
   const [basePrice, setBasePrice] = useState('0');
@@ -82,35 +97,49 @@ export function CreateBlueprintModal({
     setAmenities(next.join('\n'));
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!name.trim()) return;
     const bookingPolicies: BookingPolicy[] = lines(policies).map((label, index) => ({
       id: `policy_${index}_${label.toLowerCase().replace(/[^a-z0-9]+/g, '_')}`,
       kind: 'other',
       label,
     }));
-    const blueprint = createCustomBlueprint(vertical, {
-      id: initial?.id,
-      name: name.trim(),
-      type: type.trim() || name.trim(),
-      basePrice: Number(basePrice) || 0,
-      capacity: Number(capacity) || 1,
-      maxCapacity: Number(maxCapacity) || Number(capacity) || 1,
-      canvasShape,
-      paymentStrategies: payments,
-      amenities: lines(amenities),
-      bookingPolicies,
-      images: lines(images),
-    });
-    saveCustomBlueprint(blueprint);
-    onSaved(blueprint);
+    const amenityLabels = lines(amenities);
+
+    setSaving(true);
+    try {
+      const payload = {
+        vertical: vertical as FloorPlanVertical,
+        category: categoryForVertical(vertical),
+        name: name.trim(),
+        type: type.trim() || name.trim(),
+        basePrice: Number(basePrice) || 0,
+        capacity: Number(capacity) || 1,
+        maxCapacity: Number(maxCapacity) || Number(capacity) || 1,
+        canvasShape,
+        allowedPaymentStrategies: payments,
+        amenities: amenityLabels.map((label) => ({
+          id: label.toLowerCase().replace(/[^a-z0-9]+/g, '_'),
+          label,
+        })),
+        bookingPolicies,
+        images: lines(images),
+      };
+      const response = initial?.id
+        ? await inventoryBlueprintService.update(initial.id, payload)
+        : await inventoryBlueprintService.create(payload);
+      if (response.data) onSaved(toDomainBlueprint(response.data));
+      else onClose();
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={initial ? 'Edit Inventory Blueprint' : 'Create Inventory Blueprint'}
+      title={initial ? `Edit ${CONFIG_LABEL[vertical]}` : `Create a ${CONFIG_LABEL[vertical]}`}
       subtitle={`${vertical.charAt(0).toUpperCase() + vertical.slice(1)} · specs, pricing, policies`}
       footer={
         <>
@@ -122,9 +151,10 @@ export function CreateBlueprintModal({
           </button>
           <button
             onClick={handleSave}
-            className="rounded-lg bg-teal-700 px-3 py-2 text-xs font-medium text-white hover:bg-teal-800"
+            disabled={saving}
+            className="rounded-lg bg-teal-700 px-3 py-2 text-xs font-medium text-white hover:bg-teal-800 disabled:opacity-50"
           >
-            Save Blueprint
+            {saving ? 'Saving…' : 'Save Blueprint'}
           </button>
         </>
       }

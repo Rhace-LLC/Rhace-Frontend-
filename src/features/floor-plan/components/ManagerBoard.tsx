@@ -1,40 +1,32 @@
-import { useState } from 'react';
 import type { VerticalPlugin } from '../core/plugin';
-import type { FloorPlanStore } from '../mock/mockStore';
+import type { FloorPlanStore } from '../core/store';
 import { entityToUnit } from '../domain/adapter';
 import { isAvailableState, isLocked } from '../domain/reservations';
-import { simulateBooking } from '../domain/reservations.fixture';
-import { nowWindow } from '../domain/availability';
-import { canTransition, nextStates } from '../domain/transitions';
-import { stateMetaFor } from '../domain/states';
 import { allBlueprints } from '../domain/blueprintStore';
 import { LockBadge } from './LockBadge';
-import { Zap } from 'lucide-react';
-import type { InventoryBlueprint, Reservation, UnitState, Vertical } from '../domain/types';
+import type { InventoryBlueprint, Reservation, Vertical } from '../domain/types';
 
 interface ManagerBoardProps {
   plugin: VerticalPlugin;
   store: FloorPlanStore;
   reservations: Reservation[];
   highlightUnitId?: string | null;
-  onBooked?: () => void;
+  /** Overrides the built-in (mock) blueprint catalog — used by the API layer. */
+  blueprints?: InventoryBlueprint[];
+  onManageUnit?: (unitId: string) => void;
 }
 
 export function ManagerBoard({
   plugin,
   store,
-  reservations,
+  reservations: _reservations,
   highlightUnitId,
-  onBooked,
+  blueprints: blueprintsProp,
+  onManageUnit,
 }: ManagerBoardProps) {
   const vertical = plugin.id as Vertical;
   const plan = store.plan;
-  const blueprints = allBlueprints(vertical);
-  const [, forceRender] = useState(0);
-
-  const allUnits = plan.entities
-    .filter((e) => e.spatialData.layer !== 'structure' && e.spatialData.layer !== 'area')
-    .map((entity) => entityToUnit(entity, vertical, blueprints));
+  const blueprints = blueprintsProp ?? allBlueprints(vertical);
 
   const scopedEntities = plugin.filterEntities
     ? plugin.filterEntities(plan, plan.entities)
@@ -57,30 +49,6 @@ export function ManagerBoard({
       (s) => isAvailableState(vertical, s.unit.state) && !isLocked(s.unit.id)
     ).length,
     locked: scopedUnits.filter((s) => isLocked(s.unit.id)).length,
-  };
-
-  const batchTargets = (entries: typeof scopedUnits): UnitState[] => {
-    const set = new Set<UnitState>();
-    entries.forEach(({ unit }) => nextStates(vertical, unit.state).forEach((s) => set.add(s)));
-    return Array.from(set);
-  };
-
-  const applyBatch = (entries: typeof scopedUnits, target: UnitState) => {
-    const ids = entries
-      .filter(({ unit }) => canTransition(vertical, unit.state, target))
-      .map(({ entity }) => entity.entityId);
-    if (!ids.length) return;
-    store.updateEntities(ids, () => ({ businessData: { status: target } }));
-  };
-
-  const simulate = (blueprint: InventoryBlueprint) => {
-    const result = simulateBooking(allUnits, reservations, blueprint.id, nowWindow(vertical));
-    if (result) {
-      forceRender((n) => n + 1);
-      onBooked?.();
-    } else {
-      window.alert(`No available ${blueprint.name} units right now.`);
-    }
   };
 
   return (
@@ -129,7 +97,6 @@ export function ManagerBoard({
             const available = entries.filter(
               (e) => isAvailableState(vertical, e.unit.state) && !isLocked(e.unit.id)
             ).length;
-            const targets = batchTargets(entries);
             return (
               <section key={blueprint.id}>
                 <header className="mb-3 flex flex-wrap items-center justify-between gap-3 border-b border-gray-200 pb-3">
@@ -144,12 +111,6 @@ export function ManagerBoard({
                     </div>
                   </div>
                   <div className="flex flex-wrap items-center gap-2 text-[11px]">
-                    <button
-                      onClick={() => simulate(blueprint)}
-                      className="flex items-center gap-1 rounded-full border border-teal-200 bg-teal-50 px-2.5 py-1 font-medium text-teal-700 hover:bg-teal-100"
-                    >
-                      <Zap size={11} /> Simulate booking
-                    </button>
                     <span className="rounded-full bg-gray-100 px-2 py-0.5 text-gray-600">
                       {entries.length} total
                     </span>
@@ -161,29 +122,6 @@ export function ManagerBoard({
                     </span>
                   </div>
                 </header>
-
-                {targets.length > 0 && (
-                  <div className="mb-3 flex flex-wrap items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-[11px]">
-                    <span className="font-medium text-gray-500">Batch:</span>
-                    {targets.map((target) => {
-                      const meta = stateMetaFor(vertical, target);
-                      const count = entries.filter(({ unit }) =>
-                        canTransition(vertical, unit.state, target)
-                      ).length;
-                      if (!count) return null;
-                      return (
-                        <button
-                          key={target}
-                          onClick={() => applyBatch(entries, target)}
-                          className="rounded-full border px-2.5 py-1 font-medium transition-colors hover:bg-gray-50"
-                          style={{ borderColor: `${meta.color}55`, color: meta.color }}
-                        >
-                          Mark {count} → {meta.label}
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
 
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                   {entries.map(({ entity, unit }) => (
@@ -210,6 +148,14 @@ export function ManagerBoard({
                             vertical: plugin.id,
                           })}
                         </div>
+                      )}
+                      {onManageUnit && (
+                        <button
+                          onClick={() => onManageUnit(entity.entityId)}
+                          className="absolute bottom-2 right-2 z-10 rounded-md border border-teal-200 bg-white/95 px-2 py-0.5 text-[10px] font-medium text-teal-700 hover:bg-teal-50"
+                        >
+                          Manage
+                        </button>
                       )}
                     </div>
                   ))}

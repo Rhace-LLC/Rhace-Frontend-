@@ -167,12 +167,36 @@ export function CanvasSurface({
     return () => node.removeEventListener('wheel', handler);
   }, [canvas]);
 
+  const fittedKeyRef = useRef<string | null>(null);
+
   useEffect(() => {
-    const rect = containerRef.current?.getBoundingClientRect();
-    if (!rect || rect.width === 0) return;
-    canvas.fit(plan.width, plan.height, rect.width, rect.height);
+    const node = containerRef.current;
+    if (!node) return;
+
+    const key = `${plan.floorPlanId}:${plan.floor ?? ''}:${fitSignal ?? 0}`;
+    const fitOnce = () => {
+      if (fittedKeyRef.current === key) return;
+      const rect = node.getBoundingClientRect();
+      if (rect.width > 0 && rect.height > 0) {
+        canvas.fit(plan.width, plan.height, rect.width, rect.height);
+        fittedKeyRef.current = key;
+      }
+    };
+
+    // Fit on mount (or when floor / fit request changes), and once more when
+    // the flex parent first reports a non-zero size. Deliberately NOT on every
+    // resize: opening the Properties panel must not re-centre mid-interaction.
+    fitOnce();
+    const raf = requestAnimationFrame(fitOnce);
+    const observer = new ResizeObserver(fitOnce);
+    observer.observe(node);
+
+    return () => {
+      cancelAnimationFrame(raf);
+      observer.disconnect();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [plan.floor, plan.floorPlanId, fitSignal]);
+  }, [plan.width, plan.height, plan.floor, plan.floorPlanId, fitSignal]);
 
   // Space-to-pan.
   useEffect(() => {
@@ -454,7 +478,7 @@ export function CanvasSurface({
         const point = clientToPlan(event);
         onDropNew(kind, point.x, point.y, event.altKey);
       }}
-      className={`relative h-full w-full overflow-hidden ${plugin.theme.viewport} ${
+      className={`relative h-full min-h-[480px] w-full overflow-hidden ${plugin.theme.viewport} ${
         spaceHeld || canvas.panTool
           ? 'cursor-grab'
           : canvas.mode === 'edit'

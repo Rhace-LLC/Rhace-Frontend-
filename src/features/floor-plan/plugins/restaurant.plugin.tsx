@@ -2,8 +2,7 @@
 import { Clock, Users } from 'lucide-react';
 import type { BusinessData, FloorEntity, FloorPlan, SpatialData } from '../core/types';
 import type { DrawerContext, TileContext, TopBarContext, ToolbarItem, VerticalPlugin } from '../core/plugin';
-import { createRestaurantPlan } from '../mock/fixtures/restaurant';
-import { uid } from '../mock/generator';
+import { uid } from '../core/ids';
 import { SectionHeatmap } from '../components/overlays/SectionHeatmap';
 import { ScopeNav } from '../components/overlays/ScopeNav';
 import { BlueprintSpecs } from '../components/BlueprintSpecs';
@@ -368,5 +367,4 @@ export const restaurantPlugin: VerticalPlugin = {
       render: (plan) => <SectionHeatmap plan={plan} />,
     },
   ],
-  createMockPlan: createRestaurantPlan,
 };

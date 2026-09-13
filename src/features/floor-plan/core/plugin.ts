@@ -114,5 +114,4 @@ export interface VerticalPlugin {
   renderAreaTile?: (entity: FloorEntity, ctx: TileContext) => ReactNode;
   renderDrawer: (entity: FloorEntity, ctx: DrawerContext) => ReactNode;
   overlays?: OverlayDefinition[];
-  createMockPlan: () => FloorPlan;
 }

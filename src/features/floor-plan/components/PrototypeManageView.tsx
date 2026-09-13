@@ -1,40 +1,61 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ExternalLink, RotateCcw, Zap } from 'lucide-react';
+import { useQueryClient } from '@tanstack/react-query';
+import { ExternalLink, Box, Plus } from 'lucide-react';
 import type { VerticalPlugin } from '../core/plugin';
-import { useFloorPlanStore } from '../mock/mockStore';
-import { allBlueprints } from '../domain/blueprintStore';
+import { allBlueprints, setRuntimeBlueprints } from '../domain/blueprintStore';
 import { entityToUnit } from '../domain/adapter';
+import { toDomainBlueprint } from '../api/adapter';
+import { useApiFloorPlanStore } from '../api/useApiFloorPlanStore';
+import { useEnsureBlueprints, useResolvedFloorPlan } from '../api/useResolvedFloorPlan';
+import { useCreateUnit } from '../api/hooks';
+import { floorPlanKeys } from '../api/keys';
 import { isAvailableState, isLocked } from '../domain/reservations';
-import { seedReservations, simulateBooking } from '../domain/reservations.fixture';
-import { nowWindow } from '../domain/availability';
-import { canTransition, nextStates } from '../domain/transitions';
-import { stateMetaFor } from '../domain/states';
+import { defaultStateFor } from '../domain/states';
 import { LockBadge } from './LockBadge';
-import type { InventoryBlueprint, UnitState, Vertical } from '../domain/types';
+import { CreateBlueprintModal } from './CreateBlueprintModal';
+import { AddPhysicalUnitModal, type UnitPlacementInput } from './AddPhysicalUnitModal';
+import { UnitManageModal } from './UnitManageModal';
+import type { InventoryBlueprint, PhysicalUnit, Vertical } from '../domain/types';
+import type { FloorPlanVertical } from '@/types';
 
 interface PrototypeManageViewProps {
   plugin: VerticalPlugin;
   floorPlanPath: string;
   description: string;
+  planId?: string;
 }
 
-export function PrototypeManageView({ plugin, floorPlanPath, description }: PrototypeManageViewProps) {
-  const store = useFloorPlanStore(plugin.id);
+type UnitFilter = 'all' | 'available' | 'reserved' | 'locked';
+
+const CONFIG_LABEL: Record<Vertical, string> = {
+  hotel: 'Create a Room Config',
+  club: 'Create a Table Config',
+  restaurant: 'Create a Table Config',
+};
+
+export function PrototypeManageView({ plugin, floorPlanPath, description, planId: preferredPlanId }: PrototypeManageViewProps) {
   const vertical = plugin.id as Vertical;
-  const plan = store.plan;
-  const blueprints = allBlueprints(vertical);
-  const [, forceRender] = useState(0);
-
-  const allUnits = plan.entities
-    .filter((e) => e.spatialData.layer !== 'structure' && e.spatialData.layer !== 'area')
-    .map((entity) => entityToUnit(entity, vertical, blueprints));
-
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const reservations = useMemo(
-    () => seedReservations(vertical, allUnits, blueprints),
-    [vertical, plan.entities.length]
+  const queryClient = useQueryClient();
+  const { planId, isLoading } = useResolvedFloorPlan(
+    plugin.id as FloorPlanVertical,
+    preferredPlanId
   );
+  const blueprintQuery = useEnsureBlueprints(plugin.id as FloorPlanVertical);
+  const apiBlueprints = useMemo(
+    () => (blueprintQuery.data?.items ?? []).map(toDomainBlueprint),
+    [blueprintQuery.data]
+  );
+  setRuntimeBlueprints(vertical, apiBlueprints);
+  const blueprints = apiBlueprints.length ? apiBlueprints : allBlueprints(vertical);
+  const store = useApiFloorPlanStore(plugin.id, planId);
+  const plan = store.plan;
+  const createUnit = useCreateUnit();
+
+  const [filter, setFilter] = useState<UnitFilter>('all');
+  const [blueprintModalOpen, setBlueprintModalOpen] = useState(false);
+  const [addUnitOpen, setAddUnitOpen] = useState(false);
+  const [manageUnitId, setManageUnitId] = useState<string | null>(null);
 
   const scopedEntities = plugin.filterEntities
     ? plugin.filterEntities(plan, plan.entities)
@@ -44,45 +65,70 @@ export function PrototypeManageView({ plugin, floorPlanPath, description }: Prot
     .filter((e) => e.spatialData.layer !== 'structure' && e.spatialData.layer !== 'area')
     .map((entity) => ({ unit: entityToUnit(entity, vertical, blueprints), entity }));
 
-  const groups = blueprints
-    .map((blueprint) => ({
-      blueprint,
-      entries: scopedUnits.filter((s) => s.unit.blueprintId === blueprint.id),
-    }))
-    .filter((group) => group.entries.length > 0);
+  const unitAvailable = (unit: PhysicalUnit) =>
+    isAvailableState(vertical, unit.state) && !isLocked(unit.id);
 
   const summary = {
     units: scopedUnits.length,
-    available: scopedUnits.filter(
-      (s) => isAvailableState(vertical, s.unit.state) && !isLocked(s.unit.id)
-    ).length,
+    available: scopedUnits.filter((s) => unitAvailable(s.unit)).length,
     locked: scopedUnits.filter((s) => isLocked(s.unit.id)).length,
   };
+  const reservedCount = summary.units - summary.available - summary.locked;
 
-  const batchTargets = (entries: typeof scopedUnits): UnitState[] => {
-    const set = new Set<UnitState>();
-    entries.forEach(({ unit }) =>
-      nextStates(vertical, unit.state).forEach((state) => set.add(state))
+  const matchesFilter = (unit: PhysicalUnit): boolean => {
+    if (filter === 'all') return true;
+    if (filter === 'available') return unitAvailable(unit);
+    if (filter === 'locked') return isLocked(unit.id);
+    return !unitAvailable(unit) && !isLocked(unit.id);
+  };
+
+  const groups = blueprints
+    .map((blueprint) => ({
+      blueprint,
+      entries: scopedUnits
+        .filter((s) => s.unit.blueprintId === blueprint.id)
+        .filter((s) => matchesFilter(s.unit)),
+    }))
+    .filter((group) => group.entries.length > 0);
+
+  const floors = plan.floors?.length ? plan.floors : plan.floor ? [plan.floor] : [];
+  const sections = plan.areas ?? [];
+
+  const planLink = planId
+    ? `${floorPlanPath}${floorPlanPath.includes('?') ? '&' : '?'}planId=${planId}`
+    : floorPlanPath;
+
+  const handlePlaceUnit = (input: UnitPlacementInput) => {
+    if (!planId) return;
+    createUnit.mutate(
+      {
+        planId,
+        input: {
+          blueprintId: input.blueprintId,
+          label: input.designation || undefined,
+          floorId: input.floor,
+          sectionId: input.section,
+          state: input.state,
+        },
+      },
+      { onSuccess: () => setAddUnitOpen(false) }
     );
-    return Array.from(set);
   };
 
-  const applyBatch = (entries: typeof scopedUnits, target: UnitState) => {
-    const ids = entries
-      .filter(({ unit }) => canTransition(vertical, unit.state, target))
-      .map(({ entity }) => entity.entityId);
-    if (!ids.length) return;
-    store.updateEntities(ids, () => ({ businessData: { status: target } }));
-  };
+  const FILTERS: Array<{ id: UnitFilter; label: string; className: string }> = [
+    { id: 'all', label: `${summary.units} units`, className: 'bg-white text-gray-700 shadow-sm' },
+    { id: 'available', label: `${summary.available} available`, className: 'bg-green-100 text-green-700' },
+    { id: 'reserved', label: `${reservedCount} reserved`, className: 'bg-gray-100 text-gray-600' },
+    { id: 'locked', label: `${summary.locked} locked`, className: 'bg-amber-100 text-amber-700' },
+  ];
 
-  const simulate = (blueprint: InventoryBlueprint) => {
-    const result = simulateBooking(allUnits, reservations, blueprint.id, nowWindow(vertical));
-    if (result) {
-      forceRender((n) => n + 1);
-    } else {
-      window.alert(`No available ${blueprint.name} units right now.`);
-    }
-  };
+  if (isLoading && !planId) {
+    return (
+      <div className="flex min-h-screen items-center justify-center text-sm text-gray-500">
+        Preparing your floor plan…
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-6">
@@ -90,24 +136,31 @@ export function PrototypeManageView({ plugin, floorPlanPath, description }: Prot
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-lg font-semibold text-gray-900">
+              <h1 className="text-lg font-semibold capitalize text-gray-900">
                 {plugin.label} — Prototype Manager
               </h1>
-              <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-medium text-amber-700">
-                MOCK DATA
+              <span className="rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-medium text-green-700">
+                LIVE API
               </span>
             </div>
             <p className="mt-1 text-sm text-gray-500">{description}</p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <button
-              onClick={store.resetDraft}
-              className="flex items-center gap-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs font-medium text-gray-600 hover:bg-gray-50"
+              onClick={() => setBlueprintModalOpen(true)}
+              className="flex items-center gap-1 rounded-lg border border-teal-200 bg-white px-3 py-2 text-xs font-medium text-teal-700 hover:bg-teal-50"
             >
-              <RotateCcw size={14} /> Reset
+              <Plus size={14} /> {CONFIG_LABEL[vertical]}
+            </button>
+            <button
+              onClick={() => setAddUnitOpen(true)}
+              disabled={blueprints.length === 0}
+              className="flex items-center gap-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-40"
+            >
+              <Box size={14} /> Add Physical Unit
             </button>
             <Link
-              to={floorPlanPath}
+              to={planLink}
               className="flex items-center gap-1 rounded-lg bg-teal-700 px-3 py-2 text-xs font-medium text-white hover:bg-teal-800"
             >
               Open floor plan <ExternalLink size={14} />
@@ -133,36 +186,29 @@ export function PrototypeManageView({ plugin, floorPlanPath, description }: Prot
         )}
 
         <div className="mb-6 flex flex-wrap gap-2 text-xs">
-          <span className="rounded-full bg-white px-3 py-1 font-medium text-gray-700 shadow-sm">
-            {summary.units} units
-          </span>
-          <span className="rounded-full bg-green-100 px-3 py-1 font-medium text-green-700">
-            {summary.available} available
-          </span>
-          <span className="rounded-full bg-gray-100 px-3 py-1 font-medium text-gray-600">
-            {summary.units - summary.available} reserved
-          </span>
-          {summary.locked > 0 && (
-            <span className="rounded-full bg-amber-100 px-3 py-1 font-medium text-amber-700">
-              {summary.locked} locked
-            </span>
-          )}
-          <span className="rounded-full bg-white px-3 py-1 text-gray-400 shadow-sm">
-            {reservations.length} seeded reservations
-          </span>
+          {FILTERS.map((entry) => (
+            <button
+              key={entry.id}
+              onClick={() => setFilter(entry.id)}
+              className={`rounded-full px-3 py-1 font-medium transition-all ${entry.className} ${
+                filter === entry.id ? 'ring-2 ring-teal-500 ring-offset-1' : 'opacity-80 hover:opacity-100'
+              }`}
+            >
+              {entry.label}
+            </button>
+          ))}
         </div>
 
         {groups.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-gray-300 bg-white py-20 text-center text-sm text-gray-500">
-            No units on this floor.
+            {summary.units === 0
+              ? 'No units yet. Add a physical unit to get started.'
+              : 'No units match this filter.'}
           </div>
         ) : (
           <div className="space-y-8">
             {groups.map(({ blueprint, entries }) => {
-              const available = entries.filter(
-                (e) => isAvailableState(vertical, e.unit.state) && !isLocked(e.unit.id)
-              ).length;
-              const targets = batchTargets(entries);
+              const available = entries.filter((e) => unitAvailable(e.unit)).length;
               return (
                 <section key={blueprint.id}>
                   <header className="mb-3 flex flex-wrap items-center justify-between gap-3 border-b border-gray-200 pb-3">
@@ -177,46 +223,14 @@ export function PrototypeManageView({ plugin, floorPlanPath, description }: Prot
                       </div>
                     </div>
                     <div className="flex flex-wrap items-center gap-2 text-[11px]">
-                      <button
-                        onClick={() => simulate(blueprint)}
-                        className="flex items-center gap-1 rounded-full border border-teal-200 bg-teal-50 px-2.5 py-1 font-medium text-teal-700 hover:bg-teal-100"
-                      >
-                        <Zap size={11} /> Simulate booking
-                      </button>
                       <span className="rounded-full bg-gray-100 px-2 py-0.5 text-gray-600">
                         {entries.length} total
                       </span>
                       <span className="rounded-full bg-green-100 px-2 py-0.5 text-green-700">
                         {available} available
                       </span>
-                      <span className="rounded-full bg-amber-100 px-2 py-0.5 text-amber-700">
-                        {entries.length - available} reserved
-                      </span>
                     </div>
                   </header>
-
-                  {targets.length > 0 && (
-                    <div className="mb-3 flex flex-wrap items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-[11px]">
-                      <span className="font-medium text-gray-500">Batch:</span>
-                      {targets.map((target) => {
-                        const meta = stateMetaFor(vertical, target);
-                        const count = entries.filter(({ unit }) =>
-                          canTransition(vertical, unit.state, target)
-                        ).length;
-                        if (!count) return null;
-                        return (
-                          <button
-                            key={target}
-                            onClick={() => applyBatch(entries, target)}
-                            className="rounded-full border px-2.5 py-1 font-medium transition-colors hover:bg-gray-50"
-                            style={{ borderColor: `${meta.color}55`, color: meta.color }}
-                          >
-                            Mark {count} → {meta.label}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  )}
 
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                     {entries.map(({ entity, unit }) => (
@@ -237,6 +251,12 @@ export function PrototypeManageView({ plugin, floorPlanPath, description }: Prot
                             })}
                           </div>
                         )}
+                        <button
+                          onClick={() => setManageUnitId(unit.id)}
+                          className="absolute bottom-2 right-2 z-10 rounded-md border border-teal-200 bg-white/95 px-2.5 py-0.5 text-[10px] font-medium text-teal-700 hover:bg-teal-50"
+                        >
+                          Manage
+                        </button>
                       </div>
                     ))}
                   </div>
@@ -246,6 +266,36 @@ export function PrototypeManageView({ plugin, floorPlanPath, description }: Prot
           </div>
         )}
       </div>
+
+      <CreateBlueprintModal
+        vertical={vertical}
+        isOpen={blueprintModalOpen}
+        onClose={() => setBlueprintModalOpen(false)}
+        onSaved={() => {
+          setBlueprintModalOpen(false);
+          queryClient.invalidateQueries({ queryKey: floorPlanKeys.all });
+        }}
+      />
+
+      <AddPhysicalUnitModal
+        vertical={vertical}
+        isOpen={addUnitOpen}
+        blueprints={blueprints}
+        floors={floors}
+        sections={sections}
+        defaultFloor={plan.floor}
+        defaultSection={plan.activeArea}
+        defaultState={defaultStateFor(vertical)}
+        onClose={() => setAddUnitOpen(false)}
+        onPlace={handlePlaceUnit}
+      />
+
+      <UnitManageModal
+        unitId={manageUnitId}
+        vertical={vertical}
+        blueprints={blueprints}
+        onClose={() => setManageUnitId(null)}
+      />
     </div>
   );
 }

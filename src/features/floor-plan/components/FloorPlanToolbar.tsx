@@ -1,7 +1,6 @@
 import { Redo2, RotateCcw, Undo2 } from 'lucide-react';
 import type { BusinessData, CanvasMode, FloorEntity, FloorPlan, SpatialData } from '../core/types';
 import type { ToolbarItem, VerticalPlugin } from '../core/plugin';
-import { ModeSwitcher } from '../core/ModeSwitcher';
 
 interface FloorPlanToolbarProps {
   plan: FloorPlan;
@@ -34,7 +33,7 @@ export function FloorPlanToolbar({
   plan,
   plugin,
   mode,
-  onModeChange,
+  onModeChange: _onModeChange,
   onFit,
   onReset,
   onUndo,
@@ -58,9 +57,9 @@ export function FloorPlanToolbar({
       <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
         <div className="flex items-center gap-3">
           <div>
-            <h1 className="text-sm font-semibold text-gray-900">{plan.name}</h1>
+            <h1 className="text-sm font-semibold capitalize text-gray-900">{plugin.label}</h1>
             <p className="text-xs capitalize text-gray-500">
-              {plugin.label} · {plan.entities.length} objects · {plan.floor ?? ''}
+              {plan.entities.length} objects · {plan.floor ?? ''}
             </p>
           </div>
           {plugin.renderTopBar && (
@@ -95,7 +94,6 @@ export function FloorPlanToolbar({
               {overlay.label}
             </button>
           ))}
-          <ModeSwitcher mode={mode} onChange={onModeChange} />
         </div>
       </div>
 
