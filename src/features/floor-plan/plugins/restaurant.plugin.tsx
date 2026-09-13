@@ -6,12 +6,25 @@ import { createRestaurantPlan } from '../mock/fixtures/restaurant';
 import { uid } from '../mock/generator';
 import { SectionHeatmap } from '../components/overlays/SectionHeatmap';
 import { ScopeNav } from '../components/overlays/ScopeNav';
+import { BlueprintSpecs } from '../components/BlueprintSpecs';
+import { stateMetaFor } from '../domain/states';
+import { canTransition } from '../domain/transitions';
+import { allBlueprints } from '../domain/blueprintStore';
+import { findBlueprint } from '../domain/blueprints';
+import type { RestaurantTableState } from '../domain/types';
 
-const STAGES = ['Appetizer', 'Entree', 'Dessert', 'Check'];
+const RESTAURANT_STATE_ORDER: RestaurantTableState[] = [
+  'available',
+  'reserved_held',
+  'seated_ordering',
+  'entrees_served',
+  'awaiting_check',
+  'dirty_bussing',
+];
 
-function ServiceRing({ stage }: { stage: string }) {
-  const idx = Math.max(0, STAGES.indexOf(stage));
-  const pct = (idx + 1) / STAGES.length;
+function ServiceRing({ state }: { state: string }) {
+  const idx = Math.max(0, RESTAURANT_STATE_ORDER.indexOf(state as RestaurantTableState));
+  const pct = (idx + 1) / RESTAURANT_STATE_ORDER.length;
   const circumference = 2 * Math.PI * 9;
   return (
     <svg viewBox="0 0 24 24" className="h-6 w-6 -rotate-90">
@@ -30,14 +43,20 @@ function ServiceRing({ stage }: { stage: string }) {
   );
 }
 
-function statusBadge(status?: string) {
-  const map: Record<string, string> = {
-    occupied: 'bg-blue-100 text-blue-700',
-    reserved: 'bg-amber-100 text-amber-700',
-    available: 'bg-green-100 text-green-700',
-    combined: 'bg-purple-100 text-purple-700',
-  };
-  return map[status ?? ''] ?? 'bg-gray-100 text-gray-600';
+function StateChip({ state, className = '' }: { state: string; className?: string }) {
+  const meta = stateMetaFor('restaurant', state);
+  return (
+    <span
+      className={`w-max rounded-full px-1.5 py-0.5 text-[9px] font-medium ${className}`}
+      style={{ backgroundColor: `${meta.color}22`, color: meta.color }}
+    >
+      {meta.label}
+    </span>
+  );
+}
+
+function restaurantBlueprint(entity: FloorEntity) {
+  return findBlueprint(allBlueprints('restaurant'), String(entity.businessData.blueprintId ?? ''));
 }
 
 function renderScopeNav(ctx: TopBarContext) {
@@ -98,7 +117,7 @@ function renderScopeNav(ctx: TopBarContext) {
 }
 
 function renderTile(entity: FloorEntity, ctx: TileContext) {
-  const { name, capacity, mealStage, minutesSeated, status } = entity.businessData;
+  const { name, capacity, minutesSeated, status } = entity.businessData;
   return (
     <div
       className={`flex h-full w-full flex-col justify-between rounded-xl border bg-white p-2 shadow-sm transition-shadow ${
@@ -112,23 +131,17 @@ function renderTile(entity: FloorEntity, ctx: TileContext) {
             <Users size={10} /> {capacity ?? '—'}
           </div>
         </div>
-        <ServiceRing stage={String(mealStage ?? '')} />
+        <ServiceRing state={String(status ?? 'available')} />
       </div>
       <div className="flex items-center justify-between">
-        <span className="text-[10px] text-gray-500">{String(mealStage ?? '')}</span>
+        <span className="text-[10px] text-gray-500">{restaurantBlueprint(entity)?.type ?? ''}</span>
         {Number(minutesSeated) > 0 && (
           <span className="flex items-center gap-0.5 text-[10px] text-gray-500">
             <Clock size={10} /> {minutesSeated}m
           </span>
         )}
       </div>
-      <span
-        className={`mt-1 w-max rounded-full px-1.5 py-0.5 text-[9px] font-medium capitalize ${statusBadge(
-          String(status)
-        )}`}
-      >
-        {String(status ?? 'available')}
-      </span>
+      <StateChip state={String(status ?? 'available')} className="mt-1" />
     </div>
   );
 }
@@ -149,28 +162,29 @@ function renderAreaTile(entity: FloorEntity, ctx: TileContext) {
 
 function renderManageCard(entity: FloorEntity) {
   const b = entity.businessData;
+  const blueprint = restaurantBlueprint(entity);
+  const meta = stateMetaFor('restaurant', String(b.status ?? 'available'));
   const rows: Array<[string, string]> = [
+    ['Blueprint', blueprint?.type ?? '—'],
     ['Area', String(b.area ?? b.section ?? '—')],
     ['Floor', String(entity.spatialData.floor ?? '—')],
     ['Capacity', String(b.capacity ?? '—')],
-    ['Meal stage', String(b.mealStage ?? '—')],
-    ['Minutes seated', `${Number(b.minutesSeated ?? 0)} min`],
+    ['Price', blueprint ? `$${blueprint.basePrice.toLocaleString()}` : '—'],
   ];
   return (
     <div className="flex h-full w-full flex-col gap-3 rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-base font-semibold text-gray-900">{b.name}</h3>
-          <p className="text-xs capitalize text-gray-500">{String(b.status ?? 'available')}</p>
+          <p className="text-xs text-gray-500">{blueprint?.name ?? 'Unassigned blueprint'}</p>
         </div>
         <div className="flex items-center gap-2">
-          <ServiceRing stage={String(b.mealStage ?? '')} />
+          <ServiceRing state={String(b.status ?? 'available')} />
           <span
-            className={`rounded-full px-2 py-0.5 text-[10px] font-medium capitalize ${statusBadge(
-              String(b.status)
-            )}`}
+            className="rounded-full px-2 py-0.5 text-[10px] font-medium"
+            style={{ backgroundColor: `${meta.color}22`, color: meta.color }}
           >
-            {String(b.status ?? 'available')}
+            {meta.label}
           </span>
         </div>
       </div>
@@ -189,41 +203,45 @@ function renderManageCard(entity: FloorEntity) {
 function renderDrawer(entity: FloorEntity, ctx: DrawerContext) {
   const b = entity.businessData;
   const set = (patch: Partial<BusinessData>) => ctx.onUpdate({ businessData: patch });
+  const blueprint = restaurantBlueprint(entity);
+  const meta = stateMetaFor('restaurant', String(b.status ?? 'available'));
   return (
     <div className="space-y-4 text-sm">
       <dl className="grid grid-cols-2 gap-y-2 text-xs">
+        <dt className="text-gray-500">Blueprint</dt>
+        <dd className="text-gray-900">{blueprint?.type ?? '—'}</dd>
         <dt className="text-gray-500">Area</dt>
         <dd className="text-gray-900">{String(b.area ?? b.section ?? '—')}</dd>
         <dt className="text-gray-500">Floor</dt>
         <dd className="text-gray-900">{String(entity.spatialData.floor ?? '—')}</dd>
         <dt className="text-gray-500">Capacity</dt>
         <dd className="text-gray-900">{b.capacity ?? '—'}</dd>
-        <dt className="text-gray-500">Meal stage</dt>
-        <dd className="text-gray-900">{String(b.mealStage ?? '—')}</dd>
-        <dt className="text-gray-500">Minutes seated</dt>
-        <dd className="text-gray-900">{Number(b.minutesSeated ?? 0)}</dd>
-        <dt className="text-gray-500">Status</dt>
-        <dd className="capitalize text-gray-900">{String(b.status ?? '—')}</dd>
+        <dt className="text-gray-500">State</dt>
+        <dd style={{ color: meta.color }}>{meta.label}</dd>
       </dl>
+
+      <BlueprintSpecs blueprint={blueprint} />
+
       <div className="space-y-2 border-t border-gray-100 pt-3">
-        <button
-          onClick={() => set({ status: 'occupied', mealStage: 'Appetizer', minutesSeated: 0 })}
-          className="w-full rounded-lg bg-teal-700 px-3 py-2 text-xs font-medium text-white hover:bg-teal-800"
-        >
-          Seat Party
-        </button>
-        <button
-          onClick={() => set({ mealStage: 'Check' })}
-          className="w-full rounded-lg border border-gray-300 px-3 py-2 text-xs font-medium text-gray-700 hover:bg-gray-50"
-        >
-          Present Check
-        </button>
-        <button
-          onClick={() => set({ status: 'available', mealStage: 'Available', minutesSeated: 0 })}
-          className="w-full rounded-lg border border-gray-300 px-3 py-2 text-xs font-medium text-gray-700 hover:bg-gray-50"
-        >
-          Clear Table
-        </button>
+        {(
+          [
+            ['seated_ordering', 'Seat Party'],
+            ['entrees_served', 'Entrees Served'],
+            ['awaiting_check', 'Present Check'],
+            ['dirty_bussing', 'Bussing'],
+            ['available', 'Clear Table'],
+          ] as const
+        ).map(([target, label]) =>
+          canTransition('restaurant', String(b.status ?? 'available'), target) ? (
+            <button
+              key={target}
+              onClick={() => set({ status: target })}
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-xs font-medium text-gray-700 hover:bg-gray-50"
+            >
+              {label}
+            </button>
+          ) : null
+        )}
       </div>
     </div>
   );
@@ -247,8 +265,8 @@ function manageToolbarItems({
       label: 'Combine for Large Party',
       onClick: () => {
         const [a, b] = selection;
-        updateEntity(a, { businessData: { combinedWith: b, status: 'combined' } });
-        updateEntity(b, { businessData: { combinedWith: a, status: 'combined' } });
+        updateEntity(a, { businessData: { combinedWith: b, status: 'seated_ordering' } });
+        updateEntity(b, { businessData: { combinedWith: a, status: 'seated_ordering' } });
         clearSelection();
       },
     });
@@ -260,17 +278,18 @@ function manageToolbarItems({
         id: 'seat',
         label: 'Seat Party',
         onClick: () =>
-          updateEntity(selection[0], {
-            businessData: { status: 'occupied', mealStage: 'Appetizer', minutesSeated: 0 },
-          }),
+          updateEntity(selection[0], { businessData: { status: 'seated_ordering' } }),
+      });
+      items.push({
+        id: 'check',
+        label: 'Present Check',
+        onClick: () =>
+          updateEntity(selection[0], { businessData: { status: 'awaiting_check' } }),
       });
       items.push({
         id: 'clear',
         label: 'Clear Table',
-        onClick: () =>
-          updateEntity(selection[0], {
-            businessData: { status: 'available', mealStage: 'Available', minutesSeated: 0 },
-          }),
+        onClick: () => updateEntity(selection[0], { businessData: { status: 'available' } }),
       });
     }
   }

@@ -10,6 +10,13 @@ import { FloorPlanToolbar } from './FloorPlanToolbar';
 import { OperationalDrawer } from './OperationalDrawer';
 import { ElementsPanel } from './ElementsPanel';
 import { PropertiesPanel } from './PropertiesPanel';
+import { BlueprintPicker } from './BlueprintPicker';
+import { CATEGORY_OBJECTS } from '../domain/adapter';
+import { defaultStateFor } from '../domain/states';
+import { isLocked } from '../domain/reservations';
+import { allBlueprints, loadLastBlueprintId, saveLastBlueprintId } from '../domain/blueprintStore';
+import { findBlueprint } from '../domain/blueprints';
+import type { InventoryBlueprint, Vertical } from '../domain/types';
 
 export function FloorPlanWorkbench({ plugin }: { plugin: VerticalPlugin }) {
   const store = useFloorPlanStore(plugin.id);
@@ -17,6 +24,10 @@ export function FloorPlanWorkbench({ plugin }: { plugin: VerticalPlugin }) {
   const [activeOverlays, setActiveOverlays] = useState<string[]>([]);
   const [drawerEntityId, setDrawerEntityId] = useState<string | null>(null);
   const [fitSignal, setFitSignal] = useState(0);
+  const [pendingPlacement, setPendingPlacement] = useState<{
+    type: EntityTypeDefinition;
+    position?: { x: number; y: number };
+  } | null>(null);
 
   const { plan } = store;
 
@@ -60,9 +71,13 @@ export function FloorPlanWorkbench({ plugin }: { plugin: VerticalPlugin }) {
 
   const handleAddEntity = useCallback(
     (type: EntityTypeDefinition) => {
-      const entity = createEntity(type);
-      store.addEntity(entity);
-      canvas.select(entity.entityId);
+      if (type.structure) {
+        const entity = createEntity(type);
+        store.addEntity(entity);
+        canvas.select(entity.entityId);
+        return;
+      }
+      setPendingPlacement({ type });
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [createEntity, store.addEntity, canvas.select]
@@ -78,16 +93,88 @@ export function FloorPlanWorkbench({ plugin }: { plugin: VerticalPlugin }) {
     [createEntity, store.addEntity, canvas.select]
   );
 
-  const handleDropNew = useCallback(
-    (kind: string, x: number, y: number) => {
-      const type = plugin.entityTypes.find((t) => t.type === kind);
-      if (!type) return;
-      const entity = createEntity(type, { x, y });
+  const createFromBlueprint = useCallback(
+    (blueprint: InventoryBlueprint, position?: { x: number; y: number }) => {
+      const vertical = plugin.id as Vertical;
+      const object = CATEGORY_OBJECTS[vertical];
+      const count = plan.entities.filter((e) => e.businessData.blueprintId === blueprint.id).length;
+      const x = position
+        ? Math.round(position.x - object.width / 2)
+        : Math.round(plan.width / 2 - object.width / 2);
+      const y = position
+        ? Math.round(position.y - object.height / 2)
+        : Math.round(plan.height / 2 - object.height / 2);
+
+      const base: FloorEntity = {
+        entityId: uid(object.type),
+        type: object.type,
+        businessData: {
+          name: `${blueprint.type} ${count + 1}`,
+          status: defaultStateFor(vertical),
+          blueprintId: blueprint.id,
+          capacity: blueprint.capacity,
+          maxCapacity: blueprint.maxCapacity,
+          area: plan.activeArea,
+          isReservable: true,
+        },
+        spatialData: {
+          floorPlanId: plan.floorPlanId,
+          x,
+          y,
+          width: object.width,
+          height: object.height,
+          rotation: 0,
+          shape: object.shape,
+          layer: 'entities',
+          floor: plan.floor,
+        },
+      };
+      const entity = plugin.decorateNewEntity ? plugin.decorateNewEntity(base, plan) : base;
       store.addEntity(entity);
       canvas.select(entity.entityId);
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [plugin, createEntity, store.addEntity, canvas.select]
+    [plan, plugin, store.addEntity, canvas.select]
+  );
+
+  const handleDropNew = useCallback(
+    (kind: string, x: number, y: number, alt?: boolean) => {
+      const type = plugin.entityTypes.find((t) => t.type === kind);
+      if (!type) return;
+      if (type.structure) {
+        const entity = createEntity(type, { x, y });
+        store.addEntity(entity);
+        canvas.select(entity.entityId);
+        return;
+      }
+
+      // Alt + drop fast-forwards with the last used blueprint.
+      if (alt) {
+        const vertical = plugin.id as Vertical;
+        const lastId = loadLastBlueprintId(vertical);
+        const blueprint = lastId
+          ? findBlueprint(allBlueprints(vertical), lastId)
+          : undefined;
+        if (blueprint) {
+          createFromBlueprint(blueprint, { x, y });
+          return;
+        }
+      }
+
+      setPendingPlacement({ type, position: { x, y } });
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [plugin, createEntity, store.addEntity, canvas.select, createFromBlueprint]
+  );
+
+  const handlePickBlueprint = useCallback(
+    (blueprint: InventoryBlueprint) => {
+      saveLastBlueprintId(plugin.id as Vertical, blueprint.id);
+      createFromBlueprint(blueprint, pendingPlacement?.position);
+      setPendingPlacement(null);
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [plugin, createFromBlueprint, pendingPlacement]
   );
 
   const handleDuplicate = useCallback(
@@ -234,6 +321,7 @@ export function FloorPlanWorkbench({ plugin }: { plugin: VerticalPlugin }) {
               }
             }}
             onDropNew={handleDropNew}
+            isEntityLocked={isLocked}
             fitSignal={fitSignal}
           />
           <CanvasControls canvas={canvas} onFit={fit} />
@@ -261,6 +349,13 @@ export function FloorPlanWorkbench({ plugin }: { plugin: VerticalPlugin }) {
           onUpdate={(patch) => store.updateEntity(drawerEntity.entityId, patch)}
         />
       )}
+
+      <BlueprintPicker
+        vertical={plugin.id as Vertical}
+        isOpen={!!pendingPlacement}
+        onClose={() => setPendingPlacement(null)}
+        onSelect={handlePickBlueprint}
+      />
     </div>
   );
 }

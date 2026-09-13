@@ -4,6 +4,11 @@ import type { BusinessData, FloorEntity, FloorPlan, SpatialData } from '../core/
 import type { DrawerContext, TileContext, TopBarContext, ToolbarItem, VerticalPlugin } from '../core/plugin';
 import { createHotelPlan } from '../mock/fixtures/hotel';
 import { ScopeNav } from '../components/overlays/ScopeNav';
+import { BlueprintSpecs } from '../components/BlueprintSpecs';
+import { stateMetaFor } from '../domain/states';
+import { canTransition } from '../domain/transitions';
+import { allBlueprints } from '../domain/blueprintStore';
+import { findBlueprint } from '../domain/blueprints';
 
 function renderScopeNav(ctx: TopBarContext) {
   const { plan, mode, setPlanMeta, addSection, deleteSection, addFloor, deleteFloor } = ctx;
@@ -35,18 +40,16 @@ function renderScopeNav(ctx: TopBarContext) {
   );
 }
 
-const STATUS_STYLE: Record<string, string> = {
-  clean: 'bg-green-100 text-green-700',
-  occupied: 'bg-amber-100 text-amber-700',
-  dirty: 'bg-yellow-100 text-yellow-700',
-  checkout: 'bg-orange-100 text-orange-700',
-  ooo: 'bg-red-100 text-red-700',
-};
+function hotelBlueprint(entity: FloorEntity) {
+  return findBlueprint(allBlueprints('hotel'), String(entity.businessData.blueprintId ?? ''));
+}
 
 function renderTile(entity: FloorEntity, ctx: TileContext) {
   const b = entity.businessData;
-  const status = String(b.status ?? 'clean');
-  const isOOO = status === 'ooo';
+  const state = String(b.status ?? 'vacant_clean');
+  const meta = stateMetaFor('hotel', state);
+  const isOOO = state === 'out_of_order_ooo';
+  const blueprint = hotelBlueprint(entity);
 
   return (
     <div
@@ -66,14 +69,15 @@ function renderTile(entity: FloorEntity, ctx: TileContext) {
         <div className="text-xs font-semibold text-gray-900">{b.name}</div>
         {isOOO && <Wrench size={12} className="text-red-500" />}
       </div>
-      <div className="text-[10px] text-gray-500">{String(b.roomType ?? 'Room')}</div>
+      <div className="text-[10px] text-gray-500">
+        {blueprint?.type ?? String(b.roomType ?? 'Room')}
+      </div>
       <div className="flex items-center justify-between">
         <span
-          className={`rounded-full px-1.5 py-0.5 text-[9px] font-medium capitalize ${
-            STATUS_STYLE[status] ?? 'bg-gray-100 text-gray-600'
-          }`}
+          className="rounded-full px-1.5 py-0.5 text-[9px] font-medium"
+          style={{ backgroundColor: `${meta.color}22`, color: meta.color }}
         >
-          {String(b.housekeeping ?? status)}
+          {meta.label}
         </span>
         {b.guestName ? (
           <span className="max-w-[60%] truncate text-[9px] text-gray-500">
@@ -137,13 +141,14 @@ function TimelineGantt({ checkIn, checkOut }: { checkIn?: string; checkOut?: str
 function renderDrawer(entity: FloorEntity, ctx: DrawerContext) {
   const b = entity.businessData;
   const set = (patch: Partial<BusinessData>) => ctx.onUpdate({ businessData: patch });
+  const blueprint = hotelBlueprint(entity);
+  const state = String(b.status ?? 'vacant_clean');
+  const meta = stateMetaFor('hotel', state);
   return (
     <div className="space-y-4 text-sm">
       <dl className="grid grid-cols-2 gap-y-2 text-xs">
-        <dt className="text-gray-500">Room type</dt>
-        <dd className="text-gray-900">{String(b.roomType ?? '—')}</dd>
-        <dt className="text-gray-500">Housekeeping</dt>
-        <dd className="text-gray-900">{String(b.housekeeping ?? '—')}</dd>
+        <dt className="text-gray-500">Blueprint</dt>
+        <dd className="text-gray-900">{blueprint?.type ?? '—'}</dd>
         <dt className="text-gray-500">Guest</dt>
         <dd className="text-gray-900">{String(b.guestName ?? '—')}</dd>
         <dt className="text-gray-500">Check-in</dt>
@@ -154,32 +159,44 @@ function renderDrawer(entity: FloorEntity, ctx: DrawerContext) {
         <dd className="text-gray-900">
           {b.checkOut ? new Date(String(b.checkOut)).toLocaleDateString() : '—'}
         </dd>
+        <dt className="text-gray-500">State</dt>
+        <dd style={{ color: meta.color }}>{meta.label}</dd>
       </dl>
+
+      <BlueprintSpecs blueprint={blueprint} />
 
       <div className="border-t border-gray-100 pt-3">
         <p className="mb-2 text-xs font-medium text-gray-700">Next 7 days</p>
-        <TimelineGantt checkIn={b.checkIn as string | undefined} checkOut={b.checkOut as string | undefined} />
+        <TimelineGantt
+          checkIn={b.checkIn as string | undefined}
+          checkOut={b.checkOut as string | undefined}
+        />
       </div>
 
       <div className="space-y-2 border-t border-gray-100 pt-3">
-        <button
-          onClick={() => set({ housekeeping: 'Clean', status: 'clean' })}
-          className="w-full rounded-lg bg-teal-700 px-3 py-2 text-xs font-medium text-white hover:bg-teal-800"
-        >
-          Mark Clean
-        </button>
-        <button
-          onClick={() => set({ status: 'occupied', housekeeping: 'Occupied' })}
-          className="w-full rounded-lg border border-gray-300 px-3 py-2 text-xs font-medium text-gray-700 hover:bg-gray-50"
-        >
-          Check-In
-        </button>
-        <button
-          onClick={() => set({ housekeeping: 'Out of Order', status: 'ooo' })}
-          className="w-full rounded-lg border border-red-200 px-3 py-2 text-xs font-medium text-red-600 hover:bg-red-50"
-        >
-          Flag Out of Order
-        </button>
+        {(
+          [
+            ['vacant_clean', 'Mark Clean'],
+            ['cleaning_in_progress', 'Cleaning'],
+            ['inspected', 'Inspected'],
+            ['occupied', 'Check-In'],
+            ['out_of_order_ooo', 'Flag Out of Order'],
+          ] as const
+        ).map(([target, label]) =>
+          canTransition('hotel', state, target) ? (
+            <button
+              key={target}
+              onClick={() => set({ status: target })}
+              className={`w-full rounded-lg px-3 py-2 text-xs font-medium ${
+                target === 'out_of_order_ooo'
+                  ? 'border border-red-200 text-red-600 hover:bg-red-50'
+                  : 'border border-gray-300 text-gray-700 hover:bg-gray-50'
+              }`}
+            >
+              {label}
+            </button>
+          ) : null
+        )}
       </div>
     </div>
   );
@@ -196,9 +213,11 @@ function manageToolbarItems({
   if (selection.length !== 1) return [];
   const id = selection[0];
   return [
-    { id: 'clean', label: 'Mark Clean', onClick: () => updateEntity(id, { businessData: { housekeeping: 'Clean', status: 'clean' } }) },
-    { id: 'checkin', label: 'Check-In', onClick: () => updateEntity(id, { businessData: { status: 'occupied', housekeeping: 'Occupied' } }) },
-    { id: 'ooo', label: 'Flag OOO', onClick: () => updateEntity(id, { businessData: { housekeeping: 'Out of Order', status: 'ooo' } }) },
+    { id: 'clean', label: 'Mark Clean', onClick: () => updateEntity(id, { businessData: { status: 'vacant_clean' } }) },
+    { id: 'cleaning', label: 'Cleaning', onClick: () => updateEntity(id, { businessData: { status: 'cleaning_in_progress' } }) },
+    { id: 'inspected', label: 'Inspected', onClick: () => updateEntity(id, { businessData: { status: 'inspected' } }) },
+    { id: 'checkin', label: 'Check-In', onClick: () => updateEntity(id, { businessData: { status: 'occupied' } }) },
+    { id: 'ooo', label: 'Flag OOO', onClick: () => updateEntity(id, { businessData: { status: 'out_of_order_ooo' } }) },
   ];
 }
 

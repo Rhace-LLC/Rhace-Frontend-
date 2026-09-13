@@ -1,8 +1,15 @@
+/* eslint-disable react-refresh/only-export-components */
 import type { BusinessData, FloorEntity, FloorPlan, SpatialData } from '../core/types';
 import type { DrawerContext, TileContext, TopBarContext, ToolbarItem, VerticalPlugin } from '../core/plugin';
 import { createClubPlan } from '../mock/fixtures/club';
 import { SpendTierHeatmap } from '../components/overlays/SpendTierHeatmap';
 import { ScopeNav } from '../components/overlays/ScopeNav';
+import { BlueprintSpecs } from '../components/BlueprintSpecs';
+import { stateMetaFor } from '../domain/states';
+import { canTransition } from '../domain/transitions';
+import { allBlueprints } from '../domain/blueprintStore';
+import { findBlueprint } from '../domain/blueprints';
+import type { ClubTableState } from '../domain/types';
 
 function renderScopeNav(ctx: TopBarContext) {
   const { plan, mode, setPlanMeta, addFloor, deleteFloor } = ctx;
@@ -25,13 +32,43 @@ function money(value: unknown) {
   return `$${Number(value ?? 0).toLocaleString()}`;
 }
 
+function clubBlueprint(entity: FloorEntity) {
+  return findBlueprint(allBlueprints('club'), String(entity.businessData.blueprintId ?? ''));
+}
+
+function displayClubState(entity: FloorEntity): ClubTableState {
+  const state = String(entity.businessData.status ?? 'available') as ClubTableState;
+  if (state === 'arrived_seated' || state === 'under_target_spend' || state === 'target_met') {
+    const min = Number(entity.businessData.minimumSpend ?? 0);
+    const spend = Number(entity.businessData.currentSpend ?? 0);
+    return min > 0 && spend >= min ? 'target_met' : 'under_target_spend';
+  }
+  return state;
+}
+
+function StateChip({ state }: { state: string }) {
+  const meta = stateMetaFor('club', state);
+  return (
+    <span
+      className="rounded px-1.5 py-0.5 text-[9px] font-medium"
+      style={{ backgroundColor: `${meta.color}22`, color: meta.color }}
+    >
+      {meta.label}
+    </span>
+  );
+}
+
 function renderTile(entity: FloorEntity, ctx: TileContext) {
   const b = entity.businessData;
-  const min = Number(b.minimumSpend ?? 0);
+  const blueprint = clubBlueprint(entity);
+  const blueprintMin = blueprint && blueprint.vertical === 'club' ? blueprint.minimumSpend : 0;
+  const min = Number(b.minimumSpend ?? blueprintMin);
   const spend = Number(b.currentSpend ?? 0);
   const pct = min > 0 ? Math.round((spend / min) * 100) : 0;
   const met = spend >= min;
-  const prime = String(b.tier) === 'Prime Stage View';
+  const state = displayClubState(entity);
+  const tier = String(b.tier ?? (blueprint && blueprint.vertical === 'club' ? blueprint.tier : ''));
+  const prime = tier === 'Prime Stage View' || tier === "Owner's Box";
 
   return (
     <div
@@ -42,14 +79,14 @@ function renderTile(entity: FloorEntity, ctx: TileContext) {
       <div className="flex items-start justify-between">
         <div>
           <div className="text-xs font-semibold">{b.name}</div>
-          <div className="text-[10px] text-slate-400">{money(b.minimumSpend)} min</div>
+          <div className="text-[10px] text-slate-400">{money(min)} min</div>
         </div>
         <span
           className={`rounded px-1.5 py-0.5 text-[9px] font-medium ${
             prime ? 'bg-amber-400/20 text-amber-300' : 'bg-blue-400/20 text-blue-300'
           }`}
         >
-          {String(b.tier ?? 'Perimeter')}
+          {tier || 'VIP'}
         </span>
       </div>
 
@@ -68,9 +105,7 @@ function renderTile(entity: FloorEntity, ctx: TileContext) {
 
       <div className="flex items-center justify-between text-[9px] text-slate-400">
         <span>{b.hostName ? `Host: ${b.hostName}` : b.partyName ? String(b.partyName) : '—'}</span>
-        <span className={met ? 'text-emerald-400' : 'text-amber-400'}>
-          {met ? 'Target met' : 'Under target'}
-        </span>
+        <StateChip state={state} />
       </div>
     </div>
   );
@@ -79,41 +114,75 @@ function renderTile(entity: FloorEntity, ctx: TileContext) {
 function renderDrawer(entity: FloorEntity, ctx: DrawerContext) {
   const b = entity.businessData;
   const set = (patch: Partial<BusinessData>) => ctx.onUpdate({ businessData: patch });
+  const blueprint = clubBlueprint(entity);
+  const blueprintMin = blueprint && blueprint.vertical === 'club' ? blueprint.minimumSpend : 0;
+  const min = Number(b.minimumSpend ?? blueprintMin);
+  const spend = Number(b.currentSpend ?? 0);
+  const state = displayClubState(entity);
+  const meta = stateMetaFor('club', state);
+
+  const addBottle = () => {
+    const nextSpend = spend + 500;
+    set({
+      currentSpend: nextSpend,
+      status: min > 0 && nextSpend >= min ? 'target_met' : 'under_target_spend',
+    });
+  };
+
   return (
     <div className="space-y-4 text-sm">
       <dl className="grid grid-cols-2 gap-y-2 text-xs">
-        <dt className="text-gray-500">Minimum spend</dt>
-        <dd className="text-gray-900">{money(b.minimumSpend)}</dd>
-        <dt className="text-gray-500">Current spend</dt>
-        <dd className="text-gray-900">{money(b.currentSpend)}</dd>
+        <dt className="text-gray-500">Blueprint</dt>
+        <dd className="text-gray-900">{blueprint?.type ?? '—'}</dd>
         <dt className="text-gray-500">Tier</dt>
-        <dd className="text-gray-900">{String(b.tier ?? '—')}</dd>
+        <dd className="text-gray-900">
+          {String(b.tier ?? (blueprint && blueprint.vertical === 'club' ? blueprint.tier : '—'))}
+        </dd>
+        <dt className="text-gray-500">Minimum spend</dt>
+        <dd className="text-gray-900">{money(min)}</dd>
+        <dt className="text-gray-500">Current spend</dt>
+        <dd className="text-gray-900">{money(spend)}</dd>
         <dt className="text-gray-500">Party</dt>
         <dd className="text-gray-900">{String(b.partyName ?? '—')}</dd>
         <dt className="text-gray-500">Host</dt>
         <dd className="text-gray-900">{String(b.hostName ?? '—')}</dd>
-        <dt className="text-gray-500">Status</dt>
-        <dd className="capitalize text-gray-900">{String(b.status ?? '—')}</dd>
+        <dt className="text-gray-500">State</dt>
+        <dd style={{ color: meta.color }}>{meta.label}</dd>
       </dl>
+
+      <BlueprintSpecs blueprint={blueprint} />
+
       <div className="space-y-2 border-t border-gray-100 pt-3">
-        <button
-          onClick={() => set({ status: 'arrived' })}
-          className="w-full rounded-lg bg-teal-700 px-3 py-2 text-xs font-medium text-white hover:bg-teal-800"
-        >
-          Check-In Guest
-        </button>
+        {canTransition('club', state, 'arrived_seated') && (
+          <button
+            onClick={() => set({ status: 'arrived_seated' })}
+            className="w-full rounded-lg bg-teal-700 px-3 py-2 text-xs font-medium text-white hover:bg-teal-800"
+          >
+            Check-In Guest
+          </button>
+        )}
         <button
           onClick={() => set({ hostName: 'You' })}
           className="w-full rounded-lg border border-gray-300 px-3 py-2 text-xs font-medium text-gray-700 hover:bg-gray-50"
         >
           Assign VIP Host
         </button>
-        <button
-          onClick={() => set({ currentSpend: Number(b.currentSpend ?? 0) + 500 })}
-          className="w-full rounded-lg border border-gray-300 px-3 py-2 text-xs font-medium text-gray-700 hover:bg-gray-50"
-        >
-          Add Bottle (+$500)
-        </button>
+        {['arrived_seated', 'under_target_spend', 'target_met'].includes(state) && (
+          <button
+            onClick={addBottle}
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-xs font-medium text-gray-700 hover:bg-gray-50"
+          >
+            Add Bottle (+$500)
+          </button>
+        )}
+        {canTransition('club', state, 'closing_payment') && (
+          <button
+            onClick={() => set({ status: 'closing_payment' })}
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-xs font-medium text-gray-700 hover:bg-gray-50"
+          >
+            Close / Payment
+          </button>
+        )}
       </div>
     </div>
   );
@@ -132,10 +201,22 @@ function manageToolbarItems({
   const id = selection[0];
   const entity = plan.entities.find((e) => e.entityId === id);
   const spend = Number(entity?.businessData.currentSpend ?? 0);
+  const min = Number(entity?.businessData.minimumSpend ?? 0);
+  const nextSpend = spend + 500;
   return [
-    { id: 'checkin', label: 'Check-In Guest', onClick: () => updateEntity(id, { businessData: { status: 'arrived' } }) },
+    { id: 'checkin', label: 'Check-In Guest', onClick: () => updateEntity(id, { businessData: { status: 'arrived_seated' } }) },
     { id: 'host', label: 'Assign Host', onClick: () => updateEntity(id, { businessData: { hostName: 'You' } }) },
-    { id: 'bottle', label: 'Add Bottle', onClick: () => updateEntity(id, { businessData: { currentSpend: spend + 500, status: 'arrived' } }) },
+    {
+      id: 'bottle',
+      label: 'Add Bottle',
+      onClick: () =>
+        updateEntity(id, {
+          businessData: {
+            currentSpend: nextSpend,
+            status: min > 0 && nextSpend >= min ? 'target_met' : 'under_target_spend',
+          },
+        }),
+    },
   ];
 }
 

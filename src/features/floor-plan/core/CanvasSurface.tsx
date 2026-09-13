@@ -5,6 +5,7 @@ import type { VerticalPlugin } from './plugin';
 import type { CanvasState } from './useCanvasState';
 import { EntityNode } from './EntityNode';
 import { GridLayer } from './GridLayer';
+import { LockBadge } from '../components/LockBadge';
 
 interface CanvasSurfaceProps {
   plan: FloorPlan;
@@ -17,7 +18,8 @@ interface CanvasSurfaceProps {
   onCommitPositions: (positions: Record<string, { x: number; y: number }>) => void;
   onCommitGeometry: (id: string, geometry: { x: number; y: number; width: number; height: number }) => void;
   onEditEntity: (id: string) => void;
-  onDropNew: (kind: string, x: number, y: number) => void;
+  onDropNew: (kind: string, x: number, y: number, alt?: boolean) => void;
+  isEntityLocked?: (id: string) => boolean;
   fitSignal?: number;
 }
 
@@ -103,6 +105,7 @@ export function CanvasSurface({
   onCommitGeometry,
   onEditEntity,
   onDropNew,
+  isEntityLocked,
   fitSignal,
 }: CanvasSurfaceProps) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -447,7 +450,7 @@ export function CanvasSurface({
         const kind = event.dataTransfer.getData('text/fp-kind');
         if (!kind) return;
         const point = clientToPlan(event);
-        onDropNew(kind, point.x, point.y);
+        onDropNew(kind, point.x, point.y, event.altKey);
       }}
       className={`relative h-full w-full overflow-hidden ${plugin.theme.viewport} ${
         spaceHeld || canvas.panTool
@@ -559,6 +562,11 @@ export function CanvasSurface({
                   selected,
                   vertical: plugin.id,
                 })}
+                {isEntityLocked?.(entity.entityId) && (
+                  <div className="absolute right-1 top-1 z-10">
+                    <LockBadge />
+                  </div>
+                )}
               </EntityNode>
             );
           })}

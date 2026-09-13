@@ -10,18 +10,18 @@ import { createRestaurantPlan } from './fixtures/restaurant';
 import { createClubPlan } from './fixtures/club';
 import { createHotelPlan } from './fixtures/hotel';
 import { uid } from './generator';
+import { normalizePlan } from '../domain/normalize';
 
 const STORAGE_PREFIX = 'prototype:floor-plan:';
 
 function fixtureFor(vertical: FloorVertical): FloorPlan {
-  switch (vertical) {
-    case 'restaurant':
-      return createRestaurantPlan();
-    case 'club':
-      return createClubPlan();
-    case 'hotel':
-      return createHotelPlan();
-  }
+  const plan =
+    vertical === 'restaurant'
+      ? createRestaurantPlan()
+      : vertical === 'club'
+        ? createClubPlan()
+        : createHotelPlan();
+  return normalizePlan(plan);
 }
 
 function load(vertical: FloorVertical): FloorPlan | null {
@@ -34,7 +34,7 @@ function load(vertical: FloorVertical): FloorPlan | null {
       plan.width = 2400;
       plan.height = 1600;
     }
-    return plan;
+    return normalizePlan(plan);
   } catch {
     return null;
   }
