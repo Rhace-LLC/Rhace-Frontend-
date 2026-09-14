@@ -1,11 +1,14 @@
 import api from '@/lib/axios';
 import type {
+  BookingQuoteDto,
   ConfirmHoldInput,
+  ConfirmHoldResultDto,
   CreateUnitReservationInput,
   FloorPlanApiEnvelope,
   HoldUnitInput,
   HoldUnitResultDto,
   PaginatedData,
+  QuoteInput,
   UnitReservationDto,
 } from '@/types';
 
@@ -18,22 +21,35 @@ class UnitReservationService {
     return res.data;
   }
 
-  async confirm(input: ConfirmHoldInput) {
-    const res = await api.post<FloorPlanApiEnvelope<UnitReservationDto>>('/bookings/confirm', input, {
-      headers: input.idempotencyKey ? { 'Idempotency-Key': input.idempotencyKey } : undefined,
-    });
+  async quote(input: QuoteInput) {
+    const res = await api.post<FloorPlanApiEnvelope<BookingQuoteDto>>('/bookings/quote', input);
     return res.data;
   }
 
-  async heartbeatLock(token: string) {
-    const res = await api.post<FloorPlanApiEnvelope<{ expiresAt: string }>>(
-      `/locks/${token}/heartbeat`
+  async confirm(input: ConfirmHoldInput) {
+    const res = await api.post<FloorPlanApiEnvelope<ConfirmHoldResultDto>>(
+      '/bookings/confirm',
+      input,
+      {
+        headers: input.idempotencyKey ? { 'Idempotency-Key': input.idempotencyKey } : undefined,
+      }
     );
     return res.data;
   }
 
-  async releaseLock(token: string) {
-    const res = await api.delete<FloorPlanApiEnvelope<{ token: string }>>(`/locks/${token}`);
+  async heartbeatLock(token: string, vendorId?: string) {
+    const res = await api.post<FloorPlanApiEnvelope<{ expiresAt: string }>>(
+      `/locks/${token}/heartbeat`,
+      {},
+      { params: vendorId ? { vendorId } : undefined }
+    );
+    return res.data;
+  }
+
+  async releaseLock(token: string, vendorId?: string) {
+    const res = await api.delete<FloorPlanApiEnvelope<{ token: string }>>(`/locks/${token}`, {
+      params: vendorId ? { vendorId } : undefined,
+    });
     return res.data;
   }
 

@@ -57,6 +57,21 @@ class PaymentService {
     return res.data;
   }
 
+  /** Unit engine: create Paystack intent for a BookingGroup (full / deposit / balance). */
+  async createGroupIntent(groupId: string, strategy?: string) {
+    const res = await api.post(`/payments/group/${groupId}/intent`, { strategy });
+    return res.data;
+  }
+
+  /** Unit engine: record a cash/POS/bank-transfer payment against a BookingGroup. */
+  async recordGroupOfflinePayment(
+    groupId: string,
+    body: { amount: number; method: string; reference?: string; note?: string }
+  ) {
+    const res = await api.post(`/payments/group/${groupId}/offline-payment`, body);
+    return res.data;
+  }
+
   async recordOfflinePayment(reservationId: string, body: Record<string, unknown>) {
     const res = await api.post(`/payments/${reservationId}/offline-payment`, body);
 

@@ -133,10 +133,6 @@ class UserService {
     return res.data;
   }
 
-  async createReservation(data: Record<string, unknown>) {
-    const res = await api.post('/bookings/create', data);
-    return res.data;
-  }
   async updateReservationStatus({ reservationId, vendorId, resId, paymentRef }: UpdateStatusPayload) {
     if (!reservationId) throw new Error('reservationId is required');
     if (!vendorId) throw new Error('vendorId is required');

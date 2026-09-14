@@ -10,25 +10,22 @@ import VendorDashboard from '@/pages/vendor/restaurant/dashboard';
 import PaymentDashboard from '@/pages/vendor/shared/payments';
 import CreateMenu from '@/pages/vendor/restaurant/menu/create';
 import CreateMenuItem from '@/pages/vendor/restaurant/menu/items/create';
-import CreateReservation from '@/pages/vendor/restaurant/reservations/create';
 import MenuDashboard from '@/pages/vendor/restaurant/menu';
-import ReservationDashboard from '@/pages/vendor/restaurant/reservations';
 import RestaurantSettings from '@/pages/vendor/restaurant/settings';
 import RestaurantTableManagement from '@/pages/vendor/restaurant/tables';
 import RestaurantFloorLayout from '@/pages/vendor/restaurant/tables/layout';
 import StaffManagementSystem from '@/pages/vendor/shared/staff';
+import VendorReservationsPage from '@/pages/vendor/shared/reservations';
 
 // Vendor - Club
 import BottleServiceManager from '@/pages/vendor/club/drinks/add';
 import ClubDashboard from '@/pages/vendor/club/dashboard';
 import { DrinksTable } from '@/pages/vendor/club/drinks';
-import ClubReservationTable from '@/pages/vendor/club/reservations';
 import ManageTables from '@/pages/vendor/club/tables';
 import ClubFloorLayout from '@/pages/vendor/club/tables/layout';
 
 // Vendor - Hotel
 import AddRooms from '@/pages/vendor/hotel/rooms/add';
-import BookingManagement from '@/pages/vendor/hotel/bookings';
 import HotelDashboard from '@/pages/vendor/hotel/dashboard';
 import HotelProfile from '@/pages/vendor/hotel/profile';
 import RoomsManagement from '@/pages/vendor/hotel/rooms';
@@ -52,6 +49,24 @@ const PrototypeManageRoomHotel = lazy(
 const PrototypeFloorPlanHotel = lazy(
   () => import('@/pages/vendor/prototype/hotel/FloorPlanHotel')
 );
+const PrototypeInventoryRestaurant = lazy(
+  () => import('@/pages/vendor/prototype/restaurant/InventoryRestaurant')
+);
+const PrototypeInventoryClub = lazy(
+  () => import('@/pages/vendor/prototype/club/InventoryClub')
+);
+const PrototypeInventoryHotel = lazy(
+  () => import('@/pages/vendor/prototype/hotel/InventoryHotel')
+);
+const PrototypeTimelineRestaurant = lazy(
+  () => import('@/pages/vendor/prototype/restaurant/TimelineRestaurant')
+);
+const PrototypeTimelineClub = lazy(
+  () => import('@/pages/vendor/prototype/club/TimelineClub')
+);
+const PrototypeTimelineHotel = lazy(
+  () => import('@/pages/vendor/prototype/hotel/TimelineHotel')
+);
 
 function PrototypeFallback() {
   return (
@@ -69,8 +84,7 @@ const dashboardRestaurantRoutes: RouteObject[] = [
   { path: 'restaurant', element: <VendorDashboard /> },
   { path: 'restaurant/payments', element: <PaymentDashboard /> },
   { path: 'restaurant/staffs', element: <StaffManagementSystem /> },
-  { path: 'restaurant/reservation', element: <ReservationDashboard /> },
-  { path: 'restaurant/reservation/new', element: <CreateReservation /> },
+  { path: 'restaurant/reservation', element: <VendorReservationsPage vertical="restaurant" /> },
   { path: 'restaurant/menu', element: <MenuDashboard /> },
   { path: 'restaurant/menu/new', element: <CreateMenu /> },
   { path: 'restaurant/menu/item/new', element: <CreateMenuItem /> },
@@ -84,12 +98,24 @@ const dashboardRestaurantRoutes: RouteObject[] = [
     path: 'restaurant/table/layouts/prototype',
     element: withSuspense(<PrototypeFloorPlanRestaurant />),
   },
+  {
+    path: 'restaurant/inventory/prototype',
+    element: withSuspense(<PrototypeInventoryRestaurant />),
+  },
+  {
+    path: 'restaurant/inventory/prototype/:blueprintId',
+    element: withSuspense(<PrototypeInventoryRestaurant />),
+  },
+  {
+    path: 'restaurant/timeline/prototype',
+    element: withSuspense(<PrototypeTimelineRestaurant />),
+  },
   { path: 'restaurant/settings', element: <RestaurantSettings /> },
 ];
 
 const hotelVendorRoutes: RouteObject[] = [
   { path: 'hotel', element: <HotelDashboard /> },
-  { path: 'hotel/bookings', element: <BookingManagement /> },
+  { path: 'hotel/bookings', element: <VendorReservationsPage vertical="hotel" /> },
   { path: 'hotel/rooms', element: <RoomsManagement /> },
   { path: 'hotel/rooms/layout', element: <HotelRoomLayout /> },
   { path: 'hotel/room/prototype', element: withSuspense(<PrototypeManageRoomHotel />) },
@@ -97,6 +123,12 @@ const hotelVendorRoutes: RouteObject[] = [
     path: 'hotel/room/layouts/prototype',
     element: withSuspense(<PrototypeFloorPlanHotel />),
   },
+  { path: 'hotel/inventory/prototype', element: withSuspense(<PrototypeInventoryHotel />) },
+  {
+    path: 'hotel/inventory/prototype/:blueprintId',
+    element: withSuspense(<PrototypeInventoryHotel />),
+  },
+  { path: 'hotel/timeline/prototype', element: withSuspense(<PrototypeTimelineHotel />) },
   { path: 'hotel/payments', element: <PaymentDashboard /> },
   { path: 'hotel/staffs', element: <StaffManagementSystem /> },
   { path: 'hotel/profile', element: <HotelProfile /> },
@@ -113,7 +145,13 @@ const clubVendorRoutes: RouteObject[] = [
     path: 'club/table/layouts/prototype',
     element: withSuspense(<PrototypeFloorPlanClub />),
   },
-  { path: 'club/reservations', element: <ClubReservationTable /> },
+  { path: 'club/inventory/prototype', element: withSuspense(<PrototypeInventoryClub />) },
+  {
+    path: 'club/inventory/prototype/:blueprintId',
+    element: withSuspense(<PrototypeInventoryClub />),
+  },
+  { path: 'club/timeline/prototype', element: withSuspense(<PrototypeTimelineClub />) },
+  { path: 'club/reservations', element: <VendorReservationsPage vertical="club" /> },
   { path: 'club/payments', element: <PaymentDashboard /> },
   { path: 'club/staffs', element: <StaffManagementSystem /> },
   { path: 'club/add-drinks', element: <BottleServiceManager /> },

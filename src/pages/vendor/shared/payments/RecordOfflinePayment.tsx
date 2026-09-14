@@ -3,6 +3,8 @@ import React, { useState, type ChangeEvent, type FormEvent } from 'react';
 
 interface RecordOfflinePaymentModalProps {
   reservationId?: string;
+  /** New unit engine: the BookingGroup is the payment subject. */
+  groupId?: string;
   isOpen: boolean;
   onClose: () => void;
   onSuccess?: (response?: unknown) => void;
@@ -18,6 +20,7 @@ interface OfflinePaymentForm {
 
 export default function RecordOfflinePaymentModal({
   reservationId: propReservationId,
+  groupId,
   isOpen,
   onClose,
   onSuccess,
@@ -52,7 +55,14 @@ export default function RecordOfflinePaymentModal({
     const { reservationId: _, ...payload } = formData;
 
     try {
-      const response = await paymentService.recordOfflinePayment(resId, payload);
+      const response = groupId
+        ? await paymentService.recordGroupOfflinePayment(groupId, {
+            amount: Number(payload.amount),
+            method: payload.method,
+            reference: payload.reference,
+            note: payload.note,
+          })
+        : await paymentService.recordOfflinePayment(resId, payload);
       if (onSuccess) onSuccess(response);
       onClose();
     } catch (err) {
@@ -132,7 +142,6 @@ export default function RecordOfflinePaymentModal({
               <option value="cash">Cash</option>
               <option value="bank_transfer">Bank Transfer</option>
               <option value="pos">POS</option>
-              <option value="cheque">Cheque</option>
             </select>
           </div>
 

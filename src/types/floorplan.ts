@@ -8,11 +8,7 @@ export type FloorPlanVertical = 'hotel' | 'restaurant' | 'club';
 
 export type BlueprintCategoryDto = 'room' | 'club_table' | 'restaurant_table';
 
-export type PaymentStrategyDto =
-  | 'full_prepayment'
-  | 'deposit_50_percent'
-  | 'pay_at_venue'
-  | 'hold_card_authorization';
+export type PaymentStrategyDto = 'full_prepayment' | 'deposit_50_percent' | 'pay_at_venue';
 
 export type PolicyKindDto =
   | 'cancellation'
@@ -305,7 +301,12 @@ export type UpdateStructureInput = Partial<CreateStructureInput>;
 
 // ─── Unit reservations (canonical engine) ─────────────────────────────────────
 
-export type UnitReservationStatusDto = 'upcoming' | 'active' | 'completed' | 'cancelled';
+export type UnitReservationStatusDto =
+  | 'pending_payment'
+  | 'upcoming'
+  | 'active'
+  | 'completed'
+  | 'cancelled';
 
 export interface UnitReservationDto {
   _id: string;
@@ -327,6 +328,9 @@ export interface UnitReservationDto {
   notes?: string;
   specialRequests?: string;
   paymentStatus?: string;
+  unitPrice?: number;
+  amount?: number;
+  currency?: string;
 }
 
 export interface HoldUnitInput {
@@ -334,6 +338,9 @@ export interface HoldUnitInput {
   start: string;
   end: string;
   partySize?: number;
+  /** Required when the caller is a customer (`role: user`). */
+  vendorId?: string;
+  floorPlanId?: string;
 }
 
 export interface HoldUnitResultDto {
@@ -350,6 +357,76 @@ export interface ConfirmHoldInput {
   notes?: string;
   specialRequests?: string;
   idempotencyKey?: string;
+  /** Required when the caller is a customer (`role: user`). */
+  vendorId?: string;
+  /** Payment strategy chosen at checkout. */
+  strategy?: PaymentStrategyDto;
+}
+
+// ─── Pricing / checkout ───────────────────────────────────────────────────────
+
+export interface QuoteInput {
+  blueprintId: string;
+  start: string;
+  end: string;
+  partySize?: number;
+}
+
+export interface QuoteStrategyDto {
+  strategy: PaymentStrategyDto;
+  plan: 'full' | 'deposit' | 'pay_at_venue';
+  mode: string;
+  amount: number;
+  required: boolean;
+}
+
+export interface BookingQuoteDto {
+  base: number;
+  unitsKind: 'flat' | 'nights';
+  unitsCount: number;
+  subtotal: number;
+  minimumSpend: number;
+  deposit: number;
+  depositAmount: number;
+  balance: number;
+  total: number;
+  currency: string;
+  allowedStrategies: PaymentStrategyDto[];
+  strategies: QuoteStrategyDto[];
+}
+
+export interface ConfirmPaymentInfoDto {
+  required: boolean;
+  amount: number;
+  strategy: PaymentStrategyDto;
+  plan: string;
+  mode: string;
+  deadline: string | null;
+}
+
+export interface BookingGroupSummaryDto {
+  _id: string;
+  status?: string;
+  paymentStatus?: string;
+  totalAmount?: number;
+  amountPaid?: number;
+  paymentStrategy?: string;
+  paymentPlan?: string;
+}
+
+export interface ConfirmHoldResultDto {
+  reservation: UnitReservationDto;
+  group: BookingGroupSummaryDto | null;
+  payment: ConfirmPaymentInfoDto;
+}
+
+export interface GroupPaymentIntentDto {
+  authorization_url: string;
+  access_code: string;
+  ref: string;
+  paymentId: string;
+  amount: number;
+  mode: string;
 }
 
 export interface CreateUnitReservationInput {
@@ -379,6 +456,18 @@ export interface FloorPlanAvailabilityDto {
   window: { start: string; end: string };
   totals: { total: number; available: number; reserved: number; locked: number };
   byBlueprint: BlueprintAvailabilityDto[];
+  plan?: { id: string; name: string; width: number; height: number; floor?: string };
+  units?: Array<{
+    id: string;
+    label: string;
+    blueprintId: string;
+    floorId: string;
+    sectionId?: string;
+    state: string;
+    available: boolean;
+    locked: boolean;
+    spatial: UnitSpatialDto;
+  }>;
 }
 
 export interface FloorPlanTimelineDto {

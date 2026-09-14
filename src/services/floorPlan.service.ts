@@ -32,6 +32,15 @@ class FloorPlanService {
     return res.data;
   }
 
+  /** Public (unauthenticated) floor plan list for a vendor. */
+  async listForVendor(vendorId: string, params?: { vertical?: string; page?: number; limit?: number }) {
+    const res = await api.get<FloorPlanApiEnvelope<PaginatedData<FloorPlanDto>>>(
+      `/vendors/${vendorId}/floor-plans`,
+      { params }
+    );
+    return res.data;
+  }
+
   async getLayout(id: string) {
     const res = await api.get<FloorPlanApiEnvelope<FloorPlanLayoutDto>>(
       `/floor-plans/${id}/layout`

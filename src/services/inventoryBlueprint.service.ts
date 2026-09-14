@@ -23,6 +23,18 @@ class InventoryBlueprintService {
     return res.data;
   }
 
+  /** Public (unauthenticated) blueprint catalog for a vendor. */
+  async listForVendor(
+    vendorId: string,
+    params?: { vertical?: string; search?: string; page?: number; limit?: number }
+  ) {
+    const res = await api.get<FloorPlanApiEnvelope<PaginatedData<InventoryBlueprintDto>>>(
+      `/vendors/${vendorId}/blueprints`,
+      { params }
+    );
+    return res.data;
+  }
+
   async create(input: CreateBlueprintInput) {
     const res = await api.post<FloorPlanApiEnvelope<InventoryBlueprintDto>>(
       '/inventory-blueprints',
@@ -49,15 +61,6 @@ class InventoryBlueprintService {
   async remove(id: string) {
     const res = await api.delete<FloorPlanApiEnvelope<{ id: string }>>(
       `/inventory-blueprints/${id}`
-    );
-    return res.data;
-  }
-
-  /** Idempotently clones the built-in catalog for the vendor. */
-  async seedSystem(vertical: string) {
-    const res = await api.post<FloorPlanApiEnvelope<InventoryBlueprintDto[]>>(
-      '/inventory-blueprints/seed-system',
-      { vertical }
     );
     return res.data;
   }

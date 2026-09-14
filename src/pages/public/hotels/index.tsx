@@ -2,20 +2,18 @@
 import Footer from '@/navigation/user_layout/_sub_component/Footer';
 import StarRating from '@/components/ui/starrating';
 import Header from '@/components/user/Header';
-import HotelBookingPopup from '@/components/user/hotel/BookiingPopup';
-import HotelBookingForm from '@/components/user/hotel/BookingForm';
 import Images from '@/components/user/ui/Image';
 import Images2 from '@/components/user/ui/Image2';
 import UniversalLoader from '@/components/user/ui/LogoLoader';
 import MapComponent from '@/components/user/ui/mapComponent';
 import HotelSaveCopy from '@/components/user/ui/SaveCopy';
+import { MakeReservationSection } from '@/components/user/inventory/MakeReservationSection';
 import { hotelService } from '@/services/hotel.service';
 import { userService } from '@/services/user.service';
 import { Mail, MapPin, Phone } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useLocation, useParams } from 'react-router';
 import HotelInfo from '../../../components/user/hotel/HotelInfo';
-import { TableGridTwo } from '@/components/TableGridRecommendations';
 import type { HotelRoom } from '@/components/user/hotel/Rooms';
 
 const HotelsPage = () => {
@@ -25,9 +23,8 @@ const HotelsPage = () => {
 
   const { id } = useParams();
   const [hotel, setHotel] = useState<any>({});
-  const [recommendations, setRecommendations] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [show, setShow] = useState(false);
+  const [, setShow] = useState(false);
   const [rooms, setRooms] = useState<any>(null);
   const [selectedRooms, setSelectedRooms] = useState<HotelRoom[]>([]);
 
@@ -35,9 +32,7 @@ const HotelsPage = () => {
     const fetchHotel = async () => {
       try {
         const res = await userService.getVendor(id);
-        console.log(res);
         setHotel(res.data);
-        setRecommendations(res.recommendations);
       } catch (error) {
         console.error(error);
       } finally {
@@ -57,6 +52,7 @@ const HotelsPage = () => {
   }, []);
 
   if (isLoading || !rooms) return <UniversalLoader fullscreen type="vendor-page" />;
+
   return (
     <>
       <div className="hidden md:block">
@@ -74,16 +70,6 @@ const HotelsPage = () => {
                     images={hotel?.profileImages ?? []}
                     name={hotel.businessName}
                   />
-                  {activeTab === 'rooms' && (
-                    <div className="hidden md:block">
-                      <HotelBookingForm
-                        selectedRooms={selectedRooms}
-                        setSelectedRooms={setSelectedRooms}
-                        id={id!}
-                        restaurant={hotel}
-                      />
-                    </div>
-                  )}
                 </div>
                 <div className="space-y-2">
                   <div className="flex flex-col md:flex-row md:justify-between md:items-cente w-full gap-4">
@@ -109,7 +95,6 @@ const HotelsPage = () => {
               </div>
             </div>
             <div className={activeTab === 'rooms' ? 'w-full' : 'col-span-2'}>
-              {/* Pass activeTab and setActiveTab to HotelInfo */}
               <HotelInfo
                 id={id!}
                 data={hotel}
@@ -122,19 +107,9 @@ const HotelsPage = () => {
               />
             </div>
           </div>
-          {/* Hide the right column when activeTab is "rooms" */}
 
           {activeTab !== 'rooms' && (
             <div className="space-y-8 px-4 md:px-0">
-              <div className="hidden md:block">
-                <HotelBookingForm
-                  selectedRooms={selectedRooms}
-                  setSelectedRooms={setSelectedRooms}
-                  id={id!}
-                  restaurant={hotel}
-                />
-              </div>
-
               <div className="rounded-2xl bg-[#E7F0F0] border border-[#E5E7EB] p-1">
                 <MapComponent address={hotel.address} />
               </div>
@@ -165,7 +140,7 @@ const HotelsPage = () => {
 
                 <div>
                   <a
-                    href="#" // Changed from 'to' to 'href' for Next.js Link
+                    href="#"
                     className="text-green-700 font-medium underline hover:text-green-900"
                   >
                     Hotel website
@@ -176,15 +151,7 @@ const HotelsPage = () => {
           )}
         </div>
 
-        <HotelBookingPopup
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-          show={show}
-          setShow={setShow}
-          selectedRooms={selectedRooms}
-          setSelectedRooms={setSelectedRooms}
-          id={id!}
-        />
+        <MakeReservationSection vendorId={id!} vertical="hotel" />
       </main>
       <div className="hidden md:block">
         <Footer />

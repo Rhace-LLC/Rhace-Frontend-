@@ -4,7 +4,6 @@ const PAYMENT_LABEL: Record<PaymentStrategy, string> = {
   full_prepayment: 'Full prepayment',
   deposit_50_percent: '50% deposit',
   pay_at_venue: 'Pay at venue',
-  hold_card_authorization: 'Card hold',
 };
 
 export function BlueprintSpecs({ blueprint }: { blueprint?: InventoryBlueprint }) {

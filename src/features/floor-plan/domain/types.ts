@@ -17,11 +17,7 @@ export type Vertical = 'hotel' | 'club' | 'restaurant';
 export type BlueprintCategory = 'room' | 'club_table' | 'restaurant_table';
 
 /** How a booking may be paid for. */
-export type PaymentStrategy =
-  | 'full_prepayment'
-  | 'deposit_50_percent'
-  | 'pay_at_venue'
-  | 'hold_card_authorization';
+export type PaymentStrategy = 'full_prepayment' | 'deposit_50_percent' | 'pay_at_venue';
 
 export type PolicyKind =
   | 'cancellation'
@@ -196,7 +192,12 @@ export interface CanvasStructure {
 
 // ─── Reservations ─────────────────────────────────────────────────────────────
 
-export type ReservationStatus = 'upcoming' | 'active' | 'completed' | 'cancelled';
+export type ReservationStatus =
+  | 'pending_payment'
+  | 'upcoming'
+  | 'active'
+  | 'completed'
+  | 'cancelled';
 
 export interface ReservationLock {
   token: string;

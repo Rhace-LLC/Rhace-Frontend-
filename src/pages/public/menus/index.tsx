@@ -1,13 +1,11 @@
 import Header from '@/components/user/Header';
-import BookingForm from '@/components/user/restaurant/BookingForm';
-import BookingPopup from '@/components/user/restaurant/BookingPopup';
 import RestaurantSaveCopy from '@/components/user/ui/SaveCopy';
 import RestaurantImages2 from '@/components/user/ui/Image2';
 import RestaurantImages from '@/components/user/ui/Image';
 import RestaurantInfo from '@/components/user/restaurant/RestaurantInfo';
 import MapComponent from '@/components/user/ui/mapComponent';
 import { Mail, MapPin, Phone, Star } from 'lucide-react';
-import { useNavigate, useParams } from 'react-router';
+import { Link, useNavigate, useParams } from 'react-router';
 // import { RestaurantData } from "@/lib/api";
 import { useEffect, useState } from 'react';
 import { userService } from '@/services/user.service';
@@ -154,7 +152,17 @@ const MenuPage = () => {
           <div className="space-y-8 px-4 md:px-0">
             <div className="p-4 rounded-2xl bg-[#E7F0F0] border w-full border-[#E5E7EB] hidden md:block">
               <h2 className="text-[#111827] font-semibold text-xl">Reserve your Table</h2>
-              <BookingForm id={id!} menu={true} reservation={restaurant} />
+              <p className="mt-1 text-sm text-gray-600">
+                Choose a table configuration on the venue page.
+              </p>
+              {restaurant?.vendor?._id && (
+                <Link
+                  to={`/restaurants/${restaurant.vendor._id}`}
+                  className="mt-3 inline-block rounded-xl bg-[#0A6C6D] px-4 py-2 text-sm font-medium text-white hover:bg-[#0A6C6D]/90"
+                >
+                  Go to venue
+                </Link>
+              )}
             </div>
             <div className="rounded-2xl bg-[#E7F0F0] border border-[#E5E7EB] p-1">
               <MapComponent address={restaurant.vendor.address} />
@@ -192,7 +200,6 @@ const MenuPage = () => {
             </div>
           </div>
         </div>
-        <BookingPopup id={id!} menu={true} reservation={restaurant} />
       </main>
       <div className="hidden md:block">
         <Footer />

@@ -1,6 +1,5 @@
 import Header from '@/components/user/Header';
-import BookingForm from '@/components/user/restaurant/BookingForm';
-import BookingPopup from '@/components/user/restaurant/BookingPopup';
+import { MakeReservationSection } from '@/components/user/inventory/MakeReservationSection';
 import RestaurantSaveCopy from '@/components/user/ui/SaveCopy';
 import RestaurantImages2 from '@/components/user/ui/Image2';
 import RestaurantImages from '@/components/user/ui/Image';
@@ -19,7 +18,6 @@ import TableGrid from '@/components/TableGridRecommendations';
 const RestaurantsPage = () => {
   const { id } = useParams();
   const [isLoading, setIsLoading] = useState(true);
-  const [recommendations, setRecommendations] = useState<any[]>([]);
   const [restaurant, setRestaurant] = useState<any>({
     _id: '',
     businessName: '',
@@ -51,7 +49,6 @@ const RestaurantsPage = () => {
       try {
         const res = await userService.getVendor(id);
         setRestaurant(res.data);
-        setRecommendations(res.recommendations);
       } catch (error) {
         console.error(error);
       } finally {
@@ -110,10 +107,6 @@ const RestaurantsPage = () => {
             </div>
           </div>
           <div className="space-y-8 px-4 md:px-0">
-            <div className="p-4 rounded-2xl bg-[#E7F0F0] border w-full border-[#E5E7EB] hidden md:block">
-              <h2 className="text-[#111827] font-semibold text-xl">Reserve your Table</h2>
-              <BookingForm id={id!} />
-            </div>
             <div className="rounded-2xl bg-[#E7F0F0] border border-[#E5E7EB] p-1">
               <MapComponent address={restaurant.address} />
             </div>
@@ -150,7 +143,8 @@ const RestaurantsPage = () => {
             </div>
           </div>
         </div>
-        <BookingPopup id={id!} />
+
+        <MakeReservationSection vendorId={id!} vertical="restaurant" />
       </main>
       <div className="hidden md:block">
         <Footer />
