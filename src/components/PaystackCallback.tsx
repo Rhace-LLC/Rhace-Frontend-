@@ -6,9 +6,9 @@ import UniversalLoader from './user/ui/LogoLoader';
 import Receipt from './Receipt';
 import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { clearDraft, listDrafts } from '@/features/reservation/draft/draftStore';
-import type { ReservationVertical } from '@/features/reservation/types';
 import type { ReservationData } from '@/types';
+
+type ReservationVertical = 'restaurant' | 'hotel' | 'club';
 
 interface CallbackState {
   reservation: ReservationData | null;
@@ -63,10 +63,6 @@ const PaystackCallback = () => {
         }
 
         const reservation = completeRes?.reservation || verifyRes?.reservation;
-        const vertical = reservation?.reservationType as ReservationVertical | undefined;
-        if (vertical) {
-          listDrafts(vertical).forEach((draft) => clearDraft(draft.id));
-        }
 
         // Set success data
         setResultData({

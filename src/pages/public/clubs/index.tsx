@@ -1,31 +1,22 @@
-import { Mail, MapPin, Phone, Star } from 'lucide-react';
+import { Mail, MapPin, Phone } from 'lucide-react';
 import MapComponent from '@/components/user/ui/mapComponent';
 import Images from '@/components/user/ui/Image';
 import Images2 from '@/components/user/ui/Image2';
-// import { ClubsData } from "@/lib/api";
 import { useParams } from 'react-router';
 import Footer from '@/navigation/user_layout/_sub_component/Footer';
 import ClubInfo from '@/components/user/club/ClubInfo';
-import BookingPopup from '@/components/user/club/BookingPopup';
-import BookingForm from '@/components/user/club/BookingForm';
 import SaveCopy from '@/components/user/ui/SaveCopy';
 import Header from '@/components/user/Header';
+import { MakeReservationSection } from '@/components/user/inventory/MakeReservationSection';
 import { useEffect, useState } from 'react';
 import { userService } from '@/services/user.service';
 import StarRating from '@/components/ui/starrating';
 import UniversalLoader from '@/components/user/ui/LogoLoader';
-import { clubService } from '@/services/club.service';
-import { toast } from 'react-toastify';
-import { TableGridThree } from '@/components/TableGridRecommendations';
 
 const ClubPage = () => {
   const { id } = useParams();
-  // const club = ClubsData.data[0];
   const [isLoading, setIsLoading] = useState(true);
-  const [tables, setTables] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
   const [club, setClub] = useState<any>(null);
-  const [recommendations, setRecommendations] = useState<any[]>([]);
 
   useEffect(() => {
     const fetchClub = async () => {
@@ -38,21 +29,7 @@ const ClubPage = () => {
         setIsLoading(false);
       }
     };
-    const fetchTables = async () => {
-      try {
-        const res = await clubService.getTables(id!);
-        setTables(res.tables);
-        setRecommendations(res.recommendations);
-        console.log(res);
-      } catch (error) {
-        console.error(error);
-        toast.error('Failed to Fetch Tables!');
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchClub();
-    fetchTables();
   }, []);
 
   if (isLoading) return <UniversalLoader fullscreen type="vendor-page" />;
@@ -99,10 +76,6 @@ const ClubPage = () => {
             </div>
           </div>
           <div className="space-y-8 px-4 md:px-0">
-            <div className="p-4 rounded-2xl bg-[#E7F0F0] border border-[#E5E7EB] hidden md:block">
-              <h2 className="text-[#111827] font-semibold text-xl">Reserve your Table</h2>
-              <BookingForm tables={tables} loading={loading} id={id} />
-            </div>
             <div className="rounded-2xl bg-[#E7F0F0] border border-[#E5E7EB] p-1">
               <MapComponent address={club.address} />
             </div>
@@ -139,7 +112,8 @@ const ClubPage = () => {
             </div>
           </div>
         </div>
-        <BookingPopup loading={loading} tables={tables} id={id} />
+
+        <MakeReservationSection vendorId={id!} vertical="club" />
       </main>
       <div className="hidden md:block">
         <Footer />

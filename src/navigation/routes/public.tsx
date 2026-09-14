@@ -21,14 +21,13 @@ import CookiesPage from '@/pages/public/cookies';
 import DiscoverPage from '@/pages/public/discover';
 import HelpCenterRhace from '@/pages/public/faq';
 import HotelsPage from '@/pages/public/hotels';
-import HotelConfirmPage from '@/pages/public/hotels/confirmation';
 import MenuPage from '@/pages/public/menus';
 import NotFound from '@/pages/public/not-found';
 import PrivacyPolicy from '@/pages/public/privacy-policy';
 import ReservationHomePage from '@/pages/public/home';
-import CompletedPage from '@/pages/public/restaurants/completed';
-import ConfirmPage from '@/pages/public/restaurants/confirmation';
+import ConfirmationPage from '@/pages/public/confirmation';
 import RestaurantsPage from '@/pages/public/restaurants';
+import ReserveBlueprintPage from '@/pages/public/reserve';
 import SearchPage from '@/pages/public/search';
 import Terms from '@/pages/public/terms';
 import VendornHomePage from '@/pages/public/partner';
@@ -82,17 +81,22 @@ export const publicRoutes: RouteObject[] = [
 
   { path: '/menus/:id', element: <MenuPage /> },
 
+  // Confirmation (UnitReservation engine)
+  { path: '/restaurants/confirmation/:id', element: <ConfirmationPage /> },
+  { path: '/clubs/confirmation/:id', element: <ConfirmationPage /> },
+  { path: '/hotels/confirmation/:id', element: <ConfirmationPage /> },
+
   // Restaurants
+  { path: '/restaurants/:id/reserve/:blueprintId', element: <ReserveBlueprintPage /> },
   { path: '/restaurants/:id', element: <RestaurantsPage /> },
-  { path: '/restaurants/completed/:id', element: <CompletedPage /> },
-  { path: '/restaurants/confirmation/:id', element: <ConfirmPage /> },
 
   // Clubs
+  { path: '/clubs/:id/reserve/:blueprintId', element: <ReserveBlueprintPage /> },
   { path: '/clubs/:id', element: <ClubPage /> },
 
   // Hotels
+  { path: '/hotels/:id/reserve/:blueprintId', element: <ReserveBlueprintPage /> },
   { path: '/hotels/:id', element: <HotelsPage /> },
-  { path: '/hotels/confirmation/:id', element: <HotelConfirmPage /> },
 
   // Paystack Callback
   { path: '/paystack/callback', element: <PaystackCallback /> },

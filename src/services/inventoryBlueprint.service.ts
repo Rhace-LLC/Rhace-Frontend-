@@ -23,6 +23,18 @@ class InventoryBlueprintService {
     return res.data;
   }
 
+  /** Public (unauthenticated) blueprint catalog for a vendor. */
+  async listForVendor(
+    vendorId: string,
+    params?: { vertical?: string; search?: string; page?: number; limit?: number }
+  ) {
+    const res = await api.get<FloorPlanApiEnvelope<PaginatedData<InventoryBlueprintDto>>>(
+      `/vendors/${vendorId}/blueprints`,
+      { params }
+    );
+    return res.data;
+  }
+
   async create(input: CreateBlueprintInput) {
     const res = await api.post<FloorPlanApiEnvelope<InventoryBlueprintDto>>(
       '/inventory-blueprints',

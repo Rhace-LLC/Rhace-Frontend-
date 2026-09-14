@@ -15,6 +15,7 @@ import type {
   CreateUnitInput,
   CreateUnitReservationInput,
   HoldUnitInput,
+  QuoteInput,
   UnitStatusInput,
   UpdateBlueprintInput,
   UpdateFloorPlanInput,
@@ -46,6 +47,26 @@ export function useBlueprints(vertical?: string) {
     queryFn: async () =>
       (await inventoryBlueprintService.list({ vertical, includeSystem: true, limit: 100 })).data,
     enabled: !!vertical,
+  });
+}
+
+/** Public (unauthenticated) blueprint catalog for a vendor — customer booking flow. */
+export function useVendorBlueprints(vendorId?: string, vertical?: string) {
+  return useQuery({
+    queryKey: [...floorPlanKeys.blueprintsRoot(), 'vendor', vendorId ?? '', vertical ?? 'all'] as const,
+    queryFn: async () =>
+      (await inventoryBlueprintService.listForVendor(vendorId as string, { vertical, limit: 50 })).data,
+    enabled: !!vendorId,
+  });
+}
+
+/** Public (unauthenticated) floor plan list for a vendor — customer booking flow. */
+export function useVendorFloorPlans(vendorId?: string, vertical?: string) {
+  return useQuery({
+    queryKey: [...floorPlanKeys.all, 'vendor-plans', vendorId ?? '', vertical ?? 'all'] as const,
+    queryFn: async () =>
+      (await floorPlanService.listForVendor(vendorId as string, { vertical })).data,
+    enabled: !!vendorId,
   });
 }
 
@@ -313,6 +334,21 @@ export function useConfirmHold() {
   return useMutation({
     mutationFn: (input: ConfirmHoldInput) => unitReservationService.confirm(input),
     onSuccess: invalidate,
+  });
+}
+
+/** Public price preview for the checkout modal. */
+export function useBookingQuote(input?: QuoteInput) {
+  return useQuery({
+    queryKey: [
+      'booking-quote',
+      input?.blueprintId ?? '',
+      input?.start ?? '',
+      input?.end ?? '',
+      input?.partySize ?? 0,
+    ] as const,
+    queryFn: async () => (await unitReservationService.quote(input as QuoteInput)).data,
+    enabled: Boolean(input?.blueprintId && input?.start && input?.end),
   });
 }
 
