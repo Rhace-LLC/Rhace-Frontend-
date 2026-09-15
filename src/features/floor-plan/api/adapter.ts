@@ -29,7 +29,8 @@ export function toDomainBlueprint(dto: InventoryBlueprintDto): InventoryBlueprin
     name: dto.name,
     description: dto.description ?? '',
     basePrice: dto.basePrice ?? 0,
-    currency: dto.currency ?? 'USD',
+    currency: dto.currency ?? 'NGN',
+    minimumDeposit: dto.minimumDeposit ?? 0,
     capacity: dto.capacity ?? 2,
     maxCapacity: dto.maxCapacity ?? dto.capacity ?? 2,
     allowedPaymentStrategies: dto.allowedPaymentStrategies ?? ['pay_at_venue'],
@@ -58,8 +59,7 @@ export function toDomainBlueprint(dto: InventoryBlueprintDto): InventoryBlueprin
       vertical: 'club',
       category: 'club_table',
       tier: dto.tier ?? 'Custom',
-      minimumSpend: dto.minimumSpend ?? dto.basePrice ?? 0,
-      deposit: dto.deposit,
+      minimumSpend: dto.minimumSpend ?? 0,
     };
   }
   return {

@@ -14,4 +14,6 @@ export { AddPhysicalUnitModal } from './components/AddPhysicalUnitModal';
 export { FloorPlanWorkbench } from './components/FloorPlanWorkbench';
 export * from './api';
 export * from './core/types';
+export * from './domain/pricing';
+export * from './domain/slots';
 export type { VerticalPlugin } from './core/plugin';

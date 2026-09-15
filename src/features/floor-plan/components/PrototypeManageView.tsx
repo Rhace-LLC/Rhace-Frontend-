@@ -17,6 +17,7 @@ import { CreateBlueprintModal } from './CreateBlueprintModal';
 import { AddPhysicalUnitModal, type UnitPlacementInput } from './AddPhysicalUnitModal';
 import { UnitManageModal } from './UnitManageModal';
 import type { InventoryBlueprint, PhysicalUnit, Vertical } from '../domain/types';
+import { formatBlueprintPricing, getBlueprintPricing } from '../domain/pricing';
 import type { FloorPlanVertical } from '@/types';
 
 interface PrototypeManageViewProps {
@@ -29,9 +30,9 @@ interface PrototypeManageViewProps {
 type UnitFilter = 'all' | 'available' | 'reserved' | 'locked';
 
 const CONFIG_LABEL: Record<Vertical, string> = {
-  hotel: 'Create a Room Config',
-  club: 'Create a Table Config',
-  restaurant: 'Create a Table Config',
+  hotel: 'Create a Room',
+  club: 'Create a Table',
+  restaurant: 'Create a Table',
 };
 
 export function PrototypeManageView({ plugin, floorPlanPath, description, planId: preferredPlanId }: PrototypeManageViewProps) {
@@ -137,11 +138,8 @@ export function PrototypeManageView({ plugin, floorPlanPath, description, planId
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-lg font-semibold capitalize text-gray-900">
-                {plugin.label} — Prototype Manager
+                {plugin.label} Manager
               </h1>
-              <span className="rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-medium text-green-700">
-                LIVE API
-              </span>
             </div>
             <p className="mt-1 text-sm text-gray-500">{description}</p>
           </div>
@@ -217,7 +215,7 @@ export function PrototypeManageView({ plugin, floorPlanPath, description, planId
                       <div>
                         <h2 className="text-sm font-semibold text-gray-900">{blueprint.name}</h2>
                         <p className="text-xs text-gray-500">
-                          {blueprint.type} · ${blueprint.basePrice.toLocaleString()} · capacity{' '}
+                          {blueprint.type} · {formatBlueprintPricing(getBlueprintPricing(blueprint))} · capacity{' '}
                           {blueprint.capacity}
                         </p>
                       </div>

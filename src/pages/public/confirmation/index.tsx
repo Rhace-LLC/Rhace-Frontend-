@@ -97,7 +97,9 @@ const ConfirmationPage = () => {
               <dd className="capitalize text-gray-900">{reservation.status.replace('_', ' ')}</dd>
               {typeof reservation.amount === 'number' && reservation.amount > 0 && (
                 <>
-                  <dt className="text-gray-500">Amount</dt>
+                  <dt className="text-gray-500">
+                    {reservation.vertical === 'hotel' ? 'Total' : 'Reservation deposit'}
+                  </dt>
                   <dd className="text-gray-900">
                     ₦{reservation.amount.toLocaleString()}{' '}
                     <span className="text-xs text-gray-400">{reservation.currency ?? 'NGN'}</span>

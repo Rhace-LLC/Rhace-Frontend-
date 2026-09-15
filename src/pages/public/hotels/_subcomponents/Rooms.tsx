@@ -1,11 +1,11 @@
 import React, { useState, type Dispatch, type SetStateAction } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import UniversalLoader from '../ui/LogoLoader';
+import UniversalLoader from '@/components/user/ui/LogoLoader';
 import { toast } from 'react-toastify';
 import { HiPercentBadge } from 'react-icons/hi2';
 import { capitalize } from '@/utils/helper';
-import DatePicker from '../ui/datepicker';
-import { GuestPicker } from '../ui/guestpicker';
+import DatePicker from '@/components/user/ui/datepicker';
+import { GuestPicker } from '@/components/user/ui/guestpicker';
 import {
   BedFill,
   Building1,

@@ -11,6 +11,7 @@ import { canTransition } from '../domain/transitions';
 import { allBlueprints } from '../domain/blueprintStore';
 import { findBlueprint } from '../domain/blueprints';
 import type { RestaurantTableState } from '../domain/types';
+import { formatBlueprintPricing, getBlueprintPricing } from '../domain/pricing';
 
 const RESTAURANT_STATE_ORDER: RestaurantTableState[] = [
   'available',
@@ -168,7 +169,7 @@ function renderManageCard(entity: FloorEntity) {
     ['Area', String(b.area ?? b.section ?? '—')],
     ['Floor', String(entity.spatialData.floor ?? '—')],
     ['Capacity', String(b.capacity ?? '—')],
-    ['Price', blueprint ? `$${blueprint.basePrice.toLocaleString()}` : '—'],
+    ['Price', blueprint ? formatBlueprintPricing(getBlueprintPricing(blueprint)) : '—'],
   ];
   return (
     <div className="flex h-full w-full flex-col gap-3 rounded-xl border border-gray-200 bg-white p-4 shadow-sm">

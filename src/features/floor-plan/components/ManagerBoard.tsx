@@ -5,6 +5,7 @@ import { isAvailableState, isLocked } from '../domain/reservations';
 import { allBlueprints } from '../domain/blueprintStore';
 import { LockBadge } from './LockBadge';
 import type { InventoryBlueprint, Reservation, Vertical } from '../domain/types';
+import { formatBlueprintPricing, getBlueprintPricing } from '../domain/pricing';
 
 interface ManagerBoardProps {
   plugin: VerticalPlugin;
@@ -105,7 +106,7 @@ export function ManagerBoard({
                     <div>
                       <h2 className="text-sm font-semibold text-gray-900">{blueprint.name}</h2>
                       <p className="text-xs text-gray-500">
-                        {blueprint.type} · ${blueprint.basePrice.toLocaleString()} · capacity{' '}
+                        {blueprint.type} · {formatBlueprintPricing(getBlueprintPricing(blueprint))} · capacity{' '}
                         {blueprint.capacity}
                       </p>
                     </div>

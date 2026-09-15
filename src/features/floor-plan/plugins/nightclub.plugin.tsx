@@ -221,7 +221,7 @@ function manageToolbarItems({
 
 export const nightclubPlugin: VerticalPlugin = {
   id: 'club',
-  label: 'Nightclub',
+  label: 'Club',
   theme: {
     viewport: 'bg-slate-950',
     canvas: 'bg-slate-900',

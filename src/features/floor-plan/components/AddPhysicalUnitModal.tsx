@@ -3,6 +3,7 @@ import { Modal } from '@/components/others/RhaceModal';
 import { CATEGORY_OBJECTS } from '../domain/adapter';
 import { stateOptions } from '../domain/states';
 import type { InventoryBlueprint, UnitState, Vertical } from '../domain/types';
+import { formatBlueprintPricing, getBlueprintPricing } from '../domain/pricing';
 
 export interface UnitPlacementInput {
   designation: string;
@@ -117,7 +118,7 @@ export function AddPhysicalUnitModal({
           <select value={blueprintId} onChange={(e) => setBlueprintId(e.target.value)} className={inputClass}>
             {blueprints.map((blueprint) => (
               <option key={blueprint.id} value={blueprint.id}>
-                {blueprint.name} (${blueprint.basePrice.toLocaleString()} · {blueprint.capacity} guests)
+                {blueprint.name} ({formatBlueprintPricing(getBlueprintPricing(blueprint))} · {blueprint.capacity} guests)
               </option>
             ))}
           </select>

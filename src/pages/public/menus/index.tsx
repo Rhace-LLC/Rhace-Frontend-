@@ -2,7 +2,7 @@ import Header from '@/components/user/Header';
 import RestaurantSaveCopy from '@/components/user/ui/SaveCopy';
 import RestaurantImages2 from '@/components/user/ui/Image2';
 import RestaurantImages from '@/components/user/ui/Image';
-import RestaurantInfo from '@/components/user/restaurant/RestaurantInfo';
+import RestaurantInfo from '@/pages/public/restaurants/_subcomponents/RestaurantInfo';
 import MapComponent from '@/components/user/ui/mapComponent';
 import { Mail, MapPin, Phone, Star } from 'lucide-react';
 import { Link, useNavigate, useParams } from 'react-router';

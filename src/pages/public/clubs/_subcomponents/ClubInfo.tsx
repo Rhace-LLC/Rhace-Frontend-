@@ -1,7 +1,7 @@
 'use client';
 import React, { useState } from 'react';
 import ClubInfos from './ClubInfos';
-import RestaurantReviews from '../restaurant/RestaurantReview';
+import RestaurantReviews from '@/pages/public/restaurants/_subcomponents/RestaurantReview';
 import ComingSoonIcon from '@/public/images/coming-soon_icon.png';
 import ClubTable from './ClubTable';
 import { useLocation } from 'react-router';

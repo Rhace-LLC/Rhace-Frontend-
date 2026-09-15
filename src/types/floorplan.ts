@@ -92,7 +92,8 @@ export interface InventoryBlueprintDto {
   view?: string;
   tier?: string;
   minimumSpend?: number;
-  deposit?: number;
+  /** No-show insurance required to lock a reservation (0 = free). Tables use this instead of a price. */
+  minimumDeposit?: number;
   seatingArea?: string;
   turnTimeMinutes?: number;
   createdAt?: string;
@@ -247,7 +248,7 @@ export interface CreateBlueprintInput {
   view?: string;
   tier?: string;
   minimumSpend?: number;
-  deposit?: number;
+  minimumDeposit?: number;
   seatingArea?: string;
   turnTimeMinutes?: number;
 }
@@ -324,6 +325,7 @@ export interface UnitReservationDto {
   end: string;
   status: UnitReservationStatusDto;
   source?: string;
+  vertical?: 'hotel' | 'club' | 'restaurant' | string;
   posSpend?: number;
   notes?: string;
   specialRequests?: string;
@@ -381,14 +383,13 @@ export interface QuoteStrategyDto {
 }
 
 export interface BookingQuoteDto {
+  pricingMode: 'room' | 'table';
   base: number;
   unitsKind: 'flat' | 'nights';
   unitsCount: number;
   subtotal: number;
   minimumSpend: number;
-  deposit: number;
-  depositAmount: number;
-  balance: number;
+  minimumDeposit: number;
   total: number;
   currency: string;
   allowedStrategies: PaymentStrategyDto[];
@@ -410,6 +411,8 @@ export interface BookingGroupSummaryDto {
   paymentStatus?: string;
   totalAmount?: number;
   amountPaid?: number;
+  minimumDeposit?: number;
+  amountDueNow?: number;
   paymentStrategy?: string;
   paymentPlan?: string;
 }
@@ -474,4 +477,32 @@ export interface FloorPlanTimelineDto {
   window: { start: string; end: string };
   units: PhysicalUnitDto[];
   reservations: UnitReservationDto[];
+}
+
+// ─── Day time-slots (customer time-slot picker) ───────────────────────────────
+
+export type MealPeriodDto = 'Morning' | 'Afternoon' | 'Evening';
+
+export type DaySlotStateDto = 'available' | 'full' | 'past';
+
+export interface DaySlotDto {
+  start: string;
+  end: string;
+  label: string;
+  mealPeriod: MealPeriodDto;
+  available: number;
+  total: number;
+  state: DaySlotStateDto;
+}
+
+export interface BlueprintDaySlotsDto {
+  date: string;
+  timezone: string;
+  window: { open: string; close: string };
+  slotStepMinutes: number;
+  durationMinutes: number;
+  isClosed: boolean;
+  isSelectable: boolean;
+  notApplicable?: boolean;
+  slots: DaySlotDto[];
 }

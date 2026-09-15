@@ -4,7 +4,7 @@ import Images from '@/components/user/ui/Image';
 import Images2 from '@/components/user/ui/Image2';
 import { useParams } from 'react-router';
 import Footer from '@/navigation/user_layout/_sub_component/Footer';
-import ClubInfo from '@/components/user/club/ClubInfo';
+import ClubInfo from './_subcomponents/ClubInfo';
 import SaveCopy from '@/components/user/ui/SaveCopy';
 import Header from '@/components/user/Header';
 import { MakeReservationSection } from '@/components/user/inventory/MakeReservationSection';

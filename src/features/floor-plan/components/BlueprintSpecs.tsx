@@ -1,4 +1,5 @@
 import type { InventoryBlueprint, PaymentStrategy } from '../domain/types';
+import { getBlueprintPricing } from '../domain/pricing';
 
 const PAYMENT_LABEL: Record<PaymentStrategy, string> = {
   full_prepayment: 'Full prepayment',
@@ -8,13 +9,17 @@ const PAYMENT_LABEL: Record<PaymentStrategy, string> = {
 
 export function BlueprintSpecs({ blueprint }: { blueprint?: InventoryBlueprint }) {
   if (!blueprint) return null;
+  const pricing = getBlueprintPricing(blueprint);
   return (
     <div className="space-y-3 rounded-lg border border-gray-200 p-3 text-xs">
       <div className="flex items-center justify-between">
         <span className="font-medium text-gray-800">{blueprint.type}</span>
         <span className="font-semibold text-gray-900">
-          ${blueprint.basePrice.toLocaleString()}
-          {blueprint.vertical === 'restaurant' && blueprint.basePrice === 0 ? ' (free)' : ''}
+          {pricing.mode === 'room'
+            ? `₦${pricing.price.toLocaleString()} /night`
+            : pricing.isFree
+              ? 'Free'
+              : `₦${pricing.minimumDeposit.toLocaleString()} deposit`}
         </span>
       </div>
       {blueprint.description && <p className="text-gray-500">{blueprint.description}</p>}

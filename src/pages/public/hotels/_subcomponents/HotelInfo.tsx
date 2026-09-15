@@ -1,7 +1,7 @@
 'use client';
 import React, { type Dispatch, type SetStateAction } from 'react';
 import Rooms, { type HotelRoom } from './Rooms';
-import RestaurantReviews from '../restaurant/RestaurantReview';
+import RestaurantReviews from '@/pages/public/restaurants/_subcomponents/RestaurantReview';
 import HotelOverview from './HotelOverview';
 import Policies from './Policies';
 

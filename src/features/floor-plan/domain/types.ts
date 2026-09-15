@@ -54,6 +54,8 @@ export interface InventoryBlueprintBase {
   description: string;
   basePrice: number;
   currency: string;
+  /** No-show insurance required to lock a reservation (0 = free). Tables only carry this, not a price. */
+  minimumDeposit?: number;
   capacity: number;
   maxCapacity: number;
   allowedPaymentStrategies: PaymentStrategy[];
@@ -81,7 +83,6 @@ export interface ClubTableBlueprint extends InventoryBlueprintBase {
   category: 'club_table';
   tier: string;
   minimumSpend: number;
-  deposit?: number;
 }
 
 export interface RestaurantTableBlueprint extends InventoryBlueprintBase {

@@ -1,5 +1,6 @@
 import api from '@/lib/axios';
 import type {
+  BlueprintDaySlotsDto,
   BulkEntitiesInput,
   CanvasStructureDto,
   CreateFloorPlanInput,
@@ -118,6 +119,17 @@ class FloorPlanService {
   ) {
     const res = await api.get<FloorPlanApiEnvelope<FloorPlanAvailabilityDto>>(
       `/floor-plans/${id}/availability`,
+      { params }
+    );
+    return res.data;
+  }
+
+  async getSlots(
+    id: string,
+    params: { blueprintId: string; date: string; partySize?: number; tz?: string }
+  ) {
+    const res = await api.get<FloorPlanApiEnvelope<BlueprintDaySlotsDto>>(
+      `/floor-plans/${id}/slots`,
       { params }
     );
     return res.data;

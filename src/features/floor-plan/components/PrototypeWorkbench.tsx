@@ -62,10 +62,7 @@ export function PrototypeWorkbench({
   return (
     <div className="flex h-full min-h-0 flex-col gap-2 p-2 md:p-4">
       <div className="flex flex-wrap items-center gap-3">
-        <h1 className="text-sm font-semibold text-gray-900">{plugin.label} — Layout Canvas</h1>
-        <span className="rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-medium text-green-700">
-          LIVE API
-        </span>
+        <h1 className="text-sm font-semibold text-gray-900">{plugin.label} Layout Canvas</h1>
       </div>
 
       <div className="min-h-0 flex-1 overflow-hidden">
