@@ -15,52 +15,49 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useAuth } from '@/contexts/AuthContext';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import UniversalLoader from '@/components/user/ui/LogoLoader';
-import { menuService } from '@/services/menu.service';
+import { dishService } from '@/services/dish.service';
+import { menuCategoryService, type CategoryDto } from '@/services/menuCategory.service';
+import { addOnService, type AddOnDto } from '@/services/addon.service';
 import axios from 'axios';
 import { Check, CheckCircle, DownloadCloud, Loader2, Plus, Trash2, Upload, X } from 'lucide-react';
-import React, { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
-import { useSelector } from 'react-redux';
-import type { RootState } from '@/redux/store';
-import { useNavigate } from 'react-router';
+import { useNavigate, useParams } from 'react-router';
 import { toast } from 'react-toastify';
 
 interface NewItemState {
   name: string;
   description: string;
-  category: string;
+  categoryId: string;
   price: number;
   tags: string[];
   mealTimes: string[];
   discount: boolean;
   discountPrice: number;
   coverImage: string;
-  addOns: boolean;
-  assignedMenu?: string;
-  assignedMenus?: string[];
+  addonIds: string[];
   isVisible: boolean;
   images?: unknown[];
 }
 
 const CreateMenu = () => {
+  const { id: dishId } = useParams();
+  const isEdit = Boolean(dishId);
   const [step, setStep] = useState(0);
-  const { vendor } = useAuth();
   const [newItem, setNewItem] = useState<NewItemState>({
     name: '',
     description: '',
-    category: '',
+    categoryId: '',
     price: 0,
     tags: [],
     mealTimes: [],
     discount: true,
     discountPrice: 0,
     coverImage: '',
-    addOns: false,
-    assignedMenu: '',
+    addonIds: [],
     isVisible: true,
   });
   const [loading, setLoading] = useState(false);
@@ -69,7 +66,8 @@ const CreateMenu = () => {
   const initialTags = ['Spicy', 'Popular', 'Savory'];
   const [tags, setTags] = useState<string[]>(initialTags);
   const [newTag, setNewTag] = useState('');
-  const [menus, setMenus] = useState<any[]>([]);
+  const [categories, setCategories] = useState<CategoryDto[]>([]);
+  const [addonOptions, setAddonOptions] = useState<AddOnDto[]>([]);
   const [createItem, setCreateItem] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [uploadLoading, setUploadLoading] = useState(false);
@@ -99,36 +97,54 @@ const CreateMenu = () => {
   const handleNext = async () => {
     try {
       setLoading(true);
-      if (
-        newItem.name &&
-        newItem.category.length > 0 &&
-        newItem.tags.length > 0 &&
-        newItem.price > 0
-      ) {
-        const createdItem = await menuService.createMenuItem({
-          ...newItem,
-        });
-        setCreateItem(createdItem);
-        toast.success('Menu item created and added to menu');
-        setSuccessModal(true);
-        setNewItem({
-          name: '',
-          description: '',
-          category: '',
-          price: 0,
-          tags: [],
-          mealTimes: [],
-          discount: true,
-          discountPrice: 0,
-          addOns: false,
-          coverImage: '',
-          assignedMenus: [],
-          isVisible: true,
-        });
+      if (!newItem.name || !newItem.categoryId || newItem.price <= 0) {
+        toast.error('Name, category and price are required.');
+        return;
       }
+      const payload = {
+        name: newItem.name,
+        description: newItem.description,
+        price: newItem.price,
+        categoryId: newItem.categoryId,
+        mealTimes: newItem.mealTimes,
+        tags: newItem.tags,
+        coverImage: newItem.coverImage,
+        images: newItem.coverImage ? [newItem.coverImage] : [],
+        availability: newItem.isVisible,
+        isVisible: newItem.isVisible,
+        discount: newItem.discount,
+        discountPrice: newItem.discount ? newItem.discountPrice : undefined,
+        addonIds: newItem.addonIds,
+      };
+
+      const saved = isEdit && dishId
+        ? await dishService.update(dishId, payload)
+        : await dishService.create(payload);
+      setCreateItem(saved);
+      toast.success(isEdit ? 'Dish updated' : 'Dish created');
+
+      if (isEdit) {
+        navigate('/dashboard/restaurant/menu');
+        return;
+      }
+
+      setSuccessModal(true);
+      setNewItem({
+        name: '',
+        description: '',
+        categoryId: '',
+        price: 0,
+        tags: [],
+        mealTimes: [],
+        discount: true,
+        discountPrice: 0,
+        coverImage: '',
+        addonIds: [],
+        isVisible: true,
+      });
     } catch (error) {
       console.error(error);
-      toast.error('Error creating Menu Item');
+      toast.error(isEdit ? 'Error updating dish' : 'Error creating dish');
     } finally {
       setLoading(false);
     }
@@ -175,22 +191,51 @@ const CreateMenu = () => {
   };
 
   useEffect(() => {
-    const fetchMenus = async () => {
+    const loadCatalog = async () => {
       try {
-        const res = await menuService.getMenus(vendor._id);
-        setMenus(res.menus);
+        const [categoryList, addonList] = await Promise.all([
+          menuCategoryService.list(),
+          addOnService.list({ appliesTo: 'dish' }),
+        ]);
+        setCategories(categoryList);
+        setAddonOptions(addonList);
+
+        if (isEdit && dishId) {
+          const dish = await dishService.get(dishId);
+          const categoryId =
+            typeof dish.categoryId === 'object' && dish.categoryId
+              ? dish.categoryId._id
+              : (dish.categoryId as string | undefined) ?? '';
+          setNewItem({
+            name: dish.name ?? '',
+            description: dish.description ?? '',
+            categoryId: categoryId ?? '',
+            price: dish.price ?? 0,
+            tags: dish.tags ?? [],
+            mealTimes: dish.mealTimes ?? [],
+            discount: dish.discount ?? false,
+            discountPrice: dish.discountPrice ?? 0,
+            coverImage: dish.coverImage ?? dish.images?.[0] ?? '',
+            addonIds: (dish.addonIds ?? []).map((entry: unknown) =>
+              typeof entry === 'object' && entry ? String((entry as { _id: string })._id) : String(entry)
+            ),
+            isVisible: dish.isVisible ?? true,
+          });
+        }
+      } catch {
+        toast.error('Could not load categories/add-ons.');
       } finally {
         setIsLoading(false);
       }
     };
-    fetchMenus();
-  }, []);
+    loadCatalog();
+  }, [isEdit, dishId]);
 
   if (isLoading) return <UniversalLoader fullscreen />;
 
   return (
     <div className="bg-[#F9FAFB] min-h-dvh pb-16">
-      <Header2 title="Create Menu Item" />
+      <Header2 title={isEdit ? 'Edit Dish' : 'Create Dish'} />
       <div className=" flex">
         <div className="md:p-6 space-y-[45px] flex-1">
           <div className="max-w-[1300px] w-full mx-auto">
@@ -229,20 +274,26 @@ const CreateMenu = () => {
                   <div className="space-y-5">
                     <div className="space-y-2">
                       <Label className="text-xs">
-                        Menu Category<span className="text-[#EF4444]">*</span>
+                        Category<span className="text-[#EF4444]">*</span>
                       </Label>
-                      <RadioGroup
-                        value={newItem.category}
-                        onValueChange={(value) => setNewItem({ ...newItem, category: value })}
-                        className="grid grid-cols-2 md:grid-cols-3 gap-2"
-                      >
-                        {['Starters', 'Main Dish ', 'Dessert', 'Drink', 'Appetizer'].map((meal) => (
-                          <div key={meal} className="flex items-center space-x-2">
-                            <RadioGroupItem value={meal} id={meal} />
-                            <Label htmlFor={meal}>{meal}</Label>
-                          </div>
-                        ))}
-                      </RadioGroup>
+                      {categories.length === 0 ? (
+                        <p className="text-xs text-gray-400">
+                          No categories yet. Create one under Menu → Categories.
+                        </p>
+                      ) : (
+                        <RadioGroup
+                          value={newItem.categoryId}
+                          onValueChange={(value) => setNewItem({ ...newItem, categoryId: value })}
+                          className="grid grid-cols-2 md:grid-cols-3 gap-2"
+                        >
+                          {categories.map((category) => (
+                            <div key={category._id} className="flex items-center space-x-2">
+                              <RadioGroupItem value={category._id} id={category._id} />
+                              <Label htmlFor={category._id}>{category.name}</Label>
+                            </div>
+                          ))}
+                        </RadioGroup>
+                      )}
                     </div>
                     <div className="space-y-2">
                       <Label className="text-xs">Menu Availability (Meal Time)</Label>
@@ -272,23 +323,6 @@ const CreateMenu = () => {
                           )
                         )}
                       </div>
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-xs">
-                        Menu Assigned<span className="text-[#EF4444]">*</span>
-                      </Label>
-                      <RadioGroup
-                        value={newItem.assignedMenu}
-                        onValueChange={(value) => setNewItem({ ...newItem, assignedMenu: value })}
-                        className="grid grid-cols-2 md:grid-cols-3 gap-2"
-                      >
-                        {menus.map((meal) => (
-                          <div key={meal._id} className="flex items-center space-x-2">
-                            <RadioGroupItem value={meal._id} id={meal._id} />
-                            <Label htmlFor={meal._id}>{meal.name}</Label>
-                          </div>
-                        ))}
-                      </RadioGroup>
                     </div>
                     <div className="mt-6">
                       <label className="block text-xs font-medium text-gray-700">Tags</label>
@@ -424,16 +458,37 @@ const CreateMenu = () => {
                     )}
                   </div>
                 </div>
-                <div className="px-5 py-6 bg-white rounded-2xl border border-[#E5E7EB] w-full items-center flex gap-4 justify-between">
-                  <h2 className="text-[#111827] font-medium text-sm">Add-ons & Variants</h2>
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      defaultChecked={newItem.addOns}
-                      onCheckedChange={(value) => setNewItem({ ...newItem, addOns: value as boolean })}
-                      id="addons-variants"
-                    />
-                    <Label htmlFor="addons-variants">Enable Add-ons</Label>
-                  </div>
+                <div className="px-5 py-6 bg-white rounded-2xl border border-[#E5E7EB] w-full space-y-3">
+                  <h2 className="text-[#111827] font-medium text-sm">Add-ons</h2>
+                  {addonOptions.length === 0 ? (
+                    <p className="text-xs text-gray-400">
+                      No add-ons yet. Create them under Add-ons.
+                    </p>
+                  ) : (
+                    <div className="grid grid-cols-2 gap-2">
+                      {addonOptions.map((addOn) => {
+                        const checked = newItem.addonIds.includes(addOn._id);
+                        return (
+                          <label key={addOn._id} className="flex items-center gap-2 text-sm">
+                            <Checkbox
+                              checked={checked}
+                              onCheckedChange={(value) =>
+                                setNewItem({
+                                  ...newItem,
+                                  addonIds: value
+                                    ? [...newItem.addonIds, addOn._id]
+                                    : newItem.addonIds.filter((id) => id !== addOn._id),
+                                })
+                              }
+                            />
+                            <span>
+                              {addOn.name} · ₦{addOn.price.toLocaleString()}
+                            </span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
                 <div className="w-full rounded-lg bg-transparent p-4">
                   <div className="flex flex-col space-y-2">
@@ -473,7 +528,7 @@ const CreateMenu = () => {
           icon={loading && <Loader2 className="animate-spin size-5" />}
           variant="primary"
           className="px-6 w-[384px] text-sm"
-          text={loading ? 'Loading' : 'Create Menu Item'}
+          text={loading ? 'Loading' : isEdit ? 'Save changes' : 'Create Dish'}
         />
       </div>
       {successModal && (

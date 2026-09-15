@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import ClubInfos from './ClubInfos';
 import RestaurantReviews from '@/pages/public/restaurants/_subcomponents/RestaurantReview';
 import ComingSoonIcon from '@/public/images/coming-soon_icon.png';
-import ClubTable from './ClubTable';
+import ClubDrinks from './ClubDrinks';
 import { useLocation } from 'react-router';
 import type { Club } from '@/types';
 
@@ -22,8 +22,8 @@ const ClubInfo = ({ data }: ClubInfoProps) => {
       tab: 'info',
     },
     {
-      name: 'Bookings',
-      tab: 'bookings',
+      name: 'Drinks',
+      tab: 'drinks',
     },
     {
       name: 'Reviews',
@@ -64,7 +64,7 @@ const ClubInfo = ({ data }: ClubInfoProps) => {
             ageLimit={String(data?.agePolicy ?? '')}
           />
         )}
-        {activeTab === 'bookings' && <ClubTable id={data?._id} />}
+        {activeTab === 'drinks' && <ClubDrinks id={data?._id} />}
         {activeTab === 'reviews' && (
           <RestaurantReviews restaurantId={data?._id} ratings={data?.rating} />
         )}

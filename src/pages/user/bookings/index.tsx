@@ -1,7 +1,9 @@
 import { useMemo, useState } from 'react';
+import { Link } from 'react-router';
 import { toast } from 'react-toastify';
 import Header from '@/components/user/Header';
 import Footer from '@/navigation/user_layout/_sub_component/Footer';
+import { useOrderByReservation } from '@/features/orders';
 import {
   ReservationDrawer,
   ReservationFilters,
@@ -31,6 +33,12 @@ const UserBookingsPage = () => {
   const reservationsQuery = useMyReservations(filters);
   const cancelMutation = useCancelMyReservation();
   const payMutation = usePayBalance();
+  const selectedOrderQuery = useOrderByReservation(selected?._id, !!selected);
+
+  const needsPreorder =
+    Boolean(selected) &&
+    ['restaurant', 'club'].includes(String(selected?.vertical)) &&
+    !selectedOrderQuery.data;
 
   const items = useMemo(() => reservationsQuery.data?.items ?? [], [reservationsQuery.data]);
   const buckets = useMemo(() => bucketReservations(items), [items]);
@@ -124,6 +132,14 @@ const UserBookingsPage = () => {
         footer={
           selected ? (
             <>
+              {needsPreorder && (
+                <Link
+                  to={`/preorder/${selected._id}`}
+                  className="rounded-lg bg-[#0A6C6D] px-4 py-2 text-xs font-medium text-white hover:bg-[#0A6C6D]/90"
+                >
+                  {selected.vertical === 'club' ? 'Pre-order drinks' : 'Pre-order a meal'}
+                </Link>
+              )}
               {outstanding(selected) > 0 && selected.bookingGroup && (
                 <button
                   type="button"

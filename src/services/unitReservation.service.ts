@@ -81,6 +81,14 @@ class UnitReservationService {
     return res.data;
   }
 
+  /** Customer-scoped detail (own reservation). */
+  async getMine(reservationId: string) {
+    const res = await api.get<FloorPlanApiEnvelope<UnitReservationDto>>(
+      `/reservations/me/${reservationId}`
+    );
+    return res.data;
+  }
+
   async quarantine(params?: { page?: number; limit?: number }) {
     const res = await api.get<FloorPlanApiEnvelope<PaginatedData<UnitReservationDto>>>(
       '/reservations/quarantine',

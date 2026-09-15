@@ -8,7 +8,6 @@ import Onboard from '@/pages/vendor/onboarding';
 // Vendor Dashboard
 import VendorDashboard from '@/pages/vendor/restaurant/dashboard';
 import PaymentDashboard from '@/pages/vendor/shared/payments';
-import CreateMenu from '@/pages/vendor/restaurant/menu/create';
 import CreateMenuItem from '@/pages/vendor/restaurant/menu/items/create';
 import MenuDashboard from '@/pages/vendor/restaurant/menu';
 import RestaurantSettings from '@/pages/vendor/restaurant/settings';
@@ -16,6 +15,8 @@ import RestaurantTableManagement from '@/pages/vendor/restaurant/tables';
 import RestaurantFloorLayout from '@/pages/vendor/restaurant/tables/layout';
 import StaffManagementSystem from '@/pages/vendor/shared/staff';
 import VendorReservationsPage from '@/pages/vendor/shared/reservations';
+import CategoriesPage from '@/pages/vendor/shared/catalog/CategoriesPage';
+import AddOnsPage from '@/pages/vendor/shared/catalog/AddOnsPage';
 
 // Vendor - Club
 import BottleServiceManager from '@/pages/vendor/club/drinks/add';
@@ -86,8 +87,12 @@ const dashboardRestaurantRoutes: RouteObject[] = [
   { path: 'restaurant/staffs', element: <StaffManagementSystem /> },
   { path: 'restaurant/reservation', element: <VendorReservationsPage vertical="restaurant" /> },
   { path: 'restaurant/menu', element: <MenuDashboard /> },
-  { path: 'restaurant/menu/new', element: <CreateMenu /> },
+  { path: 'restaurant/menu/categories', element: <CategoriesPage kind="menu" /> },
+  { path: 'restaurant/menu/addons', element: <AddOnsPage /> },
+  { path: 'restaurant/menu/drinks', element: <DrinksTable /> },
+  { path: 'restaurant/menu/drink-categories', element: <CategoriesPage kind="drink" /> },
   { path: 'restaurant/menu/item/new', element: <CreateMenuItem /> },
+  { path: 'restaurant/menu/items/:id/edit', element: <CreateMenuItem /> },
   { path: 'restaurant/tables', element: <RestaurantTableManagement /> },
   { path: 'restaurant/tables/layout', element: <RestaurantFloorLayout /> },
   {
@@ -138,6 +143,8 @@ const hotelVendorRoutes: RouteObject[] = [
 const clubVendorRoutes: RouteObject[] = [
   { path: 'club', element: <ClubDashboard /> },
   { path: 'club/drinks', element: <DrinksTable /> },
+  { path: 'club/drinks/categories', element: <CategoriesPage kind="drink" /> },
+  { path: 'club/addons', element: <AddOnsPage /> },
   { path: 'club/tables', element: <ManageTables /> },
   { path: 'club/tables/layout', element: <ClubFloorLayout /> },
   { path: 'club/table/prototype', element: withSuspense(<PrototypeManageTableClub />) },

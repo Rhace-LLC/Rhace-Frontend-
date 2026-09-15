@@ -33,6 +33,7 @@ import Terms from '@/pages/public/terms';
 import VendornHomePage from '@/pages/public/partner';
 
 import PaystackCallback from '@/components/PaystackCallback';
+import QrRedirectPage from '@/pages/public/qr-redirect';
 
 export const publicRoutes: RouteObject[] = [
   // Home / Info Pages
@@ -100,6 +101,7 @@ export const publicRoutes: RouteObject[] = [
 
   // Paystack Callback
   { path: '/paystack/callback', element: <PaystackCallback /> },
+  { path: '/q/:token', element: <QrRedirectPage /> },
 
   // 404
   { path: '*', element: <NotFound /> },

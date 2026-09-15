@@ -6,6 +6,7 @@ import Header from '@/components/user/Header';
 import Footer from '@/navigation/user_layout/_sub_component/Footer';
 import { paymentService } from '@/services/payment.service';
 import { unitReservationService } from '@/services/unitReservation.service';
+import { useOrderByReservation } from '@/features/orders';
 import type { UnitReservationDto } from '@/types';
 
 const PAYMENT_LABEL: Record<string, string> = {
@@ -23,6 +24,7 @@ const ConfirmationPage = () => {
 
   const [reservation, setReservation] = useState<UnitReservationDto | undefined>(initial);
   const [finalizing, setFinalizing] = useState(false);
+  const orderQuery = useOrderByReservation(id);
 
   useEffect(() => {
     const reference = searchParams.get('reference') || searchParams.get('trxref');
@@ -33,7 +35,7 @@ const ConfirmationPage = () => {
 
     paymentService
       .verifyPayment(reference)
-      .then(() => (id ? unitReservationService.get(id) : undefined))
+      .then(() => (id ? unitReservationService.getMine(id) : undefined))
       .then((res) => {
         if (active && res?.data) setReservation(res.data);
       })
@@ -116,6 +118,26 @@ const ConfirmationPage = () => {
               )}
             </dl>
           )}
+
+          {reservation && ['restaurant', 'club'].includes(String(reservation.vertical)) &&
+            !orderQuery.data && (
+              <div className="mt-6 rounded-2xl border border-[#0A6C6D]/20 bg-[#0A6C6D]/5 p-4 text-left">
+                <p className="text-sm font-medium text-gray-900">
+                  {reservation.vertical === 'club'
+                    ? 'Want to pre-order your drinks?'
+                    : 'Want to pre-order your meal?'}
+                </p>
+                <p className="mt-1 text-xs text-gray-500">
+                  Add items now and your table deposit is credited against the bill.
+                </p>
+                <Link
+                  to={`/preorder/${reservation._id}`}
+                  className="mt-3 inline-block rounded-xl bg-[#0A6C6D] px-4 py-2 text-xs font-medium text-white hover:bg-[#0A6C6D]/90"
+                >
+                  {reservation.vertical === 'club' ? 'Pre-order drinks' : 'Pre-order a meal'}
+                </Link>
+              </div>
+            )}
 
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <Link
