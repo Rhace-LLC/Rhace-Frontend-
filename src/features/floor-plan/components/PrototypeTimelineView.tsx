@@ -74,9 +74,6 @@ export function PrototypeTimelineView({ plugin, planId: preferredPlanId }: Proto
         <h1 className="text-sm font-semibold text-gray-900">
           {plugin.label} — Reservation Calendar
         </h1>
-        <span className="rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-medium text-green-700">
-          LIVE API
-        </span>
         <span className="text-[11px] text-gray-400">
           Drag a booking onto another unit of the same blueprint to reassign.
         </span>

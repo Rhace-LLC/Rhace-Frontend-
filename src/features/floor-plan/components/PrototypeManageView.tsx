@@ -137,11 +137,8 @@ export function PrototypeManageView({ plugin, floorPlanPath, description, planId
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-lg font-semibold capitalize text-gray-900">
-                {plugin.label} — Prototype Manager
+                {plugin.label} — Manager
               </h1>
-              <span className="rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-medium text-green-700">
-                LIVE API
-              </span>
             </div>
             <p className="mt-1 text-sm text-gray-500">{description}</p>
           </div>

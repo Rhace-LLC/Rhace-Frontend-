@@ -71,7 +71,7 @@ const PrototypeTimelineHotel = lazy(
 function PrototypeFallback() {
   return (
     <div className="flex h-[60vh] items-center justify-center text-sm text-gray-500">
-      Loading prototype…
+      Loading…
     </div>
   );
 }

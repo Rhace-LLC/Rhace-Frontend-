@@ -16,9 +16,6 @@ import { RhaceIcon } from '@/components/icons/icons';
 
 export { RhaceIcon };
 
-// Toggle the mock floor-plan prototype entries in the vendor sidebar.
-export const SHOW_PROTOTYPE_ITEMS = true;
-
 export interface SideMenuItem {
   label: string;
   path: string;
@@ -97,44 +94,30 @@ export const ClubList: SideMenuListConfig = {
       icon: UtensilsCrossed,
     },
     {
-      label: 'Tables',
-      path: '/dashboard/club/tables',
-      icon: LayoutGrid,
+      label: 'Inventory',
+      path: '/dashboard/club/table/prototype',
+      icon: Boxes,
       children: [
         {
-          label: 'Manage Tables',
-          path: '/dashboard/club/tables',
-          icon: UtensilsCrossed,
+          label: 'All Inventory',
+          path: '/dashboard/club/inventory/prototype',
+          icon: Boxes,
         },
         {
-          label: 'Floor Layout',
-          path: '/dashboard/club/tables/layout',
+          label: 'Manage',
+          path: '/dashboard/club/table/prototype',
           icon: LayoutGrid,
         },
-        ...(SHOW_PROTOTYPE_ITEMS
-          ? [
-              {
-                label: 'Prototype Manager',
-                path: '/dashboard/club/table/prototype',
-                icon: LayoutGrid,
-              },
-              {
-                label: 'Prototype Layout',
-                path: '/dashboard/club/table/layouts/prototype',
-                icon: LayoutGrid,
-              },
-              {
-                label: 'Manage Inventory',
-                path: '/dashboard/club/inventory/prototype',
-                icon: Boxes,
-              },
-              {
-                label: 'Reservation Calendar',
-                path: '/dashboard/club/timeline/prototype',
-                icon: CalendarCheck,
-              },
-            ]
-          : []),
+        {
+          label: 'Layout',
+          path: '/dashboard/club/table/layouts/prototype',
+          icon: LayoutGrid,
+        },
+        {
+          label: 'Reservation Calendar',
+          path: '/dashboard/club/timeline/prototype',
+          icon: CalendarCheck,
+        },
       ],
     },
     {
@@ -170,44 +153,30 @@ export const HotelList: SideMenuListConfig = {
       icon: CalendarCheck,
     },
     {
-      label: 'Rooms',
-      path: '/dashboard/hotel/rooms',
-      icon: Building2,
+      label: 'Inventory',
+      path: '/dashboard/hotel/room/prototype',
+      icon: Boxes,
       children: [
         {
-          label: 'Room Management',
-          path: '/dashboard/hotel/rooms',
-          icon: Building2,
+          label: 'All Inventory',
+          path: '/dashboard/hotel/inventory/prototype',
+          icon: Boxes,
         },
         {
-          label: 'Room Layout',
-          path: '/dashboard/hotel/rooms/layout',
+          label: 'Manage',
+          path: '/dashboard/hotel/room/prototype',
           icon: LayoutGrid,
         },
-        ...(SHOW_PROTOTYPE_ITEMS
-          ? [
-              {
-                label: 'Prototype Manager',
-                path: '/dashboard/hotel/room/prototype',
-                icon: LayoutGrid,
-              },
-              {
-                label: 'Prototype Layout',
-                path: '/dashboard/hotel/room/layouts/prototype',
-                icon: LayoutGrid,
-              },
-              {
-                label: 'Manage Inventory',
-                path: '/dashboard/hotel/inventory/prototype',
-                icon: Boxes,
-              },
-              {
-                label: 'Reservation Calendar',
-                path: '/dashboard/hotel/timeline/prototype',
-                icon: CalendarCheck,
-              },
-            ]
-          : []),
+        {
+          label: 'Layout',
+          path: '/dashboard/hotel/room/layouts/prototype',
+          icon: LayoutGrid,
+        },
+        {
+          label: 'Reservation Calendar',
+          path: '/dashboard/hotel/timeline/prototype',
+          icon: CalendarCheck,
+        },
       ],
     },
     {
@@ -248,44 +217,30 @@ export const RestaurantList: SideMenuListConfig = {
       icon: UtensilsCrossed,
     },
     {
-      label: 'Tables',
-      path: '/dashboard/restaurant/tables',
-      icon: LayoutGrid,
+      label: 'Inventory',
+      path: '/dashboard/restaurant/table/prototype',
+      icon: Boxes,
       children: [
         {
-          label: 'Manage Tables',
-          path: '/dashboard/restaurant/tables',
-          icon: UtensilsCrossed,
+          label: 'All Inventory',
+          path: '/dashboard/restaurant/inventory/prototype',
+          icon: Boxes,
         },
         {
-          label: 'Floor Layout',
-          path: '/dashboard/restaurant/tables/layout',
+          label: 'Manage',
+          path: '/dashboard/restaurant/table/prototype',
           icon: LayoutGrid,
         },
-        ...(SHOW_PROTOTYPE_ITEMS
-          ? [
-              {
-                label: 'Prototype Manager',
-                path: '/dashboard/restaurant/table/prototype',
-                icon: LayoutGrid,
-              },
-              {
-                label: 'Prototype Layout',
-                path: '/dashboard/restaurant/table/layouts/prototype',
-                icon: LayoutGrid,
-              },
-              {
-                label: 'Manage Inventory',
-                path: '/dashboard/restaurant/inventory/prototype',
-                icon: Boxes,
-              },
-              {
-                label: 'Reservation Calendar',
-                path: '/dashboard/restaurant/timeline/prototype',
-                icon: CalendarCheck,
-              },
-            ]
-          : []),
+        {
+          label: 'Layout',
+          path: '/dashboard/restaurant/table/layouts/prototype',
+          icon: LayoutGrid,
+        },
+        {
+          label: 'Reservation Calendar',
+          path: '/dashboard/restaurant/timeline/prototype',
+          icon: CalendarCheck,
+        },
       ],
     },
     {

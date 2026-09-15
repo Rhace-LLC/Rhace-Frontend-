@@ -76,7 +76,7 @@ export function BlueprintDetailView({ plugin, blueprint, onBack }: BlueprintDeta
       <div className="mx-auto max-w-7xl">
         <nav className="mb-4 flex items-center gap-1 text-xs text-gray-500">
           <button onClick={onBack} className="font-medium hover:text-teal-700">
-            Prototype Inventory Manager
+            All Inventories
           </button>
           <ChevronRight size={12} />
           <span className="font-medium text-gray-900">{blueprint?.name ?? 'Blueprint'}</span>

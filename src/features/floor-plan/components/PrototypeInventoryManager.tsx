@@ -57,12 +57,7 @@ export function PrototypeInventoryManager({ plugin }: PrototypeInventoryManagerP
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-lg font-semibold capitalize text-gray-900">
-                {plugin.label} — Prototype Inventory Manager
-              </h1>
-              <span className="rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-medium text-green-700">
-                LIVE API
-              </span>
+              <h1 className="text-lg font-semibold text-gray-900">All Inventories</h1>
             </div>
             <p className="mt-1 text-sm text-gray-500">
               {blueprints.length} {CONFIG_LABEL[vertical]}

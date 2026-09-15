@@ -2,6 +2,7 @@ import { cn } from '@/lib/utils';
 import { Bell, ChevronDown, ChevronUp, Heart, LogIn, User } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router';
+import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import type { AuthUser } from '@/types';
 
@@ -95,26 +96,29 @@ const UserHeader = () => {
               className="h-6 w-auto object-contain transition-all duration-300"
             />
           </div>
-
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex space-x-8">
-            {navItems.map((item, idx) => {
-              const isActive =
-                item.href === '/' ? pathnames === '/' : pathnames?.startsWith(item.href);
-              return (
-                <a
-                  href={item.href}
-                  key={idx}
-                  className={`transition-colors duration-200 text-base font-bold px-3 py-2 relative group ${scrolled || isSearchPage ? 'text-gray-900' : 'text-white'}`}
-                >
-                  {item.name}
-                  <span
-                    className={`absolute h-2 bg-[#004d43] left-1/2 -translate-x-1/2 bottom-0 rounded-full transition-all duration-300 ${isActive ? 'w-6' : 'w-0 group-hover:w-6'}`}
-                  />
-                </a>
-              );
-            })}
-          </nav>
+{/* Desktop Navigation */}
+<nav className="hidden md:flex space-x-8">
+  {navItems.map((item, idx) => {
+    const isActive =
+      item.href === '/' ? pathnames === '/' : pathnames?.startsWith(item.href);
+    return (
+      <Link
+        to={item.href}
+        key={idx}
+        className={`transition-colors duration-200 text-base font-bold px-3 py-2 relative group ${
+          scrolled || isSearchPage ? 'text-gray-900' : 'text-white'
+        }`}
+      >
+        {item.name}
+        <span
+          className={`absolute h-2 bg-[#004d43] left-1/2 -translate-x-1/2 bottom-0 rounded-full transition-all duration-300 ${
+            isActive ? 'w-6' : 'w-0 group-hover:w-6'
+          }`}
+        />
+      </Link>
+    );
+  })}
+</nav>
 
           {/* User Actions */}
           {profile ? (
