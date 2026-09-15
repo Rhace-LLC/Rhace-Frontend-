@@ -167,6 +167,7 @@ export function CreateBlueprintModal({
   const [type, setType] = useState('');
   const [description, setDescription] = useState('');
   const [basePrice, setBasePrice] = useState('0');
+  const [minimumDeposit, setMinimumDeposit] = useState('0');
   const [capacity, setCapacity] = useState('2');
   const [maxCapacity, setMaxCapacity] = useState('2');
   const [amenityList, setAmenityList] = useState<string[]>([]);
@@ -184,6 +185,7 @@ export function CreateBlueprintModal({
     setType(initial?.type ?? '');
     setDescription(initial?.description ?? '');
     setBasePrice(String(initial?.basePrice ?? 0));
+    setMinimumDeposit(String(initial?.minimumDeposit ?? 0));
     setCapacity(String(initial?.capacity ?? 2));
     setMaxCapacity(String(initial?.maxCapacity ?? initial?.capacity ?? 2));
     setAmenityList((initial?.amenities ?? []).map((a) => a.label));
@@ -251,7 +253,9 @@ export function CreateBlueprintModal({
         category: categoryForVertical(vertical),
         name: name.trim(),
         type: type.trim() || name.trim(),
-        basePrice: Number(basePrice) || 0,
+        // Rooms are priced; tables are not (they only carry a minimum deposit).
+        basePrice: vertical === 'hotel' ? Number(basePrice) || 0 : 0,
+        minimumDeposit: Number(minimumDeposit) || 0,
         currency: 'NGN',
         capacity: Number(capacity) || 1,
         maxCapacity: Number(maxCapacity) || Number(capacity) || 1,
@@ -354,17 +358,51 @@ export function CreateBlueprintModal({
                 ))}
               </datalist>
             </label>
+            {vertical === 'hotel' ? (
+              <label className="block">
+                <span className="mb-1 block text-xs font-medium text-gray-500">Price per night (₦)</span>
+                <input
+                  type="number"
+                  min={0}
+                  value={basePrice}
+                  onChange={(e) => setBasePrice(e.target.value)}
+                  className={inputClass}
+                />
+              </label>
+            ) : (
+              <label className="block">
+                <span className="mb-1 block text-xs font-medium text-gray-500">Minimum deposit (₦)</span>
+                <input
+                  type="number"
+                  min={0}
+                  value={minimumDeposit}
+                  onChange={(e) => setMinimumDeposit(e.target.value)}
+                  className={inputClass}
+                />
+                <span className="mt-1 block text-[11px] text-gray-400">
+                  Required to reserve. Credited against the bill. 0 = free.
+                </span>
+              </label>
+            )}
+          </div>
+
+          {vertical === 'hotel' && (
             <label className="block">
-              <span className="mb-1 block text-xs font-medium text-gray-500">Base Price (₦)</span>
+              <span className="mb-1 block text-xs font-medium text-gray-500">
+                Minimum deposit (₦)
+              </span>
               <input
                 type="number"
                 min={0}
-                value={basePrice}
-                onChange={(e) => setBasePrice(e.target.value)}
+                value={minimumDeposit}
+                onChange={(e) => setMinimumDeposit(e.target.value)}
                 className={inputClass}
               />
+              <span className="mt-1 block text-[11px] text-gray-400">
+                Required to confirm when the guest pays at checkout. 0 = no deposit.
+              </span>
             </label>
-          </div>
+          )}
 
           <label className="block">
             <span className="mb-1 block text-xs font-medium text-gray-500">Description</span>
@@ -527,7 +565,11 @@ export function CreateBlueprintModal({
                 <p className="truncate text-xs text-gray-500">{type || '—'}</p>
               </div>
               <span className="ml-auto rounded-full bg-teal-50 px-2 py-0.5 text-[11px] font-medium text-teal-700">
-                ₦{(Number(basePrice) || 0).toLocaleString()}
+                {vertical === 'hotel'
+                  ? `₦${(Number(basePrice) || 0).toLocaleString()} /night`
+                  : (Number(minimumDeposit) || 0) > 0
+                    ? `₦${(Number(minimumDeposit) || 0).toLocaleString()} deposit`
+                    : 'Free'}
               </span>
             </div>
 

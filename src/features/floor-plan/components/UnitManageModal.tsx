@@ -12,6 +12,7 @@ import { stateMetaFor } from '../domain/states';
 import { nextStates } from '../domain/transitions';
 import { isLocked } from '../domain/reservations';
 import type { InventoryBlueprint, Vertical } from '../domain/types';
+import { formatBlueprintPricing, getBlueprintPricing } from '../domain/pricing';
 import type { UnitReservationDto } from '@/types';
 
 interface UnitManageModalProps {
@@ -99,7 +100,7 @@ export function UnitManageModal({ unitId, vertical, blueprints, onClose }: UnitM
             <dd className="text-gray-900">{blueprint?.capacity ?? '—'}</dd>
             <dt className="text-gray-500">Price</dt>
             <dd className="text-gray-900">
-              {blueprint ? `$${blueprint.basePrice.toLocaleString()}` : '—'}
+              {blueprint ? formatBlueprintPricing(getBlueprintPricing(blueprint)) : '—'}
             </dd>
             <dt className="text-gray-500">Reservable</dt>
             <dd className="text-gray-900">{unit.isReservable === false ? 'No' : 'Yes'}</dd>

@@ -318,6 +318,25 @@ export function useFloorPlanTimeline(
   });
 }
 
+/** Day time-slots for a blueprint (customer time-slot picker). */
+export function useBlueprintDaySlots(
+  planId?: string,
+  params?: { blueprintId?: string; date?: string; partySize?: number }
+) {
+  return useQuery({
+    queryKey: [...floorPlanKeys.detail(planId ?? ''), 'slots', params ?? {}] as const,
+    queryFn: async () =>
+      (
+        await floorPlanService.getSlots(planId as string, {
+          blueprintId: params?.blueprintId as string,
+          date: params?.date as string,
+          partySize: params?.partySize,
+        })
+      ).data,
+    enabled: Boolean(planId && params?.blueprintId && params?.date),
+  });
+}
+
 // ─── Unit reservations (canonical engine) ─────────────────────────────────────
 
 export function useHoldUnit() {

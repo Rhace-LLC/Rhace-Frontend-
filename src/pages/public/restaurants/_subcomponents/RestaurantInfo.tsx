@@ -36,10 +36,6 @@ const RestaurantInfo = ({ data }: RestaurantInfoProps) => {
       tab: 'menu',
     },
     {
-      name: 'Availale Reservation Slots',
-      tab: 'available',
-    },
-    {
       name: 'Reviews',
       tab: 'reviews',
     },

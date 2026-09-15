@@ -6,7 +6,7 @@ import { toast } from 'react-toastify';
 import { Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import UniversalLoader from '../ui/LogoLoader';
+import UniversalLoader from '@/components/user/ui/LogoLoader';
 import type { AuthUser } from '@/types';
 import { useAuth } from '@/contexts/AuthContext';
 

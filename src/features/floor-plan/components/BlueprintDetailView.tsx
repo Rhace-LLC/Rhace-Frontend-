@@ -12,6 +12,7 @@ import { defaultStateFor, stateMetaFor } from '../domain/states';
 import { AddPhysicalUnitModal, type UnitPlacementInput } from './AddPhysicalUnitModal';
 import { UnitManageModal } from './UnitManageModal';
 import type { InventoryBlueprint, Vertical } from '../domain/types';
+import { getBlueprintPricing } from '../domain/pricing';
 import type { FloorPlanVertical, PhysicalUnitDto } from '@/types';
 
 interface BlueprintDetailViewProps {
@@ -22,6 +23,7 @@ interface BlueprintDetailViewProps {
 
 export function BlueprintDetailView({ plugin, blueprint, onBack }: BlueprintDetailViewProps) {
   const vertical = plugin.id as Vertical;
+  const pricing = blueprint ? getBlueprintPricing(blueprint) : null;
   const [manageUnitId, setManageUnitId] = useState<string | null>(null);
 
   const plansQuery = useFloorPlans(vertical);
@@ -111,7 +113,13 @@ export function BlueprintDetailView({ plugin, blueprint, onBack }: BlueprintDeta
                     <p className="text-sm text-gray-500">{blueprint.type}</p>
                   </div>
                   <span className="rounded-full bg-teal-50 px-3 py-1 text-sm font-semibold text-teal-700">
-                    ₦{blueprint.basePrice.toLocaleString()}
+                    {pricing?.mode === 'room'
+                      ? `₦${pricing.price.toLocaleString()} /night`
+                      : pricing?.mode === 'table'
+                        ? pricing.isFree
+                          ? 'Free'
+                          : `₦${pricing.minimumDeposit.toLocaleString()} deposit`
+                        : '—'}
                   </span>
                 </div>
 

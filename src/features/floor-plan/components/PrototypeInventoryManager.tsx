@@ -9,15 +9,16 @@ import { toDomainBlueprint } from '../api/adapter';
 import { CreateBlueprintModal } from './CreateBlueprintModal';
 import { BlueprintDetailView } from './BlueprintDetailView';
 import type { InventoryBlueprint, Vertical } from '../domain/types';
+import { formatBlueprintPricing, getBlueprintPricing } from '../domain/pricing';
 
 interface PrototypeInventoryManagerProps {
   plugin: VerticalPlugin;
 }
 
 const CONFIG_LABEL: Record<Vertical, string> = {
-  hotel: 'Room Config',
-  club: 'Table Config',
-  restaurant: 'Table Config',
+  hotel: 'Room',
+  club: 'Table',
+  restaurant: 'Table',
 };
 
 export function PrototypeInventoryManager({ plugin }: PrototypeInventoryManagerProps) {
@@ -103,9 +104,11 @@ export function PrototypeInventoryManager({ plugin }: PrototypeInventoryManagerP
                   </div>
 
                   <div className="grid grid-cols-2 gap-y-1 text-xs">
-                    <span className="text-gray-500">Price</span>
+                    <span className="text-gray-500">
+                      {getBlueprintPricing(blueprint).mode === 'room' ? 'Price' : 'Deposit'}
+                    </span>
                     <span className="text-right font-medium text-gray-900">
-                      ₦{blueprint.basePrice.toLocaleString()}
+                      {formatBlueprintPricing(getBlueprintPricing(blueprint))}
                     </span>
                     <span className="text-gray-500">Capacity</span>
                     <span className="text-right font-medium text-gray-900">

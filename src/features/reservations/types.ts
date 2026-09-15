@@ -23,6 +23,8 @@ export type ReservationSource =
 export interface ReservationGroupSummary {
   totalAmount?: number;
   amountPaid?: number;
+  minimumDeposit?: number;
+  amountDueNow?: number;
   paymentStatus?: PaymentStatus;
   paymentPlan?: string;
   paymentStrategy?: string;
@@ -116,7 +118,8 @@ export interface BookingGroupView {
   paymentStatus?: PaymentStatus;
   totalAmount?: number;
   amountPaid?: number;
-  depositAmount?: number;
+  minimumDeposit?: number;
+  amountDueNow?: number;
   paymentStrategy?: string;
   paymentPlan?: string;
   paymentDeadline?: string | null;

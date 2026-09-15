@@ -4,9 +4,12 @@ import { toast } from 'react-toastify';
 import Header from '@/components/user/Header';
 import Footer from '@/navigation/user_layout/_sub_component/Footer';
 import { Modal } from '@/components/others/RhaceModal';
-import { DateTimeFields, type DateSelection } from '@/components/user/reservation/DateTimeFields';
+import { DateTimeFields, type DateSelection, type DateTimeValue } from '@/components/user/reservation/DateTimeFields';
+import { TimeSlotPicker } from '@/components/user/reservation/TimeSlotPicker';
 import { BlueprintAvailabilityView } from '@/components/user/inventory/BlueprintAvailabilityView';
 import {
+  getBlueprintPricing,
+  isBlueprintSelectableForParty,
   toDomainBlueprint,
   useBookingQuote,
   useConfirmHold,
@@ -73,11 +76,13 @@ const ReserveBlueprintPage = () => {
     [blueprintsQuery.data]
   );
   const blueprint = blueprints.find((entry) => entry.id === blueprintId);
+  const pricing = blueprint ? getBlueprintPricing(blueprint) : null;
 
   const plansQuery = useVendorFloorPlans(id, vertical);
   const planId = plansQuery.data?.items?.[0]?._id;
 
-  const [selection, setSelection] = useState<DateSelection>({ partySize: 2, ready: false });
+  const [dateValue, setDateValue] = useState<DateTimeValue>({ partySize: 2, dateReady: false });
+  const [slot, setSlot] = useState<{ start: string; end: string } | null>(null);
   const [stage, setStage] = useState<'select' | 'confirm'>('select');
   const [lockToken, setLockToken] = useState<string | null>(null);
   const [unitLabel, setUnitLabel] = useState<string | null>(null);
@@ -92,6 +97,34 @@ const ReserveBlueprintPage = () => {
 
   const holdMutation = useHoldUnit();
   const confirmMutation = useConfirmHold();
+
+  // Final selection: hotel = dates from Step 1; restaurant/club = the chosen slot.
+  const selection = useMemo<DateSelection>(() => {
+    if (vertical === 'hotel') {
+      return {
+        start: dateValue.start,
+        end: dateValue.end,
+        partySize: dateValue.partySize,
+        ready: dateValue.dateReady,
+      };
+    }
+    return {
+      start: slot?.start,
+      end: slot?.end,
+      partySize: dateValue.partySize,
+      ready: Boolean(slot),
+    };
+  }, [vertical, dateValue, slot]);
+
+  // Changing the date clears the chosen slot.
+  useEffect(() => {
+    setSlot(null);
+  }, [dateValue.date]);
+
+  const partySelectable =
+    vertical === 'hotel' || !blueprint
+      ? true
+      : isBlueprintSelectableForParty(blueprint, dateValue.partySize);
 
   const [strategy, setStrategy] = useState<PaymentStrategyDto>(DEFAULT_STRATEGY);
   const [submitting, setSubmitting] = useState(false);
@@ -261,7 +294,7 @@ const ReserveBlueprintPage = () => {
       <div className="hidden md:block">
         <Header />
       </div>
-      <main className="mx-auto md:mt-[85px] mb-[160px] md:mb-8 md:py-8 max-w-7xl md:px-6 lg:px-8">
+      <main className="mx-auto md:mt-[85px] mb-[160px] md:mb-8 md:py-8 max-w-7xl md:px-6 lg:px-8 space-y-10">
         <nav className="mb-4 flex items-center gap-1 px-4 text-xs text-gray-500 md:px-0">
           <Link to={`/${SEGMENT[vertical]}/${id}`} className="hover:text-[#0A6C6D]">
             Back to venue
@@ -270,8 +303,8 @@ const ReserveBlueprintPage = () => {
           <span className="font-medium text-gray-900">{blueprint?.name ?? 'Reservation'}</span>
         </nav>
 
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-          <div className="space-y-4 px-4 md:px-0 lg:col-span-2">
+        <div className="space-y-6">
+          <div className="space-y-4 px-4 md:px-0">
             {blueprint ? (
               <section className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
                 {blueprint.images[0] ? (
@@ -292,11 +325,24 @@ const ReserveBlueprintPage = () => {
                       <h1 className="text-2xl font-semibold text-[#111827]">{blueprint.name}</h1>
                       <p className="text-sm text-gray-500">{blueprint.type}</p>
                     </div>
-                    <span className="text-2xl font-bold text-gray-900">
-                      ₦{blueprint.basePrice.toLocaleString()}
-                      {vertical === 'hotel' && (
-                        <span className="text-sm font-normal text-gray-500"> /night</span>
-                      )}
+                    <span className="text-right text-2xl font-bold text-gray-900">
+                      {pricing?.mode === 'room' ? (
+                        <>
+                          ₦{pricing.price.toLocaleString()}
+                          <span className="text-sm font-normal text-gray-500"> /night</span>
+                        </>
+                      ) : pricing?.mode === 'table' ? (
+                        pricing.isFree ? (
+                          <span className="text-base font-medium text-emerald-600">
+                            Free reservation
+                          </span>
+                        ) : (
+                          <>
+                            ₦{pricing.minimumDeposit.toLocaleString()}
+                            <span className="text-sm font-normal text-gray-500"> deposit</span>
+                          </>
+                        )
+                      ) : null}
                     </span>
                   </div>
 
@@ -371,11 +417,25 @@ const ReserveBlueprintPage = () => {
 
           <div className="space-y-4 px-4 md:px-0">
             <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
-              <h2 className="text-sm font-semibold text-gray-900">Select date &amp; time</h2>
+              <h2 className="text-sm font-semibold text-gray-900">
+                {vertical === 'hotel' ? 'Select dates' : 'Select a date'}
+              </h2>
               <div className="mt-3">
-                <DateTimeFields vertical={vertical} blueprint={blueprint} onChange={setSelection} />
+                <DateTimeFields vertical={vertical} onChange={setDateValue} />
               </div>
             </div>
+
+            {vertical !== 'hotel' && (
+              <TimeSlotPicker
+                planId={planId}
+                blueprintId={blueprintId ?? ''}
+                date={dateValue.date}
+                partySize={dateValue.partySize}
+                maxCapacity={blueprint?.maxCapacity}
+                selectedStart={slot?.start}
+                onSelect={setSlot}
+              />
+            )}
 
             <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
               <BlueprintAvailabilityView
@@ -388,12 +448,17 @@ const ReserveBlueprintPage = () => {
 
             <button
               type="button"
-              disabled={!selection.ready || holdMutation.isPending}
+              disabled={!selection.ready || !partySelectable || holdMutation.isPending}
               onClick={handleContinue}
               className="w-full rounded-xl bg-[#0A6C6D] px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-[#0A6C6D]/90 disabled:opacity-50"
             >
               {holdMutation.isPending ? 'Holding…' : 'Continue to confirm'}
             </button>
+            {!partySelectable && (
+              <p className="text-center text-[11px] text-rose-500">
+                This option seats up to {blueprint?.maxCapacity ?? '—'} guests.
+              </p>
+            )}
             {!user && (
               <p className="text-center text-[11px] text-gray-400">
                 You’ll be asked to sign in before confirming.
@@ -481,51 +546,75 @@ const ReserveBlueprintPage = () => {
           </label>
 
           <div className="space-y-3 rounded-xl border border-gray-200 p-3">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-gray-500">Total</span>
-              <span className="text-base font-semibold text-gray-900">
-                ₦{(quote?.total ?? blueprint?.basePrice ?? 0).toLocaleString()}
-              </span>
-            </div>
-            {quote?.unitsKind === 'nights' && (
-              <p className="text-[11px] text-gray-400">
-                {quote.unitsCount} night{quote.unitsCount > 1 ? 's' : ''}
-              </p>
-            )}
+            {quote?.pricingMode === 'table' ? (
+              <>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-medium text-gray-500">Reservation deposit</span>
+                  <span className="text-base font-semibold text-gray-900">
+                    {quote.minimumDeposit > 0 ? `₦${quote.minimumDeposit.toLocaleString()}` : 'Free'}
+                  </span>
+                </div>
+                {quote.minimumDeposit > 0 ? (
+                  <p className="text-[11px] text-gray-400">
+                    This deposit is credited against your bill at the venue.
+                  </p>
+                ) : (
+                  <p className="text-[11px] text-gray-400">No deposit required to reserve.</p>
+                )}
+              </>
+            ) : (
+              <>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-medium text-gray-500">Total</span>
+                  <span className="text-base font-semibold text-gray-900">
+                    ₦
+                    {(quote?.total ?? (pricing && pricing.mode === 'room' ? pricing.price : 0)).toLocaleString()}
+                  </span>
+                </div>
+                {quote?.unitsKind === 'nights' && (
+                  <p className="text-[11px] text-gray-400">
+                    {quote.unitsCount} night{quote.unitsCount > 1 ? 's' : ''}
+                  </p>
+                )}
 
-            {quoteQuery.isLoading && (
-              <p className="text-xs text-gray-400">Calculating price…</p>
-            )}
+                {quoteQuery.isLoading && (
+                  <p className="text-xs text-gray-400">Calculating price…</p>
+                )}
 
-            <div className="space-y-2">
-              {(quote?.strategies ?? []).map((entry) => {
-                const active = entry.strategy === strategy;
-                return (
-                  <button
-                    key={entry.strategy}
-                    type="button"
-                    onClick={() => setStrategy(entry.strategy)}
-                    className={`flex w-full items-start justify-between gap-3 rounded-lg border px-3 py-2 text-left transition-colors ${
-                      active
-                        ? 'border-[#0A6C6D] bg-[#0A6C6D]/5'
-                        : 'border-gray-200 hover:border-gray-300'
-                    }`}
-                  >
-                    <span>
-                      <span className="block text-xs font-medium text-gray-800">
-                        {STRATEGY_LABEL[entry.strategy]}
-                      </span>
-                      <span className="block text-[11px] text-gray-500">
-                        {STRATEGY_HINT[entry.strategy]}
-                      </span>
-                    </span>
-                    <span className="whitespace-nowrap text-xs font-semibold text-gray-900">
-                      ₦{entry.amount.toLocaleString()}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
+                <div className="space-y-2">
+                  {(quote?.strategies ?? []).map((entry) => {
+                    const active = entry.strategy === strategy;
+                    const depositAtVenue = entry.strategy === 'pay_at_venue' && entry.amount > 0;
+                    return (
+                      <button
+                        key={entry.strategy}
+                        type="button"
+                        onClick={() => setStrategy(entry.strategy)}
+                        className={`flex w-full items-start justify-between gap-3 rounded-lg border px-3 py-2 text-left transition-colors ${
+                          active
+                            ? 'border-[#0A6C6D] bg-[#0A6C6D]/5'
+                            : 'border-gray-200 hover:border-gray-300'
+                        }`}
+                      >
+                        <span>
+                          <span className="block text-xs font-medium text-gray-800">
+                            {STRATEGY_LABEL[entry.strategy]}
+                          </span>
+                          <span className="block text-[11px] text-gray-500">
+                            {depositAtVenue
+                              ? `Requires a ₦${entry.amount.toLocaleString()} deposit now`
+                              : STRATEGY_HINT[entry.strategy]}
+                          </span>
+                        </span>
+                        <span className="whitespace-nowrap text-xs font-semibold text-gray-900">
+                          {entry.amount > 0 ? `₦${entry.amount.toLocaleString()}` : 'Free'}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </>
+            )}
 
             {requiresPayment ? (
               <p className="text-[11px] text-gray-400">

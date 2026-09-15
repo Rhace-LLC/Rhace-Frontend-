@@ -1,12 +1,18 @@
 import { menuService } from '@/services/menu.service';
 import { ChevronDown } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
-import UniversalLoader from '../ui/LogoLoader';
-import { clubService } from '@/services/club.service';
+import UniversalLoader from '@/components/user/ui/LogoLoader';
 
 interface Category {
   name: string;
   category: string;
+}
+
+interface MenuDisplayItem {
+  _id: string;
+  name: string;
+  category: string;
+  price: number;
 }
 
 interface CategoryFilterProps {
@@ -35,19 +41,10 @@ const CategoryFilter = ({ categories, activeCategory, onCategoryChange }: Catego
   );
 };
 
-interface TableItem {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  _id?: any;
-  name?: string;
-  category?: string;
-  price?: number;
-  [key: string]: unknown;
-}
-
 interface MenuItemCardProps {
-  type?: string;
-  name?: string;
-  price?: number;
+  type: string;
+  name: string;
+  price: number;
 }
 
 const MenuItemCard = ({ type, name, price }: MenuItemCardProps) => {
@@ -57,23 +54,26 @@ const MenuItemCard = ({ type, name, price }: MenuItemCardProps) => {
         <p className="font-semibold uppercase text-xs text-gray-500 mb-2">{type}</p>
         <h3 className="font-bold text-gray-800 text-sm">{name}</h3>
       </div>
-      <p className="font-semibold text-gray-900 mt-4">₦{(price || 0).toLocaleString()}</p>
+      <p className="font-semibold text-gray-900 mt-4">₦{price.toLocaleString()}</p>
     </div>
   );
 };
 
-export default function ClubTable({ id }: { id?: string }) {
+interface RestaurantMenuProps {
+  id: string;
+}
+
+export default function RestaurantMenu({ id }: RestaurantMenuProps) {
   const [activeCategory, setActiveCategory] = useState('All');
   const [itemsToShow, setItemsToShow] = useState(3);
   const [isLoading, setIsLoading] = useState(true);
-  const [tables, setTables] = useState<TableItem[]>([]);
+  const [menuItems, setMenuItems] = useState<MenuDisplayItem[]>([]);
   const LOAD_MORE_STEP = 3;
 
   const fetchMenus = async () => {
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const data = (await clubService.getTables(id as string)) as any;
-      setTables(data?.tables || []);
+      const menus = await menuService.getMenuItems(id);
+      setMenuItems(menus.menuItems);
     } catch (err) {
       console.error(err);
     } finally {
@@ -83,7 +83,6 @@ export default function ClubTable({ id }: { id?: string }) {
 
   useEffect(() => {
     fetchMenus();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const categories: Category[] = [
@@ -92,24 +91,30 @@ export default function ClubTable({ id }: { id?: string }) {
       category: 'All',
     },
     {
-      name: 'Regular',
-      category: 'Regular',
+      name: 'Starters',
+      category: 'Starters',
     },
     {
-      name: 'VIP',
-      category: 'VIP',
+      name: 'Main Course',
+      category: 'Main Dish ',
     },
     {
-      name: 'VVIP',
-      category: 'VVIP',
+      name: 'Appetizer',
+      category: 'Appetizer',
     },
     {
-      name: 'Lounge',
-      category: 'Lounge',
+      name: 'Dessert',
+      category: 'Dessert',
+    },
+    {
+      name: 'Drinks',
+      category: 'Drink',
     },
   ];
   const filteredItems =
-    activeCategory === 'All' ? tables : tables?.filter((item) => item.category === activeCategory);
+    activeCategory === 'All'
+      ? menuItems
+      : menuItems?.filter((item) => item.category === activeCategory);
 
   const displayedItems = filteredItems?.slice(0, itemsToShow);
 
@@ -164,7 +169,6 @@ export default function ClubTable({ id }: { id?: string }) {
           </div>
         )}
       </>
-      {/* )} */}
     </div>
   );
 }

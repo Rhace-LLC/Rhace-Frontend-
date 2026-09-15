@@ -3,7 +3,7 @@ import { MakeReservationSection } from '@/components/user/inventory/MakeReservat
 import RestaurantSaveCopy from '@/components/user/ui/SaveCopy';
 import RestaurantImages2 from '@/components/user/ui/Image2';
 import RestaurantImages from '@/components/user/ui/Image';
-import RestaurantInfo from '@/components/user/restaurant/RestaurantInfo';
+import RestaurantInfo from './_subcomponents/RestaurantInfo';
 import MapComponent from '@/components/user/ui/mapComponent';
 import { Mail, MapPin, Phone, Star } from 'lucide-react';
 import { useParams } from 'react-router';
@@ -102,9 +102,6 @@ const RestaurantsPage = () => {
                 </div>
               </div>
             </div>
-            <div className="col-span-2">
-              <RestaurantInfo data={restaurant} />
-            </div>
           </div>
           <div className="space-y-8 px-4 md:px-0">
             <div className="rounded-2xl bg-[#E7F0F0] border border-[#E5E7EB] p-1">
@@ -143,6 +140,10 @@ const RestaurantsPage = () => {
             </div>
           </div>
         </div>
+        
+            <div className="col-span-2">
+              <RestaurantInfo data={restaurant} />
+            </div>
 
         <MakeReservationSection vendorId={id!} vertical="restaurant" />
       </main>

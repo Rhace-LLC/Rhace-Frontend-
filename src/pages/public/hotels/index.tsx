@@ -13,8 +13,8 @@ import { userService } from '@/services/user.service';
 import { Mail, MapPin, Phone } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useLocation, useParams } from 'react-router';
-import HotelInfo from '../../../components/user/hotel/HotelInfo';
-import type { HotelRoom } from '@/components/user/hotel/Rooms';
+import HotelInfo from './_subcomponents/HotelInfo';
+import type { HotelRoom } from './_subcomponents/Rooms';
 
 const HotelsPage = () => {
   const location = useLocation();

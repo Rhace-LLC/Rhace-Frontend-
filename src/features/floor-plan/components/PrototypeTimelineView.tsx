@@ -72,7 +72,7 @@ export function PrototypeTimelineView({ plugin, planId: preferredPlanId }: Proto
     <div className="flex h-full min-h-0 flex-col gap-2 p-2 md:p-4">
       <div className="flex flex-wrap items-center gap-3">
         <h1 className="text-sm font-semibold text-gray-900">
-          {plugin.label} — Reservation Calendar
+          {plugin.label} Reservation Calendar
         </h1>
         <span className="text-[11px] text-gray-400">
           Drag a booking onto another unit of the same blueprint to reassign.
