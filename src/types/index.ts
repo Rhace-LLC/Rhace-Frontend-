@@ -79,6 +79,21 @@ export interface AuthAdmin {
   token?: string;
 }
 
+export interface AuthStaff {
+  _id?: string;
+  id: string;
+  name: string;
+  email: string;
+  /** Vertical staff role, e.g. waiter | chef | bartender | vip_host | front_desk | housekeeping */
+  role: string;
+  vendor?: string;
+  branch?: string;
+  permissions?: Record<string, boolean>;
+  photo?: string;
+  expiresAt?: string | number;
+  token?: string;
+}
+
 // ─── Vendor / Venue ───────────────────────────────────────────────────────────
 
 export interface VendorBase {

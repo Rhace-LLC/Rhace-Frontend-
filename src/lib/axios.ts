@@ -1,5 +1,6 @@
 import { envConfig } from '@/envloader';
 import { clearAuthStorage } from '@/contexts/authSession';
+import { getStaffRefreshToken, setStaffRefreshToken } from '@/lib/storage';
 import axios from 'axios';
 
 // Force absolute protocol sanitization to prevent accidental HTTPS upgrades on localhost
@@ -23,6 +24,10 @@ api.interceptors.request.use(
   (error: unknown) => Promise.reject(error)
 );
 
+/** Refresh calls must never trigger another refresh attempt (infinite loop). */
+const isRefreshCall = (url?: string): boolean =>
+  Boolean(url && url.includes('/auth/refresh'));
+
 // Response interceptor
 api.interceptors.response.use(
   (response) => response,
@@ -35,13 +40,20 @@ api.interceptors.response.use(
     if (
       (error as { response?: { status?: number } }).response?.status === 401 &&
       originalRequest &&
-      !originalRequest._retry
+      !originalRequest._retry &&
+      !isRefreshCall(originalRequest.url)
     ) {
       originalRequest._retry = true; // Mark as retried to avoid infinite loops
 
       try {
-        // Use the instance base URL directly for refreshing
-        const { data } = await api.post('/auth/refresh', {}, { withCredentials: true });
+        // Staff sessions refresh with a rotating token in the body; every other
+        // role refreshes through the http-only cookie endpoint.
+        const staffRefreshToken = getStaffRefreshToken();
+        const { data } = staffRefreshToken
+          ? await api.post('/staff/auth/refresh', { refreshToken: staffRefreshToken })
+          : await api.post('/auth/refresh', {}, { withCredentials: true });
+
+        if (staffRefreshToken) setStaffRefreshToken(data.refreshToken ?? staffRefreshToken);
 
         localStorage.setItem('token', data.accessToken);
 
@@ -52,6 +64,7 @@ api.interceptors.response.use(
         return api(originalRequest);
       } catch (refreshError) {
         // Clear all session storage scopes completely if refresh fails
+        setStaffRefreshToken(null);
         localStorage.removeItem('token');
         localStorage.removeItem('auth_token');
         localStorage.removeItem('vendor-token');
@@ -61,6 +74,8 @@ api.interceptors.response.use(
           const currentPath = window.location.pathname;
           if (currentPath.startsWith('/dashboard/admin')) {
             window.location.href = '/auth/admin/login';
+          } else if (currentPath.startsWith('/staff')) {
+            window.location.href = '/auth/staff/login';
           } else if (currentPath.startsWith('/dashboard/')) {
             window.location.href = '/auth/vendor/login';
           }

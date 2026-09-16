@@ -12,6 +12,7 @@ import VendorLayout from './vendor_layout';
 
 import { adminDashboardRoutes } from './routes/admin';
 import { publicRoutes } from './routes/public';
+import { staffRoutes } from './routes/staff';
 import { userRoutes } from './routes/user';
 import {
   vendorDashboardRoutes,
@@ -20,6 +21,8 @@ import {
 
 const routes: RouteObject[] = [
   { element: <PublicLayout />, children: publicRoutes },
+
+  ...staffRoutes,
 
   { element: <UserLayout />, children: userRoutes },
 

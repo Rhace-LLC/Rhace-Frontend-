@@ -28,9 +28,23 @@ class OrdersApi {
     return unwrap<{ order: OrderDto | null }>(res);
   }
 
-  async list(params?: { status?: string; source?: string; page?: number; limit?: number }) {
+  /**
+   * `withLines` asks the API to embed each order's lines, so ticket screens
+   * (KDS / bar / dispatch) get their items in a single request.
+   */
+  async list(params?: {
+    status?: string;
+    source?: string;
+    page?: number;
+    limit?: number;
+    withLines?: boolean;
+  }) {
     const res = await api.get('/orders', { params });
-    return res.data as { items: OrderDto[]; total: number; page: number; limit: number; pages: number };
+    // `paginated()` wraps the page in a `{ success, data }` envelope; callers read
+    // `.items` straight off the result, so unwrap it here.
+    return unwrap<{ items: OrderDto[]; total: number; page: number; limit: number; pages: number }>(
+      res,
+    );
   }
 
   async addLine(id: string, line: CreateOrderLineInput): Promise<OrderDto> {
@@ -40,6 +54,16 @@ class OrdersApi {
 
   async removeLine(id: string, lineId: string): Promise<OrderDto> {
     const res = await api.delete(`/orders/${id}/lines/${lineId}`);
+    return unwrap<OrderDto>(res);
+  }
+
+  /** Kitchen/bar bump for a single ticket line. */
+  async bumpLine(
+    id: string,
+    lineId: string,
+    prepStatus: 'queued' | 'preparing' | 'ready',
+  ): Promise<OrderDto> {
+    const res = await api.patch(`/orders/${id}/lines/${lineId}/prep`, { prepStatus });
     return unwrap<OrderDto>(res);
   }
 

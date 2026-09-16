@@ -147,6 +147,11 @@ export const ClubList: SideMenuListConfig = {
       path: '/dashboard/club/payments',
       icon: CreditCard,
     },
+    {
+      label: 'Staff',
+      path: '/dashboard/club/staffs',
+      icon: Users,
+    },
   ],
   bottomItems: [
     {
@@ -205,6 +210,11 @@ export const HotelList: SideMenuListConfig = {
       label: 'Payments',
       path: '/dashboard/hotel/payments',
       icon: CreditCard,
+    },
+    {
+      label: 'Staff',
+      path: '/dashboard/hotel/staffs',
+      icon: Users,
     },
   ],
   bottomItems: [
@@ -303,6 +313,11 @@ export const RestaurantList: SideMenuListConfig = {
       label: 'Payments',
       path: '/dashboard/restaurant/payments',
       icon: CreditCard,
+    },
+    {
+      label: 'Staff',
+      path: '/dashboard/restaurant/staffs',
+      icon: Users,
     },
   ],
   bottomItems: [

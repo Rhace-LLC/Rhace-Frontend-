@@ -27,6 +27,8 @@ export interface OrderLineDto {
   addons: OrderLineAddonDto[];
   lineTotal: number;
   status: string;
+  /** Kitchen/bar bump state: queued -> preparing -> ready. */
+  prepStatus?: 'queued' | 'preparing' | 'ready' | string;
 }
 
 export interface OrderDto {
