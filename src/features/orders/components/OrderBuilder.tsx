@@ -94,6 +94,10 @@ export function OrderBuilder({
 
   const loading =
     dishesQuery.isLoading || drinksQuery.isLoading || bottleSetsQuery.isLoading;
+  const loadFailed =
+    (dishesQuery.isError && vertical === 'restaurant') ||
+    drinksQuery.isError ||
+    (bottleSetsQuery.isError && vertical === 'club');
   const cartLines = Object.values(cart);
 
   const lineTotal = (line: CartLine) => {
@@ -159,6 +163,14 @@ export function OrderBuilder({
   };
 
   if (loading) return <div className="mt-6 h-64 animate-pulse rounded-2xl bg-gray-100" />;
+
+  if (loadFailed) {
+    return (
+      <div className="mt-6 rounded-2xl border border-dashed border-red-200 bg-red-50 py-16 text-center text-sm text-red-600">
+        Could not load the menu. Please try again.
+      </div>
+    );
+  }
 
   if (!catalog.length) {
     return (

@@ -39,6 +39,8 @@ export interface OrderDto {
   status: OrderStatus;
   paymentStatus: string;
   customerId?: string;
+  /** Staff member the order is attributed to (POS-created orders). */
+  staffId?: string;
   guestName?: string;
   guestPhone?: string;
   guestEmail?: string;
@@ -68,6 +70,7 @@ export interface CreateOrderLineInput {
 
 export interface CreateOrderInput {
   source?: OrderSource;
+  vertical?: string;
   vendorId?: string;
   reservation?: string;
   bookingGroup?: string;

@@ -38,8 +38,12 @@ class OrdersApi {
     page?: number;
     limit?: number;
     withLines?: boolean;
+    /** Staff token only: restrict to orders this staff member created. */
+    mine?: boolean;
   }) {
-    const res = await api.get('/orders', { params });
+    const res = await api.get('/orders', {
+      params: params ? { ...params, mine: params.mine ? 'true' : undefined } : undefined,
+    });
     // `paginated()` wraps the page in a `{ success, data }` envelope; callers read
     // `.items` straight off the result, so unwrap it here.
     return unwrap<{ items: OrderDto[]; total: number; page: number; limit: number; pages: number }>(

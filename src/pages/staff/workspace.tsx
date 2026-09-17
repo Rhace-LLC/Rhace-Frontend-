@@ -14,6 +14,10 @@ import type { StockItemKind } from '@/services/stock.service';
 import { slugForStaffRole, staffRoleLabel } from './roles';
 import TicketBoard from './components/TicketBoard';
 import Item86Panel from './components/Item86Panel';
+import WaiterWorkspace from './components/WaiterWorkspace';
+import VipHostWorkspace from './components/VipHostWorkspace';
+import FrontDeskWorkspace from './components/FrontDeskWorkspace';
+import HousekeepingWorkspace from './components/HousekeepingWorkspace';
 
 /**
  * Stations that work a line-level ticket queue. Each one sees only the lines it
@@ -49,8 +53,9 @@ const QUEUE_ROLES: Record<string, { title: string; transitions: Record<string, s
   // Cellar/bar dispatch runs the same ticket flow as the bar ("prepared" is not
   // a real order status, so the old key left this queue with no usable action).
   bar_staff: { title: 'Cellar Dispatch', transitions: { placed: 'preparing', preparing: 'served' } },
-  waiter: { title: 'My Orders', transitions: { served: 'completed' } },
-  vip_host: { title: 'VIP Service', transitions: { preparing: 'served', served: 'completed' } },
+  // waiter (floor map), vip_host (booth map + minimum-spend tracker),
+  // front_desk (room grid) and housekeeping (room status) each have dedicated
+  // workspaces below.
   cashier: { title: 'Cashier', transitions: { served: 'completed' } },
 };
 
@@ -75,8 +80,16 @@ export default function StaffWorkspace() {
 
   const load = useCallback(async () => {
     // Don't spend a request on a workspace this account cannot open (or on the
-    // ticket stations, which load their own queue).
-    if (!isOwnWorkspace || station) return;
+    // ticket stations / waiter floor map, which load their own data).
+    if (
+      !isOwnWorkspace ||
+      station ||
+      role === 'waiter' ||
+      role === 'vip_host' ||
+      role === 'front_desk' ||
+      role === 'housekeeping'
+    )
+      return;
     try {
       setIsLoading(true);
       const [orderRes, assignmentRes] = await Promise.all([
@@ -92,7 +105,7 @@ export default function StaffWorkspace() {
     } finally {
       setIsLoading(false);
     }
-  }, [isOwnWorkspace, station]);
+  }, [isOwnWorkspace, station, role]);
 
   useEffect(() => {
     load();
@@ -132,6 +145,22 @@ export default function StaffWorkspace() {
         <Item86Panel kinds={station.stock} />
       </div>
     );
+  }
+
+  if (role === 'waiter') {
+    return <WaiterWorkspace />;
+  }
+
+  if (role === 'vip_host') {
+    return <VipHostWorkspace />;
+  }
+
+  if (role === 'front_desk') {
+    return <FrontDeskWorkspace />;
+  }
+
+  if (role === 'housekeeping') {
+    return <HousekeepingWorkspace />;
   }
 
   if (isLoading) {

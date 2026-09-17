@@ -315,6 +315,10 @@ export interface UnitReservationDto {
   vendor?: string;
   floorPlan?: string;
   unitId?: string | null;
+  /** Friendly room/table name, populated by the API for reservation lists. */
+  unitLabel?: string;
+  /** Live state of the booked unit at read time. */
+  unitState?: string;
   blueprintId?: string | null;
   bookingGroup?: string | null;
   guestName: string;
