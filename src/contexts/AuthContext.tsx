@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 import { readJson } from '@/lib/storage';
-import type { AuthAdmin, AuthUser, AuthVendor } from '@/types';
+import type { AuthAdmin, AuthStaff, AuthUser, AuthVendor } from '@/types';
 import {
   AUTH_STORAGE_KEYS,
   clearAuthStorage,
@@ -15,12 +15,14 @@ interface AuthContextValue {
   user: AuthUser | null;
   vendor: AuthVendor | null;
   admin: AuthAdmin | null;
+  staff: AuthStaff | null;
   role: AuthRole | null;
   isAuthenticated: boolean;
   loading: boolean;
   setUser: (user: AuthUser | null) => void;
   setVendor: (vendor: AuthVendor | null) => void;
   setAdmin: (admin: AuthAdmin | null) => void;
+  setStaff: (staff: AuthStaff | null) => void;
   logout: (role?: AuthRole) => void;
 }
 
@@ -30,6 +32,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUserState] = useState<AuthUser | null>(null);
   const [vendor, setVendorState] = useState<AuthVendor | null>(null);
   const [admin, setAdminState] = useState<AuthAdmin | null>(null);
+  const [staff, setStaffState] = useState<AuthStaff | null>(null);
   const [loading, setLoading] = useState(true);
 
   // Hydrate the session from storage on mount.
@@ -37,42 +40,73 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUserState(readJson<AuthUser | null>(AUTH_STORAGE_KEYS.user, null));
     setVendorState(readJson<AuthVendor | null>(AUTH_STORAGE_KEYS.vendor, null));
     setAdminState(readJson<AuthAdmin | null>(AUTH_STORAGE_KEYS.admin, null));
+    setStaffState(readJson<AuthStaff | null>(AUTH_STORAGE_KEYS.staff, null));
     setLoading(false);
   }, []);
 
-  const setUser = useCallback((next: AuthUser | null) => {
-    setUserState(next);
-    setVendorState(null);
-    setAdminState(null);
-    localStorage.removeItem(AUTH_STORAGE_KEYS.vendor);
-    localStorage.removeItem(AUTH_STORAGE_KEYS.admin);
-    if (next) localStorage.setItem(AUTH_STORAGE_KEYS.user, JSON.stringify(next));
-    else localStorage.removeItem(AUTH_STORAGE_KEYS.user);
+  /** Clears every other role's in-memory + persisted session. */
+  const clearOtherRoles = useCallback((keep: AuthRole) => {
+    if (keep !== 'user') {
+      setUserState(null);
+      localStorage.removeItem(AUTH_STORAGE_KEYS.user);
+    }
+    if (keep !== 'vendor') {
+      setVendorState(null);
+      localStorage.removeItem(AUTH_STORAGE_KEYS.vendor);
+    }
+    if (keep !== 'admin') {
+      setAdminState(null);
+      localStorage.removeItem(AUTH_STORAGE_KEYS.admin);
+    }
+    if (keep !== 'staff') {
+      setStaffState(null);
+      localStorage.removeItem(AUTH_STORAGE_KEYS.staff);
+    }
   }, []);
 
-  const setVendor = useCallback((next: AuthVendor | null) => {
-    setVendorState(next);
-    setUserState(null);
-    setAdminState(null);
-    localStorage.removeItem(AUTH_STORAGE_KEYS.user);
-    localStorage.removeItem(AUTH_STORAGE_KEYS.admin);
-    if (next) localStorage.setItem(AUTH_STORAGE_KEYS.vendor, JSON.stringify(next));
-    else localStorage.removeItem(AUTH_STORAGE_KEYS.vendor);
-  }, []);
+  const setUser = useCallback(
+    (next: AuthUser | null) => {
+      setUserState(next);
+      clearOtherRoles('user');
+      if (next) localStorage.setItem(AUTH_STORAGE_KEYS.user, JSON.stringify(next));
+      else localStorage.removeItem(AUTH_STORAGE_KEYS.user);
+    },
+    [clearOtherRoles]
+  );
 
-  const setAdmin = useCallback((next: AuthAdmin | null) => {
-    setAdminState(next);
-    setUserState(null);
-    setVendorState(null);
-    localStorage.removeItem(AUTH_STORAGE_KEYS.user);
-    localStorage.removeItem(AUTH_STORAGE_KEYS.vendor);
-    if (next) localStorage.setItem(AUTH_STORAGE_KEYS.admin, JSON.stringify(next));
-    else localStorage.removeItem(AUTH_STORAGE_KEYS.admin);
-  }, []);
+  const setVendor = useCallback(
+    (next: AuthVendor | null) => {
+      setVendorState(next);
+      clearOtherRoles('vendor');
+      if (next) localStorage.setItem(AUTH_STORAGE_KEYS.vendor, JSON.stringify(next));
+      else localStorage.removeItem(AUTH_STORAGE_KEYS.vendor);
+    },
+    [clearOtherRoles]
+  );
+
+  const setAdmin = useCallback(
+    (next: AuthAdmin | null) => {
+      setAdminState(next);
+      clearOtherRoles('admin');
+      if (next) localStorage.setItem(AUTH_STORAGE_KEYS.admin, JSON.stringify(next));
+      else localStorage.removeItem(AUTH_STORAGE_KEYS.admin);
+    },
+    [clearOtherRoles]
+  );
+
+  const setStaff = useCallback(
+    (next: AuthStaff | null) => {
+      setStaffState(next);
+      clearOtherRoles('staff');
+      if (next) localStorage.setItem(AUTH_STORAGE_KEYS.staff, JSON.stringify(next));
+      else localStorage.removeItem(AUTH_STORAGE_KEYS.staff);
+    },
+    [clearOtherRoles]
+  );
 
   const role = useMemo<AuthRole | null>(
-    () => (user ? 'user' : vendor ? 'vendor' : admin ? 'admin' : null),
-    [user, vendor, admin]
+    () => (user ? 'user' : vendor ? 'vendor' : admin ? 'admin' : staff ? 'staff' : null),
+    [user, vendor, admin, staff]
   );
 
   const logout = useCallback(
@@ -81,6 +115,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUserState(null);
       setVendorState(null);
       setAdminState(null);
+      setStaffState(null);
       clearAuthStorage(targetRole);
       if (typeof window !== 'undefined' && resolved) {
         window.location.href = loginPathForRole(resolved);
@@ -94,15 +129,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       user,
       vendor,
       admin,
+      staff,
       role,
-      isAuthenticated: Boolean(user || vendor || admin),
+      isAuthenticated: Boolean(user || vendor || admin || staff),
       loading,
       setUser,
       setVendor,
       setAdmin,
+      setStaff,
       logout,
     }),
-    [user, vendor, admin, role, loading, setUser, setVendor, setAdmin, logout]
+    [user, vendor, admin, staff, role, loading, setUser, setVendor, setAdmin, setStaff, logout]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

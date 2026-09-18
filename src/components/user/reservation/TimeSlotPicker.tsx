@@ -1,5 +1,6 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type KeyboardEvent as ReactKeyboardEvent } from 'react';
 import { useBlueprintDaySlots, groupSlotsByMealPeriod } from '@/features/floor-plan';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import type { DaySlotDto, MealPeriodDto } from '@/types';
 
 interface TimeSlotPickerProps {
@@ -15,6 +16,10 @@ interface TimeSlotPickerProps {
 const CARD_BASE =
   'relative flex min-h-[64px] w-full flex-col justify-center rounded-xl px-3 py-2 text-left text-xs transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#004d43]/30';
 
+function isDisabled(slot: DaySlotDto): boolean {
+  return slot.state === 'past' || slot.state === 'full';
+}
+
 function cardClass(slot: DaySlotDto, selected: boolean): string {
   if (selected) {
     return `${CARD_BASE} border-2 border-[#004d43] bg-[#004d43] text-white shadow-md ring-2 ring-[#004d43]/20`;
@@ -26,6 +31,11 @@ function cardClass(slot: DaySlotDto, selected: boolean): string {
     return `${CARD_BASE} cursor-not-allowed border border-rose-100 bg-rose-50/50 text-rose-400 opacity-75`;
   }
   return `${CARD_BASE} cursor-pointer border border-gray-200 bg-white text-gray-800 hover:border-[#004d43] hover:bg-[#004d43]/5`;
+}
+
+/** "8:00 AM – 9:00 AM" → "8:00 AM". */
+function startLabel(slot: DaySlotDto): string {
+  return slot.label.split('–')[0]?.trim() || slot.label;
 }
 
 function slotTooltip(slot: DaySlotDto): string {
@@ -52,12 +62,33 @@ export function TimeSlotPicker({
   const data = query.data;
   const [period, setPeriod] = useState<'all' | MealPeriodDto>('all');
 
-  const groups = useMemo(
-    () => groupSlotsByMealPeriod(data?.slots ?? []),
-    [data?.slots]
-  );
+  const groups = useMemo(() => groupSlotsByMealPeriod(data?.slots ?? []), [data?.slots]);
+  const visibleGroups = period === 'all' ? groups : groups.filter((group) => group.period === period);
 
-  const visibleGroups = period === 'all' ? groups : groups.filter((g) => g.period === period);
+  /** Arrow-key navigation within a meal-period grid (skips disabled cards). */
+  const handleGridKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
+    const { key } = event;
+    if (!['ArrowRight', 'ArrowLeft', 'ArrowDown', 'ArrowUp'].includes(key)) return;
+
+    const grid = event.currentTarget;
+    const buttons = Array.from(
+      grid.querySelectorAll<HTMLButtonElement>('button:not([disabled])')
+    );
+    const index = buttons.indexOf(document.activeElement as HTMLButtonElement);
+    if (index === -1) return;
+
+    const columns =
+      getComputedStyle(grid).gridTemplateColumns.split(' ').filter(Boolean).length || 1;
+    let next = index;
+    if (key === 'ArrowRight') next = index + 1;
+    else if (key === 'ArrowLeft') next = index - 1;
+    else if (key === 'ArrowDown') next = index + columns;
+    else if (key === 'ArrowUp') next = index - columns;
+
+    if (next < 0 || next >= buttons.length) return;
+    event.preventDefault();
+    buttons[next]?.focus();
+  };
 
   return (
     <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
@@ -96,7 +127,7 @@ export function TimeSlotPicker({
         <>
           {groups.length > 1 && (
             <div className="mb-3 flex flex-wrap gap-2">
-              {(['all', ...groups.map((g) => g.period)] as const).map((id) => (
+              {(['all', ...groups.map((group) => group.period)] as const).map((id) => (
                 <button
                   key={id}
                   type="button"
@@ -119,22 +150,29 @@ export function TimeSlotPicker({
                 <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-gray-400">
                   {group.period}
                 </p>
-                <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-6">
+                <div
+                  className="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-6"
+                  role="group"
+                  aria-label={`${group.period} time slots`}
+                  onKeyDown={handleGridKeyDown}
+                >
                   {group.slots.map((slot) => {
                     const selected = slot.start === selectedStart;
-                    const disabled = slot.state === 'past' || slot.state === 'full';
-                    return (
+                    const disabled = isDisabled(slot);
+
+                    const card = (
                       <button
-                        key={slot.start}
                         type="button"
                         disabled={disabled}
                         aria-disabled={disabled}
                         aria-pressed={selected}
                         aria-label={slotTooltip(slot)}
                         onClick={() => onSelect({ start: slot.start, end: slot.end })}
-                        className={`group ${cardClass(slot, selected)}`}
+                        className={cardClass(slot, selected)}
                       >
-                        <span className="text-[13px] font-semibold leading-tight">{slot.label}</span>
+                        <span className="text-[13px] font-semibold leading-tight">
+                          {startLabel(slot)}
+                        </span>
                         {slot.state === 'full' ? (
                           <span className="mt-1 text-[11px] font-medium">Fully Booked</span>
                         ) : slot.state === 'past' ? (
@@ -149,16 +187,16 @@ export function TimeSlotPicker({
                             {slot.available} left
                           </span>
                         )}
-
-                        {!disabled && (
-                          <span
-                            role="tooltip"
-                            className="pointer-events-none absolute bottom-full left-1/2 z-20 mb-2 hidden -translate-x-1/2 whitespace-nowrap rounded-lg bg-gray-900 px-2.5 py-1.5 text-[11px] font-normal text-white shadow-lg group-hover:block group-focus-visible:block"
-                          >
-                            {slotTooltip(slot)}
-                          </span>
-                        )}
                       </button>
+                    );
+
+                    if (disabled) return card;
+
+                    return (
+                      <Tooltip key={slot.start}>
+                        <TooltipTrigger asChild>{card}</TooltipTrigger>
+                        <TooltipContent side="top">{slotTooltip(slot)}</TooltipContent>
+                      </Tooltip>
                     );
                   })}
                 </div>

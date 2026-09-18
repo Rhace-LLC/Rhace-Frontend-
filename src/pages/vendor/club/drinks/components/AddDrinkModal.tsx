@@ -1,7 +1,10 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
 import { X, Upload, AlertCircle, DownloadCloud, Loader2 } from 'lucide-react';
 import { clubService } from '@/services/club.service';
+import { drinkCategoryService } from '@/services/drinkCategory.service';
+import { addOnService, type AddOnDto } from '@/services/addon.service';
+import type { CategoryDto } from '@/services/menuCategory.service';
 import axios from 'axios';
 import { Button } from '@/components/ui/button';
 
@@ -13,33 +16,24 @@ interface AddDrinkModalProps {
 interface DrinkFormData {
   name: string;
   category: string;
+  categoryId: string;
   volume: string;
   price: string;
   images: string[];
-}
-
-interface AddOnState {
-  iceBucket: boolean;
-  chaser: boolean;
-  sprinklers: boolean;
-  glassware: boolean;
-  [key: string]: boolean;
 }
 
 export function AddDrinkModal({ onClose, onSuccess }: AddDrinkModalProps) {
   const [formData, setFormData] = useState<DrinkFormData>({
     name: '',
     category: '',
+    categoryId: '',
     volume: '',
     price: '',
     images: [],
   });
-  const [addOns, setAddOns] = useState<AddOnState>({
-    iceBucket: false,
-    chaser: false,
-    sprinklers: false,
-    glassware: false,
-  });
+  const [categories, setCategories] = useState<CategoryDto[]>([]);
+  const [addonOptions, setAddonOptions] = useState<AddOnDto[]>([]);
+  const [selectedAddonIds, setSelectedAddonIds] = useState<string[]>([]);
   const [visibility, setVisibility] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [saveAndAddAnother, setSaveAndAddAnother] = useState(false);
@@ -49,6 +43,22 @@ export function AddDrinkModal({ onClose, onSuccess }: AddDrinkModalProps) {
 
   const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
   const UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
+
+  useEffect(() => {
+    const loadCatalog = async () => {
+      try {
+        const [categoryList, addonList] = await Promise.all([
+          drinkCategoryService.list(),
+          addOnService.list({ appliesTo: 'drink' }),
+        ]);
+        setCategories(categoryList);
+        setAddonOptions(addonList);
+      } catch {
+        // Non-fatal — the form still works with free-form fallbacks.
+      }
+    };
+    loadCatalog();
+  }, []);
 
   const handleImageUpload = useCallback(
     async (files: FileList, setImage: Dispatch<SetStateAction<DrinkFormData>>) => {
@@ -87,21 +97,19 @@ export function AddDrinkModal({ onClose, onSuccess }: AddDrinkModalProps) {
     setIsSubmitting(true);
     setError(null);
 
-    const selectedAddOns = Object.entries(addOns)
-      .filter(([, value]) => value)
-      .map(([key]) => key);
-
     try {
       const payload = {
         name: formData.name,
         category: formData.category,
+        categoryId: formData.categoryId || undefined,
         volume: formData.volume || null,
         price: parseFloat(formData.price) || 0,
         quantity: 0,
         status: 'Active',
         images: formData.images,
-        visibility,
-        addOns: selectedAddOns,
+        showOnBookingScreen: visibility,
+        addOns: selectedAddonIds,
+        addonIds: selectedAddonIds,
       };
 
       const response = await clubService.createDrinkType(payload);
@@ -113,16 +121,12 @@ export function AddDrinkModal({ onClose, onSuccess }: AddDrinkModalProps) {
         setFormData({
           name: '',
           category: '',
+          categoryId: '',
           volume: '',
           price: '',
           images: [''],
         });
-        setAddOns({
-          iceBucket: false,
-          chaser: false,
-          sprinklers: false,
-          glassware: false,
-        });
+        setSelectedAddonIds([]);
         setError(null);
       } else {
         // Close modal and refresh
@@ -195,20 +199,29 @@ export function AddDrinkModal({ onClose, onSuccess }: AddDrinkModalProps) {
             </label>
             <select
               required
-              value={formData.category}
-              onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+              value={formData.categoryId}
+              onChange={(e) => {
+                const selected = categories.find((c) => c._id === e.target.value);
+                setFormData({
+                  ...formData,
+                  categoryId: e.target.value,
+                  category: selected?.name ?? '',
+                });
+              }}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
             >
               <option value="">Select Category</option>
-              <option value="Champagne">Champagne</option>
-              <option value="Cognac">Cognac</option>
-              <option value="Vodka">Vodka</option>
-              <option value="Whiskey">Whiskey</option>
-              <option value="Wine">Wine</option>
-              <option value="Beer">Beer</option>
-              <option value="Rum">Rum</option>
-              <option value="Tequila">Tequila</option>
+              {categories.map((category) => (
+                <option key={category._id} value={category._id}>
+                  {category.name}
+                </option>
+              ))}
             </select>
+            {categories.length === 0 && (
+              <p className="mt-1 text-xs text-gray-400">
+                No categories yet — create one under Drinks → Categories.
+              </p>
+            )}
           </div>
 
           <div>
@@ -286,44 +299,39 @@ export function AddDrinkModal({ onClose, onSuccess }: AddDrinkModalProps) {
             <div className="flex items-center justify-between mb-3">
               <div>
                 <h3 className="text-sm font-medium text-gray-700">Add Ons</h3>
-                <p className="text-xs text-gray-500">Include addons for your drinks</p>
+                <p className="text-xs text-gray-500">Include add-ons for this drink</p>
               </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  className="sr-only peer"
-                  checked={Object.values(addOns).some((v) => v)}
-                  onChange={(e) => {
-                    const checked = e.target.checked;
-                    setAddOns({
-                      iceBucket: checked,
-                      chaser: checked,
-                      sprinklers: checked,
-                      glassware: checked,
-                    });
-                  }}
-                />
-                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-teal-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-teal-600"></div>
-              </label>
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              {[
-                { key: 'iceBucket', label: 'Ice Bucket' },
-                { key: 'sprinklers', label: 'Sprinklers' },
-                { key: 'chaser', label: 'Chaser' },
-                { key: 'glassware', label: 'Glassware' },
-              ].map(({ key, label }) => (
-                <label key={key} className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={addOns[key]}
-                    onChange={(e) => setAddOns({ ...addOns, [key]: e.target.checked })}
-                    className="rounded border-gray-300"
-                  />
-                  <span className="text-sm text-gray-700">{label}</span>
-                </label>
-              ))}
-            </div>
+            {addonOptions.length === 0 ? (
+              <p className="text-xs text-gray-400">
+                No add-ons yet — create them under Add-ons.
+              </p>
+            ) : (
+              <div className="grid grid-cols-2 gap-3">
+                {addonOptions.map((addOn) => {
+                  const checked = selectedAddonIds.includes(addOn._id);
+                  return (
+                    <label key={addOn._id} className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        onChange={(e) =>
+                          setSelectedAddonIds(
+                            e.target.checked
+                              ? [...selectedAddonIds, addOn._id]
+                              : selectedAddonIds.filter((id) => id !== addOn._id)
+                          )
+                        }
+                        className="rounded border-gray-300"
+                      />
+                      <span className="text-sm text-gray-700">
+                        {addOn.name} · ₦{addOn.price.toLocaleString()}
+                      </span>
+                    </label>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
           <div>

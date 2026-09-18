@@ -1,25 +1,19 @@
 import { cn } from '@/lib/utils';
 import {
   ChevronDown,
-  Coffee,
-  Flame,
   GripVertical,
   Loader2,
   Minus,
-  Music,
   Plus,
   Search,
-  Sparkles,
-  Star,
   Upload,
-  Users,
   X,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCallback, useEffect, useState } from 'react';
 import Header from '@/pages/vendor/hotel/rooms/add/components/Header';
 import { clubService } from '@/services/club.service';
-import { useSelector } from 'react-redux';
+import { addOnService, type AddOnDto } from '@/services/addon.service';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import Header2 from '@/navigation/vendor_layout/_sub_component/VendorHeader2';
@@ -49,16 +43,8 @@ const BottleServiceManager = () => {
   });
 
   // Add-ons state
-  const [addOns, setAddOns] = useState({
-    sparklerShow: true,
-    iceBuckets: true,
-    mixerChaser: true,
-    cupsGlassware: true,
-    showgirls: true,
-    fireShooter: true,
-    djShoutout: true,
-    vipEntryPass: true,
-  });
+  const [selectedAddOnIds, setSelectedAddOnIds] = useState<string[]>([]);
+  const [vendorAddOns, setVendorAddOns] = useState<AddOnDto[]>([]);
 
   const [pricing, setPricing] = useState({
     price: '100000',
@@ -68,65 +54,6 @@ const BottleServiceManager = () => {
   });
 
   const [drinks, setDrinks] = useState([]);
-
-  const addOnsList = [
-    {
-      id: 'sparklerShow',
-      icon: <Sparkles className="w-5 h-5" />,
-      name: 'Sparkler Show',
-      description: 'Add note (e.g 3 sparklers per bottle)',
-      color: 'bg-yellow-100 text-yellow-600',
-    },
-    {
-      id: 'iceBuckets',
-      icon: <Coffee className="w-5 h-5" />,
-      name: 'Ice Buckets',
-      description: 'Silver bucket with club logo',
-      color: 'bg-blue-100 text-blue-600',
-    },
-    {
-      id: 'mixerChaser',
-      icon: <Coffee className="w-5 h-5" />,
-      name: 'Mixer/Chaser',
-      description: 'Orange, Cranberry, Soda',
-      color: 'bg-orange-100 text-orange-600',
-    },
-    {
-      id: 'cupsGlassware',
-      icon: <Coffee className="w-5 h-5" />,
-      name: 'Cups / Glassware',
-      description: 'Premium glassware, 4 per bottle',
-      color: 'bg-purple-100 text-purple-600',
-    },
-    {
-      id: 'showgirls',
-      icon: <Users className="w-5 h-5" />,
-      name: 'Showgirls / Dancers',
-      description: '15 minutes performance',
-      color: 'bg-pink-100 text-pink-600',
-    },
-    {
-      id: 'fireShooter',
-      icon: <Flame className="w-5 h-5" />,
-      name: 'Fire Shooter',
-      description: 'Bartender performance',
-      color: 'bg-red-100 text-red-600',
-    },
-    {
-      id: 'djShoutout',
-      icon: <Music className="w-5 h-5" />,
-      name: 'DJ Shout-out',
-      description: 'Song request',
-      color: 'bg-indigo-100 text-indigo-600',
-    },
-    {
-      id: 'vipEntryPass',
-      icon: <Star className="w-5 h-5" />,
-      name: 'VIP Entry Pass',
-      description: 'Skip the line entry for all guests',
-      color: 'bg-cyan-100 text-cyan-600',
-    },
-  ];
 
   const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
   const UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
@@ -209,11 +136,10 @@ const BottleServiceManager = () => {
           quantity: drink.quantity,
         })),
         image: bottleSetImage,
-        addOns: addOnsList
-          .filter((addOn) => {
-            return addOns[addOn.id];
-          })
+        addOns: vendorAddOns
+          .filter((addOn) => selectedAddOnIds.includes(addOn._id))
           .map((addOn) => addOn.name),
+        addonIds: selectedAddOnIds,
         setPrice: pricing.price,
         discount: pricing.discountPrice,
         priceVisibility: pricing.priceVisibility,
@@ -303,9 +229,12 @@ const BottleServiceManager = () => {
   useEffect(() => {
     const fetchDrinks = async () => {
       try {
-        const data = await clubService.getDrinks(vendor._id);
+        const [data, addOnList] = await Promise.all([
+          clubService.getDrinks(vendor._id),
+          addOnService.list({ appliesTo: 'drink' }),
+        ]);
         setDrinks(data.drinks);
-        console.log('Fetched drinks:', data);
+        setVendorAddOns(addOnList);
       } catch (error) {
         console.error('Error fetching drinks:', error);
       } finally {
@@ -712,33 +641,38 @@ const BottleServiceManager = () => {
       <div className="bg-white rounded-lg mt-26 shadow-sm p-4 sm:p-6">
         <h2 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4">Available Add-Ons</h2>
         <div className="grid sm:grid-cols-2 gap-3 sm:gap-4">
-          {addOnsList.map((addOn) => (
-            <div
-              key={addOn.id}
-              className="flex items-start justify-between p-3 sm:p-4 border border-gray-200 rounded-lg"
-            >
-              <div className="flex items-start gap-2 sm:gap-3 flex-1 min-w-0">
-                <div
-                  className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center ${addOn.color} flex-shrink-0`}
-                >
-                  {addOn.icon}
-                </div>
+          {vendorAddOns.length === 0 ? (
+            <p className="text-sm text-gray-500">
+              No add-ons yet — create them under Add-ons.
+            </p>
+          ) : (
+            vendorAddOns.map((addOn) => (
+              <div
+                key={addOn._id}
+                className="flex items-start justify-between p-3 sm:p-4 border border-gray-200 rounded-lg"
+              >
                 <div className="min-w-0 flex-1">
                   <h3 className="font-medium text-gray-900 text-xs sm:text-base">{addOn.name}</h3>
-                  <p className="text-xs text-gray-500 mt-1">{addOn.description}</p>
+                  <p className="text-xs text-gray-500 mt-1">₦{addOn.price.toLocaleString()}</p>
                 </div>
+                <label className="relative inline-flex items-center cursor-pointer flex-shrink-0 ml-2">
+                  <input
+                    type="checkbox"
+                    checked={selectedAddOnIds.includes(addOn._id)}
+                    onChange={(e) =>
+                      setSelectedAddOnIds(
+                        e.target.checked
+                          ? [...selectedAddOnIds, addOn._id]
+                          : selectedAddOnIds.filter((id) => id !== addOn._id)
+                      )
+                    }
+                    className="sr-only peer"
+                  />
+                  <div className="w-9 h-5 sm:w-11 sm:h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-teal-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 sm:after:h-5 sm:after:w-5 after:transition-all peer-checked:bg-teal-600"></div>
+                </label>
               </div>
-              <label className="relative inline-flex items-center cursor-pointer flex-shrink-0 ml-2">
-                <input
-                  type="checkbox"
-                  checked={addOns[addOn.id]}
-                  onChange={(e) => setAddOns({ ...addOns, [addOn.id]: e.target.checked })}
-                  className="sr-only peer"
-                />
-                <div className="w-9 h-5 sm:w-11 sm:h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-teal-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 sm:after:h-5 sm:after:w-5 after:transition-all peer-checked:bg-teal-600"></div>
-              </label>
-            </div>
-          ))}
+            ))
+          )}
         </div>
         <button className="mt-4 text-teal-600 font-medium text-xs sm:text-sm flex items-center gap-2 hover:text-teal-700">
           <Plus className="w-3 h-3 sm:w-4 sm:h-4" />

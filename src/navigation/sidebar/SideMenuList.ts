@@ -89,9 +89,31 @@ export const ClubList: SideMenuListConfig = {
       icon: CalendarCheck,
     },
     {
-      label: 'Drink Menu',
+      label: 'Drinks',
       path: '/dashboard/club/drinks',
       icon: UtensilsCrossed,
+      children: [
+        {
+          label: 'Drinks',
+          path: '/dashboard/club/drinks',
+          icon: UtensilsCrossed,
+        },
+        {
+          label: 'Categories',
+          path: '/dashboard/club/drinks/categories',
+          icon: LayoutGrid,
+        },
+        {
+          label: 'Bottle Sets',
+          path: '/dashboard/club/add-drinks',
+          icon: Boxes,
+        },
+      ],
+    },
+    {
+      label: 'Add-ons',
+      path: '/dashboard/club/addons',
+      icon: Boxes,
     },
     {
       label: 'Inventory',
@@ -124,6 +146,11 @@ export const ClubList: SideMenuListConfig = {
       label: 'Payments',
       path: '/dashboard/club/payments',
       icon: CreditCard,
+    },
+    {
+      label: 'Staff',
+      path: '/dashboard/club/staffs',
+      icon: Users,
     },
   ],
   bottomItems: [
@@ -184,6 +211,11 @@ export const HotelList: SideMenuListConfig = {
       path: '/dashboard/hotel/payments',
       icon: CreditCard,
     },
+    {
+      label: 'Staff',
+      path: '/dashboard/hotel/staffs',
+      icon: Users,
+    },
   ],
   bottomItems: [
     {
@@ -212,9 +244,43 @@ export const RestaurantList: SideMenuListConfig = {
       icon: CalendarCheck,
     },
     {
-      label: 'Menu Management',
+      label: 'Menu',
       path: '/dashboard/restaurant/menu',
       icon: UtensilsCrossed,
+      children: [
+        {
+          label: 'Dishes',
+          path: '/dashboard/restaurant/menu',
+          icon: UtensilsCrossed,
+        },
+        {
+          label: 'Categories',
+          path: '/dashboard/restaurant/menu/categories',
+          icon: LayoutGrid,
+        },
+      ],
+    },
+    {
+      label: 'Drinks',
+      path: '/dashboard/restaurant/menu/drinks',
+      icon: LayoutGrid,
+      children: [
+        {
+          label: 'Drinks',
+          path: '/dashboard/restaurant/menu/drinks',
+          icon: UtensilsCrossed,
+        },
+        {
+          label: 'Categories',
+          path: '/dashboard/restaurant/menu/drink-categories',
+          icon: LayoutGrid,
+        },
+      ],
+    },
+    {
+      label: 'Add-ons',
+      path: '/dashboard/restaurant/menu/addons',
+      icon: Boxes,
     },
     {
       label: 'Inventory',
@@ -247,6 +313,11 @@ export const RestaurantList: SideMenuListConfig = {
       label: 'Payments',
       path: '/dashboard/restaurant/payments',
       icon: CreditCard,
+    },
+    {
+      label: 'Staff',
+      path: '/dashboard/restaurant/staffs',
+      icon: Users,
     },
   ],
   bottomItems: [

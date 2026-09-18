@@ -1,6 +1,6 @@
-import { menuService } from '@/services/menu.service';
+import { catalogService } from '@/services/catalog.service';
 import { ChevronDown } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import UniversalLoader from '@/components/user/ui/LogoLoader';
 
 interface Category {
@@ -72,8 +72,16 @@ export default function RestaurantMenu({ id }: RestaurantMenuProps) {
 
   const fetchMenus = async () => {
     try {
-      const menus = await menuService.getMenuItems(id);
-      setMenuItems(menus.menuItems);
+      const dishes = await catalogService.getDishes(id);
+      setMenuItems(
+        dishes.map((dish) => ({
+          _id: dish._id,
+          name: dish.name,
+          category:
+            (typeof dish.categoryId === 'object' && dish.categoryId?.name) || '',
+          price: dish.discount && dish.discountPrice ? dish.discountPrice : dish.price,
+        }))
+      );
     } catch (err) {
       console.error(err);
     } finally {
@@ -85,32 +93,15 @@ export default function RestaurantMenu({ id }: RestaurantMenuProps) {
     fetchMenus();
   }, []);
 
-  const categories: Category[] = [
-    {
-      name: 'All',
-      category: 'All',
-    },
-    {
-      name: 'Starters',
-      category: 'Starters',
-    },
-    {
-      name: 'Main Course',
-      category: 'Main Dish ',
-    },
-    {
-      name: 'Appetizer',
-      category: 'Appetizer',
-    },
-    {
-      name: 'Dessert',
-      category: 'Dessert',
-    },
-    {
-      name: 'Drinks',
-      category: 'Drink',
-    },
-  ];
+  const categories: Category[] = useMemo(() => {
+    const names = Array.from(
+      new Set(menuItems.map((item) => item.category).filter(Boolean))
+    );
+    return [
+      { name: 'All', category: 'All' },
+      ...names.map((name) => ({ name, category: name })),
+    ];
+  }, [menuItems]);
   const filteredItems =
     activeCategory === 'All'
       ? menuItems

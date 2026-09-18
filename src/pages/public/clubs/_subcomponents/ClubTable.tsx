@@ -1,4 +1,3 @@
-import { menuService } from '@/services/menu.service';
 import { ChevronDown } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import UniversalLoader from '@/components/user/ui/LogoLoader';

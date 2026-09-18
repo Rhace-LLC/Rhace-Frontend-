@@ -6,7 +6,7 @@ import RestaurantImages from '@/components/user/ui/Image';
 import RestaurantInfo from './_subcomponents/RestaurantInfo';
 import MapComponent from '@/components/user/ui/mapComponent';
 import { Mail, MapPin, Phone, Star } from 'lucide-react';
-import { useParams } from 'react-router';
+import { Link, useParams } from 'react-router';
 // import { RestaurantData } from "@/lib/api";
 import { useEffect, useState } from 'react';
 import { userService } from '@/services/user.service';
@@ -145,6 +145,14 @@ const RestaurantsPage = () => {
               <RestaurantInfo data={restaurant} />
             </div>
 
+        <div className="mt-10 flex justify-end px-4 md:px-0">
+          <Link
+            to={`/order/${id}`}
+            className="rounded-xl border border-[#0A6C6D] px-4 py-2 text-sm font-medium text-[#0A6C6D] hover:bg-[#0A6C6D]/5"
+          >
+            Quick order
+          </Link>
+        </div>
         <MakeReservationSection vendorId={id!} vertical="restaurant" />
       </main>
       <div className="hidden md:block">

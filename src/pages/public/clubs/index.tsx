@@ -2,7 +2,7 @@ import { Mail, MapPin, Phone } from 'lucide-react';
 import MapComponent from '@/components/user/ui/mapComponent';
 import Images from '@/components/user/ui/Image';
 import Images2 from '@/components/user/ui/Image2';
-import { useParams } from 'react-router';
+import { Link, useParams } from 'react-router';
 import Footer from '@/navigation/user_layout/_sub_component/Footer';
 import ClubInfo from './_subcomponents/ClubInfo';
 import SaveCopy from '@/components/user/ui/SaveCopy';
@@ -113,6 +113,14 @@ const ClubPage = () => {
           </div>
         </div>
 
+        <div className="mt-10 flex justify-end px-4 md:px-0">
+          <Link
+            to={`/order/${id}`}
+            className="rounded-xl border border-[#0A6C6D] px-4 py-2 text-sm font-medium text-[#0A6C6D] hover:bg-[#0A6C6D]/5"
+          >
+            Quick order
+          </Link>
+        </div>
         <MakeReservationSection vendorId={id!} vertical="club" />
       </main>
       <div className="hidden md:block">

@@ -13,6 +13,11 @@ import VendorOtp from '@/pages/public/auth/vendor/otp';
 import VendorResetPassword from '@/pages/public/auth/vendor/reset-password';
 import VendorSignup from '@/pages/public/auth/vendor/signup';
 
+// Staff auth
+import StaffLogin from '@/pages/public/auth/staff/login';
+import StaffForgotPassword from '@/pages/public/auth/staff/forgot-password';
+import StaffResetPassword from '@/pages/public/auth/staff/reset-password';
+
 // Public pages
 import AboutRhace from '@/pages/public/about';
 import ClubPage from '@/pages/public/clubs';
@@ -32,7 +37,10 @@ import SearchPage from '@/pages/public/search';
 import Terms from '@/pages/public/terms';
 import VendornHomePage from '@/pages/public/partner';
 
+import AcceptInvitePage from '@/pages/vendor-staff/accept-invite';
+
 import PaystackCallback from '@/components/PaystackCallback';
+import QrRedirectPage from '@/pages/public/qr-redirect';
 
 export const publicRoutes: RouteObject[] = [
   // Home / Info Pages
@@ -76,6 +84,15 @@ export const publicRoutes: RouteObject[] = [
         path: 'admin',
         children: [{ path: 'login', element: <AdminLogin /> }],
       },
+      {
+        path: 'staff',
+        children: [
+          { index: true, element: <StaffLogin /> },
+          { path: 'login', element: <StaffLogin /> },
+          { path: 'forgot-password', element: <StaffForgotPassword /> },
+          { path: 'reset-password', element: <StaffResetPassword /> },
+        ],
+      },
     ],
   },
 
@@ -100,6 +117,10 @@ export const publicRoutes: RouteObject[] = [
 
   // Paystack Callback
   { path: '/paystack/callback', element: <PaystackCallback /> },
+  { path: '/q/:token', element: <QrRedirectPage /> },
+
+  // Staff invitation onboarding — must stay public: the invitee has no session yet.
+  { path: '/vendor-staff/accept-invite', element: <AcceptInvitePage /> },
 
   // 404
   { path: '*', element: <NotFound /> },

@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { ChevronRight, Plus, Settings2 } from 'lucide-react';
+import { ChevronRight, Plus, QrCode as QrCodeIcon, Settings2 } from 'lucide-react';
 import type { VerticalPlugin } from '../core/plugin';
 import {
   useCreateFloorPlan,
@@ -13,6 +13,14 @@ import { AddPhysicalUnitModal, type UnitPlacementInput } from './AddPhysicalUnit
 import { UnitManageModal } from './UnitManageModal';
 import type { InventoryBlueprint, Vertical } from '../domain/types';
 import { getBlueprintPricing } from '../domain/pricing';
+import { useQrToken } from '@/features/orders';
+import { QrCode } from '@/components/ui/qr-code';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import type { FloorPlanVertical, PhysicalUnitDto } from '@/types';
 
 interface BlueprintDetailViewProps {
@@ -25,6 +33,17 @@ export function BlueprintDetailView({ plugin, blueprint, onBack }: BlueprintDeta
   const vertical = plugin.id as Vertical;
   const pricing = blueprint ? getBlueprintPricing(blueprint) : null;
   const [manageUnitId, setManageUnitId] = useState<string | null>(null);
+  const [qrToken, setQrToken] = useState<string | null>(null);
+  const qrMutation = useQrToken();
+
+  const handleShowQr = async (unitId: string) => {
+    try {
+      const result = await qrMutation.mutateAsync(unitId);
+      setQrToken(result.token);
+    } catch {
+      setQrToken(null);
+    }
+  };
 
   const plansQuery = useFloorPlans(vertical);
   const planId = plansQuery.data?.items?.[0]?._id;
@@ -247,6 +266,13 @@ export function BlueprintDetailView({ plugin, blueprint, onBack }: BlueprintDeta
                         >
                           <Settings2 size={13} /> Manage
                         </button>
+                        <button
+                          onClick={() => handleShowQr(unit._id)}
+                          disabled={qrMutation.isPending}
+                          className="mt-2 flex w-full items-center justify-center gap-1 rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                        >
+                          <QrCodeIcon size={13} /> Quick-order QR
+                        </button>
                       </article>
                     );
                   })}
@@ -277,6 +303,22 @@ export function BlueprintDetailView({ plugin, blueprint, onBack }: BlueprintDeta
         onClose={() => setAddUnitOpen(false)}
         onPlace={handlePlaceUnit}
       />
+
+      <Dialog open={Boolean(qrToken)} onOpenChange={(open) => !open && setQrToken(null)}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Table QR — quick order</DialogTitle>
+          </DialogHeader>
+          {qrToken && (
+            <div className="flex flex-col items-center gap-3">
+              <QrCode value={`${window.location.origin}/q/${qrToken}`} size={200} />
+              <p className="max-w-[240px] break-all text-center text-[11px] text-gray-400">
+                {`${window.location.origin}/q/${qrToken}`}
+              </p>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

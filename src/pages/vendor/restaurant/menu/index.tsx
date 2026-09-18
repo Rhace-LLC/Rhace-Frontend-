@@ -88,7 +88,7 @@ import { Switch } from '@/components/ui/switch';
 import type { RootState } from '@/redux/store';
 import UniversalLoader from '@/components/user/ui/LogoLoader';
 
-const categories = ['All Menu', 'All Menu Items'];
+const categories = ['All Menu Items'];
 
 interface ShowPopupState {
   display: boolean;
@@ -101,7 +101,7 @@ const MenuDashboard = () => {
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>({});
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
-  const [activeCategory, setActiveCategory] = useState('All Menu');
+  const [activeCategory, setActiveCategory] = useState('All Menu Items');
   const [menus, setMenus] = useState<any[]>([]);
   const [menuItems, setMenuItems] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -408,9 +408,7 @@ const MenuDashboard = () => {
     {
       id: 'actions',
       enableHiding: false,
-      cell: () => {
-        // const payment = row.original
-
+      cell: ({ row }) => {
         return (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -420,35 +418,19 @@ const MenuDashboard = () => {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              {/* <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(payment.id)}
-            >
-              Copy payment ID
-            </DropdownMenuItem> */}
-              <DropdownMenuItem>
-                <Eye2 /> View Reservation
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Pencil /> Edit Reservation
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Phone /> Contact Customer
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Printer /> Print Receipt
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <CheckCircle /> Mark as Completed
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <CheckCircle /> Mark as No-Show
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Copy /> Dupllicate Reservation
+              <DropdownMenuItem
+                onClick={() =>
+                  navigate(`/dashboard/restaurant/menu/items/${row.original._id}/edit`)
+                }
+              >
+                <Pencil /> Edit dish
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-[#EF4444]">
-                <XCircle /> Cancel Reservation
+              <DropdownMenuItem
+                className="text-[#EF4444]"
+                onClick={() => handleDelete(row.original._id, 'item')}
+              >
+                <XCircle /> Delete dish
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -529,19 +511,13 @@ const MenuDashboard = () => {
     <>
           <div className="md:p-6 md:mb-12 space-y-6">
             <div className="md:flex hidden justify-between items-center">
-              <h2 className="text-[#111827] font-semibold">Menu Management</h2>
+              <h2 className="text-[#111827] font-semibold">Dishes</h2>
               <div className="flex gap-6">
                 <DashboardButton variant="secondary" text="Export" icon={<Export />} />
                 <DashboardButton
                   onClick={() => navigate('/dashboard/restaurant/menu/item/new')}
-                  variant="secondary"
-                  text="Add Menu Item"
-                  icon={<Add fill="#000" />}
-                />
-                <DashboardButton
-                  onClick={() => navigate('/dashboard/restaurant/menu/new')}
                   variant="primary"
-                  text="Add Menu"
+                  text="Add Dish"
                   icon={<Add fill="#fff" />}
                 />
               </div>
