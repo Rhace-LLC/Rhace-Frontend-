@@ -54,7 +54,7 @@ export default function RestauranAvalableSlot({
             <button
               key={slot}
               className={`
-                flex items-center gap-2 px-3 py-2 rounded-xl border-2 transition-all duration-200 bg-white border-[#E5E7EB] text-[#0A6C6D] hover:bg-slate-50 hover:border-[#0A6C6D]
+                flex items-center gap-2 px-3 py-2 rounded-res-sm border-2 transition-all duration-200 bg-res-card border-res-line text-res-brand hover:bg-slate-50 hover:border-res-brand
               `}
             >
               <Table className={undefined} />

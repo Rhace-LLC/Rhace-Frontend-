@@ -30,7 +30,7 @@ const CategoryFilter = ({ categories, activeCategory, onCategoryChange }: Catego
           onClick={() => onCategoryChange(category.category)}
           className={`px-4 py-2 rounded-full min-w-max text-sm cursor-pointer ${
             activeCategory === category.category
-              ? 'bg-[#0A6C6D] text-white'
+              ? 'bg-res-brand text-white'
               : 'bg-transparent text-gray-700'
           }`}
         >
@@ -49,7 +49,7 @@ interface MenuItemCardProps {
 
 const MenuItemCard = ({ type, name, price }: MenuItemCardProps) => {
   return (
-    <div className="bg-white p-3 rounded-xl border w-full flex flex-col justify-between hover:shadow-md">
+    <div className="bg-res-card p-3 rounded-res-sm shadow-res-low w-full flex flex-col justify-between hover:shadow-res-medium">
       <div>
         <p className="font-semibold uppercase text-xs text-gray-500 mb-2">{type}</p>
         <h3 className="font-bold text-gray-800 text-sm">{name}</h3>
@@ -153,7 +153,7 @@ export default function RestaurantMenu({ id }: RestaurantMenuProps) {
           <div className="mt-8">
             <button
               onClick={handleShowMore}
-              className="text-[#0A6C6D] hover:underline text-sm cursor-pointer flex items-center gap-2"
+              className="text-res-brand hover:underline text-sm cursor-pointer flex items-center gap-2"
             >
               Show more <ChevronDown className="h-4 w-4" />
             </button>

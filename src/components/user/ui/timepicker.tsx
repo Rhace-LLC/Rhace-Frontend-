@@ -53,7 +53,7 @@ export function TimePicker({
           <Button
             variant="outline"
             className={cn(
-              'w-full justify-between text-left font-normal bg-[#F9FAFB] border border-[#E5E7EB] items-center rounded-xl px-6! min-w-[150px] flex h-[60px]',
+              'w-full justify-between text-left font-normal bg-res-surface border border-res-line items-center rounded-res-sm px-6! min-w-[150px] flex h-[60px]',
               !value && 'text-muted-foreground',
               className
             )}

@@ -18,7 +18,7 @@ export function MakeReservationSection({ vendorId, vertical }: MakeReservationSe
   return (
     <section className="mt-10 md:mt-14">
       <div className="mb-5">
-        <h2 className="text-2xl font-semibold text-[#111827]">Make reservation</h2>
+        <h2 className="type-res-h2 text-res-ink">Make reservation</h2>
         <p className="mt-1 text-sm text-gray-500">
           Choose a {vertical === 'hotel' ? 'room' : 'table'} and reserve in a few steps.
         </p>
@@ -27,7 +27,7 @@ export function MakeReservationSection({ vendorId, vertical }: MakeReservationSe
       {query.isLoading ? (
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {[0, 1, 2].map((index) => (
-            <div key={index} className="h-80 animate-pulse rounded-2xl bg-gray-100" />
+            <div key={index} className="h-80 animate-pulse rounded-res-md bg-gray-100" />
           ))}
         </div>
       ) : query.isError ? (
@@ -35,7 +35,7 @@ export function MakeReservationSection({ vendorId, vertical }: MakeReservationSe
           Couldn’t load reservations. Please try again.
         </div>
       ) : blueprints.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-gray-300 bg-white py-12 text-center text-sm text-gray-500">
+        <div className="rounded-res-md border border-dashed border-gray-300 bg-res-card py-12 text-center text-sm text-gray-500">
           No reservations available for this venue yet.
         </div>
       ) : (

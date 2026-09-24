@@ -35,7 +35,7 @@ const ClubPage = () => {
   if (isLoading) return <UniversalLoader fullscreen type="vendor-page" />;
 
   return (
-    <>
+    <div className="bg-white">
       <div className="hidden md:block">
         <Header />
       </div>
@@ -53,7 +53,7 @@ const ClubPage = () => {
                 <div className="space-y-2">
                   <div className="flex flex-col md:flex-row md:justify-between md:items-cente w-full gap-4">
                     <div className="flex items-center justify-between md:justify-start w-full gap-4 px-4 md:px-0 pt-2 md:pt-0 md:mt-0">
-                      <h1 className="text-2xl text-[#111827] font-semibold truncate max-w-[65%] md:max-w-none">
+                      <h1 className="type-res-h1 text-res-ink truncate max-w-[65%] md:max-w-none">
                         {club.businessName}{' '}
                       </h1>{' '}
                       <span className="px-2 py-0.5 rounded-full border-2 border-[#37703F]  text-xs text-[#37703F]">
@@ -76,12 +76,12 @@ const ClubPage = () => {
             </div>
           </div>
           <div className="space-y-8 px-4 md:px-0">
-            <div className="rounded-2xl bg-[#E7F0F0] border border-[#E5E7EB] p-1">
+            <div className="rounded-res-md bg-res-secondary shadow-res-low p-1">
               <MapComponent address={club.address} />
             </div>
-            <div className="max-w-sm w-full p-4 rounded-2xl bg-white space-y-4 text-sm text-gray-800">
+            <div className="max-w-sm w-full p-4 rounded-res-md bg-res-card shadow-res-low space-y-4 text-sm text-gray-800">
               <div>
-                <h3 className="font-semibold text-gray-900 mb-1">Location</h3>
+                <h3 className="type-res-h3 text-res-ink mb-1">Location</h3>
                 <div className="flex items-start gap-2">
                   <MapPin className="w-5 h-5 text-black mt-1" />
                   <p>{club.address}</p>
@@ -89,7 +89,7 @@ const ClubPage = () => {
               </div>
 
               <div>
-                <h3 className="font-semibold w-full text-gray-900 mb-1">Contact Information</h3>
+                <h3 className="type-res-h3 text-res-ink w-full mb-1">Contact Information</h3>
                 <div className="flex items-center gap-2">
                   <Phone className="w-5 h-5 text-black mt-1" />
                   <a href={`tel:${club.phone}`} className="hover:underline">
@@ -105,7 +105,7 @@ const ClubPage = () => {
               </div>
 
               <div>
-                <a href="#" className="text-green-700 font-medium underline hover:text-green-900">
+                <a href="#" className="text-res-accent font-medium underline hover:text-res-brand-hover">
                   Club website
                 </a>
               </div>
@@ -116,7 +116,7 @@ const ClubPage = () => {
         <div className="mt-10 flex justify-end px-4 md:px-0">
           <Link
             to={`/order/${id}`}
-            className="rounded-xl border border-[#0A6C6D] px-4 py-2 text-sm font-medium text-[#0A6C6D] hover:bg-[#0A6C6D]/5"
+            className="rounded-res-sm border border-res-brand px-4 py-2 text-sm font-medium text-res-brand hover:bg-res-brand/5"
           >
             Quick order
           </Link>
@@ -126,7 +126,7 @@ const ClubPage = () => {
       <div className="hidden md:block">
         <Footer />
       </div>
-    </>
+    </div>
   );
 };
 

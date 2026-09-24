@@ -19,7 +19,7 @@ export function BlueprintCard({ blueprint, vertical, vendorId }: BlueprintCardPr
   const pricing = getBlueprintPricing(blueprint);
 
   return (
-    <article className="group flex flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-lg">
+    <article className="group flex flex-col overflow-hidden rounded-res-md bg-res-card shadow-res-low transition-all hover:-translate-y-0.5 hover:shadow-res-high">
       {blueprint.images[0] ? (
         <img
           src={blueprint.images[0]}
@@ -28,7 +28,7 @@ export function BlueprintCard({ blueprint, vertical, vendorId }: BlueprintCardPr
           className="h-44 w-full object-cover"
         />
       ) : (
-        <div className="flex h-44 w-full items-center justify-center bg-[#0A6C6D] text-lg font-semibold text-white">
+        <div className="flex h-44 w-full items-center justify-center bg-res-brand text-lg font-semibold text-white">
           {blueprint.type}
         </div>
       )}
@@ -77,7 +77,7 @@ export function BlueprintCard({ blueprint, vertical, vendorId }: BlueprintCardPr
           </div>
           <Link
             to={reservePath}
-            className="rounded-xl bg-[#0A6C6D] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#0A6C6D]/90"
+            className="rounded-res-sm bg-res-brand px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-res-brand-hover"
           >
             Reserve
           </Link>

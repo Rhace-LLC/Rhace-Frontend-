@@ -61,55 +61,73 @@ const RestaurantsPage = () => {
   if (isLoading) return <UniversalLoader fullscreen type="vendor-page" />;
 
   return (
-    <>
+    <div className="bg-white">
       <div className="hidden md:block">
         <Header />
       </div>
-      <main className="mx-auto md:mt-[85px] pb-20 md:mb-4 md:py-8 max-w-7xl md:px-6 lg:px-8">
-        <div className="flex flex-col md:flex-row gap-8 w-full">
-          <div className="w-full space-y-4 md:space-y-8">
-            <div className="col-span-2">
-              <div className="w-full space-y-6">
-                <RestaurantImages
-                  images={restaurant?.profileImages ?? []}
-                  name={restaurant.businessName}
-                />
-                <RestaurantImages2
-                  vendor={restaurant}
-                  images={restaurant?.profileImages ?? []}
-                  name={restaurant.businessName}
-                />
-                <div className="space-y-2">
-                  <div className="flex flex-col md:flex-row md:justify-between md:items-cente w-full gap-4">
-                    <div className="flex justify-between items-center pt-2 md:pt-0 px-4 md:px-0">
-                      <h1 className="text-2xl text-[#111827] font-semibold">
-                        {restaurant.businessName}{' '}
-                      </h1>{' '}
-                      <span className="px-2 py-0.5 rounded-full border border-[#37703F] bg-[#D1FAE5] text-xs text-[#37703F]">
-                        {' '}
-                        Open
-                      </span>
-                    </div>
-                    <RestaurantSaveCopy type="restaurants" id={id} vendor={restaurant} />
-                  </div>
-                  <div className="md:flex hidden gap-1 items-center text-xs">
-                    <StarRating size={16} rating={Number(restaurant.rating)} readOnly />
-                    <span className="font-semibold">{restaurant.rating.toFixed(1)}</span>
-                    <span className="text-gray-600">
-                      ({restaurant.reviews.toLocaleString()} reviews)
-                    </span>
-                  </div>
-                </div>
-              </div>
+      <main className="mx-auto md:mt-[85px] pb-20 md:mb-4 md:py-8 max-w-7xl md:px-6 lg:px-8 space-y-8 md:space-y-10">
+        {/* Row 1 — name / rating */}
+        <div className="space-y-2">
+          <div className="flex flex-col md:flex-row md:justify-between md:items-cente w-full gap-4">
+            <div className="flex justify-between items-center pt-2 md:pt-0 px-4 md:px-0">
+              <h1 className="type-res-h1 text-res-ink">
+                {restaurant.businessName}{' '}
+              </h1>{' '}
+              <span className="px-2 py-0.5 rounded-full border border-[#37703F] bg-[#D1FAE5] text-xs text-[#37703F]">
+                {' '}
+                Open
+              </span>
             </div>
+            <RestaurantSaveCopy type="restaurants" id={id} vendor={restaurant} />
           </div>
-          <div className="space-y-8 px-4 md:px-0">
-            <div className="rounded-2xl bg-[#E7F0F0] border border-[#E5E7EB] p-1">
-              <MapComponent address={restaurant.address} />
-            </div>
-            <div className="max-w-sm w-full p-4 rounded-2xl bg-white space-y-4 text-sm text-gray-800">
+          <div className="flex gap-1 items-center text-xs px-4 md:px-0">
+            <StarRating size={16} rating={Number(restaurant.rating)} readOnly />
+            <span className="font-semibold">{restaurant.rating.toFixed(1)}</span>
+            <span className="text-gray-600">
+              ({restaurant.reviews.toLocaleString()} reviews)
+            </span>
+          </div>
+        </div>
+
+        {/* Row 2 — bento images */}
+        <div className="w-full space-y-6">
+          <RestaurantImages
+            images={restaurant?.profileImages ?? []}
+            name={restaurant.businessName}
+          />
+          <RestaurantImages2
+            vendor={restaurant}
+            images={restaurant?.profileImages ?? []}
+            name={restaurant.businessName}
+          />
+        </div>
+
+        {/* Row 3 — tabs (overview / menu / reviews) */}
+        <div>
+          <RestaurantInfo data={restaurant} />
+        </div>
+
+        {/* Row 4 — reservations */}
+        <div>
+          <div className="mb-4 flex justify-end px-4 md:px-0">
+            <Link
+              to={`/order/${id}`}
+              className="rounded-res-sm border border-res-brand px-4 py-2 text-sm font-medium text-res-brand hover:bg-res-brand/5"
+            >
+              Quick order
+            </Link>
+          </div>
+          <MakeReservationSection vendorId={id!} vertical="restaurant" />
+        </div>
+
+        {/* Row 5 — map / contact information */}
+        <div className="flex flex-col md:flex-row gap-6 px-4 md:px-0">
+          <div className="flex-1 rounded-res-md bg-res-secondary shadow-res-low p-1">
+            <MapComponent address={restaurant.address} />
+          </div>
+          <div className="w-full md:w-[340px] shrink-0 p-4 rounded-res-md bg-res-card shadow-res-low space-y-4 text-sm text-gray-800">
               <div>
-                <h3 className="font-semibold text-gray-900 mb-1">Location</h3>
+                <h3 className="type-res-h3 text-res-ink mb-1">Location</h3>
                 <div className="flex items-start gap-2">
                   <MapPin className="w-5 h-5 text-black mt-1" />
                   <p>{restaurant.address}</p>
@@ -117,7 +135,7 @@ const RestaurantsPage = () => {
               </div>
 
               <div>
-                <h3 className="font-semibold w-full text-gray-900 mb-1">Contact Information</h3>
+                <h3 className="type-res-h3 text-res-ink w-full mb-1">Contact Information</h3>
                 <div className="flex items-center gap-2">
                   <Phone className="w-5 h-5 text-black mt-1" />
                   <a href={`tel:${restaurant.phone}`} className="hover:underline">
@@ -133,32 +151,18 @@ const RestaurantsPage = () => {
               </div>
 
               <div>
-                <a href="#" className="text-green-700 font-medium underline hover:text-green-900">
+                <a href="#" className="text-res-accent font-medium underline hover:text-res-brand-hover">
                   Restaurant website
                 </a>
               </div>
             </div>
           </div>
         </div>
-        
-            <div className="col-span-2">
-              <RestaurantInfo data={restaurant} />
-            </div>
-
-        <div className="mt-10 flex justify-end px-4 md:px-0">
-          <Link
-            to={`/order/${id}`}
-            className="rounded-xl border border-[#0A6C6D] px-4 py-2 text-sm font-medium text-[#0A6C6D] hover:bg-[#0A6C6D]/5"
-          >
-            Quick order
-          </Link>
-        </div>
-        <MakeReservationSection vendorId={id!} vertical="restaurant" />
       </main>
       <div className="hidden md:block">
         <Footer />
       </div>
-    </>
+    </div>
   );
 };
 

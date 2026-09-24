@@ -125,7 +125,7 @@ export function FavoriteButton2({ vendor, className = '' }: FavoriteButtonProps)
   return (
     <motion.button
       onClick={handleClick}
-      className={`relative transition-colors size-10 rounded-xl bg-white text-black hover:bg-gray-50 flex justify-center border border-[#E5E7EB] items-center gap-2 ${className}`}
+      className={`relative transition-colors size-10 rounded-xl bg-white text-black hover:bg-gray-50 flex justify-center border border-res-line items-center gap-2 ${className}`}
       whileTap={{ scale: 0.85 }}
       aria-label={isFav ? 'Remove from favorites' : 'Add to favorites'}
     >
@@ -142,7 +142,7 @@ export function FavoriteButton2({ vendor, className = '' }: FavoriteButtonProps)
           height="20"
           viewBox="0 0 20 20"
           className={`w-6 h-6 transition-all duration-200 ${
-            isFav ? 'fill-red-500 text-red-500' : 'text-[#111827] hover:text-red-500'
+            isFav ? 'fill-red-500 text-red-500' : 'text-res-ink hover:text-red-500'
           }`}
           fill="currentColor"
           xmlns="http://www.w3.org/2000/svg"
@@ -230,7 +230,7 @@ export function FavoriteButton3({ vendor, className = '' }: FavoriteButtonProps)
         transition={{ duration: 0.3 }}
       >
         <Heart
-          className={`w-6 h-6 transition-all duration-200 text-[#111827] ${
+          className={`w-6 h-6 transition-all duration-200 text-res-ink ${
             isFav ? 'fill-red-500' : ' hover:text-red-500'
           }`}
         />

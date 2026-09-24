@@ -54,7 +54,7 @@ const HotelsPage = () => {
   if (isLoading || !rooms) return <UniversalLoader fullscreen type="vendor-page" />;
 
   return (
-    <>
+    <div className="bg-white">
       <div className="hidden md:block">
         <Header />
       </div>
@@ -74,7 +74,7 @@ const HotelsPage = () => {
                 <div className="space-y-2">
                   <div className="flex flex-col md:flex-row md:justify-between md:items-cente w-full gap-4">
                     <div className="flex justify-between gap-2 items-center pt-2 md:pt-0 px-4 md:px-0">
-                      <h1 className="text-2xl text-[#111827] font-semibold">
+                      <h1 className="type-res-h1 text-res-ink">
                         {hotel.businessName}{' '}
                       </h1>{' '}
                       <span className="px-2 py-0.5 rounded-full border border-[#37703F] bg-[#D1FAE5] text-xs text-[#37703F]">
@@ -110,12 +110,12 @@ const HotelsPage = () => {
 
           {activeTab !== 'rooms' && (
             <div className="space-y-8 px-4 md:px-0">
-              <div className="rounded-2xl bg-[#E7F0F0] border border-[#E5E7EB] p-1">
+              <div className="rounded-res-md bg-res-secondary shadow-res-low p-1">
                 <MapComponent address={hotel.address} />
               </div>
-              <div className="max-w-sm w-full p-4 rounded-2xl bg-white space-y-4 text-sm text-gray-800">
+              <div className="max-w-sm w-full p-4 rounded-res-md bg-res-card shadow-res-low space-y-4 text-sm text-gray-800">
                 <div>
-                  <h3 className="font-semibold text-gray-900 mb-1">Location</h3>
+                  <h3 className="type-res-h3 text-res-ink mb-1">Location</h3>
                   <div className="flex items-start gap-2">
                     <MapPin className="w-5 h-5 text-black mt-1" />
                     <p>{hotel.address}</p>
@@ -123,7 +123,7 @@ const HotelsPage = () => {
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-gray-900 mb-1">Contact Information</h3>
+                  <h3 className="type-res-h3 text-res-ink mb-1">Contact Information</h3>
                   <div className="flex items-center gap-2">
                     <Phone className="w-5 h-5 text-black mt-1" />
                     <a href={`tel:${hotel.phone}`} className="hover:underline">
@@ -141,7 +141,7 @@ const HotelsPage = () => {
                 <div>
                   <a
                     href="#"
-                    className="text-green-700 font-medium underline hover:text-green-900"
+                    className="text-res-accent font-medium underline hover:text-res-brand-hover"
                   >
                     Hotel website
                   </a>
@@ -156,7 +156,7 @@ const HotelsPage = () => {
       <div className="hidden md:block">
         <Footer />
       </div>
-    </>
+    </div>
   );
 };
 

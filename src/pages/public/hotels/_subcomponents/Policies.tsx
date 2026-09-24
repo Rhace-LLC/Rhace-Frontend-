@@ -7,11 +7,11 @@ interface PoliciesProps {
 const Policies = ({ data }: PoliciesProps) => {
   return (
     <div>
-      <h2 className="text-sm sm:text-lg  font-semibold mb-4">Hotel Policies</h2>
+      <h2 className="type-res-h3 text-res-ink sm:text-lg mb-4">Hotel Policies</h2>
       {data ? (
         <div className="space-y-4">
           {Object.entries(data).map(([key, value]) => (
-            <div key={key} className="border-b flex gap-1 items-cente pb-3">
+            <div key={key} className="border-res-line border-b flex gap-1 items-cente pb-3">
               <h3 className="font-medium text-gray-800 capitalize text-sm">
                 {key.replace('_', ' ')}.
               </h3>

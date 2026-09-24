@@ -14,7 +14,7 @@ interface TimeSlotPickerProps {
 }
 
 const CARD_BASE =
-  'relative flex min-h-[64px] w-full flex-col justify-center rounded-xl px-3 py-2 text-left text-xs transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#004d43]/30';
+  'relative flex min-h-[64px] w-full flex-col justify-center rounded-xl px-3 py-2 text-left text-xs transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-res-brand-active/30';
 
 function isDisabled(slot: DaySlotDto): boolean {
   return slot.state === 'past' || slot.state === 'full';
@@ -22,7 +22,7 @@ function isDisabled(slot: DaySlotDto): boolean {
 
 function cardClass(slot: DaySlotDto, selected: boolean): string {
   if (selected) {
-    return `${CARD_BASE} border-2 border-[#004d43] bg-[#004d43] text-white shadow-md ring-2 ring-[#004d43]/20`;
+    return `${CARD_BASE} border-2 border-res-brand-active bg-res-brand-active text-white shadow-md ring-2 ring-res-brand-active/20`;
   }
   if (slot.state === 'past') {
     return `${CARD_BASE} cursor-not-allowed border border-dashed border-gray-200 bg-gray-50 text-gray-300`;
@@ -30,7 +30,7 @@ function cardClass(slot: DaySlotDto, selected: boolean): string {
   if (slot.state === 'full') {
     return `${CARD_BASE} cursor-not-allowed border border-rose-100 bg-rose-50/50 text-rose-400 opacity-75`;
   }
-  return `${CARD_BASE} cursor-pointer border border-gray-200 bg-white text-gray-800 hover:border-[#004d43] hover:bg-[#004d43]/5`;
+  return `${CARD_BASE} cursor-pointer border border-gray-200 bg-white text-gray-800 hover:border-res-brand-active hover:bg-res-brand-active/5`;
 }
 
 /** "8:00 AM – 9:00 AM" → "8:00 AM". */
@@ -134,7 +134,7 @@ export function TimeSlotPicker({
                   onClick={() => setPeriod(id)}
                   className={`rounded-full border px-3 py-1 text-[11px] font-medium transition-colors ${
                     period === id
-                      ? 'border-[#004d43] bg-[#004d43]/5 text-[#004d43]'
+                      ? 'border-res-brand-active bg-res-brand-active/5 text-res-brand-active'
                       : 'border-gray-200 text-gray-600 hover:border-gray-300'
                   }`}
                 >

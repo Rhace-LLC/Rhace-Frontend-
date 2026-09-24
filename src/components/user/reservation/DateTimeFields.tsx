@@ -26,7 +26,7 @@ interface DateTimeFieldsProps {
 }
 
 const inputClass =
-  'w-full rounded-xl border border-[#E5E7EB] bg-[#F9FAFB] px-3 py-2 text-sm text-gray-800 focus:border-[#0A6C6D] focus:outline-none';
+  'w-full rounded-res-sm border border-res-line bg-res-surface px-3 py-2 text-sm text-gray-800 focus:border-res-brand focus:outline-none';
 
 function localToIso(date: string, time: string): string | undefined {
   if (!date || !time) return undefined;

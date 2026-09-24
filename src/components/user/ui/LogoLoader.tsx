@@ -261,7 +261,7 @@ export function UniversalLoader({ fullscreen = false, size = 48, type = 'default
               {/* Right column */}
               <div className="space-y-8 px-4 md:px-0 md:w-[340px] flex-shrink-0">
                 {/* Booking card */}
-                <div className="hidden md:block p-4 rounded-2xl bg-[#E7F0F0] border border-[#E5E7EB] space-y-4">
+                <div className="hidden md:block p-4 rounded-res-md bg-res-secondary shadow-res-low space-y-4">
                   <Sk className="h-6 w-40 rounded-lg" />
                   <div className="space-y-3">
                     {Array.from({ length: 3 }).map((_, i) => (
@@ -275,7 +275,7 @@ export function UniversalLoader({ fullscreen = false, size = 48, type = 'default
                 <Sk className="h-48 w-full rounded-2xl" />
 
                 {/* Contact card */}
-                <div className="rounded-2xl bg-white border border-[#E5E7EB] p-4 space-y-4">
+                <div className="rounded-res-md bg-res-card shadow-res-low p-4 space-y-4">
                   <div className="space-y-2">
                     <Sk className="h-4 w-24 rounded" />
                     <div className="flex gap-2 items-center">
