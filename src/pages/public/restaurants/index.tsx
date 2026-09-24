@@ -66,10 +66,10 @@ const RestaurantsPage = () => {
         <Header />
       </div>
       <main className="mx-auto md:mt-[85px] pb-20 md:mb-4 md:py-8 max-w-7xl md:px-6 lg:px-8 space-y-8 md:space-y-10">
-        {/* Row 1 — name / rating */}
-        <div className="space-y-2">
-          <div className="flex flex-col md:flex-row md:justify-between md:items-cente w-full gap-4">
-            <div className="flex justify-between items-center pt-2 md:pt-0 px-4 md:px-0">
+        {/* Row 1 — name / rating (LHS) + share-save & location-contact (RHS) */}
+        <div className="flex flex-col md:flex-row md:justify-between gap-4 px-4 md:px-0">
+          <div className="space-y-2">
+            <div className="flex items-center gap-3 pt-2 md:pt-0">
               <h1 className="type-res-h1 text-res-ink">
                 {restaurant.businessName}{' '}
               </h1>{' '}
@@ -78,14 +78,41 @@ const RestaurantsPage = () => {
                 Open
               </span>
             </div>
-            <RestaurantSaveCopy type="restaurants" id={id} vendor={restaurant} />
+            <div className="flex gap-1 items-center text-xs">
+              <StarRating size={16} rating={Number(restaurant.rating)} readOnly />
+              <span className="font-semibold">{restaurant.rating.toFixed(1)}</span>
+              <span className="text-gray-600">
+                ({restaurant.reviews.toLocaleString()} reviews)
+              </span>
+            </div>
+            <div className="mt-2">
+              <RestaurantSaveCopy type="restaurants" id={id} vendor={restaurant} />
+            </div>
           </div>
-          <div className="flex gap-1 items-center text-xs px-4 md:px-0">
-            <StarRating size={16} rating={Number(restaurant.rating)} readOnly />
-            <span className="font-semibold">{restaurant.rating.toFixed(1)}</span>
-            <span className="text-gray-600">
-              ({restaurant.reviews.toLocaleString()} reviews)
-            </span>
+          <div className="space-y-3 md:w-[320px] md:shrink-0">
+            <div className="text-sm text-gray-800 space-y-2">
+              <div className="flex items-start gap-2">
+                <MapPin className="w-4 h-4 text-black mt-0.5 shrink-0" />
+                <p>{restaurant.address}</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Phone className="w-4 h-4 text-black shrink-0" />
+                <a href={`tel:${restaurant.phone}`} className="hover:underline">
+                  {restaurant.phone}
+                </a>
+              </div>
+              <div className="flex items-center gap-2">
+                <Mail className="w-4 h-4 text-black shrink-0" />
+                <a href={`mailto:${restaurant.email}`} className="hover:underline">
+                  {restaurant.email}
+                </a>
+              </div>
+              <div>
+                <a href="#" className="text-res-accent font-medium underline hover:text-res-brand-hover">
+                  Restaurant website
+                </a>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -120,42 +147,10 @@ const RestaurantsPage = () => {
           <MakeReservationSection vendorId={id!} vertical="restaurant" />
         </div>
 
-        {/* Row 5 — map / contact information */}
-        <div className="flex flex-col md:flex-row gap-6 px-4 md:px-0">
-          <div className="flex-1 rounded-res-md bg-res-secondary shadow-res-low p-1">
+        {/* Row 5 — map */}
+        <div className="px-4 md:px-0">
+          <div className="rounded-res-md bg-res-secondary shadow-res-low p-1">
             <MapComponent address={restaurant.address} />
-          </div>
-          <div className="w-full md:w-[340px] shrink-0 p-4 rounded-res-md bg-res-card shadow-res-low space-y-4 text-sm text-gray-800">
-              <div>
-                <h3 className="type-res-h3 text-res-ink mb-1">Location</h3>
-                <div className="flex items-start gap-2">
-                  <MapPin className="w-5 h-5 text-black mt-1" />
-                  <p>{restaurant.address}</p>
-                </div>
-              </div>
-
-              <div>
-                <h3 className="type-res-h3 text-res-ink w-full mb-1">Contact Information</h3>
-                <div className="flex items-center gap-2">
-                  <Phone className="w-5 h-5 text-black mt-1" />
-                  <a href={`tel:${restaurant.phone}`} className="hover:underline">
-                    {restaurant.phone}
-                  </a>
-                </div>
-                <div className="flex items-center gap-2 mt-2">
-                  <Mail className="w-5 h-5 text-black mt-1" />
-                  <a href={`mailto:${restaurant.email}`} className="hover:underline">
-                    {restaurant.email}
-                  </a>
-                </div>
-              </div>
-
-              <div>
-                <a href="#" className="text-res-accent font-medium underline hover:text-res-brand-hover">
-                  Restaurant website
-                </a>
-              </div>
-            </div>
           </div>
         </div>
       </main>
