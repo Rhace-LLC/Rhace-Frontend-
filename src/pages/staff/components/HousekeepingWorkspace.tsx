@@ -13,13 +13,19 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useAuth } from '@/contexts/AuthContext';
-import { staffService, type StaffAssignmentDto } from '@/services/staff.service';
+import {
+  staffService,
+  assignmentUnit,
+  assignmentUnitId,
+  type StaffAssignmentDto,
+} from '@/services/staff.service';
 import { floorPlanService } from '@/services/floorPlan.service';
 import { physicalUnitService } from '@/services/physicalUnit.service';
 import type { FloorPlanDto, FloorPlanLayoutDto, PhysicalUnitDto } from '@/types';
 import type { StaffActivityDto } from '@/services/staff.service';
 import { staffRoleLabel } from '../roles';
 import RoomGrid from './RoomGrid';
+import MyStationsCard from './MyStationsCard';
 
 /** Housekeeping-only transitions; a safe subset of the hotel state machine. */
 const HK_NAV = {
@@ -162,18 +168,23 @@ export default function HousekeepingWorkspace() {
   const enrichAssigned = useCallback(
     (assign: StaffAssignmentDto, units: readonly PhysicalUnitDto[]): AssignedRoom | null => {
       if (assign.type !== 'room') return null;
-      const unit = (units.find((u) => u._id === assign.refId)) ?? null;
-      if (!unit) return null;
+      const refId = assignmentUnitId(assign.refId);
+      // Prefer the loaded layout unit (it carries the live state); the populated
+      // assignment refId is the fallback when the unit is not on this plan.
+      const unit = (units.find((u) => u._id === refId) ?? null) as PhysicalUnitDto | null;
+      const populated = assignmentUnit(assign.refId);
+      if (!unit && !populated) return null;
+      const state = String(unit?.state ?? populated?.state ?? 'vacant_clean');
       return {
         row: assign,
-        label: unitLabel(unit._id, units),
+        label: unit ? unitLabel(unit._id, units) : populated?.label ?? refId,
         unit: {
-          _id: unit._id,
-          type: (unit as { type?: string }).type ?? 'room',
-          label: unit.label,
-          state: String(unit.state ?? 'vacant_clean'),
+          _id: refId,
+          type: (unit as { type?: string })?.type ?? 'room',
+          label: unit?.label ?? populated?.label ?? refId,
+          state,
         },
-        state: String(unit.state ?? 'vacant_clean'),
+        state,
       };
     },
     [],
@@ -304,6 +315,8 @@ export default function HousekeepingWorkspace() {
           </Button>
         </div>
       </div>
+
+      <MyStationsCard unitType="room" onChanged={load} />
 
       <Card>
         <CardHeader>

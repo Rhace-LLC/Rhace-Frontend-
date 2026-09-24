@@ -25,9 +25,15 @@ import type { CreateOrderLineInput, OrderDto } from '@/features/orders/types';
 import { OrderBuilder } from '@/features/orders';
 import { money } from '@/features/orders/money';
 import { floorPlanService } from '@/services/floorPlan.service';
-import { staffService, type StaffAssignmentDto } from '@/services/staff.service';
+import {
+  staffService,
+  assignmentUnit,
+  assignmentUnitId,
+  type StaffAssignmentDto,
+} from '@/services/staff.service';
 import type { FloorPlanDto, FloorPlanLayoutDto, PhysicalUnitDto } from '@/types';
 import TableMap from './TableMap';
+import MyStationsCard from './MyStationsCard';
 
 const todayKey = () => new Date().toISOString().slice(0, 10);
 
@@ -113,7 +119,7 @@ export default function WaiterWorkspace() {
   }, [planId]);
 
   const assignedIds = useMemo(
-    () => new Set(assignments.map((a) => String(a.refId))),
+    () => new Set(assignments.map((a) => assignmentUnitId(a.refId))),
     [assignments],
   );
   const active = useMemo(
@@ -201,13 +207,8 @@ export default function WaiterWorkspace() {
         </div>
       </div>
 
-      {assignments.length === 0 && (
-        <Card>
-          <CardContent className="py-6 text-sm text-muted-foreground">
-            You have no table assignments today — check with your manager.
-          </CardContent>
-        </Card>
-      )}
+      {/* Self-service stations (plan §6.2) — claim/release own slots anytime. */}
+      <MyStationsCard unitType="table" onChanged={load} />
 
       <Card>
         <CardContent className="pt-6">
@@ -231,7 +232,7 @@ export default function WaiterWorkspace() {
       {assignments.length > 0 && (
         <div className="flex flex-wrap gap-2">
           {assignments.map((a) => {
-            const unit = layout?.units.find((u) => u._id === String(a.refId));
+            const unit = layout?.units.find((u) => u._id === assignmentUnitId(a.refId));
             return (
               <button
                 key={a._id}
@@ -239,10 +240,10 @@ export default function WaiterWorkspace() {
                 onClick={() => unit && openPad(unit)}
                 disabled={!unit}
                 className="flex items-center gap-1.5 rounded-full border bg-white px-3 py-1.5 text-sm shadow-sm hover:bg-[#0A6C6D]/5 disabled:opacity-60"
-                title={unit ? 'Open order pad' : a.label || a.refId}
+                title={unit ? 'Open order pad' : a.label || assignmentUnit(a.refId)?.label || assignmentUnitId(a.refId)}
               >
                 <span className={`h-2 w-2 rounded-full ${stateChip(unit?.state ?? '')}`} />
-                {a.label || unit?.label || a.refId}
+                {a.label || unit?.label || assignmentUnit(a.refId)?.label || assignmentUnitId(a.refId)}
                 <span className="text-xs text-muted-foreground">· order</span>
               </button>
             );
