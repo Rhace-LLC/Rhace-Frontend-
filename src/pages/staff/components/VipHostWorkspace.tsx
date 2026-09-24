@@ -33,7 +33,11 @@ import { money } from '@/features/orders/money';
 import type { CreateOrderLineInput, OrderDto } from '@/features/orders/types';
 import { floorPlanService } from '@/services/floorPlan.service';
 import { inventoryBlueprintService } from '@/services/inventoryBlueprint.service';
-import { staffService, type StaffAssignmentDto } from '@/services/staff.service';
+import {
+  staffService,
+  assignmentUnitId,
+  type StaffAssignmentDto,
+} from '@/services/staff.service';
 import type {
   FloorPlanDto,
   FloorPlanLayoutDto,
@@ -41,6 +45,7 @@ import type {
   PhysicalUnitDto,
 } from '@/types';
 import BoothMap from './BoothMap';
+import MyStationsCard from './MyStationsCard';
 import { boothSpend, clubStateMeta, minimumSpendFor, spendPct } from '../club';
 
 const todayKey = () => new Date().toISOString().slice(0, 10);
@@ -175,7 +180,7 @@ export default function VipHostWorkspace() {
 
   const units = useMemo(() => layout?.units ?? [], [layout]);
   const assignedIds = useMemo(
-    () => new Set(assignments.map((a) => String(a.refId))),
+    () => new Set(assignments.map((a) => assignmentUnitId(a.refId))),
     [assignments],
   );
 
@@ -330,6 +335,8 @@ export default function VipHostWorkspace() {
           </Button>
         </div>
       </div>
+
+      <MyStationsCard unitType="table" onChanged={load} />
 
       <div className="grid gap-4 md:grid-cols-4">
         <Stat label="My booths" value={assignedIds.size} icon={MapPinned} />

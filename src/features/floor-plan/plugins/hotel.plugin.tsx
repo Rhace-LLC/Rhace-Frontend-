@@ -13,8 +13,17 @@ function renderScopeNav(ctx: TopBarContext) {
   const { plan, mode, setPlanMeta, addSection, deleteSection, addFloor, deleteFloor } = ctx;
   const sections = plan.areas ?? [];
   const activeSection = plan.activeArea || sections[0] || '';
-  const floors = plan.sectionFloors?.[activeSection] ?? plan.floors ?? [];
-  const currentFloor = plan.floor && floors.includes(plan.floor) ? plan.floor : floors[0] ?? '';
+  // `??` alone never catches `floors: []` (the backend default) — treat empty
+  // lists as missing so the Floor dropdown always has options.
+  const floors =
+    plan.sectionFloors?.[activeSection]?.length
+      ? plan.sectionFloors[activeSection]
+      : plan.floors?.length
+        ? plan.floors
+        : plan.floor
+          ? [plan.floor]
+          : ['Ground Floor'];
+  const currentFloor = plan.floor && floors.includes(plan.floor) ? plan.floor : floors[0];
 
   return (
     <ScopeNav

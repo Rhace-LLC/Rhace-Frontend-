@@ -19,6 +19,15 @@ interface AuthContextValue {
   role: AuthRole | null;
   isAuthenticated: boolean;
   loading: boolean;
+  // Vendor type booleans
+  vendorIsHotel: boolean;
+  vendorIsClub: boolean;
+  vendorIsRestaurant: boolean;
+  // Role booleans
+  isAdmin: boolean;
+  isUser: boolean;
+  isVendor: boolean;
+  isStaff: boolean;
   setUser: (user: AuthUser | null) => void;
   setVendor: (vendor: AuthVendor | null) => void;
   setAdmin: (admin: AuthAdmin | null) => void;
@@ -125,22 +134,37 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   );
 
   const value = useMemo<AuthContextValue>(
-    () => ({
-      user,
-      vendor,
-      admin,
-      staff,
-      role,
-      isAuthenticated: Boolean(user || vendor || admin || staff),
-      loading,
-      setUser,
-      setVendor,
-      setAdmin,
-      setStaff,
-      logout,
-    }),
+    () => {
+      const vendorType = vendor?.type || vendor?.vendorType || vendor?.businessType || '';
+      const normalizedType = String(vendorType).toLowerCase();
+      return {
+        user,
+        vendor,
+        admin,
+        staff,
+        role,
+        isAuthenticated: Boolean(user || vendor || admin || staff),
+        loading,
+        vendorIsHotel: normalizedType === 'hotel',
+        vendorIsClub: normalizedType === 'club',
+        vendorIsRestaurant: normalizedType === 'restaurant',
+        isAdmin: Boolean(admin),
+        isUser: Boolean(user),
+        isVendor: Boolean(vendor),
+        isStaff: Boolean(staff),
+        setUser,
+        setVendor,
+        setAdmin,
+        setStaff,
+        logout,
+      };
+    },
     [user, vendor, admin, staff, role, loading, setUser, setVendor, setAdmin, setStaff, logout]
   );
+
+  console.log("=============================================== AuthContext value Start ==================================================================");
+  console.log(value);
+  console.log("=============================================== AuthContext value End ====================================================================");
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

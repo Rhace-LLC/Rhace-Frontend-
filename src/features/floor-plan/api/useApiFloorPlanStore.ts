@@ -66,6 +66,30 @@ export function useApiFloorPlanStore(vertical: FloorVertical, planId?: string): 
       };
     }
     const core = toCorePlan(layoutQuery.data.plan);
+    // The Floor dropdown (ScopeNav) and the entity filters both read these
+    // values, but legacy plans store `floors: []` — an EMPTY ARRAY, which
+    // defeats every `??` fallback downstream and leaves the dropdown with zero
+    // options (and hides units whose spatial.floor is set, because
+    // `filterEntities` compares against `plan.floor`). Derive the list when the
+    // plan has none: the floors actually used by its units, then a default.
+    // The plan's persisted floor always joins the list so the canvas keeps the
+    // scope it was saved with.
+    const usedFloors = [
+      ...new Set(
+        [
+          ...units.map((u) => u.floorId).filter(Boolean),
+          core.floor,
+        ].filter((value): value is string => Boolean(value)),
+      ),
+    ];
+    core.floors = core.floors?.length
+      ? Array.from(new Set([...core.floors, ...usedFloors]))
+      : usedFloors.length
+        ? usedFloors
+        : ['Ground Floor'];
+    if (!core.floor) {
+      core.floor = core.floors.includes('Ground Floor') ? 'Ground Floor' : core.floors[0];
+    }
     core.entities = buildPlanEntities(core, units, structures, blueprints);
     return core;
   }, [layoutQuery.data, units, structures, blueprints, planId, vertical]);

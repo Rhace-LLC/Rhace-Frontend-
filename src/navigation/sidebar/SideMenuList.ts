@@ -1,5 +1,6 @@
 import type { ComponentType } from 'react';
 import {
+  Activity,
   BarChart3,
   Boxes,
   Building2,
@@ -151,6 +152,28 @@ export const ClubList: SideMenuListConfig = {
       label: 'Staff',
       path: '/dashboard/club/staffs',
       icon: Users,
+      children: [
+        {
+          label: 'All Staff',
+          path: '/dashboard/club/staffs/all',
+          icon: Users,
+        },
+        {
+          label: 'Shift Manager',
+          path: '/dashboard/club/staffs/shifts',
+          icon: CalendarCheck,
+        },
+        {
+          label: 'Reports',
+          path: '/dashboard/club/staffs/reports',
+          icon: BarChart3,
+        },
+        {
+          label: 'Activity',
+          path: '/dashboard/club/staffs/activity',
+          icon: Activity,
+        },
+      ],
     },
   ],
   bottomItems: [
@@ -215,6 +238,28 @@ export const HotelList: SideMenuListConfig = {
       label: 'Staff',
       path: '/dashboard/hotel/staffs',
       icon: Users,
+      children: [
+        {
+          label: 'All Staff',
+          path: '/dashboard/hotel/staffs/all',
+          icon: Users,
+        },
+        {
+          label: 'Shift Manager',
+          path: '/dashboard/hotel/staffs/shifts',
+          icon: CalendarCheck,
+        },
+        {
+          label: 'Reports',
+          path: '/dashboard/hotel/staffs/reports',
+          icon: BarChart3,
+        },
+        {
+          label: 'Activity',
+          path: '/dashboard/hotel/staffs/activity',
+          icon: Activity,
+        },
+      ],
     },
   ],
   bottomItems: [
@@ -318,6 +363,28 @@ export const RestaurantList: SideMenuListConfig = {
       label: 'Staff',
       path: '/dashboard/restaurant/staffs',
       icon: Users,
+      children: [
+        {
+          label: 'All Staff',
+          path: '/dashboard/restaurant/staffs/all',
+          icon: Users,
+        },
+        {
+          label: 'Shift Manager',
+          path: '/dashboard/restaurant/staffs/shifts',
+          icon: CalendarCheck,
+        },
+        {
+          label: 'Reports',
+          path: '/dashboard/restaurant/staffs/reports',
+          icon: BarChart3,
+        },
+        {
+          label: 'Activity',
+          path: '/dashboard/restaurant/staffs/activity',
+          icon: Activity,
+        },
+      ],
     },
   ],
   bottomItems: [

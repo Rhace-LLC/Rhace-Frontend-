@@ -18,6 +18,9 @@ import VendorReservationsPage from '@/pages/vendor/shared/reservations';
 import CategoriesPage from '@/pages/vendor/shared/catalog/CategoriesPage';
 import AddOnsPage from '@/pages/vendor/shared/catalog/AddOnsPage';
 
+// Staff Pages (individual tabs as standalone pages)
+import AllStaffPage, { ShiftManagerPage, ReportsPage, ActivityPage } from '@/pages/vendor/shared/staff';
+
 // Vendor - Club
 import BottleServiceManager from '@/pages/vendor/club/drinks/add';
 import ClubDashboard from '@/pages/vendor/club/dashboard';
@@ -85,6 +88,10 @@ const dashboardRestaurantRoutes: RouteObject[] = [
   { path: 'restaurant', element: <VendorDashboard /> },
   { path: 'restaurant/payments', element: <PaymentDashboard /> },
   { path: 'restaurant/staffs', element: <StaffManagementSystem /> },
+  { path: 'restaurant/staffs/all', element: <AllStaffPage /> },
+  { path: 'restaurant/staffs/shifts', element: <ShiftManagerPage /> },
+  { path: 'restaurant/staffs/reports', element: <ReportsPage /> },
+  { path: 'restaurant/staffs/activity', element: <ActivityPage /> },
   { path: 'restaurant/reservation', element: <VendorReservationsPage vertical="restaurant" /> },
   { path: 'restaurant/menu', element: <MenuDashboard /> },
   { path: 'restaurant/menu/categories', element: <CategoriesPage kind="menu" /> },
@@ -136,6 +143,10 @@ const hotelVendorRoutes: RouteObject[] = [
   { path: 'hotel/timeline/prototype', element: withSuspense(<PrototypeTimelineHotel />) },
   { path: 'hotel/payments', element: <PaymentDashboard /> },
   { path: 'hotel/staffs', element: <StaffManagementSystem /> },
+  { path: 'hotel/staffs/all', element: <AllStaffPage /> },
+  { path: 'hotel/staffs/shifts', element: <ShiftManagerPage /> },
+  { path: 'hotel/staffs/reports', element: <ReportsPage /> },
+  { path: 'hotel/staffs/activity', element: <ActivityPage /> },
   { path: 'hotel/profile', element: <HotelProfile /> },
   { path: 'hotel/settings', element: <HotelSettings /> },
 ];
@@ -161,6 +172,10 @@ const clubVendorRoutes: RouteObject[] = [
   { path: 'club/reservations', element: <VendorReservationsPage vertical="club" /> },
   { path: 'club/payments', element: <PaymentDashboard /> },
   { path: 'club/staffs', element: <StaffManagementSystem /> },
+  { path: 'club/staffs/all', element: <AllStaffPage /> },
+  { path: 'club/staffs/shifts', element: <ShiftManagerPage /> },
+  { path: 'club/staffs/reports', element: <ReportsPage /> },
+  { path: 'club/staffs/activity', element: <ActivityPage /> },
   { path: 'club/add-drinks', element: <BottleServiceManager /> },
   { path: 'club/settings', element: <RestaurantSettings /> },
 ];

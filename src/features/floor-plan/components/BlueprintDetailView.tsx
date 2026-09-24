@@ -52,6 +52,7 @@ export function BlueprintDetailView({ plugin, blueprint, onBack }: BlueprintDeta
     planId,
     blueprint ? { blueprintId: blueprint.id } : undefined
   );
+  
   const units = useMemo<PhysicalUnitDto[]>(() => unitsQuery.data?.items ?? [], [unitsQuery.data]);
 
   const plan = plansQuery.data?.items?.[0];

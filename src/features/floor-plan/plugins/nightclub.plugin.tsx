@@ -12,8 +12,15 @@ import type { ClubTableState } from '../domain/types';
 
 function renderScopeNav(ctx: TopBarContext) {
   const { plan, mode, setPlanMeta, addFloor, deleteFloor } = ctx;
-  const floors = plan.floors ?? (plan.floor ? [plan.floor] : ['Ground Floor']);
-  const currentFloor = plan.floor ?? floors[0];
+  // `??` alone never catches `floors: []` (the backend default) — treat empty
+  // lists as missing so the Floor dropdown always has options.
+  const floors =
+    plan.floors?.length
+      ? plan.floors
+      : plan.floor
+        ? [plan.floor]
+        : ['Ground Floor'];
+  const currentFloor = plan.floor && floors.includes(plan.floor) ? plan.floor : floors[0];
 
   return (
     <ScopeNav

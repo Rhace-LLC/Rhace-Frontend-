@@ -128,6 +128,15 @@ export function ScopeNav({
             onChange={(e) => onSelectFloor(e.target.value)}
             className={inputClass}
           >
+            {/* Empty state: legacy plans can have no floors recorded. Without
+                this the select renders zero options and looks broken. */}
+            {floorOptions.length === 0 && <option value="">No floors yet</option>}
+            {/* Self-heal: show the active value even when it is not in the
+                list (e.g. restored plan with a stale floor string), otherwise
+                React renders the select with no visible selection. */}
+            {activeFloor && !floorOptions.includes(activeFloor) && (
+              <option value={activeFloor}>{activeFloor}</option>
+            )}
             {floorOptions.map((floor) => (
               <option key={floor} value={floor}>
                 {floor}

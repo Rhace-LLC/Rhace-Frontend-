@@ -1,26 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
-import { BarChart3, Loader2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Skeleton } from '@/components/ui/skeleton';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import { BarChart3, Building2, Calendar, ChevronDown, Loader2, RefreshCw, User } from 'lucide-react';
 import {
   staffService,
   type StaffBranchOption,
@@ -49,7 +29,7 @@ interface MergedRow {
   avgTurnoverMs: number | null;
 }
 
-export default function ReportsTab() {
+export function ReportsTab({ onRefresh }: { onRefresh?: () => void }) {
   const [from, setFrom] = useState(() => {
     const d = new Date();
     d.setDate(1);
@@ -110,6 +90,11 @@ export default function ReportsTab() {
     loadReports();
   }, [loadReports]);
 
+  const handleRefresh = () => {
+    loadReports();
+    onRefresh?.();
+  };
+
   const staffMap = useMemo(() => {
     const map = new Map<string, StaffMember>();
     staff.forEach((s) => map.set(s._id, s));
@@ -168,111 +153,203 @@ export default function ReportsTab() {
 
   if (isLoading) {
     return (
-      <div className="space-y-6">
-        <Skeleton className="h-16 w-full" />
-        <Skeleton className="h-96 w-full" />
+      <div className="p-6 bg-white rounded-3xl border border-teal-100/60 shadow-xs space-y-6">
+        <div className="h-20 w-full bg-white border border-teal-100 rounded-2xl animate-pulse" />
+        <div className="h-80 w-full bg-white border border-teal-100 rounded-2xl animate-pulse" />
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <Card className="shadow-lg">
-        <CardContent className="p-6">
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
-            <div className="space-y-2">
-              <Label>From</Label>
-              <Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
-            </div>
-            <div className="space-y-2">
-              <Label>To</Label>
-              <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} />
-            </div>
-            <div className="space-y-2">
-              <Label>Branch</Label>
-              <Select value={branchId} onValueChange={setBranchId}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All branches</SelectItem>
-                  {branches.map((b) => (
-                    <SelectItem key={b._id} value={b._id}>
-                      {b.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>Staff</Label>
-              <Select value={staffId} onValueChange={setStaffId}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All staff</SelectItem>
-                  {staff.map((s) => (
-                    <SelectItem key={s._id} value={s._id}>
-                      {s.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <Button onClick={loadReports} disabled={isFetching}>
-              {isFetching ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <BarChart3 className="w-4 h-4 mr-2" />}
-              Apply
-            </Button>
+    <div className="space-y-6 bg-white rounded-3xl">
+      {/* Cohesive Header & Filter Panel */}
+      <div className="bg-white border border-teal-100/80 rounded-2xl p-5 shadow-xs transition-all">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
+          
+          {/* From Date Input */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
+              <Calendar className="w-3.5 h-3.5 text-teal-600" />
+              From
+            </label>
+            <input
+              type="date"
+              value={from}
+              onChange={(e) => setFrom(e.target.value)}
+              className="w-full h-10 px-3 bg-white border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/10 rounded-xl text-slate-800 text-sm outline-none transition-all"
+            />
           </div>
-        </CardContent>
-      </Card>
 
-      <Card className="shadow-lg">
-        <CardHeader>
-          <CardTitle>Performance by staff</CardTitle>
-        </CardHeader>
-        <CardContent className="p-0">
+          {/* To Date Input */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
+              <Calendar className="w-3.5 h-3.5 text-teal-600" />
+              To
+            </label>
+            <input
+              type="date"
+              value={to}
+              onChange={(e) => setTo(e.target.value)}
+              className="w-full h-10 px-3 bg-white border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/10 rounded-xl text-slate-800 text-sm outline-none transition-all"
+            />
+          </div>
+
+          {/* Branch Select */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
+              <Building2 className="w-3.5 h-3.5 text-teal-600" />
+              Branch
+            </label>
+            <div className="relative">
+              <select
+                value={branchId}
+                onChange={(e) => setBranchId(e.target.value)}
+                className="w-full h-10 px-3 pr-8 bg-white border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/10 rounded-xl text-slate-800 text-sm outline-none appearance-none transition-all cursor-pointer font-medium"
+              >
+                <option value="all">All branches</option>
+                {branches.map((b) => (
+                  <option key={b._id} value={b._id}>
+                    {b.name}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+            </div>
+          </div>
+
+          {/* Staff Select */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
+              <User className="w-3.5 h-3.5 text-teal-600" />
+              Staff
+            </label>
+            <div className="relative">
+              <select
+                value={staffId}
+                onChange={(e) => setStaffId(e.target.value)}
+                className="w-full h-10 px-3 pr-8 bg-white border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/10 rounded-xl text-slate-800 text-sm outline-none appearance-none transition-all cursor-pointer font-medium"
+              >
+                <option value="all">All staff</option>
+                {staff.map((s) => (
+                  <option key={s._id} value={s._id}>
+                    {s.name}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+            </div>
+          </div>
+
+          {/* Action Button */}
+          <button
+            onClick={handleRefresh}
+            disabled={isFetching}
+            className="h-10 px-5 bg-teal-700 hover:bg-teal-800 active:scale-[0.98] disabled:opacity-50 text-white text-sm font-semibold rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs"
+          >
+            {isFetching ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <RefreshCw className="w-4 h-4" />
+            )}
+            <span>Refresh</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Main Reports Display Box */}
+      <div className="bg-white border border-teal-100/80 rounded-2xl overflow-hidden shadow-xs">
+        <div className="p-5 border-b border-teal-50 flex items-center justify-between bg-white">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-teal-50 border border-teal-100 flex items-center justify-center text-teal-700">
+              <BarChart3 className="w-5 h-5" />
+            </div>
+            <div>
+              <h2 className="text-base font-bold text-slate-900">Performance by staff</h2>
+              <p className="text-xs text-slate-500 font-medium">
+                Operational metrics and aggregate revenue by team member
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white">
           {merged.length === 0 ? (
-            <div className="p-12 text-center text-muted-foreground">
-              No report data for this range yet. Metrics appear once staff-attributed orders exist.
+            <div className="py-20 px-4 text-center bg-white flex flex-col items-center justify-center">
+              <div className="w-12 h-12 rounded-2xl bg-teal-50 border border-teal-100 flex items-center justify-center text-teal-600 mb-3">
+                <BarChart3 className="w-6 h-6" />
+              </div>
+              <p className="text-slate-800 font-bold text-sm mb-1">
+                No report data recorded
+              </p>
+              <p className="text-slate-400 text-xs max-w-xs">
+                Metrics appear once staff-attributed orders exist within the selected range.
+              </p>
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Staff</TableHead>
-                  <TableHead className="text-right">Sales volume</TableHead>
-                  <TableHead className="text-right">Orders</TableHead>
-                  <TableHead className="text-right">Avg prep time</TableHead>
-                  <TableHead className="text-right">Voids</TableHead>
-                  <TableHead className="text-right">Refunds</TableHead>
-                  <TableHead className="text-right">Turnover</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {merged.map((row) => (
-                  <TableRow key={row.staffId ?? 'unassigned'}>
-                    <TableCell className="font-medium">{nameOf(row.staffId)}</TableCell>
-                    <TableCell className="text-right">{formatMoney(row.salesVolume)}</TableCell>
-                    <TableCell className="text-right">{row.orderCount}</TableCell>
-                    <TableCell className="text-right">{formatMinutes(row.prepMs)}</TableCell>
-                    <TableCell className="text-right">{row.voidCount}</TableCell>
-                    <TableCell className="text-right">
-                      {row.refundCount > 0
-                        ? `${row.refundCount} (${formatMoney(row.refundAmount)})`
-                        : '—'}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {row.turnoverCount} ({formatMinutes(row.avgTurnoverMs)})
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-teal-100/60 bg-white">
+                    <th className="py-3.5 pl-6 pr-4 text-xs font-bold text-slate-500 uppercase tracking-wider">
+                      Staff Member
+                    </th>
+                    <th className="py-3.5 px-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">
+                      Sales Volume
+                    </th>
+                    <th className="py-3.5 px-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">
+                      Orders
+                    </th>
+                    <th className="py-3.5 px-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">
+                      Avg Prep Time
+                    </th>
+                    <th className="py-3.5 px-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">
+                      Voids
+                    </th>
+                    <th className="py-3.5 px-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">
+                      Refunds
+                    </th>
+                    <th className="py-3.5 pl-4 pr-6 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">
+                      Turnover
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-teal-50 bg-white">
+                  {merged.map((row) => (
+                    <tr
+                      key={row.staffId ?? 'unassigned'}
+                      className="hover:bg-teal-50/30 transition-colors group"
+                    >
+                      <td className="py-4 pl-6 pr-4 text-sm font-semibold text-slate-800 group-hover:text-teal-700 transition-colors">
+                        {nameOf(row.staffId)}
+                      </td>
+                      <td className="py-4 px-4 text-sm font-bold text-slate-900 font-mono text-right">
+                        {formatMoney(row.salesVolume)}
+                      </td>
+                      <td className="py-4 px-4 text-sm font-semibold text-slate-700 text-right">
+                        {row.orderCount}
+                      </td>
+                      <td className="py-4 px-4 text-sm font-medium text-slate-600 text-right">
+                        {formatMinutes(row.prepMs)}
+                      </td>
+                      <td className="py-4 px-4 text-sm font-medium text-slate-600 text-right">
+                        {row.voidCount}
+                      </td>
+                      <td className="py-4 px-4 text-sm font-medium text-slate-600 text-right">
+                        {row.refundCount > 0
+                          ? `${row.refundCount} (${formatMoney(row.refundAmount)})`
+                          : '—'}
+                      </td>
+                      <td className="py-4 pl-4 pr-6 text-sm font-medium text-slate-600 text-right">
+                        {row.turnoverCount} ({formatMinutes(row.avgTurnoverMs)})
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }

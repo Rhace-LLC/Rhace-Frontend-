@@ -9,7 +9,11 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/contexts/AuthContext';
 import { ordersApi } from '@/features/orders/api/service';
 import type { OrderDto, OrderItemType } from '@/features/orders/types';
-import { staffService, type StaffAssignmentDto } from '@/services/staff.service';
+import {
+  staffService,
+  assignmentUnitId,
+  type StaffAssignmentDto,
+} from '@/services/staff.service';
 import type { StockItemKind } from '@/services/stock.service';
 import { slugForStaffRole, staffRoleLabel } from './roles';
 import TicketBoard from './components/TicketBoard';
@@ -18,6 +22,7 @@ import WaiterWorkspace from './components/WaiterWorkspace';
 import VipHostWorkspace from './components/VipHostWorkspace';
 import FrontDeskWorkspace from './components/FrontDeskWorkspace';
 import HousekeepingWorkspace from './components/HousekeepingWorkspace';
+import MyStationsCard from './components/MyStationsCard';
 
 /**
  * Stations that work a line-level ticket queue. Each one sees only the lines it
@@ -196,29 +201,28 @@ export default function StaffWorkspace() {
         </Button>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <ClipboardList className="w-4 h-4" /> My assignments today
-            <Badge variant="secondary">{assignments.length}</Badge>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {assignments.length === 0 ? (
-            <p className="text-sm text-muted-foreground">
-              No tables, rooms or zones have been assigned to you yet.
-            </p>
-          ) : (
+      {/* Self-service stations (plan §6.2) — claim/release for generic roles. */}
+      <MyStationsCard unitType="table" onChanged={load} />
+
+      {assignments.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <ClipboardList className="w-4 h-4" /> Assigned elsewhere today
+              <Badge variant="secondary">{assignments.length}</Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
             <div className="flex flex-wrap gap-2">
               {assignments.map((a) => (
                 <Badge key={a._id} variant="outline" className="capitalize">
-                  {assignmentTypeLabel(a.type)}: {a.label || a.refId}
+                  {assignmentTypeLabel(a.type)}: {a.label || assignmentUnitId(a.refId)}
                 </Badge>
               ))}
             </div>
-          )}
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
 
       {queueConfig ? (
         <Card>

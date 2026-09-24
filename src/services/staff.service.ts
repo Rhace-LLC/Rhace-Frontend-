@@ -62,15 +62,82 @@ export interface StaffShiftDto {
   note?: string;
 }
 
+/** Populated unit details returned on an assignment's `refId`. */
+export interface StaffAssignmentUnit {
+  _id: string;
+  label?: string;
+  floorId?: string;
+  sectionId?: string;
+  blueprint?: string;
+  vertical?: string;
+  state?: string;
+  isReservable?: boolean;
+}
+
+/** Slot role on a unit's roster — exactly one active `lead` per unit (plan §3). */
+export type StaffAssignmentRole = 'lead' | 'support';
+export type StaffAssignmentStatus = 'active' | 'released';
+export type StaffAssignmentWindow = 'day' | 'lunch' | 'dinner';
+
 export interface StaffAssignmentDto {
   _id: string;
-  staff: string | { _id: string; name?: string; role?: string; staffId?: string };
+  staff: string | { _id: string; name?: string; role?: string; staffId?: string; photo?: string };
   date: string;
   type: 'table' | 'room' | 'zone';
-  refId: string;
+  /** Unit id, or the populated unit document (backend enriches this on list). */
+  refId: string | StaffAssignmentUnit | null;
+  /** Slot semantics (plan §4.1) — absent on legacy rows (treated as lead/active). */
+  role?: StaffAssignmentRole;
+  status?: StaffAssignmentStatus;
+  window?: StaffAssignmentWindow;
+  releasedAt?: string | null;
+  releaseReason?: string;
   label?: string;
   floorPlan?: string;
   note?: string;
+  assignedBy?: string | null;
+  createdAt?: string;
+}
+
+/** The unit id regardless of whether `refId` is an id string or a populated unit. */
+export const assignmentUnitId = (refId: StaffAssignmentDto['refId']): string => {
+  if (!refId) return '';
+  return typeof refId === 'string' ? refId : refId._id;
+};
+
+/** The populated unit document, or null when the API returned a bare id. */
+export const assignmentUnit = (
+  refId: StaffAssignmentDto['refId'],
+): StaffAssignmentUnit | null => (refId && typeof refId === 'object' ? refId : null);
+
+/** Legacy rows predate the role field — they were all leads (plan §6.3). */
+export const assignmentRole = (a: Pick<StaffAssignmentDto, 'role'>): StaffAssignmentRole =>
+  a.role ?? 'lead';
+
+/** Legacy rows predate the status field — they were all active (plan §6.3). */
+export const assignmentIsActive = (a: Pick<StaffAssignmentDto, 'status'>): boolean =>
+  (a.status ?? 'active') === 'active';
+
+/** The staff display name whether the row is populated or a bare id. */
+export const assignmentStaffName = (
+  staff: StaffAssignmentDto['staff'],
+): string => (typeof staff === 'object' && staff ? staff.name || 'Staff' : 'Staff');
+
+/** The staff id whether the row is populated or a bare id. */
+export const assignmentStaffId = (staff: StaffAssignmentDto['staff']): string => {
+  if (typeof staff === 'object') return staff?._id ?? '';
+  return staff ?? '';
+};
+
+/** One unit's roster group — the Roster Board payload (plan §5.3 `grouped=true`). */
+export interface StaffAssignmentGroupDto {
+  refId: string;
+  unit: StaffAssignmentUnit | null;
+  type: 'table' | 'room' | 'zone';
+  capacity: number;
+  count: number;
+  lead: StaffAssignmentDto | null;
+  support: StaffAssignmentDto[];
 }
 
 export interface StaffActivityDto {
@@ -251,16 +318,85 @@ class StaffService {
     type: 'table' | 'room' | 'zone';
     refId: string;
     label?: string;
-    floorPlan?: string;
     note?: string;
+    /** Slot role — defaults to lead (the unit's owner). */
+    role?: StaffAssignmentRole;
+    /** One-click takeover: release the current lead first (plan §9.2). */
+    reassign?: boolean;
   }) {
     const res = await api.post('/staff/assignments', data);
     return res.data as StaffAssignmentDto;
   }
 
-  async getAssignments(params: { date?: string; staffId?: string; type?: string } = {}) {
+  async getAssignments(
+    params: {
+      date?: string;
+      staffId?: string;
+      type?: string;
+      unitId?: string;
+      status?: 'active' | 'released' | 'all';
+      window?: StaffAssignmentWindow;
+    } = {},
+  ) {
     const res = await api.get('/staff/assignments', { params });
     return res.data as { docs: StaffAssignmentDto[]; total: number };
+  }
+
+  /** Unit-grouped roster for the Roster Board (plan §5.3/§6.1). */
+  async getGroupedAssignments(
+    params: { date?: string; type?: string; window?: StaffAssignmentWindow } = {},
+  ) {
+    const res = await api.get('/staff/assignments', {
+      params: { ...params, grouped: true },
+    });
+    return res.data as { docs: StaffAssignmentGroupDto[]; total: number; grouped: boolean };
+  }
+
+  /** Change a slot's role (lead ⇄ support) — plan §5 lifecycle. */
+  async updateAssignment(id: string, role: StaffAssignmentRole) {
+    const res = await api.patch(`/staff/assignments/${id}`, { role });
+    return res.data as StaffAssignmentDto;
+  }
+
+  /** Soft release — staff may release their own rows (plan §5, B3/B9). */
+  async releaseAssignment(id: string, reason?: 'manual' | 'reassigned' | 'released_self') {
+    const res = await api.patch(`/staff/assignments/${id}/release`, reason ? { reason } : {});
+    return res.data as StaffAssignmentDto;
+  }
+
+  /** Atomic lead hand-off (plan §5, B7). */
+  async reassignAssignment(id: string, staffId: string) {
+    const res = await api.patch(`/staff/assignments/${id}/reassign`, { staffId });
+    return res.data as StaffAssignmentDto;
+  }
+
+  /** Staff self-service claim/release (plan §5, B9). */
+  async selfAssign(input: { refId: string; action: 'claim' | 'release'; role?: StaffAssignmentRole }) {
+    const res = await api.post('/staff/assignments/self', input);
+    return res.data as StaffAssignmentDto;
+  }
+
+  /** Who holds a slot on this unit today (plan §5.3). */
+  async getUnitStaff(unitId: string, date?: string) {
+    const res = await api.get(`/staff/units/${unitId}/staff`, {
+      params: date ? { date } : undefined,
+    });
+    return res.data as {
+      docs: {
+        _id: string;
+        staff: StaffAssignmentDto['staff'];
+        role: StaffAssignmentRole;
+        type: string;
+        date: string;
+      }[];
+      total: number;
+    };
+  }
+
+  /** Auto-distribute open units across clocked-in staff (plan §5.3, Phase 3). */
+  async balanceAssignments(date?: string) {
+    const res = await api.post('/staff/assignments/balance', date ? { date } : {});
+    return res.data as { created: { unitId: string; staffId: string; role: string }[]; total: number };
   }
 
   async deleteAssignment(id: string) {
