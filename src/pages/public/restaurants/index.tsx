@@ -88,6 +88,14 @@ const RestaurantsPage = () => {
             <div className="mt-2">
               <RestaurantSaveCopy type="restaurants" id={id} vendor={restaurant} />
             </div>
+            <div className="mt-4">
+              <Link
+                to={`/order/${id}`}
+                className="block w-full md:w-auto md:min-w-[250px] text-center rounded-res-sm border border-res-brand px-4 py-2 text-sm font-medium text-res-brand hover:bg-res-brand/5"
+              >
+                Quick order
+              </Link>
+            </div>
           </div>
           <div className="space-y-3 md:w-[320px] md:shrink-0">
             <div className="text-sm text-gray-800 space-y-2">
@@ -136,14 +144,6 @@ const RestaurantsPage = () => {
 
         {/* Row 4 — reservations */}
         <div>
-          <div className="mb-4 flex justify-end px-4 md:px-0">
-            <Link
-              to={`/order/${id}`}
-              className="rounded-res-sm border border-res-brand px-4 py-2 text-sm font-medium text-res-brand hover:bg-res-brand/5"
-            >
-              Quick order
-            </Link>
-          </div>
           <MakeReservationSection vendorId={id!} vertical="restaurant" />
         </div>
 
