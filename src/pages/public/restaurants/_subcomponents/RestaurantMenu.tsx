@@ -23,20 +23,26 @@ interface CategoryFilterProps {
 
 const CategoryFilter = ({ categories, activeCategory, onCategoryChange }: CategoryFilterProps) => {
   return (
-    <div className="flex mb-4 flex-wrap">
-      {categories.map((category) => (
-        <button
-          key={category.name}
-          onClick={() => onCategoryChange(category.category)}
-          className={`px-4 py-2 rounded-full min-w-max text-sm cursor-pointer ${
-            activeCategory === category.category
-              ? 'bg-res-brand text-white'
-              : 'bg-transparent text-gray-700'
-          }`}
-        >
-          {category.name}
-        </button>
-      ))}
+    <div className="hide-scrollbar -mx-1 overflow-x-auto px-1 py-1">
+      <div className="flex w-max gap-2">
+        {categories.map((category) => {
+          const isActive = activeCategory === category.category;
+          return (
+            <button
+              key={category.name}
+              onClick={() => onCategoryChange(category.category)}
+              aria-pressed={isActive}
+              className={`type-res-small cursor-pointer rounded-full px-4 py-2 whitespace-nowrap transition-all duration-200 outline-none focus-visible:ring-2 focus-visible:ring-res-brand ${
+                isActive
+                  ? 'bg-res-brand text-res-ink-inverted shadow-res-low'
+                  : 'bg-res-surface text-res-ink-muted hover:text-res-ink'
+              }`}
+            >
+              {category.name}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 };
@@ -49,13 +55,24 @@ interface MenuItemCardProps {
 
 const MenuItemCard = ({ type, name, price }: MenuItemCardProps) => {
   return (
-    <div className="bg-res-card p-3 rounded-res-sm shadow-res-low w-full flex flex-col justify-between hover:shadow-res-medium">
+    <article className="flex min-h-[132px] w-full flex-col justify-between rounded-res-md bg-res-card p-4 shadow-res-low transition-all duration-200 hover:shadow-res-medium">
       <div>
-        <p className="font-semibold uppercase text-xs text-gray-500 mb-2">{type}</p>
-        <h3 className="font-bold text-gray-800 text-sm">{name}</h3>
+        {type ? (
+          <p className="type-res-caption mb-2 font-medium tracking-[0.2px] text-res-ink-muted uppercase">
+            {type}
+          </p>
+        ) : null}
+        <h3 className="type-res-h3 text-res-ink">{name}</h3>
       </div>
-      <p className="font-semibold text-gray-900 mt-4">₦{price.toLocaleString()}</p>
-    </div>
+      <div className="mt-4 flex items-center justify-between border-t border-res-line pt-3">
+        <p className="type-res-body font-semibold text-res-ink">
+          ₦{price.toLocaleString()}
+        </p>
+        <span className="type-res-small rounded-full bg-res-secondary px-3 py-1 font-semibold text-res-brand">
+          Available
+        </span>
+      </div>
+    </article>
   );
 };
 
@@ -125,7 +142,7 @@ export default function RestaurantMenu({ id }: RestaurantMenuProps) {
   if (isLoading) return <UniversalLoader />;
 
   return (
-    <div className="">
+    <div className="rounded-res-md bg-res-surface p-3 sm:p-4">
       <div className="w-full">
         <CategoryFilter
           categories={categories}
@@ -134,7 +151,7 @@ export default function RestaurantMenu({ id }: RestaurantMenuProps) {
         />
       </div>
       <>
-        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mt-4">
+        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 sm:gap-4">
           {displayedItems && displayedItems.length > 0 ? (
             displayedItems?.map((item) => (
               <MenuItemCard
@@ -145,15 +162,20 @@ export default function RestaurantMenu({ id }: RestaurantMenuProps) {
               />
             ))
           ) : (
-            <div className="text-xs text-gray-500">Sorry, no available Menu for this Category</div>
+            <div className="col-span-full rounded-res-md bg-res-card px-6 py-10 text-center shadow-res-low">
+              <p className="type-res-h3 text-res-ink">No dishes in this category</p>
+              <p className="type-res-small mt-1 text-res-ink-muted">
+                Sorry, no available menu for this category yet.
+              </p>
+            </div>
           )}
         </div>
 
         {hasMore && (
-          <div className="mt-8">
+          <div className="mt-6 flex justify-center">
             <button
               onClick={handleShowMore}
-              className="text-res-brand hover:underline text-sm cursor-pointer flex items-center gap-2"
+              className="type-res-body flex cursor-pointer items-center gap-2 rounded-full bg-res-card px-6 py-2.5 text-res-brand shadow-res-low transition-all duration-200 hover:shadow-res-medium"
             >
               Show more <ChevronDown className="h-4 w-4" />
             </button>

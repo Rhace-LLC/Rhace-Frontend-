@@ -13,7 +13,6 @@ function ReservationHomePage() {
     <div>
       <UserHeader />
       <VenueHero activeTab={activeTab} onTabChange={setActiveTab} />
-
       <div className="mt-16 sm:mt-[65px] mx-auto lg:px-8 py-8">
         {VENUE_SECTIONS[activeTab].map((section) => (
           <VenueGrid
@@ -24,7 +23,6 @@ function ReservationHomePage() {
           />
         ))}
       </div>
-
       <Footer />
     </div>
   );

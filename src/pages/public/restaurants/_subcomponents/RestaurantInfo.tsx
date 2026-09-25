@@ -42,24 +42,33 @@ const RestaurantInfo = ({ data }: RestaurantInfoProps) => {
   ];
   return (
     <div>
-      <div className="border-res-line border-b  overflow-auto w-full">
-        <div className="w-max flex-nowrap flex">
-          {tabs.map((tab, i) => (
-            <button
-              key={i}
-              onClick={() => setActiveTab(tab.tab)}
-              className={`p-3 w-max cursor-pointer font-semibold ${
-                activeTab === tab.tab
-                  ? 'border-b-2 text-res-brand border-res-brand'
-                  : 'text-res-ink-muted'
-              }`}
-            >
-              {tab.name}
-            </button>
-          ))}
+      <div className="w-full overflow-x-auto hide-scrollbar">
+        <div
+          role="tablist"
+          aria-label="Restaurant sections"
+          className="flex w-full gap-1 rounded-res-md bg-res-surface p-1 sm:w-max sm:rounded-full"
+        >
+          {tabs.map((tab, i) => {
+            const isActive = activeTab === tab.tab;
+            return (
+              <button
+                key={i}
+                role="tab"
+                aria-selected={isActive}
+                onClick={() => setActiveTab(tab.tab)}
+                className={`type-res-body flex-1 cursor-pointer rounded-full px-5 py-2 whitespace-nowrap transition-all duration-200 outline-none focus-visible:ring-2 focus-visible:ring-res-brand sm:flex-none ${
+                  isActive
+                    ? 'bg-res-card text-res-brand shadow-res-low'
+                    : 'text-res-ink-muted hover:text-res-ink'
+                }`}
+              >
+                {tab.name}
+              </button>
+            );
+          })}
         </div>
       </div>
-      <div className="mt-8 px-4 md:px-0">
+      <div className="mt-6 px-4 md:px-0">
         {activeTab === 'overview' && (
           <RestaurantOverview
             address={data.address}
