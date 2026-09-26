@@ -93,6 +93,12 @@ const kindOf = (meta: Record<string, unknown>, entity?: string): 'Room' | 'Table
   return type === 'room' ? 'Room' : 'Table';
 };
 
+/** Prefix the kind unless the label already carries it ("Room A1", not "Room Room A1"). */
+const namedKind = (kind: 'Room' | 'Table', label?: unknown): string | undefined => {
+  if (typeof label !== 'string' || !label) return undefined;
+  return label.toLowerCase().startsWith(kind.toLowerCase()) ? label : `${kind} ${label}`;
+};
+
 /* ── Per-action story: title + human detail lines ── */
 
 export interface ActivityStory {
@@ -111,10 +117,7 @@ export function describeActivity(entry: StaffActivityDto): ActivityStory {
     case 'room_status_change': {
       const to = stateWord(meta.toState);
       const from = stateWord(meta.fromState);
-      const unit =
-        typeof meta.unitLabel === 'string' && meta.unitLabel
-          ? `${kind} ${meta.unitLabel}`
-          : kind;
+      const unit = namedKind(kind, meta.unitLabel);
       const lines = [
         from && to && from !== to ? `${from} → ${to}` : undefined,
         unit !== kind ? unit : undefined,
@@ -129,7 +132,7 @@ export function describeActivity(entry: StaffActivityDto): ActivityStory {
     case 'assignment_claimed': {
       const claimed = entry.action === 'assignment_claimed';
       const lines = [
-        typeof meta.label === 'string' && meta.label ? `${kind} ${meta.label}` : undefined,
+        namedKind(kind, meta.label),
         [prettyRole(meta.role), day].filter(Boolean).join(' · ') || undefined,
         !claimed && meta.actorRole === 'vendor'
           ? 'Assigned by management'
@@ -178,8 +181,10 @@ export function describeActivity(entry: StaffActivityDto): ActivityStory {
     case 'check_in':
     case 'check_out': {
       const inOut = entry.action === 'check_in';
-      const unit =
-        typeof meta.unitLabel === 'string' && meta.unitLabel ? `Room ${meta.unitLabel}` : undefined;
+      const unit = namedKind(
+        meta.kind === 'Room' || meta.kind === 'Table' ? meta.kind : kindOf(meta, entry.entity),
+        meta.unitLabel,
+      );
       const guest =
         typeof meta.guestName === 'string' && meta.guestName
           ? `${meta.guestName}${typeof meta.partySize === 'number' ? ` (${meta.partySize} guests)` : ''}`

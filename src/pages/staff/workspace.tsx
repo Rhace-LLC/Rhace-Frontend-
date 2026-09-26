@@ -22,6 +22,7 @@ import WaiterWorkspace from './components/WaiterWorkspace';
 import VipHostWorkspace from './components/VipHostWorkspace';
 import FrontDeskWorkspace from './components/FrontDeskWorkspace';
 import HousekeepingWorkspace from './components/HousekeepingWorkspace';
+import ManagerWorkspace from './components/ManagerWorkspace';
 import MyStationsCard from './components/MyStationsCard';
 
 /**
@@ -166,6 +167,10 @@ export default function StaffWorkspace() {
 
   if (role === 'housekeeping') {
     return <HousekeepingWorkspace />;
+  }
+
+  if (role === 'manager') {
+    return <ManagerWorkspace />;
   }
 
   if (isLoading) {
