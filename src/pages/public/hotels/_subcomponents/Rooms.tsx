@@ -302,16 +302,16 @@ const Rooms = ({ setSelectedRooms, setShow, rooms }: RoomsProps) => {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-4">
-          <h1 className="font-semibold mb-2 sm:text-lg text-sm">Select Room Types</h1>
+          <h1 className="font-semibold mb-2 sm:text-lg text-sm text-res-ink">Select Room Types</h1>
           {/* Tabs */}
           <div className="flex space-x-1 bg-whit hide-scrollbar overflow-auto w-full rounded-lg py-1">
             {tabs.map((tab) => (
               <button
                 key={tab.value}
                 onClick={() => setActiveTab(tab)}
-                className={`px-4 py-2 rounded-xl text-sm text-nowrap font-medium transition-colors ${
+                className={`px-4 py-2 rounded-res-sm text-sm text-nowrap font-medium transition-colors ${
                   activeTab.value === tab.value
-                    ? 'bg-[#E7F0F0] border border-[#0A6C6D] text-gray-900'
+                    ? 'bg-res-secondary border border-res-brand text-gray-900'
                     : 'text-gray-600 hover:text-gray-900'
                 }`}
               >
@@ -341,16 +341,16 @@ const Rooms = ({ setSelectedRooms, setShow, rooms }: RoomsProps) => {
               return (
                 <div
                   key={room._id}
-                  className="bg-whte rounded-[20px] sm:rounded-lg cursor-pointer shadow- overflow-hidden"
+                  className="bg-res-card rounded-res-md cursor-pointer shadow-res-low overflow-hidden"
                 >
                   {/* Image Section */}
-                  <div className="relative h-48 rounded-[20px] sm:rounded-lg bg-gray-200">
+                  <div className="relative h-48 rounded-res-md bg-gray-200">
                     <img
                       src={room.images[currentImageIndex[room._id] || 0]}
                       alt={room.name}
                       width={384}
                       height={192}
-                      className="w-full h-full rounded-[20px] sm:rounded-lg object-cover"
+                      className="w-full h-full rounded-res-md object-cover"
                     />
 
                     {room.images.length > 1 && (
@@ -376,13 +376,13 @@ const Rooms = ({ setSelectedRooms, setShow, rooms }: RoomsProps) => {
                     <h3 className="text-lg font-semibold text-gray-900 mb-1">
                       {capitalize(room.name)}
                     </h3>
-                    <p className="text-xs sm:text-sm text-[#606368] mb-4">
+                    <p className="text-xs sm:text-sm text-res-ink-muted mb-4">
                       {capitalize(room.description)}
                       {room.roomCategory}
                     </p>
 
                     {/* Amenities Grid */}
-                    <div className="grid grid-cols-3 gap-2 mb-4 text-xs text-[#111827]">
+                    <div className="grid grid-cols-3 gap-2 mb-4 text-xs text-res-ink">
                       {visibleAmenities}
                     </div>
 
@@ -392,11 +392,11 @@ const Rooms = ({ setSelectedRooms, setShow, rooms }: RoomsProps) => {
                         onClick={(e) => toggleAmenities(room._id, e)}
                         className="font-normal items-center flex sm:font-medium text-xs sm:text-sm mb-4"
                       >
-                        <span className="text-[#0A6C6D] underline">
+                        <span className="text-res-brand underline">
                           {isExpanded ? 'Show less' : 'Show more amenities'}
                         </span>
                         <ChevronRight
-                          className={`w-4 h-4 text-[#606368] transition-transform ${
+                          className={`w-4 h-4 text-res-ink-muted transition-transform ${
                             isExpanded ? 'rotate-90' : ''
                           }`}
                         />
@@ -406,13 +406,13 @@ const Rooms = ({ setSelectedRooms, setShow, rooms }: RoomsProps) => {
                     {/* Discount and Availability */}
                     <div className="flex items-center w-full justify-between mb-4">
                       <div className="flex items-center justify-between w-full space-x-2">
-                        <span className="border-[#E0B300] border flex justify-center gap-2 items-center text-[#111827] text-xs px-2 py-1 rounded-lg">
+                        <span className="border-[#E0B300] border flex justify-center gap-2 items-center text-res-ink text-xs px-2 py-1 rounded-res-sm">
                           <HiPercentBadge className="text-[#E0B300] size-5" />
                           <span>{room.discount}% Discount</span>
                         </span>
                         <div className="flex items-center gap-1.5 text-xs">
                           <CheckMark className="w-5 h-5" />
-                          <span className="text-[#111827]">{room.totalUnits} rooms left</span>
+                          <span className="text-res-ink">{room.totalUnits} rooms left</span>
                         </div>
                       </div>
                     </div>
@@ -423,25 +423,25 @@ const Rooms = ({ setSelectedRooms, setShow, rooms }: RoomsProps) => {
                     {/* Pricing */}
                     <div className="flex items-center justify-between font-semibold mb-4">
                       <div className="flex items-center">
-                        <span className="text-lg font-semibold sm:font-bold text-[#111827]">
+                        <span className="text-lg font-semibold sm:font-bold text-res-ink">
                           Price:{' '}
-                          <span className="border-b border-[#111827]">
+                          <span className="border-b border-res-ink">
                             {formatPrice(discountedPrice)}
                           </span>
                         </span>
                         {room.discount > 0 && (
-                          <span className="text-lg font-semibold sm:font-bold text-[#606368] line-through ml-2">
+                          <span className="text-lg font-semibold sm:font-bold text-res-ink-muted line-through ml-2">
                             {formatPrice(room.pricePerNight)}
                           </span>
                         )}
-                        <span className="text-xs text-[#606368] font-normal ml-1">/night</span>
+                        <span className="text-xs text-res-ink-muted font-normal ml-1">/night</span>
                       </div>
                     </div>
 
                     {/* Reserve Button */}
                     <button
                       onClick={() => addToSelection(room)}
-                      className="w-full bg-[#0A6C6D] hover:bg-teal-800 text-white font-medium py-2 px-4 rounded-[12px] mb-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full bg-res-brand hover:bg-res-brand-hover text-white font-medium py-2 px-4 rounded-res-sm mb-2 disabled:opacity-50 disabled:cursor-not-allowed"
                       // disabled={room.totalUnits < 1 || (quantities[room._id] || 0) < 1}
                     >
                       Reserve Room

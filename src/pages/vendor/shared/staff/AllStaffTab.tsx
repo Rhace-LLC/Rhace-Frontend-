@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useLocation } from 'react-router';
 import { toast } from 'react-toastify';
 import {
+  ChevronDown,
   Download,
-  Filter,
   Loader2,
   Mail,
   MoreVertical,
@@ -14,15 +15,13 @@ import {
   UserCog,
   UserX,
   Users,
-  X,
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { StatCard } from '@/components/Statcard';
-import { PeopleIcon } from '@/components/icons/icons';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import {
   Table,
   TableBody,
@@ -31,20 +30,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Modal } from '@/components/others/RhaceModal';
 import { formatDate } from '@/utils/formatDate';
 import { staffService, type StaffMember, type StaffRole } from '@/services/staff.service';
 
@@ -61,20 +47,34 @@ const ROLE_OPTIONS: { value: StaffRole; label: string }[] = [
   { value: 'staff', label: 'General Staff' },
 ];
 
-const roleLabel = (role?: string) =>
-  ROLE_OPTIONS.find((r) => r.value === role)?.label ?? (role || 'Staff');
+const roleLabel = (role?: string) => {
+  const found = ROLE_OPTIONS.find((r) => r.value === role)?.label;
+  if (found) return found;
+  if (!role) return 'Staff';
+  return role
+    .split('_')
+    .map((w) => (w ? w[0].toUpperCase() + w.slice(1) : w))
+    .join(' ');
+};
 
-const getStatusBadgeStyle = (status: string) => {
-  if (status === 'active') {
-    return 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100';
-  }
-  if (status === 'suspended') {
-    return 'bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100';
-  }
-  if (status === 'invited') {
-    return 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100';
-  }
-  return 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50';
+type VendorVertical = 'hotel' | 'club' | 'restaurant';
+
+const ROLES_BY_VERTICAL: Record<VendorVertical, StaffRole[]> = {
+  hotel: ['manager', 'front_desk', 'housekeeping', 'waiter', 'chef', 'cashier', 'staff'],
+  restaurant: ['manager', 'waiter', 'chef', 'bartender', 'cashier', 'staff'],
+  club: ['manager', 'vip_host', 'bartender', 'bar_staff', 'waiter', 'cashier', 'staff'],
+};
+
+const verticalFromPath = (pathname: string): VendorVertical => {
+  if (pathname.includes('/dashboard/hotel')) return 'hotel';
+  if (pathname.includes('/dashboard/club')) return 'club';
+  return 'restaurant';
+};
+
+const STATUS_STYLE: Record<string, string> = {
+  active: 'bg-res-secondary text-res-brand',
+  invited: 'bg-res-surface text-res-ink-muted',
+  suspended: 'bg-res-surface text-res-ink-muted line-through',
 };
 
 const getInitials = (name?: string) =>
@@ -86,6 +86,10 @@ const getInitials = (name?: string) =>
         .toUpperCase()
         .slice(0, 2)
     : '?';
+
+const inputClass =
+  'w-full rounded-res-sm border border-res-line bg-res-surface px-3 py-2.5 type-res-body font-normal text-res-ink outline-none placeholder:text-res-ink-muted focus:border-res-brand';
+const labelClass = 'type-res-small mb-1.5 block font-medium text-res-ink-muted';
 
 interface InviteFormState {
   name: string;
@@ -109,7 +113,48 @@ interface EditState {
   role: StaffRole;
 }
 
-export function AllStaffTab({ onRefresh }: { onRefresh?: () => void }) {
+function NativeSelect({
+  value,
+  onChange,
+  ariaLabel,
+  className,
+  children,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  ariaLabel: string;
+  className?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <span className={`relative inline-flex items-center ${className ?? ''}`}>
+      <select
+        value={value}
+        aria-label={ariaLabel}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full cursor-pointer appearance-none rounded-full bg-res-surface py-2.5 pr-9 pl-4 type-res-small font-semibold text-res-ink outline-none focus-visible:ring-2 focus-visible:ring-res-brand"
+      >
+        {children}
+      </select>
+      <ChevronDown className="pointer-events-none absolute right-3 h-4 w-4 text-res-ink-muted" />
+    </span>
+  );
+}
+
+export function AllStaffTab({
+  onRefresh,
+  vertical: verticalProp,
+}: {
+  onRefresh?: () => void;
+  /** Venue vertical — defaults to the dashboard URL (vendor shell). */
+  vertical?: VendorVertical;
+}) {
+  const { pathname } = useLocation();
+  const vertical = verticalProp ?? verticalFromPath(pathname);
+  const roleOptions = useMemo(
+    () => ROLE_OPTIONS.filter((r) => ROLES_BY_VERTICAL[vertical].includes(r.value)),
+    [vertical],
+  );
   const [staff, setStaff] = useState<StaffMember[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isExporting, setIsExporting] = useState(false);
@@ -283,217 +328,220 @@ export function AllStaffTab({ onRefresh }: { onRefresh?: () => void }) {
     }
   };
 
+  const statCards = [
+    { label: 'Total staff', value: stats.total, highlight: false },
+    { label: 'Active', value: stats.active, highlight: true },
+    { label: 'Invited', value: stats.invited, highlight: false },
+    { label: 'Suspended', value: stats.suspended, highlight: false },
+  ];
+
   if (isLoading) {
     return (
-      <div className="space-y-6 bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="space-y-5">
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
           {[...Array(4)].map((_, i) => (
-            <Skeleton key={i} className="h-28 w-full rounded-2xl border border-slate-100" />
+            <div key={i} className="rounded-res-md bg-res-card p-4 shadow-res-low">
+              <div className="h-3 w-1/2 animate-pulse rounded-full bg-res-surface" />
+              <div className="mt-2 h-6 w-1/3 animate-pulse rounded-full bg-res-surface" />
+            </div>
           ))}
         </div>
-        <Skeleton className="h-96 w-full rounded-2xl border border-slate-100" />
+        <div className="h-96 animate-pulse rounded-res-lg bg-res-card shadow-res-low" />
       </div>
     );
   }
 
   return (
-    <div className="space-y-6 bg-white ">
-      {/* Metrics Row */}
-      <Card className="shadow-none border border-slate-200 rounded-2xl bg-white overflow-hidden">
-        <CardContent className="p-6 bg-white">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <StatCard
-              title="Total Staff"
-              value={stats.total}
-              icon={PeopleIcon}
-              iconBg="bg-teal-50"
-              iconColor="text-teal-600"
-            />
-            <StatCard
-              title="Active"
-              value={stats.active}
-              icon={PeopleIcon}
-              iconBg="bg-emerald-50"
-              iconColor="text-emerald-600"
-            />
-            <StatCard
-              title="Invited"
-              value={stats.invited}
-              icon={PeopleIcon}
-              iconBg="bg-amber-50"
-              iconColor="text-amber-600"
-            />
-            <StatCard
-              title="Suspended"
-              value={stats.suspended}
-              icon={PeopleIcon}
-              iconBg="bg-rose-50"
-              iconColor="text-rose-600"
-            />
+    <div className="space-y-5">
+      {/* Metrics */}
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        {statCards.map((card) => (
+          <div
+            key={card.label}
+            className="rounded-res-md border border-res-line bg-res-card p-4 shadow-res-low"
+          >
+            <p className="type-res-caption font-medium tracking-[0.2px] text-res-ink-muted uppercase">
+              {card.label}
+            </p>
+            <p className={`type-res-h2 mt-1 ${card.highlight ? 'text-res-brand' : 'text-res-ink'}`}>
+              {card.value}
+            </p>
           </div>
-        </CardContent>
-      </Card>
-
-      {/* Control Bar */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 p-4 rounded-2xl bg-white border border-slate-200">
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="relative w-full sm:w-72">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-            <Input
-              placeholder="Search name, email, ID..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 h-10 border-slate-200 focus:border-teal-500 focus:ring-teal-500 rounded-xl bg-white text-slate-800 placeholder:text-slate-400 text-sm shadow-sm"
-            />
-          </div>
-
-          <Select value={filterRole} onValueChange={setFilterRole}>
-            <SelectTrigger className="w-full sm:w-[160px] h-10 border-slate-200 rounded-xl bg-white text-slate-700 text-sm focus:ring-teal-500 shadow-sm">
-              <SelectValue placeholder="Role" />
-            </SelectTrigger>
-            <SelectContent className="bg-white border-slate-200 rounded-xl shadow-xl">
-              <SelectItem value="all" className="focus:bg-teal-50 focus:text-teal-700">All roles</SelectItem>
-              {ROLE_OPTIONS.map((r) => (
-                <SelectItem key={r.value} value={r.value} className="focus:bg-teal-50 focus:text-teal-700">
-                  {r.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          <Select value={filterStatus} onValueChange={setFilterStatus}>
-            <SelectTrigger className="w-full sm:w-[150px] h-10 border-slate-200 rounded-xl bg-white text-slate-700 text-sm focus:ring-teal-500 shadow-sm">
-              <SelectValue placeholder="Status" />
-            </SelectTrigger>
-            <SelectContent className="bg-white border-slate-200 rounded-xl shadow-xl">
-              <SelectItem value="all" className="focus:bg-teal-50 focus:text-teal-700">All status</SelectItem>
-              <SelectItem value="active" className="focus:bg-teal-50 focus:text-teal-700">Active</SelectItem>
-              <SelectItem value="invited" className="focus:bg-teal-50 focus:text-teal-700">Invited</SelectItem>
-              <SelectItem value="suspended" className="focus:bg-teal-50 focus:text-teal-700">Suspended</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="flex items-center gap-2.5">
-          <Button
-            variant="outline"
-            onClick={handleRefresh}
-            className="h-10 border-slate-200 text-slate-700 hover:bg-slate-50 hover:text-teal-600 rounded-xl font-medium shadow-sm transition-all"
-          >
-            <RefreshCw className="w-4 h-4 mr-2" />
-            Refresh
-          </Button>
-          <Button
-            variant="outline"
-            onClick={handleExport}
-            disabled={isExporting}
-            className="h-10 border-slate-200 text-slate-700 hover:bg-slate-50 hover:text-teal-600 rounded-xl font-medium shadow-sm transition-all"
-          >
-            {isExporting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Download className="w-4 h-4 mr-2" />}
-            Export
-          </Button>
-          <Button
-            onClick={() => setShowInvite(true)}
-            className="h-10 bg-gradient-to-r from-teal-500 to-blue-600 hover:from-teal-600 hover:to-blue-700 text-white font-medium shadow-md shadow-teal-500/10 rounded-xl transition-all"
-          >
-            <Plus className="w-4 h-4 mr-1.5" /> Invite Staff
-          </Button>
-        </div>
+        ))}
       </div>
 
-      {/* Main Staff Table */}
-      <Card className="shadow-none border border-slate-200 rounded-2xl bg-white overflow-hidden">
-        <CardContent className="p-0 bg-white">
+      {/* Controls */}
+      <section className="rounded-res-lg bg-res-card p-4 shadow-res-low md:p-5">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex flex-col gap-2.5 sm:flex-row sm:flex-wrap sm:items-center">
+            <label className="flex items-center gap-2 rounded-full bg-res-surface px-4 py-2.5 sm:w-64">
+              <Search className="h-4 w-4 shrink-0 text-res-ink-muted" />
+              <input
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Search name, email, ID…"
+                className="type-res-body w-full bg-transparent font-normal text-res-ink outline-none placeholder:text-res-ink-muted"
+              />
+            </label>
+            <NativeSelect value={filterRole} onChange={setFilterRole} ariaLabel="Filter by role">
+              <option value="all">All roles</option>
+              {roleOptions.map((r) => (
+                <option key={r.value} value={r.value}>
+                  {r.label}
+                </option>
+              ))}
+            </NativeSelect>
+            <NativeSelect value={filterStatus} onChange={setFilterStatus} ariaLabel="Filter by status">
+              <option value="all">All statuses</option>
+              <option value="active">Active</option>
+              <option value="invited">Invited</option>
+              <option value="suspended">Suspended</option>
+            </NativeSelect>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={handleRefresh}
+              className="type-res-small flex cursor-pointer items-center gap-1.5 rounded-full bg-res-surface px-4 py-2.5 font-semibold text-res-ink transition-colors outline-none hover:text-res-brand focus-visible:ring-2 focus-visible:ring-res-brand"
+            >
+              <RefreshCw className="h-3.5 w-3.5" />
+              Refresh
+            </button>
+            <button
+              type="button"
+              onClick={handleExport}
+              disabled={isExporting}
+              className="type-res-small flex cursor-pointer items-center gap-1.5 rounded-full bg-res-surface px-4 py-2.5 font-semibold text-res-ink transition-colors outline-none hover:text-res-brand focus-visible:ring-2 focus-visible:ring-res-brand disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {isExporting ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <Download className="h-3.5 w-3.5" />
+              )}
+              Export
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowInvite(true)}
+              className="type-res-small flex cursor-pointer items-center gap-1.5 rounded-full bg-res-brand px-5 py-2.5 font-semibold text-res-ink-inverted shadow-res-low transition-colors outline-none hover:bg-res-brand-hover focus-visible:ring-2 focus-visible:ring-res-brand"
+            >
+              <Plus className="h-3.5 w-3.5" /> Invite staff
+            </button>
+          </div>
+        </div>
+
+        {/* Staff table */}
+        <div className="mt-4">
           {filteredStaff.length === 0 ? (
-            <div className="flex flex-col items-center justify-center p-16 text-center bg-white">
-              <div className="w-16 h-16 rounded-2xl bg-teal-50 border border-teal-100 flex items-center justify-center text-teal-600 mb-4 shadow-sm">
-                <Users className="w-8 h-8" />
+            <div className="rounded-res-md bg-res-surface px-6 py-12 text-center">
+              <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-res-card shadow-res-low">
+                <Users className="h-5 w-5 text-res-brand" />
               </div>
-              <h3 className="text-lg font-bold text-slate-900 mb-1">No staff found</h3>
-              <p className="text-slate-500 text-sm max-w-sm mb-6">
-                Try adjusting your filters or invite your first team member to start collaborating.
+              <p className="type-res-h3 text-res-ink">No team members found</p>
+              <p className="type-res-small mx-auto mt-1 max-w-sm font-normal text-res-ink-muted">
+                Try adjusting your filters, or invite your first team member.
               </p>
-              <Button
+              <button
+                type="button"
                 onClick={() => setShowInvite(true)}
-                className="bg-gradient-to-r from-teal-500 to-blue-600 hover:from-teal-600 hover:to-blue-700 text-white shadow-md rounded-xl"
+                className="type-res-small mt-4 inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-res-brand px-5 py-2.5 font-semibold text-res-ink-inverted shadow-res-low transition-colors hover:bg-res-brand-hover"
               >
-                <Plus className="w-4 h-4 mr-2" /> Invite Staff
-              </Button>
+                <Plus className="h-3.5 w-3.5" /> Invite staff
+              </button>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <Table>
+            <div className="hide-scrollbar -mx-1 overflow-x-auto px-1 py-1">
+              <Table className="w-full min-w-[760px]">
                 <TableHeader>
-                  <TableRow className="border-b border-slate-200 hover:bg-transparent">
-                    <TableHead className="font-semibold text-slate-600 text-xs uppercase tracking-wider py-4 pl-6">Staff Member</TableHead>
-                    <TableHead className="font-semibold text-slate-600 text-xs uppercase tracking-wider py-4">Contact</TableHead>
-                    <TableHead className="font-semibold text-slate-600 text-xs uppercase tracking-wider py-4">Role</TableHead>
-                    <TableHead className="font-semibold text-slate-600 text-xs uppercase tracking-wider py-4">Status</TableHead>
-                    <TableHead className="font-semibold text-slate-600 text-xs uppercase tracking-wider py-4">Added On</TableHead>
-                    <TableHead className="font-semibold text-slate-600 text-xs uppercase tracking-wider py-4 text-right pr-6">Actions</TableHead>
+                  <TableRow className="border-b border-res-line hover:bg-transparent">
+                    <TableHead className="type-res-caption py-3 pr-4 pl-4 font-medium tracking-[0.2px] text-res-ink-muted uppercase">
+                      Team member
+                    </TableHead>
+                    <TableHead className="type-res-caption py-3 pr-4 font-medium tracking-[0.2px] text-res-ink-muted uppercase">
+                      Contact
+                    </TableHead>
+                    <TableHead className="type-res-caption py-3 pr-4 font-medium tracking-[0.2px] text-res-ink-muted uppercase">
+                      Role
+                    </TableHead>
+                    <TableHead className="type-res-caption py-3 pr-4 font-medium tracking-[0.2px] text-res-ink-muted uppercase">
+                      Status
+                    </TableHead>
+                    <TableHead className="type-res-caption py-3 pr-4 font-medium tracking-[0.2px] text-res-ink-muted uppercase">
+                      Added
+                    </TableHead>
+                    <TableHead className="type-res-caption py-3 pr-4 text-right font-medium tracking-[0.2px] text-res-ink-muted uppercase">
+                      Actions
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
-                <TableBody className="divide-y divide-slate-100 bg-white">
+                <TableBody>
                   {filteredStaff.map((member) => (
-                    <TableRow key={member._id} className="hover:bg-teal-50/20 transition-colors group">
-                      <TableCell className="py-4 pl-6">
-                        <div className="flex items-center gap-3.5">
-                          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-500 to-blue-600 flex items-center justify-center text-white font-semibold text-sm shadow-sm ring-2 ring-white">
+                    <TableRow
+                      key={member._id}
+                      className="border-b border-res-line transition-colors last:border-0 hover:bg-res-surface/60"
+                    >
+                      <TableCell className="py-3 pr-4 pl-4">
+                        <div className="flex items-center gap-3">
+                          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-res-brand type-res-small font-semibold text-res-ink-inverted">
                             {getInitials(member.name)}
-                          </div>
-                          <div>
-                            <div className="font-semibold text-slate-900 text-sm group-hover:text-teal-700 transition-colors">
+                          </span>
+                          <span className="min-w-0">
+                            <span className="type-res-body block truncate font-semibold text-res-ink">
                               {member.name}
-                            </div>
-                            <div className="text-xs text-slate-400 font-mono mt-0.5">{member.staffId}</div>
-                          </div>
+                            </span>
+                            <span className="type-res-small block font-mono font-normal text-res-ink-muted">
+                              {member.staffId}
+                            </span>
+                          </span>
                         </div>
                       </TableCell>
-                      <TableCell className="py-4">
-                        <div className="text-sm font-medium text-slate-800">{member.email}</div>
-                        <div className="text-xs text-slate-400 font-mono mt-0.5">{member.phone || '—'}</div>
+                      <TableCell className="py-3 pr-4">
+                        <span className="type-res-body block font-medium text-res-ink">
+                          {member.email}
+                        </span>
+                        <span className="type-res-small block font-normal text-res-ink-muted">
+                          {member.phone || '—'}
+                        </span>
                       </TableCell>
-                      <TableCell className="py-4">
-                        <Badge
-                          variant="outline"
-                          className="bg-white text-slate-700 border-slate-200 font-medium px-2.5 py-1 rounded-lg text-xs shadow-2xs"
-                        >
+                      <TableCell className="py-3 pr-4">
+                        <span className="type-res-small rounded-full bg-res-surface px-2.5 py-1 font-semibold whitespace-nowrap text-res-ink-muted">
                           {roleLabel(member.role)}
-                        </Badge>
+                        </span>
                       </TableCell>
-                      <TableCell className="py-4">
-                        <Badge
-                          variant="outline"
-                          className={`capitalize px-2.5 py-1 rounded-lg text-xs font-semibold border ${getStatusBadgeStyle(member.status)}`}
+                      <TableCell className="py-3 pr-4">
+                        <span
+                          className={`type-res-small inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 font-semibold whitespace-nowrap ${STATUS_STYLE[member.status] ?? 'bg-res-surface text-res-ink-muted'}`}
                         >
-                          <span className="flex items-center gap-1.5">
-                            {member.status === 'active' && (
-                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                            )}
-                            {member.status}
-                          </span>
-                        </Badge>
+                          {member.status === 'active' && (
+                            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-res-brand" />
+                          )}
+                          <span className="capitalize">{member.status}</span>
+                        </span>
                       </TableCell>
-                      <TableCell className="py-4 text-sm text-slate-500 font-medium">
+                      <TableCell className="type-res-body py-3 pr-4 font-normal whitespace-nowrap text-res-ink-muted">
                         {formatDate(member.createdAt)}
                       </TableCell>
-                      <TableCell className="py-4 text-right pr-6">
+                      <TableCell className="py-3 pr-4 text-right">
                         {busyId === member._id ? (
-                          <div className="flex justify-end pr-2">
-                            <Loader2 className="w-4 h-4 animate-spin text-teal-600" />
-                          </div>
+                          <span className="inline-flex justify-end pr-2">
+                            <Loader2 className="h-4 w-4 animate-spin text-res-brand" />
+                          </span>
                         ) : (
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-8 w-8 p-0 hover:bg-slate-100 rounded-lg text-slate-500 hover:text-slate-800 transition-colors"
+                              <button
+                                type="button"
+                                aria-label={`Actions for ${member.name}`}
+                                className="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-full text-res-ink-muted transition-colors outline-none hover:bg-res-surface hover:text-res-ink focus-visible:ring-2 focus-visible:ring-res-brand"
                               >
-                                <MoreVertical className="w-4 h-4" />
-                              </Button>
+                                <MoreVertical className="h-4 w-4" />
+                              </button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-48 bg-white border-slate-200 shadow-xl rounded-xl p-1.5 space-y-0.5">
+                            <DropdownMenuContent
+                              align="end"
+                              className="w-48 rounded-res-md border-res-line bg-res-card p-1.5 shadow-res-medium"
+                            >
                               <DropdownMenuItem
                                 onClick={() =>
                                   setEdit({
@@ -502,36 +550,36 @@ export function AllStaffTab({ onRefresh }: { onRefresh?: () => void }) {
                                     role: (member.role as StaffRole) || 'staff',
                                   })
                                 }
-                                className="rounded-lg text-slate-700 focus:bg-teal-50 focus:text-teal-700 font-medium text-xs py-2 cursor-pointer"
+                                className="type-res-small cursor-pointer rounded-res-sm font-medium text-res-ink focus:bg-res-surface focus:text-res-brand"
                               >
-                                <UserCog className="w-4 h-4 mr-2 text-slate-400" /> Edit role
+                                <UserCog className="mr-2 h-4 w-4 text-res-ink-muted" /> Edit role
                               </DropdownMenuItem>
                               <DropdownMenuItem
                                 onClick={() => handleResend(member)}
-                                className="rounded-lg text-slate-700 focus:bg-teal-50 focus:text-teal-700 font-medium text-xs py-2 cursor-pointer"
+                                className="type-res-small cursor-pointer rounded-res-sm font-medium text-res-ink focus:bg-res-surface focus:text-res-brand"
                               >
-                                <Mail className="w-4 h-4 mr-2 text-slate-400" /> Resend invite
+                                <Mail className="mr-2 h-4 w-4 text-res-ink-muted" /> Resend invite
                               </DropdownMenuItem>
                               <DropdownMenuItem
                                 onClick={() => handleToggleStatus(member)}
-                                className="rounded-lg text-slate-700 focus:bg-teal-50 focus:text-teal-700 font-medium text-xs py-2 cursor-pointer"
+                                className="type-res-small cursor-pointer rounded-res-sm font-medium text-res-ink focus:bg-res-surface focus:text-res-brand"
                               >
-                                <Pencil className="w-4 h-4 mr-2 text-slate-400" />
+                                <Pencil className="mr-2 h-4 w-4 text-res-ink-muted" />
                                 {member.status === 'active' ? 'Suspend' : 'Activate'}
                               </DropdownMenuItem>
                               {member.status !== 'suspended' && (
                                 <DropdownMenuItem
                                   onClick={() => handleRevoke(member)}
-                                  className="rounded-lg text-slate-700 focus:bg-amber-50 focus:text-amber-700 font-medium text-xs py-2 cursor-pointer"
+                                  className="type-res-small cursor-pointer rounded-res-sm font-medium text-res-ink focus:bg-res-surface focus:text-res-brand"
                                 >
-                                  <UserX className="w-4 h-4 mr-2 text-amber-500" /> Revoke access
+                                  <UserX className="mr-2 h-4 w-4 text-res-ink-muted" /> Revoke access
                                 </DropdownMenuItem>
                               )}
                               <DropdownMenuItem
-                                className="rounded-lg text-rose-600 focus:bg-rose-50 focus:text-rose-700 font-medium text-xs py-2 cursor-pointer"
                                 onClick={() => handleDelete(member)}
+                                className="type-res-small cursor-pointer rounded-res-sm font-medium text-res-ink-muted focus:bg-res-surface focus:text-res-ink"
                               >
-                                <Trash2 className="w-4 h-4 mr-2 text-rose-500" /> Delete
+                                <Trash2 className="mr-2 h-4 w-4" /> Delete
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
@@ -543,166 +591,154 @@ export function AllStaffTab({ onRefresh }: { onRefresh?: () => void }) {
               </Table>
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </section>
 
-      {/* Invite Modal Overlay */}
-      {showInvite && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto shadow-2xl border border-slate-200">
-            <div className="p-7 space-y-5 bg-white">
-              <div className="flex justify-between items-center border-b border-slate-100 pb-4">
-                <div>
-                  <h2 className="text-xl font-bold text-slate-900">Invite Staff</h2>
-                  <p className="text-xs text-slate-500 mt-0.5">Send an onboarding invite to a team member</p>
-                </div>
-                <button
-                  onClick={() => setShowInvite(false)}
-                  className="text-slate-400 hover:text-slate-600 hover:bg-slate-100 p-2 rounded-xl transition-all"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-
-              <div className="space-y-1.5">
-                <Label className="text-xs font-semibold text-slate-700">Full Name</Label>
-                <Input
-                  placeholder="Jane Doe"
-                  value={invite.name}
-                  onChange={(e) => setInvite((p) => ({ ...p, name: e.target.value }))}
-                  className="h-10 border-slate-200 focus:border-teal-500 focus:ring-teal-500 rounded-xl bg-white text-slate-800 text-sm shadow-2xs"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <Label className="text-xs font-semibold text-slate-700">Email Address</Label>
-                <Input
-                  type="email"
-                  placeholder="jane@example.com"
-                  value={invite.email}
-                  onChange={(e) => setInvite((p) => ({ ...p, email: e.target.value }))}
-                  className="h-10 border-slate-200 focus:border-teal-500 focus:ring-teal-500 rounded-xl bg-white text-slate-800 text-sm shadow-2xs"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold text-slate-700">Role</Label>
-                  <Select
-                    value={invite.role}
-                    onValueChange={(v) => setInvite((p) => ({ ...p, role: v as StaffRole }))}
-                  >
-                    <SelectTrigger className="h-10 border-slate-200 rounded-xl bg-white text-slate-800 text-sm focus:ring-teal-500 shadow-2xs">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="bg-white border-slate-200 rounded-xl shadow-xl">
-                      {ROLE_OPTIONS.map((r) => (
-                        <SelectItem key={r.value} value={r.value} className="focus:bg-teal-50 focus:text-teal-700">
-                          {r.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold text-slate-700">Phone (optional)</Label>
-                  <Input
-                    placeholder="+234..."
-                    value={invite.phone}
-                    onChange={(e) => setInvite((p) => ({ ...p, phone: e.target.value }))}
-                    className="h-10 border-slate-200 focus:border-teal-500 focus:ring-teal-500 rounded-xl bg-white text-slate-800 text-sm shadow-2xs"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <Label className="text-xs font-semibold text-slate-700">Invite valid for (hours)</Label>
-                <Input
-                  type="number"
-                  min={1}
-                  value={invite.validHours}
-                  onChange={(e) =>
-                    setInvite((p) => ({ ...p, validHours: Number(e.target.value) || 24 }))
-                  }
-                  className="h-10 border-slate-200 focus:border-teal-500 focus:ring-teal-500 rounded-xl bg-white text-slate-800 text-sm shadow-2xs"
-                />
-              </div>
-
-              <div className="flex gap-3 pt-3 border-t border-slate-100">
-                <Button
-                  variant="outline"
-                  className="flex-1 h-10 border-slate-200 text-slate-700 hover:bg-slate-50 rounded-xl font-medium"
-                  onClick={() => setShowInvite(false)}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  className="flex-1 h-10 bg-gradient-to-r from-teal-500 to-blue-600 hover:from-teal-600 hover:to-blue-700 text-white font-medium shadow-md shadow-teal-500/10 rounded-xl"
-                  onClick={handleInvite}
-                  disabled={isInviting}
-                >
-                  {isInviting ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Send Invite'}
-                </Button>
-              </div>
+      {/* Invite modal */}
+      <Modal
+        isOpen={showInvite}
+        onClose={() => setShowInvite(false)}
+        title="Invite staff"
+        subtitle="Send an onboarding invite to a team member."
+        footer={
+          <>
+            <button
+              type="button"
+              onClick={() => setShowInvite(false)}
+              className="type-res-small cursor-pointer rounded-full border border-res-line bg-res-card px-4 py-2.5 font-semibold text-res-ink hover:text-res-brand"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleInvite}
+              disabled={isInviting}
+              className="type-res-small flex cursor-pointer items-center gap-1.5 rounded-full bg-res-brand px-5 py-2.5 font-semibold text-res-ink-inverted shadow-res-low transition-colors hover:bg-res-brand-hover disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {isInviting && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+              {isInviting ? 'Sending…' : 'Send invite'}
+            </button>
+          </>
+        }
+      >
+        <div className="space-y-4">
+          <div>
+            <label className={labelClass} htmlFor="invite-name">
+              Full name
+            </label>
+            <input
+              id="invite-name"
+              placeholder="Jane Doe"
+              value={invite.name}
+              onChange={(e) => setInvite((p) => ({ ...p, name: e.target.value }))}
+              className={inputClass}
+            />
+          </div>
+          <div>
+            <label className={labelClass} htmlFor="invite-email">
+              Email
+            </label>
+            <input
+              id="invite-email"
+              type="email"
+              placeholder="jane@example.com"
+              value={invite.email}
+              onChange={(e) => setInvite((p) => ({ ...p, email: e.target.value }))}
+              className={inputClass}
+            />
+          </div>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <div>
+              <label className={labelClass} htmlFor="invite-role">
+                Role
+              </label>
+              <select
+                id="invite-role"
+                value={invite.role}
+                onChange={(e) => setInvite((p) => ({ ...p, role: e.target.value as StaffRole }))}
+                className={inputClass}
+              >
+                {roleOptions.map((r) => (
+                  <option key={r.value} value={r.value}>
+                    {r.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className={labelClass} htmlFor="invite-phone">
+                Phone <span className="font-normal">(optional)</span>
+              </label>
+              <input
+                id="invite-phone"
+                placeholder="+234…"
+                value={invite.phone}
+                onChange={(e) => setInvite((p) => ({ ...p, phone: e.target.value }))}
+                className={inputClass}
+              />
             </div>
           </div>
-        </div>
-      )}
-
-      {/* Edit Role Modal Overlay */}
-      {edit.open && edit.staff && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl w-full max-w-sm shadow-2xl border border-slate-200 p-6 space-y-5">
-            <div className="flex justify-between items-center border-b border-slate-100 pb-3">
-              <div>
-                <h2 className="text-lg font-bold text-slate-900">Edit Role</h2>
-                <p className="text-xs text-slate-500 font-medium">{edit.staff.name}</p>
-              </div>
-              <button
-                onClick={() => setEdit({ open: false, staff: null, role: 'staff' })}
-                className="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg transition-colors"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-slate-700">Select New Role</Label>
-              <Select
-                value={edit.role}
-                onValueChange={(v) => setEdit((p) => ({ ...p, role: v as StaffRole }))}
-              >
-                <SelectTrigger className="h-10 border-slate-200 rounded-xl bg-white text-slate-800 text-sm focus:ring-teal-500 shadow-2xs">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-white border-slate-200 rounded-xl shadow-xl">
-                  {ROLE_OPTIONS.map((r) => (
-                    <SelectItem key={r.value} value={r.value} className="focus:bg-teal-50 focus:text-teal-700">
-                      {r.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="flex gap-3 pt-2">
-              <Button
-                variant="outline"
-                className="flex-1 h-10 border-slate-200 text-slate-700 hover:bg-slate-50 rounded-xl font-medium"
-                onClick={() => setEdit({ open: false, staff: null, role: 'staff' })}
-              >
-                Cancel
-              </Button>
-              <Button
-                className="flex-1 h-10 bg-gradient-to-r from-teal-500 to-blue-600 hover:from-teal-600 hover:to-blue-700 text-white font-medium shadow-md shadow-teal-500/10 rounded-xl"
-                onClick={handleSaveRole}
-              >
-                Save
-              </Button>
-            </div>
+          <div>
+            <label className={labelClass} htmlFor="invite-hours">
+              Invite valid for (hours)
+            </label>
+            <input
+              id="invite-hours"
+              type="number"
+              min={1}
+              value={invite.validHours}
+              onChange={(e) =>
+                setInvite((p) => ({ ...p, validHours: Number(e.target.value) || 24 }))
+              }
+              className={inputClass}
+            />
           </div>
         </div>
-      )}
+      </Modal>
+
+      {/* Edit role modal */}
+      <Modal
+        isOpen={edit.open && !!edit.staff}
+        onClose={() => setEdit({ open: false, staff: null, role: 'staff' })}
+        title="Edit role"
+        subtitle={edit.staff?.name ?? ''}
+        footer={
+          <>
+            <button
+              type="button"
+              onClick={() => setEdit({ open: false, staff: null, role: 'staff' })}
+              className="type-res-small cursor-pointer rounded-full border border-res-line bg-res-card px-4 py-2.5 font-semibold text-res-ink hover:text-res-brand"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleSaveRole}
+              className="type-res-small cursor-pointer rounded-full bg-res-brand px-5 py-2.5 font-semibold text-res-ink-inverted shadow-res-low transition-colors hover:bg-res-brand-hover"
+            >
+              Save
+            </button>
+          </>
+        }
+      >
+        <div>
+          <label className={labelClass} htmlFor="edit-role">
+            Role
+          </label>
+          <select
+            id="edit-role"
+            value={edit.role}
+            onChange={(e) => setEdit((p) => ({ ...p, role: e.target.value as StaffRole }))}
+            className={inputClass}
+          >
+            {roleOptions.map((r) => (
+              <option key={r.value} value={r.value}>
+                {r.label}
+              </option>
+            ))}
+          </select>
+        </div>
+      </Modal>
     </div>
   );
 }

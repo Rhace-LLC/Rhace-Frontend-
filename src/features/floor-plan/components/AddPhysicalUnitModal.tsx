@@ -28,8 +28,15 @@ interface AddPhysicalUnitModalProps {
   onPlace: (input: UnitPlacementInput) => void;
 }
 
+const KIND_LABEL: Record<Vertical, string> = {
+  hotel: 'Room',
+  club: 'Table',
+  restaurant: 'Table',
+};
+
 const inputClass =
-  'w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm text-gray-800 focus:border-teal-500 focus:outline-none';
+  'w-full rounded-res-sm border border-res-line bg-res-surface px-3 py-2.5 type-res-body font-normal text-res-ink outline-none placeholder:text-res-ink-muted focus:border-res-brand';
+const labelClass = 'type-res-small mb-1.5 block font-medium text-res-ink-muted';
 
 export function AddPhysicalUnitModal({
   vertical,
@@ -46,6 +53,7 @@ export function AddPhysicalUnitModal({
   onPlace,
 }: AddPhysicalUnitModalProps) {
   const object = CATEGORY_OBJECTS[vertical];
+  const kind = KIND_LABEL[vertical];
   const [designation, setDesignation] = useState('');
   const [blueprintId, setBlueprintId] = useState('');
   const [floor, setFloor] = useState('');
@@ -81,53 +89,71 @@ export function AddPhysicalUnitModal({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Add Physical Unit to Canvas"
-      subtitle="Link this canvas node to a blueprint template."
+      title={`Add ${kind.toLowerCase()}`}
+      subtitle={`Place it on the floor map${selected ? ` as a ${selected.name}` : ''}.`}
       footer={
         <>
           <button
+            type="button"
             onClick={onClose}
-            className="rounded-lg border border-gray-300 px-3 py-2 text-xs font-medium text-gray-700 hover:bg-gray-50"
+            className="type-res-small cursor-pointer rounded-full border border-res-line bg-res-card px-4 py-2.5 font-semibold text-res-ink hover:text-res-brand"
           >
             Cancel
           </button>
           <button
+            type="button"
             onClick={handlePlace}
-            className="rounded-lg bg-teal-700 px-3 py-2 text-xs font-medium text-white hover:bg-teal-800"
+            disabled={!blueprintId}
+            className="type-res-small cursor-pointer rounded-full bg-res-brand px-5 py-2.5 font-semibold text-res-ink-inverted shadow-res-low transition-colors hover:bg-res-brand-hover disabled:cursor-not-allowed disabled:opacity-50"
           >
-            Place Unit
+            Place {kind.toLowerCase()}
           </button>
         </>
       }
     >
-      <div className="space-y-4 text-sm">
-        <label className="block">
-          <span className="mb-1 block text-xs font-medium text-gray-500">
-            Unit Designation / Number
-          </span>
+      <div className="space-y-4">
+        <div>
+          <label className={labelClass} htmlFor="place-name">
+            Name
+          </label>
           <input
+            id="place-name"
             value={designation}
             onChange={(e) => setDesignation(e.target.value)}
-            placeholder="Room 402 · VIP Table V03 · Table T12"
+            placeholder={vertical === 'hotel' ? 'Room 402' : 'Table T12'}
             className={inputClass}
           />
-        </label>
+        </div>
 
-        <label className="block">
-          <span className="mb-1 block text-xs font-medium text-gray-500">Assign Inventory Blueprint</span>
-          <select value={blueprintId} onChange={(e) => setBlueprintId(e.target.value)} className={inputClass}>
+        <div>
+          <label className={labelClass} htmlFor="place-type">
+            Type
+          </label>
+          <select
+            id="place-type"
+            value={blueprintId}
+            onChange={(e) => setBlueprintId(e.target.value)}
+            className={inputClass}
+          >
             {blueprints.map((blueprint) => (
               <option key={blueprint.id} value={blueprint.id}>
                 {blueprint.name} ({formatBlueprintPricing(getBlueprintPricing(blueprint))} · {blueprint.capacity} guests)
               </option>
             ))}
           </select>
-        </label>
+        </div>
 
-        <div className="grid grid-cols-2 gap-3">
-          <label className="block">
-            <span className="mb-1 block text-xs font-medium text-gray-500">Floor Level</span>
-            <select value={floor} onChange={(e) => setFloor(e.target.value)} className={inputClass}>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div>
+            <label className={labelClass} htmlFor="place-floor">
+              Floor
+            </label>
+            <select
+              id="place-floor"
+              value={floor}
+              onChange={(e) => setFloor(e.target.value)}
+              className={inputClass}
+            >
               {floors.length === 0 && <option value="">Default</option>}
               {floors.map((option) => (
                 <option key={option} value={option}>
@@ -135,10 +161,17 @@ export function AddPhysicalUnitModal({
                 </option>
               ))}
             </select>
-          </label>
-          <label className="block">
-            <span className="mb-1 block text-xs font-medium text-gray-500">Section / Zone</span>
-            <select value={section} onChange={(e) => setSection(e.target.value)} className={inputClass}>
+          </div>
+          <div>
+            <label className={labelClass} htmlFor="place-section">
+              Section
+            </label>
+            <select
+              id="place-section"
+              value={section}
+              onChange={(e) => setSection(e.target.value)}
+              className={inputClass}
+            >
               {sections.length === 0 && <option value="">Unassigned</option>}
               {sections.map((option) => (
                 <option key={option} value={option}>
@@ -146,23 +179,30 @@ export function AddPhysicalUnitModal({
                 </option>
               ))}
             </select>
-          </label>
+          </div>
         </div>
 
-        <label className="block">
-          <span className="mb-1 block text-xs font-medium text-gray-500">Initial Operational State</span>
-          <select value={state} onChange={(e) => setState(e.target.value as UnitState)} className={inputClass}>
+        <div>
+          <label className={labelClass} htmlFor="place-status">
+            Starting status
+          </label>
+          <select
+            id="place-status"
+            value={state}
+            onChange={(e) => setState(e.target.value as UnitState)}
+            className={inputClass}
+          >
             {stateOptions(vertical).map((option) => (
               <option key={option.value} value={option.value}>
                 {option.label}
               </option>
             ))}
           </select>
-        </label>
-
-        <div className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-xs text-gray-500">
-          Canvas dimensions (inherited from blueprint): {width}px × {height}px
         </div>
+
+        <p className="type-res-small rounded-res-md bg-res-surface px-4 py-3 font-normal text-res-ink-muted">
+          Map size comes from the type: {width}px × {height}px.
+        </p>
       </div>
     </Modal>
   );

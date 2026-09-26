@@ -140,7 +140,9 @@ export function ManagerBoard({
                         </div>
                       )}
                       {plugin.renderManageCard ? (
-                        plugin.renderManageCard(entity)
+                        plugin.renderManageCard(entity, {
+                          onManage: () => onManageUnit?.(entity.entityId),
+                        })
                       ) : (
                         <div className="h-40 rounded-xl border border-gray-200 bg-white p-2 shadow-sm">
                           {plugin.renderTile(entity, {
@@ -150,7 +152,7 @@ export function ManagerBoard({
                           })}
                         </div>
                       )}
-                      {onManageUnit && (
+                      {!plugin.renderManageCard && onManageUnit && (
                         <button
                           onClick={() => onManageUnit(entity.entityId)}
                           className="absolute bottom-2 right-2 z-10 rounded-md border border-teal-200 bg-white/95 px-2 py-0.5 text-[10px] font-medium text-teal-700 hover:bg-teal-50"

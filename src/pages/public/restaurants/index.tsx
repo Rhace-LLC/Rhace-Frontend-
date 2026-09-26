@@ -5,15 +5,13 @@ import RestaurantImages2 from '@/components/user/ui/Image2';
 import RestaurantImages from '@/components/user/ui/Image';
 import RestaurantInfo from './_subcomponents/RestaurantInfo';
 import MapComponent from '@/components/user/ui/mapComponent';
-import { Mail, MapPin, Phone, Star } from 'lucide-react';
+import { Clock, Mail, MapPin, Phone } from 'lucide-react';
 import { Link, useParams } from 'react-router';
-// import { RestaurantData } from "@/lib/api";
 import { useEffect, useState } from 'react';
 import { userService } from '@/services/user.service';
 import StarRating from '@/components/ui/starrating';
 import UniversalLoader from '@/components/user/ui/LogoLoader';
 import Footer from '@/navigation/user_layout/_sub_component/Footer';
-import TableGrid from '@/components/TableGridRecommendations';
 
 const RestaurantsPage = () => {
   const { id } = useParams();
@@ -31,12 +29,7 @@ const RestaurantsPage = () => {
     openingHours: '',
     priceRange: '',
     amenities: [''],
-    menu: [
-      {
-        name: '',
-        description: '',
-      },
-    ],
+    menu: [{ name: '', description: '' }],
     openingTime: '',
     closingTime: '',
     cuisines: [''],
@@ -60,105 +53,156 @@ const RestaurantsPage = () => {
 
   if (isLoading) return <UniversalLoader fullscreen type="vendor-page" />;
 
+  const rating = Number(restaurant.rating) || 0;
+  const reviewCount = Number(restaurant.reviews) || 0;
+  const cuisines: string[] = Array.isArray(restaurant.cuisines)
+    ? restaurant.cuisines.filter(Boolean)
+    : [];
+
   return (
-    <>
+    <div className="min-h-screen bg-res-surface">
       <div className="hidden md:block">
         <Header />
       </div>
-      <main className="mx-auto md:mt-[85px] pb-20 md:mb-4 md:py-8 max-w-7xl md:px-6 lg:px-8">
-        <div className="flex flex-col md:flex-row gap-8 w-full">
-          <div className="w-full space-y-4 md:space-y-8">
-            <div className="col-span-2">
-              <div className="w-full space-y-6">
-                <RestaurantImages
-                  images={restaurant?.profileImages ?? []}
-                  name={restaurant.businessName}
-                />
-                <RestaurantImages2
-                  vendor={restaurant}
-                  images={restaurant?.profileImages ?? []}
-                  name={restaurant.businessName}
-                />
-                <div className="space-y-2">
-                  <div className="flex flex-col md:flex-row md:justify-between md:items-cente w-full gap-4">
-                    <div className="flex justify-between items-center pt-2 md:pt-0 px-4 md:px-0">
-                      <h1 className="text-2xl text-[#111827] font-semibold">
-                        {restaurant.businessName}{' '}
-                      </h1>{' '}
-                      <span className="px-2 py-0.5 rounded-full border border-[#37703F] bg-[#D1FAE5] text-xs text-[#37703F]">
-                        {' '}
-                        Open
-                      </span>
-                    </div>
-                    <RestaurantSaveCopy type="restaurants" id={id} vendor={restaurant} />
-                  </div>
-                  <div className="md:flex hidden gap-1 items-center text-xs">
-                    <StarRating size={16} rating={Number(restaurant.rating)} readOnly />
-                    <span className="font-semibold">{restaurant.rating.toFixed(1)}</span>
-                    <span className="text-gray-600">
-                      ({restaurant.reviews.toLocaleString()} reviews)
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="space-y-8 px-4 md:px-0">
-            <div className="rounded-2xl bg-[#E7F0F0] border border-[#E5E7EB] p-1">
-              <MapComponent address={restaurant.address} />
-            </div>
-            <div className="max-w-sm w-full p-4 rounded-2xl bg-white space-y-4 text-sm text-gray-800">
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-1">Location</h3>
-                <div className="flex items-start gap-2">
-                  <MapPin className="w-5 h-5 text-black mt-1" />
-                  <p>{restaurant.address}</p>
-                </div>
+      <main className="mx-auto max-w-7xl space-y-5 px-4 pt-4 pb-24 md:mt-[85px] md:space-y-6 md:px-6 md:py-8 lg:px-8">
+        {/* Row 1 — hero card */}
+        <section className="rounded-res-lg bg-res-card p-5 shadow-res-low md:p-7">
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="type-res-small rounded-full bg-res-secondary px-3 py-1 font-semibold text-res-brand">
+                  Open
+                </span>
+                {restaurant.priceRange ? (
+                  <span className="type-res-small rounded-full bg-res-surface px-3 py-1 font-semibold text-res-ink-muted">
+                    {restaurant.priceRange}
+                  </span>
+                ) : null}
+                {cuisines.slice(0, 2).map((c) => (
+                  <span
+                    key={c}
+                    className="type-res-small rounded-full bg-res-surface px-3 py-1 font-medium text-res-ink-muted"
+                  >
+                    {c}
+                  </span>
+                ))}
               </div>
 
-              <div>
-                <h3 className="font-semibold w-full text-gray-900 mb-1">Contact Information</h3>
-                <div className="flex items-center gap-2">
-                  <Phone className="w-5 h-5 text-black mt-1" />
-                  <a href={`tel:${restaurant.phone}`} className="hover:underline">
+              <h1 className="type-res-h1 mt-3 text-res-ink">{restaurant.businessName}</h1>
+
+              <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1">
+                <StarRating size={16} rating={rating} readOnly />
+                <span className="type-res-body font-semibold text-res-ink">
+                  {rating.toFixed(1)}
+                </span>
+                <span className="type-res-small text-res-ink-muted">
+                  ({reviewCount.toLocaleString()} reviews)
+                </span>
+                {restaurant.openingTime ? (
+                  <span className="type-res-small flex items-center gap-1 text-res-ink-muted">
+                    <span className="inline-block size-1 rounded-full bg-res-line" />
+                    <Clock className="h-3.5 w-3.5" />
+                    {restaurant.openingTime} – {restaurant.closingTime}
+                  </span>
+                ) : null}
+              </div>
+
+              {restaurant.businessDescription ? (
+                <p className="type-res-body mt-3 line-clamp-2 max-w-2xl font-normal text-res-ink-muted">
+                  {restaurant.businessDescription}
+                </p>
+              ) : null}
+
+              <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:items-center">
+                <Link
+                  to={`/order/${id}`}
+                  className="type-res-body rounded-full bg-res-brand px-6 py-3 text-center font-semibold text-res-ink-inverted shadow-res-low transition-colors hover:bg-res-brand-hover"
+                >
+                  Quick order
+                </Link>
+                <a
+                  href="#menu"
+                  className="type-res-body rounded-full bg-res-surface px-6 py-3 text-center font-semibold text-res-ink transition-colors hover:text-res-brand"
+                >
+                  View menu
+                </a>
+              </div>
+
+              <div className="mt-4 hidden md:block">
+                <RestaurantSaveCopy type="restaurants" id={id} vendor={restaurant} />
+              </div>
+            </div>
+
+            {/* Contact inset */}
+            <aside className="w-full shrink-0 rounded-res-md bg-res-surface p-4 lg:w-[320px]">
+              <p className="type-res-small font-semibold tracking-wide text-res-ink-muted uppercase">
+                Visit / Contact
+              </p>
+              <div className="type-res-body mt-3 space-y-3 font-normal text-res-ink">
+                <div className="flex items-start gap-2.5">
+                  <span className="rounded-res-sm bg-res-card p-2 shadow-res-low">
+                    <MapPin className="h-4 w-4 text-res-brand" />
+                  </span>
+                  <p className="pt-1">{restaurant.address}</p>
+                </div>
+                <div className="flex items-center gap-2.5">
+                  <span className="rounded-res-sm bg-res-card p-2 shadow-res-low">
+                    <Phone className="h-4 w-4 text-res-brand" />
+                  </span>
+                  <a href={`tel:${restaurant.phone}`} className="hover:text-res-brand">
                     {restaurant.phone}
                   </a>
                 </div>
-                <div className="flex items-center gap-2 mt-2">
-                  <Mail className="w-5 h-5 text-black mt-1" />
-                  <a href={`mailto:${restaurant.email}`} className="hover:underline">
+                <div className="flex items-center gap-2.5">
+                  <span className="rounded-res-sm bg-res-card p-2 shadow-res-low">
+                    <Mail className="h-4 w-4 text-res-brand" />
+                  </span>
+                  <a
+                    href={`mailto:${restaurant.email}`}
+                    className="truncate hover:text-res-brand"
+                  >
                     {restaurant.email}
                   </a>
                 </div>
               </div>
-
-              <div>
-                <a href="#" className="text-green-700 font-medium underline hover:text-green-900">
-                  Restaurant website
-                </a>
-              </div>
-            </div>
+            </aside>
           </div>
-        </div>
-        
-            <div className="col-span-2">
-              <RestaurantInfo data={restaurant} />
-            </div>
+        </section>
 
-        <div className="mt-10 flex justify-end px-4 md:px-0">
-          <Link
-            to={`/order/${id}`}
-            className="rounded-xl border border-[#0A6C6D] px-4 py-2 text-sm font-medium text-[#0A6C6D] hover:bg-[#0A6C6D]/5"
-          >
-            Quick order
-          </Link>
-        </div>
-        <MakeReservationSection vendorId={id!} vertical="restaurant" />
+        {/* Row 2 — gallery */}
+        <section className="rounded-res-lg bg-res-card p-2 shadow-res-low">
+          <RestaurantImages
+            images={restaurant?.profileImages ?? []}
+            name={restaurant.businessName}
+          />
+          <RestaurantImages2
+            vendor={restaurant}
+            images={restaurant?.profileImages ?? []}
+            name={restaurant.businessName}
+          />
+        </section>
+
+        {/* Row 3 — tabs */}
+        <section id="menu" className="rounded-res-lg bg-res-card p-4 shadow-res-low md:p-6">
+          <RestaurantInfo data={restaurant} />
+        </section>
+
+        {/* Row 4 — reservations */}
+        <section className="rounded-res-lg bg-res-card p-4 shadow-res-low md:p-6">
+          <MakeReservationSection vendorId={id!} vertical="restaurant" />
+        </section>
+
+        {/* Row 5 — map */}
+        <section className="rounded-res-lg bg-res-card p-2 shadow-res-low">
+          <div className="overflow-hidden rounded-res-md">
+            <MapComponent address={restaurant.address} />
+          </div>
+        </section>
       </main>
       <div className="hidden md:block">
         <Footer />
       </div>
-    </>
+    </div>
   );
 };
 

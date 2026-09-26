@@ -22,7 +22,7 @@ const HotelOverview = ({ desc }: HotelOverviewProps) => {
   return (
     <div className="space-y-6 text-sm md:text-base">
       <div>
-        <h2 className="font-semibold sm:text-lg  text-sm mb-3">About Hotel</h2>
+        <h2 className="type-res-h3 text-res-ink sm:text-lg text-sm mb-3">About Hotel</h2>
         <div
           ref={contentRef}
           className={cn(
@@ -38,7 +38,7 @@ const HotelOverview = ({ desc }: HotelOverviewProps) => {
         </div>
         {isOverflowing && (
           <button
-            className="mt-2 flex items-center gap-1 text-sm text-[#0A6C6D] hover:underline cursor-pointer"
+            className="mt-2 flex items-center gap-1 text-sm text-res-brand hover:underline cursor-pointer"
             onClick={() => setShowMore((prev) => !prev)}
           >
             {showMore ? 'Show less' : 'Show more'}

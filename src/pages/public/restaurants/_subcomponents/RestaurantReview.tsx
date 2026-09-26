@@ -84,12 +84,12 @@ const RestaurantReviews = ({ restaurantId }: RestaurantReviewsProps) => {
       {/* Review Form */}
       <form
         onSubmit={handleSubmit}
-        className="space-y-3 border p-4 rounded-lg bg-[#E7F0F0] border-[#E5E7EB]"
+        className="space-y-3 p-4 rounded-res-sm bg-res-secondary shadow-res-low"
       >
         <h3 className="font-semibold text-lg">Leave a Review</h3>
         <StarRating rating={newRating} size={20} onChange={(value: number) => setNewRating(value)} />
         <Textarea
-          className="resize-none h-[100px] font-normal bg-[#F9FAFB] border border-[#E5E7EB] rounded-xl w-full"
+          className="resize-none h-[100px] font-normal bg-res-surface border border-res-line rounded-res-sm w-full"
           placeholder="Write your review..."
           value={comment}
           onChange={(e) => setComment(e.target.value)}
@@ -97,7 +97,7 @@ const RestaurantReviews = ({ restaurantId }: RestaurantReviewsProps) => {
         <Button
           type="submit"
           disabled={isLoading || !newRating || !comment}
-          className=" rounded-xl bg-[#0A6C6D] hover:bg-[0A6C6D]/50"
+          className="rounded-res-sm bg-res-brand hover:bg-res-brand-hover"
         >
           {isLoading ? (
             <>
@@ -121,7 +121,7 @@ const RestaurantReviews = ({ restaurantId }: RestaurantReviewsProps) => {
             return (
               <div key={i} className="rounded-lg flex gap-3 items-start">
                 {/* Avatar */}
-                <div className="shrink-0 w-10 h-10 rounded-full bg-[#E7F0F0] flex items-center justify-center text-[#0A6C6D] font-semibold text-sm">
+                <div className="shrink-0 w-10 h-10 rounded-full bg-res-secondary flex items-center justify-center text-res-brand font-semibold text-sm">
                   {initials}
                 </div>
 

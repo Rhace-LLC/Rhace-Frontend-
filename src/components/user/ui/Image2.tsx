@@ -40,7 +40,7 @@ const Images2 = ({ images, name, vendor }: Images2Props) => {
       <div className="md:hidden w-full overflow-clip h-[270px] relative">
         <div className="absolute top-[20px] px-[16px] z-40 w-full flex justify-between items-center">
           <button
-            className="size-10 rounded-xl bg-white text-black hover:bg-gray-50 flex justify-center border border-[#E5E7EB] items-center gap-2"
+            className="size-10 rounded-res-sm bg-white text-black hover:bg-gray-50 flex justify-center border border-res-line items-center gap-2"
             onClick={() => {
               navigate('/');
             }}
@@ -68,7 +68,7 @@ const Images2 = ({ images, name, vendor }: Images2Props) => {
           <div className="flex gap-2">
             <button
               onClick={handleCopy}
-              className="size-10 rounded-xl bg-white text-black hover:bg-gray-50 flex justify-center border border-[#E5E7EB] items-center gap-2"
+              className="size-10 rounded-res-sm bg-white text-black hover:bg-gray-50 flex justify-center border border-res-line items-center gap-2"
             >
               <svg
                 width="20"

@@ -1,9 +1,10 @@
 /* eslint-disable react-refresh/only-export-components */
 import type { BusinessData, FloorEntity, FloorPlan, SpatialData } from '../core/types';
-import type { DrawerContext, TileContext, TopBarContext, ToolbarItem, VerticalPlugin } from '../core/plugin';
+import type { DrawerContext, ManageCardActions, TileContext, TopBarContext, ToolbarItem, VerticalPlugin } from '../core/plugin';
 import { SpendTierHeatmap } from '../components/overlays/SpendTierHeatmap';
 import { ScopeNav } from '../components/overlays/ScopeNav';
 import { BlueprintSpecs } from '../components/BlueprintSpecs';
+import { ManageUnitCard } from '../components/ManageUnitCard';
 import { stateMetaFor } from '../domain/states';
 import { canTransition } from '../domain/transitions';
 import { allBlueprints } from '../domain/blueprintStore';
@@ -114,6 +115,51 @@ function renderTile(entity: FloorEntity, ctx: TileContext) {
         <StateChip state={state} />
       </div>
     </div>
+  );
+}
+
+function renderManageCard(entity: FloorEntity, actions: ManageCardActions) {
+  const b = entity.businessData;
+  const blueprint = clubBlueprint(entity);
+  const blueprintMin = blueprint && blueprint.vertical === 'club' ? blueprint.minimumSpend : 0;
+  const min = Number(b.minimumSpend ?? blueprintMin);
+  const spend = Number(b.currentSpend ?? 0);
+  const pct = min > 0 ? Math.round((spend / min) * 100) : 0;
+  const met = min > 0 && spend >= min;
+  const tier = String(b.tier ?? (blueprint && blueprint.vertical === 'club' ? blueprint.tier : '') ?? '');
+  const host = b.hostName ? String(b.hostName) : undefined;
+  const party = b.partyName ? String(b.partyName) : undefined;
+  const meta = stateMetaFor('club', displayClubState(entity));
+  const floor = entity.spatialData.floor;
+  return (
+    <ManageUnitCard
+      kind="Table"
+      name={String(b.name)}
+      typeLabel={tier || undefined}
+      statusLabel={meta.label}
+      statusColor={meta.color}
+      guestLabel={host ? `Host ${host}` : party}
+      locationLabel={floor ? `Floor ${floor}` : undefined}
+      extras={
+        min > 0 ? (
+          <div>
+            <div className="type-res-small flex items-center justify-between font-normal text-res-ink-muted">
+              <span>
+                ₦{spend.toLocaleString()} of ₦{min.toLocaleString()} min spend
+              </span>
+              <span className={`font-semibold ${met ? 'text-res-brand' : ''}`}>{pct}%</span>
+            </div>
+            <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-res-surface">
+              <div
+                className={`h-full rounded-full ${met ? 'bg-res-brand' : 'bg-res-ink-muted'}`}
+                style={{ width: `${Math.min(pct, 100)}%` }}
+              />
+            </div>
+          </div>
+        ) : undefined
+      }
+      onManage={actions.onManage}
+    />
   );
 }
 
@@ -284,6 +330,7 @@ export const nightclubPlugin: VerticalPlugin = {
     { id: 'high-top', label: 'High-top' },
   ],
   renderTile,
+  renderManageCard,
   renderDrawer,
   overlays: [
     {

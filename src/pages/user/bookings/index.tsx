@@ -5,9 +5,9 @@ import Header from '@/components/user/Header';
 import Footer from '@/navigation/user_layout/_sub_component/Footer';
 import { useOrderByReservation } from '@/features/orders';
 import {
+  ReservationCards,
   ReservationDrawer,
   ReservationFilters,
-  ReservationTable,
   bucketReservations,
   outstanding,
   useCancelMyReservation,
@@ -59,67 +59,88 @@ const UserBookingsPage = () => {
       const url = res.data?.authorization_url;
       if (!url) throw new Error('Could not start payment');
       window.location.href = url;
-    } catch {
-      toast.error('Could not start payment. Please try again.');
+    } catch (error) {
+      const message =
+        (error as { response?: { data?: { message?: string; paystackError?: string } } })?.response
+          ?.data?.paystackError ||
+        (error as { response?: { data?: { message?: string } } })?.response?.data?.message ||
+        'Could not start payment. Please try again.';
+      toast.error(message);
     }
   };
 
   const handleCancel = async (reservation: ReservationView) => {
     try {
       await cancelMutation.mutateAsync(reservation._id);
-      toast.success('Reservation cancelled');
+      toast.success('Booking cancelled');
       setSelected(null);
     } catch {
-      toast.error('Could not cancel the reservation.');
+      toast.error('Could not cancel your booking.');
     }
   };
 
   return (
-    <>
+    <div className="min-h-screen bg-res-surface">
       <div className="hidden md:block">
         <Header />
       </div>
-      <main className="mx-auto md:mt-[85px] mb-[120px] md:mb-8 max-w-7xl md:px-6 lg:px-8 md:py-8">
-        <div className="px-4 md:px-0">
-          <h1 className="text-2xl font-semibold text-gray-900">My reservations</h1>
-          <p className="mt-1 text-sm text-gray-500">
-            Track upcoming stays, tables and bookings in one place.
+      <main className="mx-auto mb-[120px] max-w-7xl space-y-5 px-4 pt-4 pb-8 md:mt-[85px] md:mb-8 md:space-y-6 md:px-6 md:py-8 lg:px-8">
+        <div>
+          <h1 className="type-res-h2 text-res-ink">My bookings</h1>
+          <p className="type-res-body mt-1 font-normal text-res-ink-muted">
+            All your table and room bookings in one place.
           </p>
         </div>
 
-        <div className="mt-5 space-y-4 px-4 md:px-0">
+        <section className="rounded-res-lg bg-res-card p-4 shadow-res-low md:p-6">
           <ReservationFilters value={filters} onChange={setFilters} />
 
-          <div className="flex flex-wrap gap-2">
-            {TABS.map((tab) => {
-              const count = tab.id === 'all' ? items.length : buckets[tab.id].length;
-              return (
-                <button
-                  key={tab.id}
-                  type="button"
-                  onClick={() => setBucket(tab.id)}
-                  className={`rounded-full border px-4 py-1.5 text-xs font-medium transition-colors ${
-                    bucket === tab.id
-                      ? 'border-[#0A6C6D] bg-[#0A6C6D]/5 text-[#0A6C6D]'
-                      : 'border-gray-200 text-gray-600 hover:border-gray-300'
-                  }`}
-                >
-                  {tab.label}
-                  <span className="ml-1.5 text-gray-400">{count}</span>
-                </button>
-              );
-            })}
+          <div className="hide-scrollbar mt-4 -mx-1 overflow-x-auto px-1 py-1">
+            <div
+              role="tablist"
+              aria-label="Filter bookings by time"
+              className="flex w-full gap-1 rounded-res-md bg-res-surface p-1 sm:w-max sm:rounded-full"
+            >
+              {TABS.map((tab) => {
+                const count = tab.id === 'all' ? items.length : buckets[tab.id].length;
+                const isActive = bucket === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    role="tab"
+                    aria-selected={isActive}
+                    onClick={() => setBucket(tab.id)}
+                    className={`type-res-body flex flex-1 cursor-pointer items-center gap-1.5 rounded-full px-4 py-2 whitespace-nowrap transition-all duration-200 outline-none focus-visible:ring-2 focus-visible:ring-res-brand sm:flex-none ${
+                      isActive
+                        ? 'bg-res-card text-res-brand shadow-res-low'
+                        : 'text-res-ink-muted hover:text-res-ink'
+                    }`}
+                  >
+                    {tab.label}
+                    <span
+                      className={`type-res-small rounded-full px-1.5 font-semibold ${
+                        isActive ? 'bg-res-surface text-res-ink-muted' : 'text-res-ink-muted'
+                      }`}
+                    >
+                      {count}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
-          <ReservationTable
-            items={visible}
-            role="customer"
-            loading={reservationsQuery.isLoading}
-            onView={setSelected}
-            onCancel={handleCancel}
-            onPayBalance={handlePayBalance}
-          />
-        </div>
+          <div className="mt-4">
+            <ReservationCards
+              items={visible}
+              loading={reservationsQuery.isLoading}
+              onView={setSelected}
+              onCancel={handleCancel}
+              onPayBalance={handlePayBalance}
+            />
+          </div>
+        </section>
       </main>
       <div className="hidden md:block">
         <Footer />
@@ -135,34 +156,34 @@ const UserBookingsPage = () => {
               {needsPreorder && (
                 <Link
                   to={`/preorder/${selected._id}`}
-                  className="rounded-lg bg-[#0A6C6D] px-4 py-2 text-xs font-medium text-white hover:bg-[#0A6C6D]/90"
+                  className="type-res-small rounded-full bg-res-brand px-5 py-2.5 font-semibold text-res-ink-inverted shadow-res-low transition-colors hover:bg-res-brand-hover"
                 >
-                  {selected.vertical === 'club' ? 'Pre-order drinks' : 'Pre-order a meal'}
+                  {selected.vertical === 'club' ? 'Pre-order drinks' : 'Pre-order food'}
                 </Link>
               )}
               {outstanding(selected) > 0 && selected.bookingGroup && (
                 <button
                   type="button"
                   onClick={() => handlePayBalance(selected)}
-                  className="rounded-lg bg-[#0A6C6D] px-4 py-2 text-xs font-medium text-white hover:bg-[#0A6C6D]/90"
+                  className="type-res-small cursor-pointer rounded-full bg-res-brand px-5 py-2.5 font-semibold text-res-ink-inverted shadow-res-low transition-colors hover:bg-res-brand-hover"
                 >
-                  Pay balance
+                  Pay now
                 </button>
               )}
               {['pending_payment', 'upcoming'].includes(selected.status) && (
                 <button
                   type="button"
                   onClick={() => handleCancel(selected)}
-                  className="rounded-lg border border-rose-200 px-4 py-2 text-xs font-medium text-rose-600 hover:bg-rose-50"
+                  className="type-res-small cursor-pointer rounded-full px-4 py-2.5 font-semibold text-res-ink-muted transition-colors hover:text-res-ink"
                 >
-                  Cancel reservation
+                  Cancel booking
                 </button>
               )}
             </>
           ) : null
         }
       />
-    </>
+    </div>
   );
 };
 

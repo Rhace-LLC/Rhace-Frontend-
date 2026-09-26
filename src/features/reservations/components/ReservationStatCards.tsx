@@ -16,7 +16,7 @@ export function ReservationStatCards({
     { label: 'Reservations today', value: String(counters?.todays ?? 0) },
     { label: 'Prepaid', value: String(counters?.prepaid ?? 0) },
     { label: 'Expected guests', value: String(counters?.expectedGuests ?? 0) },
-    { label: 'Pending payments', value: `₦${(counters?.pendingPayments ?? 0).toLocaleString()}` },
+    { label: 'Pending payments', value: String(counters?.pendingPayments ?? 0) },
   ];
 
   return (
@@ -24,11 +24,13 @@ export function ReservationStatCards({
       {cards.map((card) => (
         <div
           key={card.label}
-          className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm"
+          className="rounded-res-md border border-res-line bg-res-card p-4 shadow-res-low"
         >
-          <p className="text-xs text-gray-500">{card.label}</p>
-          <p className="mt-1 text-xl font-semibold text-gray-900">
-            {loading ? <span className="text-gray-300">…</span> : card.value}
+          <p className="type-res-caption font-medium tracking-[0.2px] text-res-ink-muted uppercase">
+            {card.label}
+          </p>
+          <p className="type-res-h2 mt-1 text-res-ink">
+            {loading ? <span className="text-res-ink-muted">…</span> : card.value}
           </p>
         </div>
       ))}

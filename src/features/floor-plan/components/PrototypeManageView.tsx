@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
-import { ExternalLink, Box, Plus } from 'lucide-react';
+import { Box, ExternalLink, Plus } from 'lucide-react';
 import type { VerticalPlugin } from '../core/plugin';
 import { allBlueprints, setRuntimeBlueprints } from '../domain/blueprintStore';
 import { entityToUnit } from '../domain/adapter';
@@ -29,14 +29,21 @@ interface PrototypeManageViewProps {
 
 type UnitFilter = 'all' | 'available' | 'reserved' | 'locked';
 
-const CONFIG_LABEL: Record<Vertical, string> = {
-  hotel: 'Create a Room',
-  club: 'Create a Table',
-  restaurant: 'Create a Table',
+const KIND_LABEL: Record<Vertical, string> = {
+  hotel: 'Room',
+  club: 'Table',
+  restaurant: 'Table',
+};
+
+const KIND_PLURAL: Record<Vertical, string> = {
+  hotel: 'Rooms',
+  club: 'Tables',
+  restaurant: 'Tables',
 };
 
 export function PrototypeManageView({ plugin, floorPlanPath, description, planId: preferredPlanId }: PrototypeManageViewProps) {
   const vertical = plugin.id as Vertical;
+  const kind = KIND_LABEL[vertical];
   const queryClient = useQueryClient();
   const { planId, isLoading } = useResolvedFloorPlan(
     plugin.id as FloorPlanVertical,
@@ -116,58 +123,54 @@ export function PrototypeManageView({ plugin, floorPlanPath, description, planId
     );
   };
 
-  const FILTERS: Array<{ id: UnitFilter; label: string; className: string }> = [
-    { id: 'all', label: `${summary.units} units`, className: 'bg-white text-gray-700 shadow-sm' },
-    { id: 'available', label: `${summary.available} available`, className: 'bg-green-100 text-green-700' },
-    { id: 'reserved', label: `${reservedCount} reserved`, className: 'bg-gray-100 text-gray-600' },
-    { id: 'locked', label: `${summary.locked} locked`, className: 'bg-amber-100 text-amber-700' },
+  const FILTERS: Array<{ id: UnitFilter; label: string }> = [
+    { id: 'all', label: `${summary.units} total` },
+    { id: 'available', label: `${summary.available} open` },
+    { id: 'reserved', label: `${reservedCount} busy` },
+    { id: 'locked', label: `${summary.locked} locked` },
   ];
 
   if (isLoading && !planId) {
     return (
-      <div className="flex min-h-screen items-center justify-center text-sm text-gray-500">
-        Preparing your floor plan…
+      <div className="flex min-h-screen items-center justify-center bg-res-surface">
+        <p className="type-res-body font-normal text-res-ink-muted">Setting up your floor map…</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 md:p-6">
+    <div className="min-h-screen bg-res-surface p-4 md:p-6">
       <div className="mx-auto max-w-7xl">
-        <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+        <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
           <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-lg font-semibold capitalize text-gray-900">
-                {plugin.label} Manager
-              </h1>
-            </div>
-            <p className="mt-1 text-sm text-gray-500">{description}</p>
+            <h1 className="type-res-h2 text-res-ink">{KIND_PLURAL[vertical]}</h1>
+            <p className="type-res-body mt-1 font-normal text-res-ink-muted">{description}</p>
           </div>
           <div className="flex flex-wrap gap-2">
             <button
               onClick={() => setBlueprintModalOpen(true)}
-              className="flex items-center gap-1 rounded-lg border border-teal-200 bg-white px-3 py-2 text-xs font-medium text-teal-700 hover:bg-teal-50"
+              className="type-res-small flex cursor-pointer items-center gap-1.5 rounded-full bg-res-card px-4 py-2.5 font-semibold text-res-ink shadow-res-low transition-all outline-none hover:text-res-brand hover:shadow-res-medium focus-visible:ring-2 focus-visible:ring-res-brand"
             >
-              <Plus size={14} /> {CONFIG_LABEL[vertical]}
+              <Plus size={14} /> Add {kind.toLowerCase()} type
             </button>
             <button
               onClick={() => setAddUnitOpen(true)}
               disabled={blueprints.length === 0}
-              className="flex items-center gap-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-40"
+              className="type-res-small flex cursor-pointer items-center gap-1.5 rounded-full bg-res-card px-4 py-2.5 font-semibold text-res-ink shadow-res-low transition-all outline-none hover:text-res-brand hover:shadow-res-medium focus-visible:ring-2 focus-visible:ring-res-brand disabled:cursor-not-allowed disabled:opacity-40"
             >
-              <Box size={14} /> Add Physical Unit
+              <Box size={14} /> Add {kind.toLowerCase()}
             </button>
             <Link
               to={planLink}
-              className="flex items-center gap-1 rounded-lg bg-teal-700 px-3 py-2 text-xs font-medium text-white hover:bg-teal-800"
+              className="type-res-small flex items-center gap-1.5 rounded-full bg-res-brand px-4 py-2.5 font-semibold text-res-ink-inverted shadow-res-low transition-colors hover:bg-res-brand-hover"
             >
-              Open floor plan <ExternalLink size={14} />
+              Floor map <ExternalLink size={14} />
             </Link>
           </div>
         </div>
 
         {plugin.renderManageHeader && (
-          <div className="mb-6 rounded-xl border border-gray-200 bg-white p-3">
+          <div className="mb-5 rounded-res-lg bg-res-card p-4 shadow-res-low">
             {plugin.renderManageHeader({
               plan: store.plan,
               mode: 'manage',
@@ -183,49 +186,69 @@ export function PrototypeManageView({ plugin, floorPlanPath, description, planId
           </div>
         )}
 
-        <div className="mb-6 flex flex-wrap gap-2 text-xs">
-          {FILTERS.map((entry) => (
-            <button
-              key={entry.id}
-              onClick={() => setFilter(entry.id)}
-              className={`rounded-full px-3 py-1 font-medium transition-all ${entry.className} ${
-                filter === entry.id ? 'ring-2 ring-teal-500 ring-offset-1' : 'opacity-80 hover:opacity-100'
-              }`}
-            >
-              {entry.label}
-            </button>
-          ))}
+        <div className="hide-scrollbar -mx-1 overflow-x-auto px-1 py-1">
+          <div
+            role="tablist"
+            aria-label="Filter by status"
+            className="flex w-full gap-1 rounded-res-md bg-res-card p-1 shadow-res-low sm:w-max sm:rounded-full"
+          >
+            {FILTERS.map((entry) => {
+              const isActive = filter === entry.id;
+              return (
+                <button
+                  key={entry.id}
+                  role="tab"
+                  aria-selected={isActive}
+                  onClick={() => setFilter(entry.id)}
+                  className={`type-res-small flex-1 cursor-pointer rounded-full px-4 py-2 whitespace-nowrap transition-all duration-200 outline-none focus-visible:ring-2 focus-visible:ring-res-brand sm:flex-none ${
+                    isActive
+                      ? 'bg-res-brand text-res-ink-inverted shadow-res-low'
+                      : 'text-res-ink-muted hover:text-res-ink'
+                  }`}
+                >
+                  {entry.label}
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         {groups.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-gray-300 bg-white py-20 text-center text-sm text-gray-500">
-            {summary.units === 0
-              ? 'No units yet. Add a physical unit to get started.'
-              : 'No units match this filter.'}
+          <div className="mt-4 rounded-res-lg bg-res-card px-6 py-14 text-center shadow-res-low">
+            <p className="type-res-h3 text-res-ink">
+              {summary.units === 0
+                ? `No ${kind.toLowerCase()}s yet`
+                : 'Nothing matches this filter'}
+            </p>
+            <p className="type-res-small mt-1 font-normal text-res-ink-muted">
+              {summary.units === 0
+                ? `Add your first ${kind.toLowerCase()} to get started.`
+                : 'Try a different status above.'}
+            </p>
           </div>
         ) : (
-          <div className="space-y-8">
+          <div className="mt-4 space-y-5">
             {groups.map(({ blueprint, entries }) => {
               const available = entries.filter((e) => unitAvailable(e.unit)).length;
               return (
-                <section key={blueprint.id}>
-                  <header className="mb-3 flex flex-wrap items-center justify-between gap-3 border-b border-gray-200 pb-3">
-                    <div className="flex items-center gap-3">
+                <section key={blueprint.id} className="rounded-res-lg bg-res-card p-4 shadow-res-low md:p-5">
+                  <header className="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-res-line pb-3">
+                    <div className="flex min-w-0 items-center gap-3">
                       <BlueprintThumb blueprint={blueprint} />
-                      <div>
-                        <h2 className="text-sm font-semibold text-gray-900">{blueprint.name}</h2>
-                        <p className="text-xs text-gray-500">
-                          {blueprint.type} · {formatBlueprintPricing(getBlueprintPricing(blueprint))} · capacity{' '}
+                      <div className="min-w-0">
+                        <h2 className="type-res-h3 line-clamp-1 text-res-ink">{blueprint.name}</h2>
+                        <p className="type-res-small line-clamp-1 font-normal text-res-ink-muted">
+                          {blueprint.type} · {formatBlueprintPricing(getBlueprintPricing(blueprint))} · seats{' '}
                           {blueprint.capacity}
                         </p>
                       </div>
                     </div>
-                    <div className="flex flex-wrap items-center gap-2 text-[11px]">
-                      <span className="rounded-full bg-gray-100 px-2 py-0.5 text-gray-600">
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <span className="type-res-small rounded-full bg-res-surface px-2.5 py-1 font-semibold text-res-ink-muted">
                         {entries.length} total
                       </span>
-                      <span className="rounded-full bg-green-100 px-2 py-0.5 text-green-700">
-                        {available} available
+                      <span className="type-res-small rounded-full bg-res-secondary px-2.5 py-1 font-semibold text-res-brand">
+                        {available} open
                       </span>
                     </div>
                   </header>
@@ -234,27 +257,31 @@ export function PrototypeManageView({ plugin, floorPlanPath, description, planId
                     {entries.map(({ entity, unit }) => (
                       <div key={entity.entityId} className="relative min-h-[10rem]">
                         {isLocked(unit.id) && (
-                          <div className="absolute right-2 top-2 z-10">
+                          <div className="absolute top-2 right-2 z-10">
                             <LockBadge />
                           </div>
                         )}
                         {plugin.renderManageCard ? (
-                          plugin.renderManageCard(entity)
+                          plugin.renderManageCard(entity, {
+                            onManage: () => setManageUnitId(unit.id),
+                          })
                         ) : (
-                          <div className="h-40 rounded-xl border border-gray-200 bg-white p-2 shadow-sm">
-                            {plugin.renderTile(entity, {
-                              mode: 'manage',
-                              selected: false,
-                              vertical: plugin.id,
-                            })}
-                          </div>
+                          <>
+                            <div className="h-40 rounded-res-md border border-res-line bg-res-card p-2 shadow-res-low">
+                              {plugin.renderTile(entity, {
+                                mode: 'manage',
+                                selected: false,
+                                vertical: plugin.id,
+                              })}
+                            </div>
+                            <button
+                              onClick={() => setManageUnitId(unit.id)}
+                              className="type-res-small absolute right-2 bottom-2 z-10 cursor-pointer rounded-full bg-res-card px-4 py-2 font-semibold text-res-ink shadow-res-low transition-all outline-none hover:text-res-brand hover:shadow-res-medium focus-visible:ring-2 focus-visible:ring-res-brand"
+                            >
+                              Manage
+                            </button>
+                          </>
                         )}
-                        <button
-                          onClick={() => setManageUnitId(unit.id)}
-                          className="absolute bottom-2 right-2 z-10 rounded-md border border-teal-200 bg-white/95 px-2.5 py-0.5 text-[10px] font-medium text-teal-700 hover:bg-teal-50"
-                        >
-                          Manage
-                        </button>
                       </div>
                     ))}
                   </div>
@@ -305,16 +332,16 @@ function BlueprintThumb({ blueprint }: { blueprint: InventoryBlueprint }) {
       <img
         src={src}
         alt={blueprint.name}
-        className="h-12 w-12 rounded-lg object-cover ring-1 ring-gray-200"
+        loading="lazy"
+        className="h-12 w-12 shrink-0 rounded-res-sm object-cover"
       />
     );
   }
   return (
-    <div
-      className="flex h-12 w-12 items-center justify-center rounded-lg text-xs font-semibold text-white"
-      style={{ backgroundColor: blueprint.accent ?? '#0d9488' }}
-    >
-      {blueprint.type.slice(0, 2)}
+    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-res-sm bg-res-surface">
+      <span className="type-res-small font-semibold text-res-ink-muted">
+        {blueprint.type.slice(0, 2).toUpperCase()}
+      </span>
     </div>
   );
 }

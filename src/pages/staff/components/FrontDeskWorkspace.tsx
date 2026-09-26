@@ -3,34 +3,26 @@ import { toast } from 'react-toastify';
 import {
   Building2,
   CalendarClock,
+  ChevronDown,
   ConciergeBell,
   Loader2,
   LogIn,
   LogOut,
   Receipt,
+  RefreshCw,
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCreateOrder } from '@/features/orders/api/hooks';
 import { ordersApi } from '@/features/orders/api/service';
 import { OrderBuilder } from '@/features/orders';
 import { money } from '@/features/orders/money';
+import { paymentLabel } from '@/features/reservations';
 import type { CreateOrderLineInput, OrderDto } from '@/features/orders/types';
 import { floorPlanService } from '@/services/floorPlan.service';
 import { unitReservationService } from '@/services/unitReservation.service';
@@ -66,32 +58,67 @@ const defaultPlanId = (plans: FloorPlanDto[]) =>
 const apiMessage = (error: unknown) =>
   (error as { response?: { data?: { message?: string } } })?.response?.data?.message;
 
-/** A counter tile for the desk KPIs. */
+/** A counter tile for the desk numbers. */
 function Stat({
   label,
   value,
   icon: Icon,
-  tone = 'default',
+  highlight = false,
 }: {
   label: string;
   value: number;
   icon: typeof Building2;
-  tone?: 'default' | 'warn';
+  highlight?: boolean;
 }) {
   return (
-    <Card>
-      <CardContent className="flex items-center justify-between py-4">
-        <div>
-          <p className="text-xs uppercase tracking-wide text-muted-foreground">{label}</p>
-          <p
-            className={`text-2xl font-bold ${tone === 'warn' && value > 0 ? 'text-amber-600' : ''}`}
-          >
-            {value}
-          </p>
-        </div>
-        <Icon className={`h-5 w-5 ${tone === 'warn' ? 'text-amber-500' : 'text-[#0A6C6D]'}`} />
-      </CardContent>
-    </Card>
+    <div className="rounded-res-md border border-res-line bg-res-card p-4 shadow-res-low">
+      <div className="flex items-center justify-between gap-2">
+        <p className="type-res-caption font-medium tracking-[0.2px] text-res-ink-muted uppercase">
+          {label}
+        </p>
+        <span className="rounded-full bg-res-surface p-1.5">
+          <Icon className="h-4 w-4 text-res-brand" />
+        </span>
+      </div>
+      <p className={`type-res-h2 mt-1 ${highlight && value > 0 ? 'text-res-brand' : 'text-res-ink'}`}>
+        {value}
+      </p>
+    </div>
+  );
+}
+
+function NativeSelect({
+  value,
+  onChange,
+  ariaLabel,
+  className,
+  placeholder,
+  children,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  ariaLabel: string;
+  className?: string;
+  placeholder?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <span className={`relative inline-flex items-center ${className ?? ''}`}>
+      <select
+        value={value}
+        aria-label={ariaLabel}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full cursor-pointer appearance-none rounded-full bg-res-card py-2.5 pr-9 pl-4 type-res-small font-semibold text-res-ink shadow-res-low outline-none focus-visible:ring-2 focus-visible:ring-res-brand"
+      >
+        {placeholder && (
+          <option value="" disabled>
+            {placeholder}
+          </option>
+        )}
+        {children}
+      </select>
+      <ChevronDown className="pointer-events-none absolute right-3 h-4 w-4 text-res-ink-muted" />
+    </span>
   );
 }
 
@@ -214,7 +241,7 @@ export default function FrontDeskWorkspace() {
       else await unitReservationService.checkOut(r._id);
       toast.success(
         kind === 'checkIn'
-          ? `${r.guestName} checked into ${unitLabel(r.unitId)}`
+          ? `${r.guestName} checked into Room ${unitLabel(r.unitId)}`
           : `${r.guestName} checked out`,
       );
       await refresh();
@@ -225,7 +252,7 @@ export default function FrontDeskWorkspace() {
     }
   };
 
-  // The room's running tab (order attached to its reservation / booking group).
+  // The room's running bill (order attached to its reservation / booking group).
   const loadTab = useCallback(async (reservationId: string) => {
     if (!reservationId) {
       setTabOrder(null);
@@ -237,7 +264,7 @@ export default function FrontDeskWorkspace() {
       setTabOrder(res.order ?? null);
     } catch (error) {
       console.error(error);
-      toast.error('Failed to load the room tab');
+      toast.error('Failed to load the room bill');
       setTabOrder(null);
     } finally {
       setTabLoading(false);
@@ -269,7 +296,7 @@ export default function FrontDeskWorkspace() {
         vertical: layout?.plan.vertical,
         lines,
       });
-      toast.success(`Charge posted to ${unitLabel(tabReservation.unitId)}`);
+      toast.success(`Charge posted to Room ${unitLabel(tabReservation.unitId)}`);
       setPadOpen(false);
       await loadTab(tabReservation._id);
     } catch (error) {
@@ -281,14 +308,14 @@ export default function FrontDeskWorkspace() {
 
   if (isLoading) {
     return (
-      <div className="space-y-6">
-        <Skeleton className="h-10 w-64" />
-        <div className="grid gap-4 md:grid-cols-4">
+      <div className="space-y-5">
+        <div className="h-10 w-64 animate-pulse rounded-res-md bg-res-card shadow-res-low" />
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {[...Array(4)].map((_, i) => (
-            <Skeleton key={i} className="h-24 w-full" />
+            <div key={i} className="h-24 animate-pulse rounded-res-md bg-res-card shadow-res-low" />
           ))}
         </div>
-        <Skeleton className="h-72 w-full" />
+        <div className="h-72 animate-pulse rounded-res-lg bg-res-card shadow-res-low" />
       </div>
     );
   }
@@ -296,13 +323,13 @@ export default function FrontDeskWorkspace() {
   const vertical = layout?.plan.vertical ?? 'hotel';
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="flex items-center gap-2 text-2xl font-bold">
-            <ConciergeBell className="h-6 w-6 text-[#0A6C6D]" /> Front Desk
+          <h1 className="type-res-h2 flex items-center gap-2 text-res-ink">
+            <ConciergeBell className="h-5 w-5 text-res-brand" /> Front desk
           </h1>
-          <p className="text-sm text-muted-foreground">
+          <p className="type-res-body mt-1 font-normal text-res-ink-muted">
             {new Date().toLocaleDateString(undefined, {
               weekday: 'long',
               day: 'numeric',
@@ -313,207 +340,205 @@ export default function FrontDeskWorkspace() {
         </div>
         <div className="flex items-center gap-2">
           {plans.length > 1 && (
-            <Select value={planId} onValueChange={setPlanId}>
-              <SelectTrigger className="w-48">
-                <SelectValue placeholder="Floor plan" />
-              </SelectTrigger>
-              <SelectContent>
-                {plans.map((p) => (
-                  <SelectItem key={p._id} value={p._id}>
-                    {p.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <NativeSelect value={planId} onChange={setPlanId} ariaLabel="Floor plan">
+              {plans.map((p) => (
+                <option key={p._id} value={p._id}>
+                  {p.name}
+                </option>
+              ))}
+            </NativeSelect>
           )}
-          <Button variant="outline" size="sm" onClick={refresh}>
-            <Loader2 className="mr-1 hidden h-4 w-4 animate-spin" />
+          <button
+            type="button"
+            onClick={refresh}
+            className="type-res-small flex cursor-pointer items-center gap-1.5 rounded-full bg-res-card px-4 py-2.5 font-semibold text-res-ink shadow-res-low transition-colors outline-none hover:text-res-brand focus-visible:ring-2 focus-visible:ring-res-brand"
+          >
+            <RefreshCw className="h-3.5 w-3.5" />
             Refresh
-          </Button>
+          </button>
         </div>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Stat label="Arrivals due" value={dueIn.length} icon={LogIn} />
         <Stat label="In-house" value={inHouse.length} icon={Building2} />
         <Stat label="Due out" value={dueOut.length} icon={LogOut} />
-        <Stat label="To clean / OOO" value={dirty + outOfOrder} icon={CalendarClock} tone="warn" />
+        <Stat label="Not ready" value={dirty + outOfOrder} icon={CalendarClock} highlight />
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <LogIn className="h-4 w-4" /> Arrivals today
-            <Badge variant="secondary">{dueIn.length}</Badge>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {dueIn.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No arrivals left to check in today.</p>
-          ) : (
-            <div className="divide-y">
-              {dueIn.map((r) => (
-                <div
-                  key={r._id}
-                  className="flex flex-wrap items-center justify-between gap-3 py-3"
-                >
-                  <div>
-                    <p className="font-medium">
-                      {unitLabel(r.unitId)} · {r.guestName}
-                      {r.partySize ? (
-                        <span className="ml-2 text-xs text-muted-foreground">
-                          {r.partySize} guest{r.partySize === 1 ? '' : 's'}
-                        </span>
-                      ) : null}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      In {when(r.start)} → out {when(r.end)}
-                      {r.paymentStatus ? ` · ${r.paymentStatus}` : ''}
-                    </p>
-                  </div>
-                  <Button
-                    size="sm"
-                    className="bg-[#0A6C6D] hover:bg-[#085a5b]"
-                    disabled={busyReservationId === r._id}
-                    onClick={() => changeReservation('checkIn', r)}
-                  >
-                    {busyReservationId === r._id ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <>
-                        <LogIn className="mr-1 h-4 w-4" /> Check in
-                      </>
-                    )}
-                  </Button>
+      <section className="rounded-res-lg bg-res-card p-4 shadow-res-low md:p-5">
+        <h2 className="type-res-h3 mb-3 flex items-center gap-2 text-res-ink">
+          <LogIn className="h-4 w-4 text-res-brand" /> Arrivals today{' '}
+          <span className="type-res-small rounded-full bg-res-surface px-2.5 py-0.5 font-semibold text-res-ink-muted">
+            {dueIn.length}
+          </span>
+        </h2>
+        {dueIn.length === 0 ? (
+          <p className="type-res-small font-normal text-res-ink-muted">
+            No arrivals left to check in today.
+          </p>
+        ) : (
+          <ul className="divide-y divide-res-line">
+            {dueIn.map((r) => (
+              <li
+                key={r._id}
+                className="flex flex-wrap items-center justify-between gap-3 py-3 first:pt-0 last:pb-0"
+              >
+                <div className="min-w-0">
+                  <p className="type-res-body font-semibold text-res-ink">
+                    Room {unitLabel(r.unitId)} · {r.guestName}
+                    {r.partySize ? (
+                      <span className="type-res-small ml-2 font-normal text-res-ink-muted">
+                        {r.partySize} guest{r.partySize === 1 ? '' : 's'}
+                      </span>
+                    ) : null}
+                  </p>
+                  <p className="type-res-small font-normal text-res-ink-muted">
+                    In {when(r.start)} → out {when(r.end)}
+                    {r.paymentStatus ? ` · ${paymentLabel(r.paymentStatus)}` : ''}
+                  </p>
                 </div>
-              ))}
-            </div>
+                <button
+                  type="button"
+                  disabled={busyReservationId === r._id}
+                  onClick={() => changeReservation('checkIn', r)}
+                  className="type-res-small flex cursor-pointer items-center gap-1.5 rounded-full bg-res-brand px-5 py-2.5 font-semibold text-res-ink-inverted shadow-res-low transition-colors outline-none hover:bg-res-brand-hover focus-visible:ring-2 focus-visible:ring-res-brand disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {busyReservationId === r._id ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <LogIn className="h-3.5 w-3.5" />
+                  )}
+                  Check in
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      <section className="rounded-res-lg bg-res-card p-4 shadow-res-low md:p-5">
+        <h2 className="type-res-h3 mb-3 flex items-center gap-2 text-res-ink">
+          <Receipt className="h-4 w-4 text-res-brand" /> Room charges
+        </h2>
+        <NativeSelect
+          value={tabReservationId}
+          onChange={setTabReservationId}
+          ariaLabel="Choose an in-house room"
+          className="w-full sm:w-80"
+          placeholder="Choose an in-house room"
+        >
+          {inHouse.length === 0 ? (
+            <option value="" disabled>
+              No guests are checked in
+            </option>
+          ) : (
+            inHouse.map((r) => (
+              <option key={r._id} value={r._id}>
+                Room {unitLabel(r.unitId)} · {r.guestName}
+              </option>
+            ))
           )}
-        </CardContent>
-      </Card>
+        </NativeSelect>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Receipt className="h-4 w-4" /> Room charges
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <Select value={tabReservationId} onValueChange={setTabReservationId}>
-            <SelectTrigger className="w-full sm:w-80">
-              <SelectValue placeholder="Choose an in-house room" />
-            </SelectTrigger>
-            <SelectContent>
-              {inHouse.length === 0 ? (
-                <SelectItem value="none" disabled>
-                  No guests are checked in
-                </SelectItem>
-              ) : (
-                inHouse.map((r) => (
-                  <SelectItem key={r._id} value={r._id}>
-                    {unitLabel(r.unitId)} · {r.guestName}
-                  </SelectItem>
-                ))
-              )}
-            </SelectContent>
-          </Select>
-
+        <div className="mt-3">
           {tabLoading ? (
-            <Skeleton className="h-32 w-full" />
+            <div className="h-32 animate-pulse rounded-res-md bg-res-surface" />
           ) : tabReservation && tabOrder ? (
-            <div className="rounded-lg border p-4">
+            <div className="rounded-res-md border border-res-line bg-res-card p-4 shadow-res-low">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div>
-                  <p className="font-semibold">
-                    {unitLabel(tabReservation.unitId)} · {tabReservation.guestName}
+                  <p className="type-res-body font-semibold text-res-ink">
+                    Room {unitLabel(tabReservation.unitId)} · {tabReservation.guestName}
                   </p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="type-res-small font-normal text-res-ink-muted">
                     {tabOrder.status} · {tabOrder.lines?.length ?? 0} item(s)
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="text-lg font-bold">{money(tabOrder.total)}</p>
-                  <p className="text-xs text-muted-foreground">
-                    Paid {money(tabOrder.amountPaid)} · balance {money(tabOrder.balance)}
+                  <p className="type-res-h3 text-res-ink">{money(tabOrder.total)}</p>
+                  <p className="type-res-small font-normal text-res-ink-muted">
+                    Paid {money(tabOrder.amountPaid)} · still to pay {money(tabOrder.balance)}
                   </p>
                 </div>
               </div>
               {(tabOrder.lines?.length ?? 0) > 0 && (
-                <ul className="mt-3 space-y-1 text-sm">
+                <ul className="mt-3 space-y-1 rounded-res-md bg-res-surface p-3">
                   {tabOrder.lines?.map((line) => (
-                    <li key={line._id} className="flex justify-between">
+                    <li
+                      key={line._id}
+                      className="type-res-body flex justify-between gap-2 font-normal text-res-ink"
+                    >
                       <span>
                         {line.quantity}× {line.name}
                       </span>
-                      <span className="text-muted-foreground">{money(line.lineTotal)}</span>
+                      <span className="font-semibold">{money(line.lineTotal)}</span>
                     </li>
                   ))}
                 </ul>
               )}
-              <Button
-                size="sm"
-                className="mt-4 bg-[#0A6C6D] hover:bg-[#085a5b]"
+              <button
+                type="button"
                 onClick={() => setPadOpen(true)}
+                className="type-res-small mt-3 flex cursor-pointer items-center gap-1.5 rounded-full bg-res-brand px-5 py-2.5 font-semibold text-res-ink-inverted shadow-res-low transition-colors outline-none hover:bg-res-brand-hover focus-visible:ring-2 focus-visible:ring-res-brand"
               >
-                <Receipt className="mr-1 h-4 w-4" /> Add charge
-              </Button>
+                <Receipt className="h-3.5 w-3.5" /> Add charge
+              </button>
             </div>
           ) : tabReservation ? (
-            <div className="rounded-lg border p-4">
-              <p className="text-sm text-muted-foreground">
-                {unitLabel(tabReservation.unitId)} has no tab open yet.
+            <div className="rounded-res-md border border-res-line bg-res-card p-4 shadow-res-low">
+              <p className="type-res-small font-normal text-res-ink-muted">
+                Room {unitLabel(tabReservation.unitId)} has no bill open yet.
               </p>
-              <Button
-                size="sm"
-                className="mt-3 bg-[#0A6C6D] hover:bg-[#085a5b]"
+              <button
+                type="button"
                 onClick={() => setPadOpen(true)}
+                className="type-res-small mt-3 flex cursor-pointer items-center gap-1.5 rounded-full bg-res-brand px-5 py-2.5 font-semibold text-res-ink-inverted shadow-res-low transition-colors outline-none hover:bg-res-brand-hover focus-visible:ring-2 focus-visible:ring-res-brand"
               >
-                <Receipt className="mr-1 h-4 w-4" /> Start a tab
-              </Button>
+                <Receipt className="h-3.5 w-3.5" /> Start a bill
+              </button>
             </div>
           ) : (
-            <p className="text-sm text-muted-foreground">
-              Pick a checked-in room to see its running tab and post a charge to it.
+            <p className="type-res-small font-normal text-res-ink-muted">
+              Pick a checked-in room to see its running bill and post a charge to it.
             </p>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </section>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Building2 className="h-4 w-4" /> Room grid
-            <Badge variant="secondary">{units.length}</Badge>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {mapLoading ? (
-            <Skeleton className="h-72 w-full" />
-          ) : layout ? (
-            <RoomGrid
-              units={units}
-              reservationsByUnit={reservationsByUnit}
-              busyReservationId={busyReservationId}
-              onCheckIn={(r) => changeReservation('checkIn', r)}
-              onCheckOut={(r) => changeReservation('checkOut', r)}
-              onOpenTab={(r) => {
-                setTabReservationId(r._id);
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
-            />
-          ) : (
-            <p className="py-8 text-center text-sm text-muted-foreground">
-              No floor plan available yet.
-            </p>
-          )}
-        </CardContent>
-      </Card>
+      <section className="rounded-res-lg bg-res-card p-4 shadow-res-low md:p-5">
+        <h2 className="type-res-h3 mb-3 flex items-center gap-2 text-res-ink">
+          <Building2 className="h-4 w-4 text-res-brand" /> Room grid{' '}
+          <span className="type-res-small rounded-full bg-res-surface px-2.5 py-0.5 font-semibold text-res-ink-muted">
+            {units.length}
+          </span>
+        </h2>
+        {mapLoading ? (
+          <div className="h-72 animate-pulse rounded-res-md bg-res-surface" />
+        ) : layout ? (
+          <RoomGrid
+            units={units}
+            reservationsByUnit={reservationsByUnit}
+            busyReservationId={busyReservationId}
+            onCheckIn={(r) => changeReservation('checkIn', r)}
+            onCheckOut={(r) => changeReservation('checkOut', r)}
+            onOpenTab={(r) => {
+              setTabReservationId(r._id);
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+          />
+        ) : (
+          <p className="type-res-small py-8 text-center font-normal text-res-ink-muted">
+            No floor plan available yet.
+          </p>
+        )}
+      </section>
 
       <Dialog open={padOpen} onOpenChange={setPadOpen}>
-        <DialogContent className="max-h-[85vh] max-w-3xl overflow-y-auto">
+        <DialogContent className="max-h-[85vh] max-w-3xl overflow-y-auto rounded-res-lg border-res-line bg-res-card shadow-res-high">
           <DialogHeader>
-            <DialogTitle>
-              Charge to {tabReservation ? unitLabel(tabReservation.unitId) : 'room'}
+            <DialogTitle className="type-res-h3 text-res-ink">
+              Charge to {tabReservation ? `Room ${unitLabel(tabReservation.unitId)}` : 'room'}
             </DialogTitle>
           </DialogHeader>
           <OrderBuilder

@@ -54,7 +54,7 @@ const HotelInfo = ({
 
   return (
     <div>
-      <div className="border-[#E5E7EB] border-b  overflow-auto w-full">
+      <div className="border-res-line border-b  overflow-auto w-full">
         <div className="w-max flex-nowrap flex">
           {tabs.map((tab, i) => (
             <button
@@ -62,8 +62,8 @@ const HotelInfo = ({
               onClick={() => setActiveTab(tab.tab)}
               className={`p-3 w-max cursor-pointer font-semibold ${
                 activeTab === tab.tab
-                  ? 'border-b-2 text-[#0A6C6D] border-[#0A6C6D]'
-                  : 'text-[#606368]'
+                  ? 'border-b-2 text-res-brand border-res-brand'
+                  : 'text-res-ink-muted'
               }`}
             >
               {tab.name}

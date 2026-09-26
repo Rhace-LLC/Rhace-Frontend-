@@ -36,7 +36,7 @@ export function TablePicker({ value, onChange, className, tables, loading, chevr
         <Button
           variant="outline"
           className={cn(
-            'w-full text-left font-normal bg-[#F9FAFB] border border-[#E5E7EB] items-center justify-between rounded-xl !px-6 min-w-[150px] flex h-[60px]',
+            'w-full text-left font-normal bg-res-surface border border-res-line items-center justify-between rounded-res-sm !px-6 min-w-[150px] flex h-[60px]',
             !value && 'text-muted-foreground',
             className
           )}

@@ -14,7 +14,7 @@ interface TimeSlotPickerProps {
 }
 
 const CARD_BASE =
-  'relative flex min-h-[64px] w-full flex-col justify-center rounded-xl px-3 py-2 text-left text-xs transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#004d43]/30';
+  'relative flex min-h-[64px] w-full flex-col justify-center rounded-res-sm px-3 py-2 text-left transition-all outline-none focus-visible:ring-2 focus-visible:ring-res-brand';
 
 function isDisabled(slot: DaySlotDto): boolean {
   return slot.state === 'past' || slot.state === 'full';
@@ -22,15 +22,15 @@ function isDisabled(slot: DaySlotDto): boolean {
 
 function cardClass(slot: DaySlotDto, selected: boolean): string {
   if (selected) {
-    return `${CARD_BASE} border-2 border-[#004d43] bg-[#004d43] text-white shadow-md ring-2 ring-[#004d43]/20`;
+    return `${CARD_BASE} bg-res-brand text-res-ink-inverted shadow-res-low`;
   }
   if (slot.state === 'past') {
-    return `${CARD_BASE} cursor-not-allowed border border-dashed border-gray-200 bg-gray-50 text-gray-300`;
+    return `${CARD_BASE} cursor-not-allowed border border-dashed border-res-line bg-res-surface text-res-ink-muted`;
   }
   if (slot.state === 'full') {
-    return `${CARD_BASE} cursor-not-allowed border border-rose-100 bg-rose-50/50 text-rose-400 opacity-75`;
+    return `${CARD_BASE} cursor-not-allowed bg-res-surface text-res-ink-muted opacity-75`;
   }
-  return `${CARD_BASE} cursor-pointer border border-gray-200 bg-white text-gray-800 hover:border-[#004d43] hover:bg-[#004d43]/5`;
+  return `${CARD_BASE} cursor-pointer bg-res-surface text-res-ink hover:shadow-res-low`;
 }
 
 /** "8:00 AM – 9:00 AM" → "8:00 AM". */
@@ -91,14 +91,21 @@ export function TimeSlotPicker({
   };
 
   return (
-    <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
-      <div className="mb-3">
-        <h2 className="text-sm font-semibold text-gray-900">Select a start time</h2>
-        <p className="mt-0.5 text-[11px] text-gray-500">
-          {data?.durationMinutes
-            ? `Tables are held for ${data.durationMinutes} mins.`
-            : 'Choose a date to see available times.'}
-        </p>
+    <div className="rounded-res-lg bg-res-card p-4 shadow-res-low md:p-6">
+      <div className="mb-4 flex items-start justify-between gap-3">
+        <div>
+          <h2 className="type-res-h3 text-res-ink">Select a start time</h2>
+          <p className="type-res-small mt-1 font-normal text-res-ink-muted">
+            {data?.durationMinutes
+              ? `Tables are held for ${data.durationMinutes} mins.`
+              : 'Choose a date to see available times.'}
+          </p>
+        </div>
+        {data?.slots?.length ? (
+          <span className="type-res-small w-max shrink-0 rounded-full bg-res-surface px-3 py-1 font-semibold text-res-ink-muted">
+            {data.slots.length} slots
+          </span>
+        ) : null}
       </div>
 
       {!planId ? (
@@ -106,9 +113,9 @@ export function TimeSlotPicker({
       ) : !date ? (
         <Empty text="Pick a date to see available times." />
       ) : query.isLoading ? (
-        <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-6">
+        <div className="grid grid-cols-3 gap-2.5 sm:grid-cols-4 md:grid-cols-6">
           {Array.from({ length: 6 }).map((_, index) => (
-            <div key={index} className="h-16 animate-pulse rounded-xl bg-gray-100" />
+            <div key={index} className="h-16 animate-pulse rounded-res-sm bg-res-surface" />
           ))}
         </div>
       ) : data?.notApplicable ? (
@@ -126,32 +133,35 @@ export function TimeSlotPicker({
       ) : (
         <>
           {groups.length > 1 && (
-            <div className="mb-3 flex flex-wrap gap-2">
-              {(['all', ...groups.map((group) => group.period)] as const).map((id) => (
-                <button
-                  key={id}
-                  type="button"
-                  onClick={() => setPeriod(id)}
-                  className={`rounded-full border px-3 py-1 text-[11px] font-medium transition-colors ${
-                    period === id
-                      ? 'border-[#004d43] bg-[#004d43]/5 text-[#004d43]'
-                      : 'border-gray-200 text-gray-600 hover:border-gray-300'
-                  }`}
-                >
-                  {id === 'all' ? 'All' : id}
-                </button>
-              ))}
+            <div className="hide-scrollbar -mx-1 mb-4 overflow-x-auto px-1 py-1">
+              <div className="flex w-max gap-2">
+                {(['all', ...groups.map((group) => group.period)] as const).map((id) => (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => setPeriod(id)}
+                    aria-pressed={period === id}
+                    className={`type-res-small cursor-pointer rounded-full px-4 py-2 whitespace-nowrap transition-all duration-200 outline-none focus-visible:ring-2 focus-visible:ring-res-brand ${
+                      period === id
+                        ? 'bg-res-brand text-res-ink-inverted shadow-res-low'
+                        : 'bg-res-surface text-res-ink-muted hover:text-res-ink'
+                    }`}
+                  >
+                    {id === 'all' ? 'All' : id}
+                  </button>
+                ))}
+              </div>
             </div>
           )}
 
-          <div className="space-y-4">
+          <div className="space-y-5">
             {visibleGroups.map((group) => (
               <div key={group.period}>
-                <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-gray-400">
+                <p className="type-res-caption mb-2 font-medium tracking-[0.2px] text-res-ink-muted uppercase">
                   {group.period}
                 </p>
                 <div
-                  className="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-6"
+                  className="grid grid-cols-3 gap-2.5 sm:grid-cols-4 md:grid-cols-6"
                   role="group"
                   aria-label={`${group.period} time slots`}
                   onKeyDown={handleGridKeyDown}
@@ -170,18 +180,18 @@ export function TimeSlotPicker({
                         onClick={() => onSelect({ start: slot.start, end: slot.end })}
                         className={cardClass(slot, selected)}
                       >
-                        <span className="text-[13px] font-semibold leading-tight">
+                        <span className="type-res-body font-semibold leading-tight">
                           {startLabel(slot)}
                         </span>
                         {slot.state === 'full' ? (
-                          <span className="mt-1 text-[11px] font-medium">Fully Booked</span>
+                          <span className="type-res-small mt-1 font-medium">Fully booked</span>
                         ) : slot.state === 'past' ? (
-                          <span className="mt-1 text-[11px]">Elapsed</span>
+                          <span className="type-res-small mt-1">Elapsed</span>
                         ) : (
-                          <span className="mt-1 inline-flex items-center gap-1.5 text-[11px]">
+                          <span className="type-res-small mt-1 inline-flex items-center gap-1.5">
                             <span
                               className={`inline-block h-1.5 w-1.5 rounded-full ${
-                                selected ? 'bg-white' : 'bg-emerald-500'
+                                selected ? 'bg-res-ink-inverted' : 'bg-res-accent'
                               }`}
                             />
                             {slot.available} left
@@ -211,8 +221,8 @@ export function TimeSlotPicker({
 
 function Empty({ text }: { text: string }) {
   return (
-    <div className="rounded-2xl border border-dashed border-gray-300 bg-white py-10 text-center text-sm text-gray-500">
-      {text}
+    <div className="rounded-res-md bg-res-surface px-6 py-10 text-center">
+      <p className="type-res-small font-normal text-res-ink-muted">{text}</p>
     </div>
   );
 }

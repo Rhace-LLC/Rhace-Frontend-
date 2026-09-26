@@ -217,11 +217,16 @@ export default function MyStationsCard({
 
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between gap-3">
-        <CardTitle className="flex items-center gap-2 text-base">
-          <Armchair className="h-4 w-4 text-[#0A6C6D]" /> My stations
-          <Badge variant="secondary">{mine.length}</Badge>
-        </CardTitle>
+      <CardHeader className="flex flex-row items-start justify-between gap-3">
+        <div>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Armchair className="h-4 w-4 text-[#0A6C6D]" /> My stations
+            <Badge variant="secondary">{mine.length}</Badge>
+          </CardTitle>
+          <p className="mt-1 text-xs text-muted-foreground">
+            {unitType === 'room' ? 'Rooms' : 'Tables'} you&apos;ve claimed or been assigned today.
+          </p>
+        </div>
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="sm" onClick={load} disabled={isLoading}>
             {isLoading ? (

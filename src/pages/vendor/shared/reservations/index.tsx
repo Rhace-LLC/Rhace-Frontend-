@@ -7,6 +7,7 @@ import {
   ReservationFilters,
   ReservationStatCards,
   ReservationTable,
+  outstanding,
   reservationKeys,
   useCancelReservation,
   useCheckInReservation,
@@ -25,13 +26,28 @@ const TIMELINE_PATH: Record<Vertical, string> = {
   restaurant: '/dashboard/restaurant/timeline/prototype',
 };
 
+const TITLE: Record<Vertical, string> = {
+  hotel: 'Hotel bookings',
+  club: 'Club reservations',
+  restaurant: 'Restaurant reservations',
+};
+
+function bookingLabel(reservation: ReservationView): string {
+  const option = reservation.blueprintName ?? reservation.unitLabel ?? '';
+  const spot =
+    reservation.unitLabel && reservation.unitLabel !== reservation.blueprintName
+      ? ` · ${reservation.vertical === 'hotel' ? 'Room' : 'Table'} ${reservation.unitLabel}`
+      : '';
+  return `${reservation.guestName}${option ? ` · ${option}` : ''}${spot}`;
+}
+
 export function VendorReservationsPage({ vertical }: { vertical: Vertical }) {
   const [filters, setFilters] = useState<ReservationFilterParams>({ page: 1, limit: 20 });
   const [selected, setSelected] = useState<ReservationView | null>(null);
   const [paymentTarget, setPaymentTarget] = useState<ReservationView | null>(null);
 
   const reservationsQuery = useReservations(filters);
-  const countersQuery = useReservationCounters();
+  const countersQuery = useReservationCounters({ vertical });
   const cancelMutation = useCancelReservation();
   const checkInMutation = useCheckInReservation();
   const checkOutMutation = useCheckOutReservation();
@@ -72,16 +88,14 @@ export function VendorReservationsPage({ vertical }: { vertical: Vertical }) {
     <div className="space-y-5 p-4 md:p-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-xl font-semibold capitalize text-gray-900">
-            {vertical} reservations
-          </h1>
-          <p className="mt-1 text-sm text-gray-500">
+          <h1 className="type-res-h2 text-res-ink">{TITLE[vertical]}</h1>
+          <p className="type-res-body mt-1 font-normal text-res-ink-muted">
             Manage check-ins, payments and cancellations.
           </p>
         </div>
         <Link
           to={TIMELINE_PATH[vertical]}
-          className="rounded-xl border border-gray-200 px-4 py-2 text-xs font-medium text-gray-700 hover:border-[#0A6C6D] hover:text-[#0A6C6D]"
+          className="type-res-small rounded-full bg-res-card px-4 py-2.5 font-semibold text-res-ink shadow-res-low transition-all hover:text-res-brand hover:shadow-res-medium"
         >
           View timeline
         </Link>
@@ -89,44 +103,47 @@ export function VendorReservationsPage({ vertical }: { vertical: Vertical }) {
 
       <ReservationStatCards counters={countersQuery.data} loading={countersQuery.isLoading} />
 
-      <ReservationFilters value={filters} onChange={setFilters} />
-
-      <ReservationTable
-        items={items}
-        role="vendor"
-        loading={reservationsQuery.isLoading}
-        onView={setSelected}
-        onCancel={handleCancel}
-        onCheckIn={handleCheckIn}
-        onCheckOut={handleCheckOut}
-        onRecordOffline={setPaymentTarget}
-      />
-
-      {data && data.pages > 1 && (
-        <div className="flex items-center justify-between text-sm text-gray-600">
-          <span>
-            Page {data.page} of {data.pages} · {data.total} total
-          </span>
-          <div className="flex gap-2">
-            <button
-              type="button"
-              disabled={data.page <= 1}
-              onClick={() => setFilters((prev) => ({ ...prev, page: data.page - 1 }))}
-              className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium disabled:opacity-50"
-            >
-              Previous
-            </button>
-            <button
-              type="button"
-              disabled={data.page >= data.pages}
-              onClick={() => setFilters((prev) => ({ ...prev, page: data.page + 1 }))}
-              className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium disabled:opacity-50"
-            >
-              Next
-            </button>
-          </div>
+      <section className="rounded-res-lg bg-res-card p-4 shadow-res-low md:p-5">
+        <ReservationFilters value={filters} onChange={setFilters} />
+        <div className="mt-4">
+          <ReservationTable
+            items={items}
+            role="vendor"
+            loading={reservationsQuery.isLoading}
+            onView={setSelected}
+            onCancel={handleCancel}
+            onCheckIn={handleCheckIn}
+            onCheckOut={handleCheckOut}
+            onRecordOffline={setPaymentTarget}
+          />
         </div>
-      )}
+
+        {data && data.pages > 1 && (
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
+            <span className="type-res-small font-normal text-res-ink-muted">
+              Page {data.page} of {data.pages} · {data.total} total
+            </span>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                disabled={data.page <= 1}
+                onClick={() => setFilters((prev) => ({ ...prev, page: data.page - 1 }))}
+                className="type-res-small cursor-pointer rounded-full bg-res-surface px-4 py-2 font-semibold text-res-ink transition-colors hover:text-res-brand disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Previous
+              </button>
+              <button
+                type="button"
+                disabled={data.page >= data.pages}
+                onClick={() => setFilters((prev) => ({ ...prev, page: data.page + 1 }))}
+                className="type-res-small cursor-pointer rounded-full bg-res-surface px-4 py-2 font-semibold text-res-ink transition-colors hover:text-res-brand disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        )}
+      </section>
 
       <ReservationDrawer
         open={!!selected}
@@ -139,7 +156,7 @@ export function VendorReservationsPage({ vertical }: { vertical: Vertical }) {
                 <button
                   type="button"
                   onClick={() => handleCheckIn(selected)}
-                  className="rounded-lg bg-[#0A6C6D] px-4 py-2 text-xs font-medium text-white hover:bg-[#0A6C6D]/90"
+                  className="type-res-small cursor-pointer rounded-full bg-res-brand px-5 py-2.5 font-semibold text-res-ink-inverted shadow-res-low transition-colors hover:bg-res-brand-hover"
                 >
                   Check in
                 </button>
@@ -148,16 +165,28 @@ export function VendorReservationsPage({ vertical }: { vertical: Vertical }) {
                 <button
                   type="button"
                   onClick={() => handleCheckOut(selected)}
-                  className="rounded-lg bg-[#0A6C6D] px-4 py-2 text-xs font-medium text-white hover:bg-[#0A6C6D]/90"
+                  className="type-res-small cursor-pointer rounded-full bg-res-brand px-5 py-2.5 font-semibold text-res-ink-inverted shadow-res-low transition-colors hover:bg-res-brand-hover"
                 >
                   Check out
+                </button>
+              )}
+              {selected.bookingGroup && outstanding(selected) > 0 && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelected(null);
+                    setPaymentTarget(selected);
+                  }}
+                  className="type-res-small cursor-pointer rounded-full bg-res-surface px-5 py-2.5 font-semibold text-res-ink transition-colors hover:text-res-brand"
+                >
+                  Record payment
                 </button>
               )}
               {['pending_payment', 'upcoming'].includes(selected.status) && (
                 <button
                   type="button"
                   onClick={() => handleCancel(selected)}
-                  className="rounded-lg border border-rose-200 px-4 py-2 text-xs font-medium text-rose-600 hover:bg-rose-50"
+                  className="type-res-small cursor-pointer rounded-full px-4 py-2.5 font-semibold text-res-ink-muted transition-colors hover:text-res-ink"
                 >
                   Cancel reservation
                 </button>
@@ -170,6 +199,8 @@ export function VendorReservationsPage({ vertical }: { vertical: Vertical }) {
       <RecordOfflinePaymentModal
         isOpen={!!paymentTarget}
         groupId={paymentTarget?.bookingGroup ?? undefined}
+        bookingLabel={paymentTarget ? bookingLabel(paymentTarget) : undefined}
+        dueAmount={paymentTarget ? outstanding(paymentTarget) : undefined}
         onClose={() => setPaymentTarget(null)}
         onSuccess={() => {
           toast.success('Payment recorded');

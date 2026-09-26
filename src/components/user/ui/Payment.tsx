@@ -84,7 +84,7 @@ export default function PaymentPage({ booking, setPopupOpen, payLater }: Payment
           <div className="">
             <div className="flex justify-between items-center mb-1">
               <span className="text-xs text-gray-600">Total Amount</span>
-              <span className="text-xl font-semibold text-[#0A6C6D]">
+              <span className="text-xl font-semibold text-res-brand">
                 ₦{displayAmount?.toLocaleString()}
               </span>
             </div>
@@ -112,7 +112,7 @@ export default function PaymentPage({ booking, setPopupOpen, payLater }: Payment
                   key={index}
                   className={`flex items-center justify-between p-4 border-2 cursor-pointer rounded-lg transition-all ${
                     selectedPayment?.name === method.name
-                      ? 'border-[#0A6C6D] bg-[#0A6C6D]/5'
+                      ? 'border-res-brand bg-res-brand/5'
                       : 'border-gray-200 hover:border-gray-300'
                   }`}
                   onClick={() => setSelectedPayment(method)}
@@ -126,11 +126,11 @@ export default function PaymentPage({ booking, setPopupOpen, payLater }: Payment
                   </div>
                   <div
                     className={`w-5 h-5 shrink-0 rounded-full border-2 flex items-center justify-center ${
-                      selectedPayment?.name === method.name ? 'border-[#0A6C6D]' : 'border-gray-300'
+                      selectedPayment?.name === method.name ? 'border-res-brand' : 'border-gray-300'
                     }`}
                   >
                     {selectedPayment?.name === method.name && (
-                      <div className="size-3 shrink-0 rounded-full bg-[#0A6C6D]"></div>
+                      <div className="size-3 shrink-0 rounded-full bg-res-brand"></div>
                     )}
                   </div>
                 </div>
@@ -154,7 +154,7 @@ export default function PaymentPage({ booking, setPopupOpen, payLater }: Payment
               Cancel
             </Button>
             <Button
-              className="w-2/3 h-11 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed bg-[#0A6C6D] hover:bg-teal-800"
+              className="w-2/3 h-11 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed bg-res-brand hover:bg-res-brand-hover"
               onClick={handlePayClick}
               disabled={isLoading || !selectedPayment}
             >
@@ -171,11 +171,11 @@ export default function PaymentPage({ booking, setPopupOpen, payLater }: Payment
 
           <p className="text-xs text-center text-gray-500 pt-2">
             By proceeding, you agree to our{' '}
-            <a href="/terms" className="text-[#0A6C6D] hover:underline">
+            <a href="/terms" className="text-res-brand hover:underline">
               Terms
             </a>{' '}
             and{' '}
-            <a href="/privacy" className="text-[#0A6C6D] hover:underline">
+            <a href="/privacy" className="text-res-brand hover:underline">
               Privacy Policy
             </a>
           </p>

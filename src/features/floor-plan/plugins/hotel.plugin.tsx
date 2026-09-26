@@ -1,9 +1,10 @@
 /* eslint-disable react-refresh/only-export-components */
 import { Wrench } from 'lucide-react';
 import type { BusinessData, FloorEntity, FloorPlan, SpatialData } from '../core/types';
-import type { DrawerContext, TileContext, TopBarContext, ToolbarItem, VerticalPlugin } from '../core/plugin';
+import type { DrawerContext, ManageCardActions, TileContext, TopBarContext, ToolbarItem, VerticalPlugin } from '../core/plugin';
 import { ScopeNav } from '../components/overlays/ScopeNav';
 import { BlueprintSpecs } from '../components/BlueprintSpecs';
+import { ManageUnitCard } from '../components/ManageUnitCard';
 import { stateMetaFor } from '../domain/states';
 import { canTransition } from '../domain/transitions';
 import { allBlueprints } from '../domain/blueprintStore';
@@ -94,6 +95,31 @@ function renderTile(entity: FloorEntity, ctx: TileContext) {
         ) : null}
       </div>
     </div>
+  );
+}
+
+function renderManageCard(entity: FloorEntity, actions: ManageCardActions) {
+  const b = entity.businessData;
+  const state = String(b.status ?? 'vacant_clean');
+  const meta = stateMetaFor('hotel', state);
+  const blueprint = hotelBlueprint(entity);
+  const floor = entity.spatialData.floor;
+  return (
+    <ManageUnitCard
+      kind="Room"
+      name={String(b.name)}
+      typeLabel={blueprint?.type ?? (b.roomType ? String(b.roomType) : undefined)}
+      statusLabel={meta.label}
+      statusColor={meta.color}
+      guestLabel={b.guestName ? String(b.guestName) : undefined}
+      locationLabel={floor ? `Floor ${floor}` : undefined}
+      extras={
+        typeof b.capacity === 'number' ? (
+          <p className="type-res-small font-normal text-res-ink-muted">Sleeps {b.capacity}</p>
+        ) : undefined
+      }
+      onManage={actions.onManage}
+    />
   );
 }
 
@@ -305,5 +331,6 @@ export const hotelPlugin: VerticalPlugin = {
     { id: 'smoking', label: 'Smoking' },
   ],
   renderTile,
+  renderManageCard,
   renderDrawer,
 };

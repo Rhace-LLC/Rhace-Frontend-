@@ -146,7 +146,7 @@ const ClubInfos = ({ address, openingTime, closingTime, dressCode, desc, ageLimi
         </div>
         {isOverflowing && (
           <button
-            className="mt-2 flex items-center gap-1 text-sm text-[#0A6C6D] hover:underline cursor-pointer"
+            className="mt-2 flex items-center gap-1 text-sm text-res-brand hover:underline cursor-pointer"
             onClick={() => setShowMore((prev) => !prev)}
           >
             {showMore ? 'Show less' : 'Show more'}

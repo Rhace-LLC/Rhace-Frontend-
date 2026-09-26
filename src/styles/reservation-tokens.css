@@ -1,0 +1,121 @@
+/**
+ * Reservation & Booking design tokens.
+ * Source of truth: design/for-reservations-and-booking/master-design-token.json
+ * Archetype: Soft SaaS / Modern Dashboard Minimalist, comfortable density.
+ *
+ * Exposes:
+ *  - CSS variables  (--res-*) for arbitrary values / non-Tailwind use
+ *  - Tailwind v4 theme utilities: bg-res-*, text-res-*, border-res-*,
+ *    rounded-res-sm/md/lg, shadow-res-low/medium/high
+ *  - Type classes: .type-res-h1/h2/h3/body/small/caption (size + weight +
+ *    leading + tracking per the typography matrix)
+ *
+ * Notes:
+ *  - Token border width is 0/none: cards use shadow-res-* for elevation,
+ *    1px res-line is reserved for dividers and selected-state indicators.
+ *  - No status/semantic scale (success/warning/gold) exists in the tokens;
+ *    those hexes are intentionally left in place (see per-file notes).
+ *  - Font stays Inter (already loaded); the "Geometric Sans-Serif"
+ *    classification is informational only.
+ */
+
+:root {
+  /* backgrounds */
+  --res-page: #eaeaea;
+  --res-surface: #f6f7f9;
+  --res-card: #ffffff;
+  --res-overlay: rgba(10, 108, 109, 0.4);
+  --res-scrim: rgba(17, 24, 39, 0.55);
+
+  /* brand */
+  --res-brand: #0a6c6d;
+  --res-brand-hover: #085758;
+  --res-brand-active: #064344;
+  --res-brand-focus: #0a6c6d;
+  --res-brand-disabled: #e5e7eb;
+  --res-secondary: #e0f2f1;
+  --res-accent: #00a86b;
+
+  /* typography */
+  --res-ink: #111827;
+  --res-ink-muted: #8c94a0;
+  --res-ink-inverted: #ffffff;
+
+  /* dividers */
+  --res-line: #f0f2f5;
+
+  /* radius */
+  --res-radius-sm: 12px;
+  --res-radius-md: 20px;
+  --res-radius-lg: 28px;
+
+  /* elevation */
+  --res-shadow-low: 0px 1px 3px 0px rgba(0, 0, 0, 0.02);
+  --res-shadow-medium: 0px 4px 16px 0px rgba(0, 0, 0, 0.03);
+  --res-shadow-high: 0px 8px 24px -4px rgba(0, 0, 0, 0.06);
+}
+
+@theme {
+  --color-res-page: #eaeaea;
+  --color-res-surface: #f6f7f9;
+  --color-res-card: #ffffff;
+  --color-res-overlay: rgba(10, 108, 109, 0.4);
+  --color-res-scrim: rgba(17, 24, 39, 0.55);
+  --color-res-brand: #0a6c6d;
+  --color-res-brand-hover: #085758;
+  --color-res-brand-active: #064344;
+  --color-res-brand-disabled: #e5e7eb;
+  --color-res-secondary: #e0f2f1;
+  --color-res-accent: #00a86b;
+  --color-res-ink: #111827;
+  --color-res-ink-muted: #8c94a0;
+  --color-res-ink-inverted: #ffffff;
+  --color-res-line: #f0f2f5;
+
+  --radius-res-sm: 12px;
+  --radius-res-md: 20px;
+  --radius-res-lg: 28px;
+
+  --shadow-res-low: 0px 1px 3px 0px rgba(0, 0, 0, 0.02);
+  --shadow-res-medium: 0px 4px 16px 0px rgba(0, 0, 0, 0.03);
+  --shadow-res-high: 0px 8px 24px -4px rgba(0, 0, 0, 0.06);
+}
+
+@layer components {
+  .type-res-h1 {
+    font-size: 28px;
+    font-weight: 400;
+    line-height: 1.2;
+    letter-spacing: -0.5px;
+  }
+  .type-res-h2 {
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.25;
+    letter-spacing: -0.3px;
+  }
+  .type-res-h3 {
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.3;
+    letter-spacing: 0;
+  }
+  .type-res-body {
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.4;
+    letter-spacing: 0;
+  }
+  .type-res-small {
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 1.35;
+    letter-spacing: 0.1px;
+  }
+  .type-res-caption {
+    font-size: 10px;
+    font-weight: 400;
+    line-height: 1.3;
+    letter-spacing: 0.2px;
+  }
+}

@@ -22,9 +22,15 @@ function categoryForVertical(vertical: Vertical): BlueprintCategoryDto {
 }
 
 const CONFIG_LABEL: Record<Vertical, string> = {
-  hotel: 'Room Config',
-  club: 'Table Config',
-  restaurant: 'Table Config',
+  hotel: 'Room',
+  club: 'Table',
+  restaurant: 'Table',
+};
+
+const VERTICAL_NAME: Record<Vertical, string> = {
+  hotel: 'Hotel',
+  club: 'Club',
+  restaurant: 'Restaurant',
 };
 
 const DEFAULT_SHAPE: Record<Vertical, EntityShape> = {
@@ -139,7 +145,8 @@ const POLICY_PRESETS: Record<Vertical, BookingPolicy[]> = {
 };
 
 const inputClass =
-  'w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm text-gray-800 focus:border-teal-500 focus:outline-none';
+  'w-full rounded-res-sm border border-res-line bg-res-surface px-3 py-2.5 type-res-body font-normal text-res-ink outline-none placeholder:text-res-ink-muted focus:border-res-brand';
+const labelClass = 'type-res-small mb-1.5 block font-medium text-res-ink-muted';
 
 function slug(label: string): string {
   return label.toLowerCase().replace(/[^a-z0-9]+/g, '_');
@@ -152,7 +159,7 @@ function lines(value: string): string[] {
     .filter(Boolean);
 }
 
-const STEPS = ['Basics', 'Details', 'Preview'] as const;
+const STEPS = ['Details', 'Extras & photos', 'Review'] as const;
 
 export function CreateBlueprintModal({
   vertical,
@@ -177,6 +184,7 @@ export function CreateBlueprintModal({
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const kind = CONFIG_LABEL[vertical];
 
   useEffect(() => {
     if (!isOpen) return;
@@ -227,7 +235,7 @@ export function CreateBlueprintModal({
       }
       setImages((prev) => [...lines(prev), ...uploaded].join('\n'));
     } catch (error) {
-      setUploadError((error as Error).message || 'Image upload failed');
+      setUploadError((error as Error).message || 'Photo upload failed');
     } finally {
       setUploading(false);
       setUploadProgress(0);
@@ -283,29 +291,32 @@ export function CreateBlueprintModal({
     <Modal
       isOpen={isOpen}
       onClose={saving ? () => undefined : onClose}
-      title={initial ? `Edit ${CONFIG_LABEL[vertical]}` : `Create a ${CONFIG_LABEL[vertical]}`}
-      subtitle={`${vertical.charAt(0).toUpperCase() + vertical.slice(1)} · step ${step + 1} of ${STEPS.length} · ${STEPS[step]}`}
+      title={initial ? `Edit ${kind.toLowerCase()}` : `Add ${kind.toLowerCase()}`}
+      subtitle={`${VERTICAL_NAME[vertical]} · Step ${step + 1} of ${STEPS.length} · ${STEPS[step]}`}
       footer={
         step < STEPS.length - 1 ? (
           <>
             <button
+              type="button"
               onClick={onClose}
-              className="rounded-lg border border-gray-300 px-3 py-2 text-xs font-medium text-gray-700 hover:bg-gray-50"
+              className="type-res-small cursor-pointer rounded-full border border-res-line bg-res-card px-4 py-2.5 font-semibold text-res-ink hover:text-res-brand"
             >
               Cancel
             </button>
             {step > 0 && (
               <button
+                type="button"
                 onClick={() => setStep((s) => s - 1)}
-                className="flex items-center gap-1 rounded-lg border border-gray-300 px-3 py-2 text-xs font-medium text-gray-700 hover:bg-gray-50"
+                className="type-res-small flex cursor-pointer items-center gap-1 rounded-full border border-res-line bg-res-card px-4 py-2.5 font-semibold text-res-ink hover:text-res-brand"
               >
                 <ChevronLeft size={14} /> Back
               </button>
             )}
             <button
+              type="button"
               onClick={() => setStep((s) => s + 1)}
               disabled={step === 0 && !canLeaveBasics}
-              className="flex items-center gap-1 rounded-lg bg-teal-700 px-3 py-2 text-xs font-medium text-white hover:bg-teal-800 disabled:opacity-50"
+              className="type-res-small flex cursor-pointer items-center gap-1 rounded-full bg-res-brand px-5 py-2.5 font-semibold text-res-ink-inverted shadow-res-low transition-colors hover:bg-res-brand-hover disabled:cursor-not-allowed disabled:opacity-50"
             >
               Next <ChevronRight size={14} />
             </button>
@@ -313,126 +324,148 @@ export function CreateBlueprintModal({
         ) : (
           <>
             <button
+              type="button"
               onClick={() => setStep((s) => s - 1)}
               disabled={saving}
-              className="flex items-center gap-1 rounded-lg border border-gray-300 px-3 py-2 text-xs font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+              className="type-res-small flex cursor-pointer items-center gap-1 rounded-full border border-res-line bg-res-card px-4 py-2.5 font-semibold text-res-ink hover:text-res-brand disabled:opacity-50"
             >
               <ChevronLeft size={14} /> Back
             </button>
             <button
+              type="button"
               onClick={handleSave}
               disabled={saving || !canLeaveBasics}
-              className="rounded-lg bg-teal-700 px-4 py-2 text-xs font-medium text-white hover:bg-teal-800 disabled:opacity-50"
+              className="type-res-small cursor-pointer rounded-full bg-res-brand px-5 py-2.5 font-semibold text-res-ink-inverted shadow-res-low transition-colors hover:bg-res-brand-hover disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {saving ? 'Saving…' : initial ? 'Save Changes' : 'Save Blueprint'}
+              {saving ? 'Saving…' : initial ? 'Save changes' : `Save ${kind.toLowerCase()}`}
             </button>
           </>
         )
       }
     >
       {step === 0 && (
-        <div className="space-y-4 text-sm">
-          <label className="block">
-            <span className="mb-1 block text-xs font-medium text-gray-500">Blueprint Name</span>
+        <div className="space-y-4">
+          <div>
+            <label className={labelClass} htmlFor="bp-name">
+              Name
+            </label>
             <input
+              id="bp-name"
               value={name}
               onChange={(e) => setName(e.target.value)}
               className={inputClass}
               placeholder="Executive Ocean Suite"
             />
-          </label>
+          </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <label className="block">
-              <span className="mb-1 block text-xs font-medium text-gray-500">Type</span>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <div>
+              <label className={labelClass} htmlFor="bp-type">
+                Type
+              </label>
               <input
+                id="bp-type"
                 value={type}
                 onChange={(e) => setType(e.target.value)}
                 list={`blueprint-type-${vertical}`}
                 className={inputClass}
-                placeholder="Select or type your own"
+                placeholder="Pick one or write your own"
               />
               <datalist id={`blueprint-type-${vertical}`}>
                 {TYPE_OPTIONS[vertical].map((option) => (
                   <option key={option} value={option} />
                 ))}
               </datalist>
-            </label>
+            </div>
             {vertical === 'hotel' ? (
-              <label className="block">
-                <span className="mb-1 block text-xs font-medium text-gray-500">Price per night (₦)</span>
+              <div>
+                <label className={labelClass} htmlFor="bp-price">
+                  Price per night (₦)
+                </label>
                 <input
+                  id="bp-price"
                   type="number"
                   min={0}
                   value={basePrice}
                   onChange={(e) => setBasePrice(e.target.value)}
                   className={inputClass}
                 />
-              </label>
+              </div>
             ) : (
-              <label className="block">
-                <span className="mb-1 block text-xs font-medium text-gray-500">Minimum deposit (₦)</span>
+              <div>
+                <label className={labelClass} htmlFor="bp-deposit">
+                  Minimum deposit (₦)
+                </label>
                 <input
+                  id="bp-deposit"
                   type="number"
                   min={0}
                   value={minimumDeposit}
                   onChange={(e) => setMinimumDeposit(e.target.value)}
                   className={inputClass}
                 />
-                <span className="mt-1 block text-[11px] text-gray-400">
-                  Required to reserve. Credited against the bill. 0 = free.
+                <span className="type-res-small mt-1 block font-normal text-res-ink-muted">
+                  To book. Comes off the bill. 0 means free.
                 </span>
-              </label>
+              </div>
             )}
           </div>
 
           {vertical === 'hotel' && (
-            <label className="block">
-              <span className="mb-1 block text-xs font-medium text-gray-500">
+            <div>
+              <label className={labelClass} htmlFor="bp-hotel-deposit">
                 Minimum deposit (₦)
-              </span>
+              </label>
               <input
+                id="bp-hotel-deposit"
                 type="number"
                 min={0}
                 value={minimumDeposit}
                 onChange={(e) => setMinimumDeposit(e.target.value)}
                 className={inputClass}
               />
-              <span className="mt-1 block text-[11px] text-gray-400">
-                Required to confirm when the guest pays at checkout. 0 = no deposit.
+              <span className="type-res-small mt-1 block font-normal text-res-ink-muted">
+                Taken when the guest pays. 0 means no deposit.
               </span>
-            </label>
+            </div>
           )}
 
-          <label className="block">
-            <span className="mb-1 block text-xs font-medium text-gray-500">Description</span>
+          <div>
+            <label className={labelClass} htmlFor="bp-description">
+              Description
+            </label>
             <textarea
+              id="bp-description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
-              placeholder="Describe this configuration…"
+              placeholder="What makes this one special?"
               className={inputClass}
             />
-          </label>
+          </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <label className="block">
-              <span className="mb-1 block text-xs font-medium text-gray-500">Capacity</span>
-              <input type="number" min={1} value={capacity} onChange={(e) => setCapacity(e.target.value)} className={inputClass} />
-            </label>
-            <label className="block">
-              <span className="mb-1 block text-xs font-medium text-gray-500">Max Capacity</span>
-              <input type="number" min={1} value={maxCapacity} onChange={(e) => setMaxCapacity(e.target.value)} className={inputClass} />
-            </label>
+            <div>
+              <label className={labelClass} htmlFor="bp-capacity">
+                Seats
+              </label>
+              <input id="bp-capacity" type="number" min={1} value={capacity} onChange={(e) => setCapacity(e.target.value)} className={inputClass} />
+            </div>
+            <div>
+              <label className={labelClass} htmlFor="bp-max-capacity">
+                Max seats
+              </label>
+              <input id="bp-max-capacity" type="number" min={1} value={maxCapacity} onChange={(e) => setMaxCapacity(e.target.value)} className={inputClass} />
+            </div>
           </div>
         </div>
       )}
 
       {step === 1 && (
-        <div className="space-y-4 text-sm">
+        <div className="space-y-5">
           <div>
-            <span className="mb-1 block text-xs font-medium text-gray-500">Amenities</span>
-            <div className="mb-2 flex flex-wrap gap-1.5">
+            <span className={labelClass}>Extras & features</span>
+            <div className="mb-2.5 flex flex-wrap gap-1.5">
               {AMENITY_PRESETS[vertical].map((preset) => {
                 const active = amenityList.includes(preset);
                 return (
@@ -440,10 +473,11 @@ export function CreateBlueprintModal({
                     type="button"
                     key={preset}
                     onClick={() => toggleAmenity(preset)}
-                    className={`rounded-full px-3 py-1.5 text-[11px] font-medium transition-colors ${
+                    aria-pressed={active}
+                    className={`type-res-small cursor-pointer rounded-full px-3 py-1.5 font-medium transition-all outline-none focus-visible:ring-2 focus-visible:ring-res-brand ${
                       active
-                        ? 'bg-teal-600 text-white'
-                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                        ? 'bg-res-brand text-res-ink-inverted shadow-res-low'
+                        : 'bg-res-surface text-res-ink-muted hover:text-res-ink'
                     }`}
                   >
                     {preset}
@@ -457,7 +491,7 @@ export function CreateBlueprintModal({
                     type="button"
                     key={label}
                     onClick={() => toggleAmenity(label)}
-                    className="rounded-full bg-teal-600 px-3 py-1.5 text-[11px] font-medium text-white"
+                    className="type-res-small cursor-pointer rounded-full bg-res-brand px-3 py-1.5 font-medium text-res-ink-inverted shadow-res-low"
                   >
                     {label} ×
                   </button>
@@ -473,13 +507,13 @@ export function CreateBlueprintModal({
                     addCustomAmenity();
                   }
                 }}
-                placeholder="Add another amenity"
+                placeholder="Add another extra"
                 className={inputClass}
               />
               <button
                 type="button"
                 onClick={addCustomAmenity}
-                className="shrink-0 rounded-md border border-gray-300 px-3 text-xs font-medium text-gray-700 hover:bg-gray-50"
+                className="type-res-small shrink-0 cursor-pointer rounded-full bg-res-surface px-4 font-semibold text-res-ink transition-colors hover:text-res-brand"
               >
                 Add
               </button>
@@ -487,17 +521,18 @@ export function CreateBlueprintModal({
           </div>
 
           <div>
-            <span className="mb-1 block text-xs font-medium text-gray-500">Booking Policies</span>
+            <span className={labelClass}>House rules</span>
             <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
               {POLICY_PRESETS[vertical].map((policy) => (
                 <label
                   key={policy.id}
-                  className="flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 text-xs text-gray-700 hover:bg-gray-50"
+                  className="type-res-small flex cursor-pointer items-center gap-2 rounded-res-sm bg-res-surface px-3 py-2.5 font-normal text-res-ink"
                 >
                   <input
                     type="checkbox"
                     checked={selectedPolicies.includes(policy.label)}
                     onChange={() => togglePolicy(policy.label)}
+                    className="h-4 w-4 shrink-0 accent-res-brand"
                   />
                   {policy.label}
                 </label>
@@ -506,24 +541,25 @@ export function CreateBlueprintModal({
           </div>
 
           <div>
-            <span className="mb-1 block text-xs font-medium text-gray-500">Image Gallery</span>
-            <div className="mb-2 flex flex-wrap gap-2">
+            <span className={labelClass}>Photos</span>
+            <div className="mb-2.5 flex flex-wrap gap-2">
               {imageUrls.map((url) => (
-                <div key={url} className="relative h-16 w-16 overflow-hidden rounded-md border border-gray-200">
+                <div key={url} className="relative h-16 w-16 overflow-hidden rounded-res-sm bg-res-surface">
                   <img src={url} alt="" className="h-full w-full object-cover" />
                   <button
                     type="button"
                     onClick={() => removeImage(url)}
-                    className="absolute right-0 top-0 rounded-bl bg-black/60 px-1 text-[10px] leading-tight text-white hover:bg-black/80"
-                    title="Remove image"
+                    className="absolute top-1 right-1 flex h-5 w-5 cursor-pointer items-center justify-center rounded-full bg-res-card text-xs leading-none text-res-ink shadow-res-low"
+                    title="Remove photo"
+                    aria-label="Remove photo"
                   >
                     ×
                   </button>
                 </div>
               ))}
-              <label className="flex h-16 w-16 cursor-pointer flex-col items-center justify-center gap-0.5 rounded-md border-2 border-dashed border-gray-300 text-gray-400 transition-colors hover:border-teal-400 hover:text-teal-500">
+              <label className="flex h-16 w-16 cursor-pointer flex-col items-center justify-center gap-0.5 rounded-res-sm border border-dashed border-res-line bg-res-surface text-res-ink-muted transition-colors hover:text-res-brand">
                 <Upload size={16} />
-                <span className="text-[9px]">{uploading ? `${uploadProgress}%` : 'Upload'}</span>
+                <span className="type-res-caption">{uploading ? `${uploadProgress}%` : 'Upload'}</span>
                 <input
                   type="file"
                   accept="image/*"
@@ -541,30 +577,36 @@ export function CreateBlueprintModal({
               value={images}
               onChange={(e) => setImages(e.target.value)}
               rows={2}
-              placeholder="Or paste image URLs (one per line)"
+              placeholder="Or paste photo links (one per line)"
               className={inputClass}
             />
-            {uploadError && <p className="mt-1 text-[11px] text-red-500">{uploadError}</p>}
+            {uploadError && (
+              <p className="type-res-small mt-1.5 rounded-res-sm bg-res-surface px-3 py-2 font-normal text-res-ink-muted">
+                {uploadError}
+              </p>
+            )}
           </div>
         </div>
       )}
 
       {step === 2 && (
-        <div className="space-y-4 text-sm">
-          <div className="rounded-xl border border-gray-200 p-4">
+        <div className="space-y-4">
+          <div className="rounded-res-md bg-res-surface p-4">
             <div className="flex items-center gap-3">
               {imageUrls[0] ? (
-                <img src={imageUrls[0]} alt="" className="h-14 w-14 rounded-lg object-cover" />
+                <img src={imageUrls[0]} alt="" className="h-14 w-14 rounded-res-sm object-cover" />
               ) : (
-                <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-teal-600 text-sm font-semibold text-white">
-                  {(type || name || '?').slice(0, 2)}
+                <div className="flex h-14 w-14 items-center justify-center rounded-res-sm bg-res-card shadow-res-low">
+                  <span className="type-res-h3 text-res-ink-muted">
+                    {(type || name || '?').slice(0, 2).toUpperCase()}
+                  </span>
                 </div>
               )}
-              <div className="min-w-0">
-                <h3 className="truncate text-base font-semibold text-gray-900">{name || 'Untitled'}</h3>
-                <p className="truncate text-xs text-gray-500">{type || '—'}</p>
+              <div className="min-w-0 flex-1">
+                <h3 className="type-res-h3 line-clamp-1 text-res-ink">{name || 'Untitled'}</h3>
+                <p className="type-res-small line-clamp-1 font-normal text-res-ink-muted">{type || '—'}</p>
               </div>
-              <span className="ml-auto rounded-full bg-teal-50 px-2 py-0.5 text-[11px] font-medium text-teal-700">
+              <span className="type-res-small shrink-0 rounded-full bg-res-card px-3 py-1.5 font-semibold text-res-brand shadow-res-low">
                 {vertical === 'hotel'
                   ? `₦${(Number(basePrice) || 0).toLocaleString()} /night`
                   : (Number(minimumDeposit) || 0) > 0
@@ -573,29 +615,41 @@ export function CreateBlueprintModal({
               </span>
             </div>
 
-            <dl className="mt-4 grid grid-cols-2 gap-y-2 text-xs">
-              <dt className="text-gray-500">Capacity</dt>
-              <dd className="text-gray-900">
-                {capacity}
-                {maxCapacity && maxCapacity !== capacity ? `–${maxCapacity}` : ''}
-              </dd>
-              <dt className="text-gray-500">Currency</dt>
-              <dd className="text-gray-900">NGN (₦)</dd>
+            <dl className="mt-3 grid grid-cols-2 gap-2">
+              <div className="rounded-res-sm bg-res-card p-2.5 shadow-res-low">
+                <dt className="type-res-caption font-medium tracking-[0.2px] text-res-ink-muted uppercase">
+                  Seats
+                </dt>
+                <dd className="type-res-body mt-0.5 font-semibold text-res-ink">
+                  {capacity}
+                  {maxCapacity && maxCapacity !== capacity ? `–${maxCapacity}` : ''}
+                </dd>
+              </div>
+              <div className="rounded-res-sm bg-res-card p-2.5 shadow-res-low">
+                <dt className="type-res-caption font-medium tracking-[0.2px] text-res-ink-muted uppercase">
+                  Photos
+                </dt>
+                <dd className="type-res-body mt-0.5 font-semibold text-res-ink">
+                  {imageUrls.length}
+                </dd>
+              </div>
             </dl>
 
             {description.trim() && (
-              <p className="mt-3 text-xs text-gray-600">{description.trim()}</p>
+              <p className="type-res-small mt-3 font-normal text-res-ink-muted">{description.trim()}</p>
             )}
           </div>
 
           <div>
-            <p className="mb-1 text-xs font-medium text-gray-500">Amenities ({amenityList.length})</p>
+            <p className="type-res-caption mb-2 font-medium tracking-[0.2px] text-res-ink-muted uppercase">
+              Extras & features ({amenityList.length})
+            </p>
             {amenityList.length === 0 ? (
-              <p className="text-xs text-gray-400">None selected</p>
+              <p className="type-res-small font-normal text-res-ink-muted">None added</p>
             ) : (
               <div className="flex flex-wrap gap-1.5">
                 {amenityList.map((label) => (
-                  <span key={label} className="rounded-full bg-gray-100 px-3 py-1.5 text-[11px] text-gray-600">
+                  <span key={label} className="type-res-small rounded-full bg-res-surface px-3 py-1.5 font-medium text-res-ink-muted">
                     {label}
                   </span>
                 ))}
@@ -604,15 +658,18 @@ export function CreateBlueprintModal({
           </div>
 
           <div>
-            <p className="mb-1 text-xs font-medium text-gray-500">
-              Booking policies ({selectedPolicies.length})
+            <p className="type-res-caption mb-2 font-medium tracking-[0.2px] text-res-ink-muted uppercase">
+              House rules ({selectedPolicies.length})
             </p>
             {selectedPolicies.length === 0 ? (
-              <p className="text-xs text-gray-400">None selected</p>
+              <p className="type-res-small font-normal text-res-ink-muted">None added</p>
             ) : (
-              <ul className="space-y-1 text-xs text-gray-600">
+              <ul className="space-y-1.5">
                 {selectedPolicies.map((label) => (
-                  <li key={label}>· {label}</li>
+                  <li key={label} className="type-res-small flex gap-2 font-normal text-res-ink">
+                    <span className="mt-1.5 inline-block size-1 shrink-0 rounded-full bg-res-brand" />
+                    {label}
+                  </li>
                 ))}
               </ul>
             )}
@@ -620,10 +677,12 @@ export function CreateBlueprintModal({
 
           {imageUrls.length > 0 && (
             <div>
-              <p className="mb-1 text-xs font-medium text-gray-500">Gallery ({imageUrls.length})</p>
+              <p className="type-res-caption mb-2 font-medium tracking-[0.2px] text-res-ink-muted uppercase">
+                Photos ({imageUrls.length})
+              </p>
               <div className="flex flex-wrap gap-2">
                 {imageUrls.map((url) => (
-                  <img key={url} src={url} alt="" className="h-14 w-14 rounded-md object-cover" />
+                  <img key={url} src={url} alt="" className="h-14 w-14 rounded-res-sm object-cover" />
                 ))}
               </div>
             </div>
