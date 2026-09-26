@@ -96,7 +96,14 @@ interface ShowPopupState {
   item?: boolean;
 }
 
-const MenuDashboard = () => {
+const MenuDashboard = ({
+  onCreateItem,
+  onEditItem,
+}: {
+  /** Embedded use (e.g. manager hub): intercept vendor-shell navigation. */
+  onCreateItem?: () => void;
+  onEditItem?: (id: string) => void;
+} = {}) => {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>({});
@@ -420,7 +427,9 @@ const MenuDashboard = () => {
             <DropdownMenuContent align="end">
               <DropdownMenuItem
                 onClick={() =>
-                  navigate(`/dashboard/restaurant/menu/items/${row.original._id}/edit`)
+                  onEditItem
+                    ? onEditItem(row.original._id)
+                    : navigate(`/dashboard/restaurant/menu/items/${row.original._id}/edit`)
                 }
               >
                 <Pencil /> Edit dish
@@ -515,7 +524,9 @@ const MenuDashboard = () => {
               <div className="flex gap-6">
                 <DashboardButton variant="secondary" text="Export" icon={<Export />} />
                 <DashboardButton
-                  onClick={() => navigate('/dashboard/restaurant/menu/item/new')}
+                  onClick={() =>
+                    onCreateItem ? onCreateItem() : navigate('/dashboard/restaurant/menu/item/new')
+                  }
                   variant="primary"
                   text="Add Dish"
                   icon={<Add fill="#fff" />}

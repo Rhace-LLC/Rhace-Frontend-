@@ -43,8 +43,16 @@ interface NewItemState {
   images?: unknown[];
 }
 
-const CreateMenu = () => {
-  const { id: dishId } = useParams();
+const CreateMenu = ({
+  editId,
+  onDone,
+}: {
+  /** Embedded use (e.g. manager hub): edit id + exit callback. */
+  editId?: string;
+  onDone?: () => void;
+} = {}) => {
+  const params = useParams();
+  const dishId = editId ?? (params as { id?: string }).id;
   const isEdit = Boolean(dishId);
   const [step, setStep] = useState(0);
   const [newItem, setNewItem] = useState<NewItemState>({
@@ -124,7 +132,8 @@ const CreateMenu = () => {
       toast.success(isEdit ? 'Dish updated' : 'Dish created');
 
       if (isEdit) {
-        navigate('/dashboard/restaurant/menu');
+        if (onDone) onDone();
+        else navigate('/dashboard/restaurant/menu');
         return;
       }
 
@@ -184,7 +193,8 @@ const CreateMenu = () => {
 
   const handleCancel = () => {
     if (step === 0) {
-      navigate(-1);
+      if (onDone) onDone();
+      else navigate(-1);
     } else {
       setStep((prev) => prev - 1);
     }
@@ -582,7 +592,8 @@ const CreateMenu = () => {
             <div className="flex flex-col sm:flex-row gap-3 w-full max-w-2xl">
               <button
                 onClick={() => {
-                  navigate(-1);
+                  if (onDone) onDone();
+                  else navigate(-1);
                 }}
                 className="flex-1 border border-gray-300 rounded-xl py-3 font-medium text-gray-700 hover:bg-gray-100 transition"
               >

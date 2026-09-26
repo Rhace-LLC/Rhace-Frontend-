@@ -52,7 +52,12 @@ interface Stat {
   change: number;
 }
 
-export function DrinksTable() {
+export function DrinksTable({
+  onAddBottleSet,
+}: {
+  /** Embedded use (e.g. manager hub): intercept vendor-shell navigation. */
+  onAddBottleSet?: () => void;
+} = {}) {
   const [drinks, setDrinks] = useState<any[]>([]);
   const [bottleSets, setBottleSets] = useState<any[]>([]);
   const [selectedTab, setSelectedTab] = useState('drinks');
@@ -253,7 +258,9 @@ export function DrinksTable() {
                     icon={hideTab ? <Eye /> : <EyeClose />}
                   />
                   <button
-                    onClick={() => navigate('/dashboard/club/add-drinks')}
+                    onClick={() =>
+                      onAddBottleSet ? onAddBottleSet() : navigate('/dashboard/club/add-drinks')
+                    }
                     className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 transition-colors"
                   >
                     <Plus size={18} />

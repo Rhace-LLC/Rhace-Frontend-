@@ -7,8 +7,12 @@ import {
   BarChart3,
   Boxes,
   CalendarClock,
+  ChefHat,
   ClipboardList,
+  LayoutGrid,
   Map,
+  Martini,
+  Receipt,
   Users,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
@@ -25,6 +29,13 @@ import { AllStaffTab } from '@/pages/vendor/shared/staff/AllStaffTab';
 import { ShiftManagerTab } from '@/pages/vendor/shared/staff/ShiftManagerTab';
 import { ReportsTab } from '@/pages/vendor/shared/staff/ReportsTab';
 import { ActivityTab } from '@/pages/vendor/shared/staff/ActivityTab';
+import { ManagerOrdersTab } from './ManagerOrdersTab';
+import MenuDashboard from '@/pages/vendor/restaurant/menu';
+import CreateMenu from '@/pages/vendor/restaurant/menu/items/create';
+import { DrinksTable } from '@/pages/vendor/club/drinks';
+import BottleServiceManager from '@/pages/vendor/club/drinks/add';
+import CategoriesPage from '@/pages/vendor/shared/catalog/CategoriesPage';
+import AddOnsPage from '@/pages/vendor/shared/catalog/AddOnsPage';
 
 type VenueVertical = 'hotel' | 'club' | 'restaurant';
 type ManagerTab =
@@ -34,7 +45,15 @@ type ManagerTab =
   | 'activity'
   | 'reservations'
   | 'inventory'
-  | 'map';
+  | 'map'
+  | 'menu'
+  | 'menuItemNew'
+  | 'menuItemEdit'
+  | 'drinks'
+  | 'addDrinks'
+  | 'categories'
+  | 'addons'
+  | 'orders';
 
 const PLUGINS = {
   hotel: hotelPlugin,
@@ -55,16 +74,22 @@ interface HubLink {
   title: string;
   sub: string;
   icon: typeof Users;
+  verticals: VenueVertical[];
 }
 
 const LINKS: HubLink[] = [
-  { tab: 'allStaff', title: 'All staff', sub: 'Team members, roles and invites', icon: Users },
-  { tab: 'shifts', title: 'Shifts', sub: 'Rota, clock-ins and cover', icon: CalendarClock },
-  { tab: 'reports', title: 'Reports', sub: 'Sales, attendance and activity', icon: BarChart3 },
-  { tab: 'activity', title: 'Activity', sub: 'What the team did, in plain words', icon: Activity },
-  { tab: 'reservations', title: 'Reservations', sub: 'Bookings, check-ins and payments', icon: ClipboardList },
-  { tab: 'inventory', title: 'Inventory', sub: 'Room and table types', icon: Boxes },
-  { tab: 'map', title: 'Floor map', sub: 'Live layout and timeline', icon: Map },
+  { tab: 'allStaff', title: 'All staff', sub: 'Team members, roles and invites', icon: Users, verticals: ['hotel', 'club', 'restaurant'] },
+  { tab: 'shifts', title: 'Shifts', sub: 'Rota, clock-ins and cover', icon: CalendarClock, verticals: ['hotel', 'club', 'restaurant'] },
+  { tab: 'reports', title: 'Reports', sub: 'Sales, attendance and activity', icon: BarChart3, verticals: ['hotel', 'club', 'restaurant'] },
+  { tab: 'activity', title: 'Activity', sub: 'What the team did, in plain words', icon: Activity, verticals: ['hotel', 'club', 'restaurant'] },
+  { tab: 'reservations', title: 'Reservations', sub: 'Bookings, check-ins and payments', icon: ClipboardList, verticals: ['hotel', 'club', 'restaurant'] },
+  { tab: 'inventory', title: 'Tables & rooms', sub: 'Table and room types', icon: Boxes, verticals: ['hotel', 'club', 'restaurant'] },
+  { tab: 'map', title: 'Floor map', sub: 'Live layout and timeline', icon: Map, verticals: ['hotel', 'club', 'restaurant'] },
+  { tab: 'menu', title: 'Menu', sub: 'Dishes, prices and availability', icon: ChefHat, verticals: ['restaurant'] },
+  { tab: 'drinks', title: 'Drinks', sub: 'Drinks, sets and availability', icon: Martini, verticals: ['restaurant', 'club'] },
+  { tab: 'categories', title: 'Categories', sub: 'Menu and drink groupings', icon: LayoutGrid, verticals: ['restaurant', 'club'] },
+  { tab: 'addons', title: 'Add-ons', sub: 'Extras guests can add', icon: ChefHat, verticals: ['restaurant'] },
+  { tab: 'orders', title: 'Orders', sub: 'Pre-orders and table orders', icon: Receipt, verticals: ['hotel', 'club', 'restaurant'] },
 ];
 
 const SECTION_TITLES: Record<ManagerTab, string> = {
@@ -73,11 +98,19 @@ const SECTION_TITLES: Record<ManagerTab, string> = {
   reports: 'Reports',
   activity: 'Activity',
   reservations: 'Reservations',
-  inventory: 'Inventory',
+  inventory: 'Tables & rooms',
   map: 'Floor map',
+  menu: 'Menu',
+  menuItemNew: 'Add dish',
+  menuItemEdit: 'Edit dish',
+  drinks: 'Drinks',
+  addDrinks: 'Bottle sets',
+  categories: 'Categories',
+  addons: 'Add-ons',
+  orders: 'Orders',
 };
 
-const VALID_TABS = new Set<string>(LINKS.map((l) => l.tab));
+const VALID_TABS = new Set<string>([...LINKS.map((l) => l.tab), 'menuItemNew', 'menuItemEdit', 'addDrinks']);
 
 /**
  * Manager hub: no ops board, no ticket queue — the venue's management
@@ -92,6 +125,7 @@ export default function ManagerWorkspace() {
   const rawTab = searchParams.get('tab');
   const tab: ManagerTab | null =
     rawTab && VALID_TABS.has(rawTab) ? (rawTab as ManagerTab) : null;
+  const editId = searchParams.get('id') ?? undefined;
 
   useEffect(() => {
     let cancelled = false;
@@ -114,9 +148,10 @@ export default function ManagerWorkspace() {
     };
   }, [staff?.vendor]);
 
-  const openTab = (next: ManagerTab) =>
-    setSearchParams({ tab: next }, { preventScrollReset: true });
+  const openTab = (next: ManagerTab, params?: Record<string, string>) =>
+    setSearchParams({ tab: next, ...(params ?? {}) }, { preventScrollReset: true });
   const goHub = () => setSearchParams({}, { preventScrollReset: true });
+  const visibleLinks = vertical ? LINKS.filter((l) => l.verticals.includes(vertical)) : [];
 
   return (
     <div className="space-y-5">
@@ -144,7 +179,7 @@ export default function ManagerWorkspace() {
             </div>
           ) : (
             <nav aria-label="Manager pages" className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {LINKS.map((link) => (
+              {visibleLinks.map((link) => (
                 <button
                   key={link.tab}
                   type="button"
@@ -187,6 +222,32 @@ export default function ManagerWorkspace() {
               {tab === 'reservations' && <VendorReservationsPage vertical={vertical} />}
               {tab === 'inventory' && <PrototypeInventoryManager plugin={PLUGINS[vertical]} />}
               {tab === 'map' && <PrototypeTimelineView plugin={PLUGINS[vertical]} />}
+              {tab === 'menu' && (
+                <MenuDashboard
+                  onCreateItem={() => openTab('menuItemNew')}
+                  onEditItem={(id) => openTab('menuItemEdit', { id })}
+                />
+              )}
+              {tab === 'menuItemNew' && <CreateMenu onDone={() => openTab('menu')} />}
+              {tab === 'menuItemEdit' && (
+                <CreateMenu editId={editId} onDone={() => openTab('menu')} />
+              )}
+              {tab === 'drinks' && (
+                <DrinksTable
+                  onAddBottleSet={
+                    vertical === 'club' ? () => openTab('addDrinks') : undefined
+                  }
+                />
+              )}
+              {tab === 'addDrinks' && <BottleServiceManager />}
+              {tab === 'categories' && (
+                <div className="space-y-5">
+                  {vertical === 'restaurant' && <CategoriesPage kind="menu" />}
+                  <CategoriesPage kind="drink" />
+                </div>
+              )}
+              {tab === 'addons' && <AddOnsPage />}
+              {tab === 'orders' && <ManagerOrdersTab />}
             </>
           )}
         </>
