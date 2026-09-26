@@ -64,9 +64,17 @@ interface BoardDialog {
   assignmentId?: string; // reassign only
 }
 
-export function ShiftManagerTab({ onRefresh }: { onRefresh?: () => void }) {
-  const { vendorIsHotel, vendorIsClub, vendor } = useAuth();
-  const vertical = vendorIsHotel ? 'hotel' : vendorIsClub ? 'club' : 'restaurant';
+export function ShiftManagerTab({
+  onRefresh,
+  vertical: verticalProp,
+}: {
+  onRefresh?: () => void;
+  /** Venue vertical — defaults to the vendor account (vendor shell). */
+  vertical?: 'hotel' | 'club' | 'restaurant';
+}) {
+  const { vendorIsHotel, vendorIsClub, vendor, staff: sessionStaff } = useAuth();
+  const vertical = verticalProp ?? (vendorIsHotel ? 'hotel' : vendorIsClub ? 'club' : 'restaurant');
+  const realtimeVendorId = vendor?._id ?? sessionStaff?.vendor;
 
   const [date, setDate] = useState(toDateKey(new Date()));
   const [liveShifts, setLiveShifts] = useState<StaffShiftDto[]>([]);
@@ -86,7 +94,7 @@ export function ShiftManagerTab({ onRefresh }: { onRefresh?: () => void }) {
   const [dialogBusy, setDialogBusy] = useState(false);
 
   // Auto-determined assignment type based on vendor vertical
-  const assignmentType = vendorIsHotel ? 'room' : 'table';
+  const assignmentType = vertical === 'hotel' ? 'room' : 'table';
 
   // Staff currently clocked in — drives the board's clock-in dots (B5 visibility).
   const onShiftIds = useMemo(
@@ -125,7 +133,7 @@ export function ShiftManagerTab({ onRefresh }: { onRefresh?: () => void }) {
   }, [load]);
 
   // Realtime: refresh the board whenever anyone changes a roster (closes B11).
-  useAssignmentRealtime(vendor?._id, () => {
+  useAssignmentRealtime(realtimeVendorId, () => {
     load();
   });
 

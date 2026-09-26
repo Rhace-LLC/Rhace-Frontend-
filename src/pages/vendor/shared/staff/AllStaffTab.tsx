@@ -141,9 +141,16 @@ function NativeSelect({
   );
 }
 
-export function AllStaffTab({ onRefresh }: { onRefresh?: () => void }) {
+export function AllStaffTab({
+  onRefresh,
+  vertical: verticalProp,
+}: {
+  onRefresh?: () => void;
+  /** Venue vertical — defaults to the dashboard URL (vendor shell). */
+  vertical?: VendorVertical;
+}) {
   const { pathname } = useLocation();
-  const vertical = verticalFromPath(pathname);
+  const vertical = verticalProp ?? verticalFromPath(pathname);
   const roleOptions = useMemo(
     () => ROLE_OPTIONS.filter((r) => ROLES_BY_VERTICAL[vertical].includes(r.value)),
     [vertical],
