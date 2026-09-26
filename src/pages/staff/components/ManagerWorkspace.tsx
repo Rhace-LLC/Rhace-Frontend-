@@ -12,6 +12,7 @@ import {
   LayoutGrid,
   Map,
   Martini,
+  PenTool,
   Receipt,
   Users,
 } from 'lucide-react';
@@ -21,6 +22,7 @@ import {
   hotelPlugin,
   nightclubPlugin,
   restaurantPlugin,
+  PrototypeFloorPlanView,
   PrototypeInventoryManager,
   PrototypeTimelineView,
 } from '@/features/floor-plan';
@@ -46,6 +48,7 @@ type ManagerTab =
   | 'reservations'
   | 'inventory'
   | 'map'
+  | 'canvas'
   | 'menu'
   | 'menuItemNew'
   | 'menuItemEdit'
@@ -85,6 +88,7 @@ const LINKS: HubLink[] = [
   { tab: 'reservations', title: 'Reservations', sub: 'Bookings, check-ins and payments', icon: ClipboardList, verticals: ['hotel', 'club', 'restaurant'] },
   { tab: 'inventory', title: 'Tables & rooms', sub: 'Table and room types', icon: Boxes, verticals: ['hotel', 'club', 'restaurant'] },
   { tab: 'map', title: 'Floor map', sub: 'Live layout and timeline', icon: Map, verticals: ['hotel', 'club', 'restaurant'] },
+  { tab: 'canvas', title: 'Layout canvas', sub: 'See and edit the floor map', icon: PenTool, verticals: ['hotel', 'club', 'restaurant'] },
   { tab: 'menu', title: 'Menu', sub: 'Dishes, prices and availability', icon: ChefHat, verticals: ['restaurant'] },
   { tab: 'drinks', title: 'Drinks', sub: 'Drinks, sets and availability', icon: Martini, verticals: ['restaurant', 'club'] },
   { tab: 'categories', title: 'Categories', sub: 'Menu and drink groupings', icon: LayoutGrid, verticals: ['restaurant', 'club'] },
@@ -100,6 +104,7 @@ const SECTION_TITLES: Record<ManagerTab, string> = {
   reservations: 'Reservations',
   inventory: 'Tables & rooms',
   map: 'Floor map',
+  canvas: 'Layout canvas',
   menu: 'Menu',
   menuItemNew: 'Add dish',
   menuItemEdit: 'Edit dish',
@@ -222,6 +227,7 @@ export default function ManagerWorkspace() {
               {tab === 'reservations' && <VendorReservationsPage vertical={vertical} />}
               {tab === 'inventory' && <PrototypeInventoryManager plugin={PLUGINS[vertical]} />}
               {tab === 'map' && <PrototypeTimelineView plugin={PLUGINS[vertical]} />}
+              {tab === 'canvas' && <PrototypeFloorPlanView plugin={PLUGINS[vertical]} />}
               {tab === 'menu' && (
                 <MenuDashboard
                   onCreateItem={() => openTab('menuItemNew')}
