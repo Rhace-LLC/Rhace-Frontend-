@@ -15,6 +15,10 @@ export interface TileContext {
   vertical: FloorVertical;
 }
 
+export interface ManageCardActions {
+  onManage: () => void;
+}
+
 export interface DrawerContext {
   mode: CanvasMode;
   onUpdate: (patch: {
@@ -104,7 +108,7 @@ export interface VerticalPlugin {
   /** Set defaults (floor/area) on newly created entities. */
   decorateNewEntity?: (entity: FloorEntity, plan: FloorPlan) => FloorEntity;
   /** Rich labeled card for the Manage (list) page; falls back to renderTile. */
-  renderManageCard?: (entity: FloorEntity) => ReactNode;
+  renderManageCard?: (entity: FloorEntity, actions: ManageCardActions) => ReactNode;
   /** Items shown in the toolbar while in Manage mode. */
   manageToolbarItems?: (ctx: ManageToolbarContext) => ToolbarItem[];
   renderTile: (entity: FloorEntity, ctx: TileContext) => ReactNode;

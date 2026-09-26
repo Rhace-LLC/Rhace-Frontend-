@@ -62,7 +62,7 @@ const ClubInfo = ({ data }: ClubInfoProps) => {
           })}
         </div>
       </div>
-      <div className="mt-6 px-4 md:px-0">
+      <div className="mt-5">
         {activeTab === 'info' && (
           <ClubInfos
             address={data?.address}

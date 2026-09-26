@@ -9,11 +9,11 @@ export const STATUS_LABEL: Record<ReservationStatus, string> = {
 };
 
 export const STATUS_STYLE: Record<ReservationStatus, string> = {
-  pending_payment: 'bg-amber-50 text-amber-700 border-amber-200',
-  upcoming: 'bg-blue-50 text-blue-700 border-blue-200',
-  active: 'bg-teal-50 text-teal-700 border-teal-200',
-  completed: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-  cancelled: 'bg-rose-50 text-rose-700 border-rose-200',
+  pending_payment: 'bg-res-secondary text-res-brand',
+  upcoming: 'bg-res-brand text-res-ink-inverted',
+  active: 'bg-res-accent text-res-ink-inverted',
+  completed: 'bg-res-surface text-res-ink-muted',
+  cancelled: 'bg-res-surface text-res-ink-muted line-through',
 };
 
 export const PAYMENT_LABEL: Record<string, string> = {
@@ -24,10 +24,10 @@ export const PAYMENT_LABEL: Record<string, string> = {
 };
 
 export const PAYMENT_STYLE: Record<string, string> = {
-  paid: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-  partly_paid: 'bg-amber-50 text-amber-700 border-amber-200',
-  pay_later: 'bg-gray-100 text-gray-600 border-gray-200',
-  unpaid: 'bg-rose-50 text-rose-700 border-rose-200',
+  paid: 'bg-res-secondary text-res-brand',
+  partly_paid: 'bg-res-secondary text-res-brand',
+  pay_later: 'bg-res-surface text-res-ink-muted',
+  unpaid: 'bg-res-surface text-res-ink-muted',
 };
 
 export const VERTICAL_LABEL: Record<string, string> = {

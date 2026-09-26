@@ -18,7 +18,7 @@ const PAYMENT_OPTIONS = [
 ];
 
 const inputClass =
-  'rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm text-gray-800 focus:border-[#0A6C6D] focus:outline-none';
+  'rounded-res-sm border border-res-line bg-res-card px-3 py-2.5 type-res-body font-normal text-res-ink shadow-res-low outline-none placeholder:text-res-ink-muted focus:border-res-brand';
 
 export function ReservationFilters({
   value,
@@ -33,13 +33,13 @@ export function ReservationFilters({
     onChange({ ...value, ...patch, page: 1 });
 
   return (
-    <div className="flex flex-wrap items-end gap-3">
+    <div className="flex flex-wrap items-end gap-2.5">
       <input
         type="search"
-        placeholder="Search guest name or email"
+        placeholder="Search bookings…"
         value={value.search ?? ''}
         onChange={(e) => set({ search: e.target.value })}
-        className={`${inputClass} min-w-[220px] flex-1`}
+        className={`${inputClass} min-w-[200px] flex-1`}
       />
 
       <select
@@ -82,7 +82,7 @@ export function ReservationFilters({
       {showVendor && (
         <input
           type="text"
-          placeholder="Vendor ID"
+          placeholder="Venue"
           value={value.vendorId ?? ''}
           onChange={(e) => set({ vendorId: e.target.value })}
           className={inputClass}

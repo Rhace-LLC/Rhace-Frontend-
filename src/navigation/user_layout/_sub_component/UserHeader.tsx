@@ -32,7 +32,8 @@ const UserHeader = () => {
   // Navbar links
   const navItems = [
     { name: 'Home', href: '/' },
-    { name: 'Bookings / Reservations', href: '/bookings' },
+    { name: 'My bookings', href: '/bookings' },
+    { name: 'My orders', href: '/orders' },
     { name: 'Favorites', href: '/favorites' },
   ];
 
@@ -255,7 +256,8 @@ export function UserProfileMenu({
 
       {/* Menu Items Section 1 */}
       <div className="py-1">
-        <MenuItem text="Bookings/Reservation" onClick={() => handleNavigation('/bookings')} />
+        <MenuItem text="My bookings" onClick={() => handleNavigation('/bookings')} />
+        <MenuItem text="My orders" onClick={() => handleNavigation('/orders')} />
         <MenuItem text="Wishlist" onClick={() => handleNavigation('/favorites')} />
         <MenuItem text="Payments/Transaction" onClick={() => handleNavigation('/payments')} />
       </div>

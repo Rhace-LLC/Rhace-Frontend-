@@ -1,80 +1,82 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useOutletContext } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { Building2, Loader2, RefreshCw, Trash2, Wrench } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+  Building2,
+  ChevronDown,
+  Clock,
+  DoorOpen,
+  RefreshCw,
+  Wrench,
+} from 'lucide-react';
+import { Modal } from '@/components/others/RhaceModal';
 import { useAuth } from '@/contexts/AuthContext';
 import {
   staffService,
+  assignmentIsActive,
+  assignmentRole,
+  assignmentStaffId,
   assignmentUnit,
   assignmentUnitId,
   type StaffAssignmentDto,
+  type StaffAssignmentRole,
+  type StaffShiftDto,
 } from '@/services/staff.service';
 import { floorPlanService } from '@/services/floorPlan.service';
 import { physicalUnitService } from '@/services/physicalUnit.service';
 import type { FloorPlanDto, FloorPlanLayoutDto, PhysicalUnitDto } from '@/types';
-import type { StaffActivityDto } from '@/services/staff.service';
 import { staffRoleLabel } from '../roles';
 import RoomGrid from './RoomGrid';
-import MyStationsCard from './MyStationsCard';
+import { roomStatusMeta } from './roomStatus';
 
-/** Housekeeping-only transitions; a safe subset of the hotel state machine. */
-const HK_NAV = {
-  to: 'vacant_clean',
-  label: 'Ready for check-in',
-  shortcut: 'Clean',
+/** Clock-in gate lives on the staff layout's Outlet context. */
+interface StaffOutletContext {
+  shift: StaffShiftDto | null;
+}
+
+/**
+ * Every status a housekeeper may move a room to, per current state.
+ * `done` feeds the confirmation toast.
+ */
+const STATUS_OPTIONS: Record<string, { to: string; label: string; done: string }[]> = {
+  occupied: [{ to: 'vacant_dirty', label: 'Mark dirty', done: 'marked dirty' }],
+  vacant_dirty: [
+    { to: 'cleaning_in_progress', label: 'Start cleaning', done: 'now cleaning' },
+    { to: 'out_of_order_ooo', label: 'Out of order', done: 'reported out of order' },
+  ],
+  cleaning_in_progress: [
+    { to: 'inspected', label: 'Mark inspected', done: 'marked inspected' },
+    { to: 'vacant_dirty', label: 'Back to dirty', done: 'marked dirty' },
+    { to: 'out_of_order_ooo', label: 'Out of order', done: 'reported out of order' },
+  ],
+  inspected: [
+    { to: 'vacant_clean', label: 'Mark ready', done: 'marked ready' },
+    { to: 'vacant_dirty', label: 'Back to dirty', done: 'marked dirty' },
+    { to: 'out_of_order_ooo', label: 'Out of order', done: 'reported out of order' },
+  ],
+  vacant_clean: [
+    { to: 'vacant_dirty', label: 'Mark dirty', done: 'marked dirty' },
+    { to: 'out_of_order_ooo', label: 'Out of order', done: 'reported out of order' },
+  ],
+  out_of_order_ooo: [
+    { to: 'vacant_dirty', label: 'Mark dirty', done: 'marked dirty' },
+    { to: 'vacant_clean', label: 'Mark ready', done: 'marked ready' },
+  ],
 };
 
-const HK_DIRTY = {
-  to: 'vacant_dirty',
-  label: 'Dirty',
-  shortcut: 'Dirty',
-};
+const doneFor = (to: string): string =>
+  Object.values(STATUS_OPTIONS)
+    .flat()
+    .find((o) => o.to === to)?.done ?? to.replace(/_/g, ' ');
 
-const HK_CLEANING = {
-  to: 'cleaning_in_progress',
-  label: 'In cleaning',
-  shortcut: 'Cleaning',
-};
-
-const HK_INSPECTED = {
-  to: 'inspected',
-  label: 'Inspected',
-  shortcut: 'Inspect',
-};
-
-const HK_OOO = {
-  to: 'out_of_order_ooo',
-  label: 'Out of order',
-  shortcut: 'OOO',
-};
-
-const ACTIONS: { state: string; action: typeof HK_NAV }[] = [
-  { state: 'occupied', action: HK_DIRTY },
-  { state: 'vacant_dirty', action: HK_CLEANING },
-  { state: 'cleaning_in_progress', action: HK_INSPECTED },
-  { state: 'inspected', action: HK_NAV },
-  { state: 'vacant_clean', action: HK_OOO },
-  { state: 'out_of_order_ooo', action: HK_DIRTY },
-];
-
-const nextActionFor = (state: string) =>
-  ACTIONS.find((a) => a.state === state)?.action ?? HK_NAV;
-
-
+const inputClass =
+  'w-full rounded-res-sm border border-res-line bg-res-surface px-3 py-2.5 type-res-body font-normal text-res-ink outline-none placeholder:text-res-ink-muted focus:border-res-brand';
+const labelClass = 'type-res-small mb-1.5 block font-medium text-res-ink-muted';
 
 const todayKey = () => new Date().toISOString().slice(0, 10);
 
-/** Map each assigned unit → its real label, from the loaded layout. */  const unitLabel = (
+/** Map each assigned unit → its real label, from the loaded layout. */
+const unitLabel = (
   refId: string | null | undefined,
   units: readonly PhysicalUnitDto[],
 ) => (units && refId != null ? (units.find((u) => u._id === refId)?.label ?? refId) ?? refId : refId ?? '—');
@@ -87,13 +89,15 @@ interface AssignedRoom {
 }
 
 /**
- * Housekeeping workspace: my assigned rooms for today, quick status toggles,
- * the room grid with in-house guests, my latest activity, and a maintenance
- * issue ledger (maintenance items on the plan, any verified with maintenance
- * notes I enter here).
+ * Housekeeping workspace: one merged "stations & assignments" list (rooms
+ * claimed or assigned to me), quick status steps in plain words, the room
+ * grid, and a reported-issues ledger.
  */
 export default function HousekeepingWorkspace() {
   const { staff } = useAuth();
+  const outlet = useOutletContext<StaffOutletContext | null>();
+  const onShift = Boolean(outlet?.shift);
+  const myId = staff?.id ?? staff?._id ?? '';
 
   const [plans, setPlans] = useState<FloorPlanDto[]>([]);
   const [planId, setPlanId] = useState('');
@@ -102,9 +106,14 @@ export default function HousekeepingWorkspace() {
   const [busyUnitId, setBusyUnitId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [mapLoading, setMapLoading] = useState(false);
-  const [_activity] = useState<{ docs: { _id: string; staffName?: string; action: string; entity?: string; entityId?: string; at: string }[]; total: number }>({ docs: [], total: 0 });
 
-  // Maintenance console: which rooms are flagged out-of-order + notes entered.
+  // Claim-a-room dialog state.
+  const [claimOpen, setClaimOpen] = useState(false);
+  const [claimUnitId, setClaimUnitId] = useState('');
+  const [claimRole, setClaimRole] = useState<StaffAssignmentRole>('lead');
+  const [claiming, setClaiming] = useState(false);
+
+  // Reported issues.
   const [maintenance, setMaintenance] = useState<
     { unitId: string; label: string; note: string; at: string }[]
   >([]);
@@ -115,10 +124,12 @@ export default function HousekeepingWorkspace() {
   const load = useCallback(async () => {
     try {
       setIsLoading(true);
-      const [plansRes, assignsRes, activityRes] = await Promise.all([
+      // NOTE: the vendor-wide activity feed is role-gated (manager+) and isn't
+      // rendered here, so it must not be fetched — a 403 would reject the
+      // whole batch below and block plans + assignments from loading.
+      const [plansRes, assignsRes] = await Promise.all([
         floorPlanService.list(),
         staffService.getAssignments({ date: todayKey() }),
-        staffService.getActivity({ date: todayKey() }),
       ]);
       const planDocs = plansRes.data?.items ?? [];
       setPlans(planDocs);
@@ -126,7 +137,6 @@ export default function HousekeepingWorkspace() {
         current && planDocs.some((d) => d._id === current) ? current : planDocs[0]?._id ?? '',
       );
       setAssignments(assignsRes.docs ?? []);
-      void activityRes; // loaded but not rendered in this slice
     } catch (error) {
       console.error(error);
       toast.error('Failed to load housekeeping data');
@@ -164,20 +174,33 @@ export default function HousekeepingWorkspace() {
     };
   }, [planId]);
 
+  // Bitmap of units the current plan knows about, for label resolution.
+  const units = useMemo(() => layout?.units ?? [], [layout]);
+
+  const roomUnits = useMemo(() => {
+    const candidates = units.filter(
+      (u) =>
+        (u as { type?: string }).type === 'room' ||
+        (u as { type?: string }).type === 'room_type' ||
+        (u as { type?: string }).type === 'room_zone',
+    );
+    return candidates.length > 0 ? candidates : units;
+  }, [units]);
+
   // An assignment row with its label + current state in one object.
   const enrichAssigned = useCallback(
-    (assign: StaffAssignmentDto, units: readonly PhysicalUnitDto[]): AssignedRoom | null => {
+    (assign: StaffAssignmentDto, roomList: readonly PhysicalUnitDto[]): AssignedRoom | null => {
       if (assign.type !== 'room') return null;
       const refId = assignmentUnitId(assign.refId);
       // Prefer the loaded layout unit (it carries the live state); the populated
       // assignment refId is the fallback when the unit is not on this plan.
-      const unit = (units.find((u) => u._id === refId) ?? null) as PhysicalUnitDto | null;
+      const unit = (roomList.find((u) => u._id === refId) ?? null) as PhysicalUnitDto | null;
       const populated = assignmentUnit(assign.refId);
       if (!unit && !populated) return null;
       const state = String(unit?.state ?? populated?.state ?? 'vacant_clean');
       return {
         row: assign,
-        label: unit ? unitLabel(unit._id, units) : populated?.label ?? refId,
+        label: unit ? unitLabel(unit._id, roomList) : populated?.label ?? refId,
         unit: {
           _id: refId,
           type: (unit as { type?: string })?.type ?? 'room',
@@ -190,23 +213,31 @@ export default function HousekeepingWorkspace() {
     [],
   );
 
-  // Bitmap of units the current plan knows about, for label resolution.
-  const units = useMemo(() => layout?.units ?? [], [layout]);
-
   const assignedRoomRows = useMemo((): AssignedRoom[] => {
     if (!layout) return [];
-    const roomCandidates = layout.units.filter(
-      (u) => (u as { type?: string }).type === 'room' || (u as { type?: string }).type === 'room_type' || (u as { type?: string }).type === 'room_zone',
-    ) as readonly PhysicalUnitDto[];
-    const unitsToUse = roomCandidates.length > 0 ? roomCandidates : layout.units;
     return assignments
       .filter((a) => a.type === 'room')
-      .map((a) => enrichAssigned(a, unitsToUse))
+      .map((a) => enrichAssigned(a, roomUnits))
       .filter(Boolean) as AssignedRoom[];
-  }, [assignments, layout, enrichAssigned]);
+  }, [assignments, layout, roomUnits, enrichAssigned]);
+
+  const isMyStation = useCallback(
+    (assign: StaffAssignmentDto) =>
+      assignmentIsActive(assign) && assignmentStaffId(assign.staff) === myId,
+    [myId],
+  );
+
+  // Rooms nobody holds yet — the claim picker.
+  const freeRooms = useMemo(() => {
+    const held = new Set(
+      assignments.filter((a) => assignmentIsActive(a)).map((a) => assignmentUnitId(a.refId)),
+    );
+    return roomUnits.filter((u) => !held.has(u._id));
+  }, [assignments, roomUnits]);
 
   // Refresh after a status write.
   const refreshLayout = useCallback(() => {
+    if (!planId) return;
     setMapLoading(true);
     floorPlanService
       .getLayout(planId)
@@ -221,7 +252,7 @@ export default function HousekeepingWorkspace() {
     try {
       setBusyUnitId(unitId);
       await physicalUnitService.transitionStatus(unitId, { to, note });
-      toast.success(`Room marked ${to.replace('_', ' ')}`);
+      toast.success(`Room ${doneFor(to)}`);
       setBusyUnitId(null);
       refreshLayout();
       const unitDoc = (await physicalUnitService.get(unitId)).data?.unit;
@@ -238,7 +269,47 @@ export default function HousekeepingWorkspace() {
     }
   };
 
-  const openNote = (unitId: string, _label: string) => {
+  const handleClaim = async () => {
+    if (!claimUnitId) return;
+    try {
+      setClaiming(true);
+      await staffService.selfAssign({ refId: claimUnitId, action: 'claim', role: claimRole });
+      toast.success('Room claimed');
+      setClaimOpen(false);
+      setClaimUnitId('');
+      await load();
+    } catch (error) {
+      const code = (error as { response?: { data?: { code?: string } } })?.response?.data?.code;
+      toast.error(
+        code === 'STAFF_NOT_CLOCKED_IN'
+          ? 'Clock in first'
+          : code === 'UNIT_LEAD_TAKEN'
+            ? 'Someone owns that room now'
+            : (error as { response?: { data?: { message?: string } } })?.response?.data?.message ||
+                'Could not claim this room',
+      );
+    } finally {
+      setClaiming(false);
+    }
+  };
+
+  const handleRelease = async (assign: StaffAssignmentDto) => {
+    try {
+      setBusyUnitId(assignmentUnitId(assign.refId));
+      await staffService.selfAssign({
+        refId: assignmentUnitId(assign.refId),
+        action: 'release',
+      });
+      toast.success('Room released');
+      await load();
+    } catch {
+      toast.error('Could not release this room');
+    } finally {
+      setBusyUnitId(null);
+    }
+  };
+
+  const openNote = (unitId: string) => {
     setNoteForRoom(unitId);
     setNoteDraft('');
   };
@@ -247,11 +318,11 @@ export default function HousekeepingWorkspace() {
     if (!noteForRoom || noteDraft.trim().length === 0) return;
     try {
       setNoteSubmitting(true);
-      // Re-mark the unit OOO with the note attached so it persists the reason.
+      // Re-mark the room out of order with the note attached so it persists the reason.
       await physicalUnitService.transitionStatus(noteForRoom, { to: 'out_of_order_ooo', note: noteDraft.trim() });
       setNoteForRoom(null);
       setNoteDraft('');
-      toast.success(`Maintenance note recorded for ${noteForRoom}`);
+      toast.success('Issue note recorded');
       refreshLayout();
       setMaintenance((prev) =>
         prev.some((m) => m.unitId === noteForRoom)
@@ -259,7 +330,7 @@ export default function HousekeepingWorkspace() {
           : prev,
       );
     } catch (error) {
-      toast.error((error as { response?: { data?: { message?: string } } })?.response?.data?.message ?? 'Failed to record maintenance note');
+      toast.error((error as { response?: { data?: { message?: string } } })?.response?.data?.message ?? 'Failed to record issue note');
     } finally {
       setNoteSubmitting(false);
     }
@@ -267,26 +338,24 @@ export default function HousekeepingWorkspace() {
 
   if (isLoading) {
     return (
-      <div className="space-y-6">
-        <Skeleton className="h-10 w-64" />
-        <Skeleton className="h-64 w-full" />
-        <Skeleton className="h-64 w-full" />
+      <div className="space-y-5">
+        <div className="h-10 w-64 animate-pulse rounded-res-md bg-res-card shadow-res-low" />
+        <div className="h-64 animate-pulse rounded-res-lg bg-res-card shadow-res-low" />
+        <div className="h-64 animate-pulse rounded-res-lg bg-res-card shadow-res-low" />
       </div>
     );
   }
 
-
-
   const outOfOrder = assignedRoomRows.filter((r) => r.state === 'out_of_order_ooo').length;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="flex items-center gap-2 text-2xl font-bold">
-            <Building2 className="h-6 w-6 text-[#0A6C6D]" /> Housekeeping
+          <h1 className="type-res-h2 flex items-center gap-2 text-res-ink">
+            <Building2 className="h-5 w-5 text-res-brand" /> Housekeeping
           </h1>
-          <p className="text-sm text-muted-foreground">
+          <p className="type-res-body mt-1 font-normal text-res-ink-muted">
             {staffRoleLabel(staff?.role)} · {new Date().toLocaleDateString(undefined, {
               weekday: 'long',
               day: 'numeric',
@@ -296,188 +365,318 @@ export default function HousekeepingWorkspace() {
         </div>
         <div className="flex items-center gap-2">
           {plans.length > 1 && (
-            <Select value={planId} onValueChange={setPlanId}>
-              <SelectTrigger className="w-48">
-                <SelectValue placeholder="Floor plan" />
-              </SelectTrigger>
-              <SelectContent>
+            <span className="relative inline-flex items-center">
+              <select
+                value={planId}
+                aria-label="Floor plan"
+                onChange={(e) => setPlanId(e.target.value)}
+                className="cursor-pointer appearance-none rounded-full bg-res-card py-2.5 pr-9 pl-4 type-res-small font-semibold text-res-ink shadow-res-low outline-none focus-visible:ring-2 focus-visible:ring-res-brand"
+              >
                 {plans.map((p) => (
-                  <SelectItem key={p._id} value={p._id}>
+                  <option key={p._id} value={p._id}>
                     {p.name}
-                  </SelectItem>
+                  </option>
                 ))}
-              </SelectContent>
-            </Select>
+              </select>
+              <ChevronDown className="pointer-events-none absolute right-3 h-4 w-4 text-res-ink-muted" />
+            </span>
           )}
-          <Button variant="outline" size="sm" onClick={load}>
-            <Loader2 className="mr-1 hidden h-4 w-4 animate-spin" />
+          <button
+            type="button"
+            onClick={load}
+            className="type-res-small flex cursor-pointer items-center gap-1.5 rounded-full bg-res-card px-4 py-2.5 font-semibold text-res-ink shadow-res-low transition-colors outline-none hover:text-res-brand focus-visible:ring-2 focus-visible:ring-res-brand"
+          >
+            <RefreshCw className="h-3.5 w-3.5" />
             Refresh
-          </Button>
+          </button>
         </div>
       </div>
 
-      <MyStationsCard unitType="room" onChanged={load} />
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Wrench className="h-4 w-4" /> My room assignments
-            <Badge variant="secondary">{assignedRoomRows.length}</Badge>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {assignedRoomRows.length === 0 && layout && (
-            <p className="text-sm text-muted-foreground">
-              No rooms assigned to you today — check with your supervisor.
+      {/* Merged stations + assignments */}
+      <section className="rounded-res-lg bg-res-card p-4 shadow-res-low md:p-5">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <h2 className="type-res-h3 text-res-ink">
+              My stations & assignments{' '}
+              <span className="type-res-small rounded-full bg-res-surface px-2.5 py-0.5 font-semibold text-res-ink-muted">
+                {assignedRoomRows.length}
+              </span>
+            </h2>
+            <p className="type-res-small mt-0.5 font-normal text-res-ink-muted">
+              Rooms you&apos;ve claimed or been assigned today.
             </p>
-          )}
-          {assignedRoomRows.map((row) => (
-            <div key={row.row._id} className="flex flex-wrap items-center justify-between gap-3 rounded-lg border bg-white p-3 shadow-sm">
-              <div className="flex items-center gap-2">
-                <Badge variant="outline">{row.label}</Badge>
-                <Badge
-                  className="px-2 text-[11px]"
-                  style={{
-                    backgroundColor:
-                      row.state === 'occupied'
-                        ? '#e0e7ff'
-                        : row.state === 'vacant_dirty'
-                        ? '#fef3c7'
-                        : row.state === 'cleaning_in_progress'
-                        ? '#e0f2fe'
-                        : row.state === 'inspected'
-                        ? '#ccfbf1'
-                        : row.state === 'out_of_order_ooo'
-                        ? '#fce4e4'
-                        : '#f0fdf4',
-                    color:
-                      row.state === 'occupied'
-                        ? '#4338ca'
-                        : row.state === 'vacant_dirty'
-                        ? '#92400e'
-                        : row.state === 'cleaning_in_progress'
-                        ? '#0c4a6e'
-                        : row.state === 'inspected'
-                        ? '#0f766e'
-                        : row.state === 'out_of_order_ooo'
-                        ? '#b91c1c'
-                        : '#166534',
-                  }}
-                >
-                  {row.state.replace(/_/g, ' ')}
-                </Badge>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="h-8 text-xs"
-                  disabled={busyUnitId === row.unit._id}
-                  onClick={() => changeState(row.unit._id, nextActionFor(row.state).to, undefined)}
-                >
-                  {busyUnitId === row.unit._id ? (
-                    <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-                  ) : (
-                    nextActionFor(row.state).shortcut
-                  )}
-                </Button>
-                {row.state === 'out_of_order_ooo' && (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="h-8 text-xs"
-                    disabled={busyUnitId === row.unit._id}
-                    onClick={() => openNote(row.unit._id, row.label)}
-                  >
-                    <Wrench className="h-3 w-3 mr-1" /> Note
-                  </Button>
-                )}
-              </div>
-            </div>
-          ))}
-        </CardContent>
-      </Card>
+          </div>
+          <button
+            type="button"
+            onClick={() => setClaimOpen(true)}
+            disabled={!onShift}
+            title={onShift ? 'Claim an open room' : 'Clock in first'}
+            className="type-res-small flex cursor-pointer items-center gap-1.5 rounded-full bg-res-brand px-4 py-2.5 font-semibold text-res-ink-inverted shadow-res-low transition-colors outline-none hover:bg-res-brand-hover focus-visible:ring-2 focus-visible:ring-res-brand disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {!onShift && <Clock className="h-3.5 w-3.5" />}
+            Claim a room
+          </button>
+        </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Building2 className="h-4 w-4" /> Room grid
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {mapLoading ? (
-            <Skeleton className="h-72 w-full" />
-          ) : layout ? (
-            <RoomGrid
-              units={units}
-              reservationsByUnit={new Map()}
-              className="max-w-5xl"
-            />
-          ) : (
-            <p className="py-8 text-center text-sm text-muted-foreground">No floor plan available.</p>
-          )}
-        </CardContent>
-      </Card>
+        {assignedRoomRows.length === 0 && layout ? (
+          <div className="rounded-res-md bg-res-surface px-6 py-10 text-center">
+            <p className="type-res-h3 text-res-ink">Nothing on your list yet</p>
+            <p className="type-res-small mt-1 font-normal text-res-ink-muted">
+              Claim an open room above, or check with your supervisor.
+            </p>
+          </div>
+        ) : (
+          <ul className="space-y-2.5">
+            {assignedRoomRows.map((row) => {
+              const options = STATUS_OPTIONS[row.state] ?? [];
+              const role = assignmentRole(row.row);
+              const station = isMyStation(row.row);
+              const busy = busyUnitId === row.unit._id;
+              const status = roomStatusMeta(row.state);
+              return (
+                <li
+                  key={row.row._id}
+                  className="rounded-res-md border border-res-line bg-res-card p-4 shadow-res-low"
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <span className="type-res-h3 text-res-ink">Room {row.label}</span>
+                    {station && (
+                      <span className="type-res-small rounded-full bg-res-secondary px-2.5 py-1 font-semibold text-res-brand">
+                        My station
+                      </span>
+                    )}
+                  </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Trash2 className="h-4 w-4" /> Maintenance ledger
-            <Badge variant="secondary">{outOfOrder}</Badge>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {assignedRoomRows.filter((r) => r.state === 'out_of_order_ooo').length === 0 ? (
-            <p className="text-sm text-muted-foreground">No rooms are out of order right now.</p>
-          ) : (
-            <ul className="space-y-3">
-              {assignedRoomRows
-                .filter((r) => r.state === 'out_of_order_ooo')
-                .map((row) => (
-                  <li key={row.unit._id} className="flex items-center justify-between rounded-lg border bg-white p-3 shadow-sm">
-                    <div className="flex items-center gap-2">
-                      <Wrench className="h-4 w-4 text-red-600" />
-                      <div>
-                        <p className="font-medium">{row.label}</p>
-                        <p className="text-xs text-muted-foreground">{new Date(row.row.date).toLocaleString()}</p>
+                  <dl className="mt-3 space-y-2">
+                    <div className="flex items-center justify-between gap-2">
+                      <dt className="type-res-small font-normal text-res-ink-muted">Role</dt>
+                      <dd className="type-res-small rounded-full bg-res-surface px-2.5 py-1 font-semibold text-res-ink capitalize">
+                        {role || 'Support'}
+                      </dd>
+                    </div>
+                    <div className="flex items-center justify-between gap-2">
+                      <dt className="type-res-small font-normal text-res-ink-muted">Status</dt>
+                      <dd
+                        className={`type-res-small inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 font-semibold ${status.pill}`}
+                      >
+                        <span className={`h-1.5 w-1.5 rounded-full ${status.dot}`} />
+                        {status.label}
+                      </dd>
+                    </div>
+                  </dl>
+
+                  {options.length > 0 && (
+                    <div className="mt-3 rounded-res-sm bg-res-surface p-3">
+                      <p className="type-res-caption mb-2 font-medium tracking-[0.2px] text-res-ink-muted uppercase">
+                        Update status
+                      </p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {options.map((option) => (
+                          <button
+                            key={option.to}
+                            type="button"
+                            disabled={busy}
+                            onClick={() => changeState(row.unit._id, option.to, undefined)}
+                            className="type-res-small cursor-pointer rounded-full bg-res-card px-3.5 py-2 font-semibold text-res-ink shadow-res-low transition-all outline-none hover:text-res-brand hover:shadow-res-medium focus-visible:ring-2 focus-visible:ring-res-brand disabled:cursor-not-allowed disabled:opacity-50"
+                          >
+                            {busy ? 'Saving…' : option.label}
+                          </button>
+                        ))}
                       </div>
                     </div>
-                    <Button size="sm" variant="ghost" className="h-8" onClick={() => openNote(row.unit._id, row.label)}>
-                      {maintenance.find((m) => m.unitId === row.unit._id)?.note ? 'Update note' : 'Add note'}
-                    </Button>
-                  </li>
-                ))}
-            </ul>
-          )}
-        </CardContent>
-      </Card>
+                  )}
 
-      {noteForRoom && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Maintenance note — {unitLabel(noteForRoom, units)}</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <textarea
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus:border-ring focus:ring-1 focus:ring-ring"
-              rows={3}
-              placeholder="e.g. HVAC unit noisy, wall crack, burnt outlet..."
-              value={noteDraft}
-              onChange={(e) => setNoteDraft(e.target.value)}
-              autoFocus
-            />
-            <div className="flex items-center justify-end gap-2">
-              <Button variant="outline" size="sm" onClick={() => setNoteForRoom(null)}>
-                Cancel
-              </Button>
-              <Button size="sm" onClick={submitNote} disabled={noteSubmitting || noteDraft.trim().length === 0}>
-                {noteSubmitting ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Wrench className="h-4 w-4 mr-1" />}
-                {noteSubmitting ? 'Saving...' : 'Save note'}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+                  <div className="mt-3 flex shrink-0 flex-wrap items-center gap-1.5">
+                    {station && (
+                      <button
+                        type="button"
+                        disabled={busy}
+                        onClick={() => handleRelease(row.row)}
+                        title="Hand this room back"
+                        className="type-res-small flex cursor-pointer items-center gap-1 rounded-full bg-res-surface px-4 py-2 font-semibold text-res-ink transition-colors outline-none hover:text-res-brand focus-visible:ring-2 focus-visible:ring-res-brand disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        <DoorOpen className="h-3.5 w-3.5" /> Release
+                      </button>
+                    )}
+                    {row.state === 'out_of_order_ooo' && (
+                      <button
+                        type="button"
+                        disabled={busy}
+                        onClick={() => openNote(row.unit._id)}
+                        className="type-res-small flex cursor-pointer items-center gap-1 rounded-full bg-res-surface px-4 py-2 font-semibold text-res-ink transition-colors outline-none hover:text-res-brand focus-visible:ring-2 focus-visible:ring-res-brand disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        <Wrench className="h-3.5 w-3.5" /> Note
+                      </button>
+                    )}
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </section>
+
+      <section className="rounded-res-lg bg-res-card p-4 shadow-res-low md:p-5">
+        <h2 className="type-res-h3 mb-3 flex items-center gap-2 text-res-ink">
+          <Building2 className="h-4 w-4 text-res-brand" /> Room grid
+        </h2>
+        {mapLoading ? (
+          <div className="h-72 animate-pulse rounded-res-md bg-res-surface" />
+        ) : layout ? (
+          <RoomGrid units={units} reservationsByUnit={new Map()} className="max-w-5xl" />
+        ) : (
+          <p className="type-res-small py-8 text-center font-normal text-res-ink-muted">
+            No floor plan available.
+          </p>
+        )}
+      </section>
+
+      <section className="rounded-res-lg bg-res-card p-4 shadow-res-low md:p-5">
+        <h2 className="type-res-h3 mb-3 flex items-center gap-2 text-res-ink">
+          <Wrench className="h-4 w-4 text-res-brand" /> Reported issues{' '}
+          <span className="type-res-small rounded-full bg-res-surface px-2.5 py-0.5 font-semibold text-res-ink-muted">
+            {outOfOrder}
+          </span>
+        </h2>
+        {assignedRoomRows.filter((r) => r.state === 'out_of_order_ooo').length === 0 ? (
+          <p className="type-res-small font-normal text-res-ink-muted">
+            No rooms reported right now.
+          </p>
+        ) : (
+          <ul className="space-y-2.5">
+            {assignedRoomRows
+              .filter((r) => r.state === 'out_of_order_ooo')
+              .map((row) => (
+                <li
+                  key={row.unit._id}
+                  className="flex flex-wrap items-center justify-between gap-2 rounded-res-md border border-res-line bg-res-card p-3.5 shadow-res-low"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <span className="rounded-full bg-res-surface p-2">
+                      <Wrench className="h-4 w-4 text-res-brand" />
+                    </span>
+                    <div>
+                      <p className="type-res-body font-semibold text-res-ink">Room {row.label}</p>
+                      <p className="type-res-small font-normal text-res-ink-muted">
+                        {maintenance.find((m) => m.unitId === row.unit._id)?.note ??
+                          new Date(row.row.date).toLocaleString()}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => openNote(row.unit._id)}
+                    className="type-res-small cursor-pointer rounded-full bg-res-surface px-4 py-2 font-semibold text-res-ink transition-colors outline-none hover:text-res-brand focus-visible:ring-2 focus-visible:ring-res-brand"
+                  >
+                    {maintenance.find((m) => m.unitId === row.unit._id)?.note
+                      ? 'Update note'
+                      : 'Add note'}
+                  </button>
+                </li>
+              ))}
+          </ul>
+        )}
+      </section>
+
+      <Modal
+        isOpen={claimOpen}
+        onClose={() => setClaimOpen(false)}
+        title="Claim a room"
+        subtitle="Take responsibility for an open room today."
+        footer={
+          <>
+            <button
+              type="button"
+              onClick={() => setClaimOpen(false)}
+              className="type-res-small cursor-pointer rounded-full border border-res-line bg-res-card px-4 py-2.5 font-semibold text-res-ink hover:text-res-brand"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleClaim}
+              disabled={!claimUnitId || claiming}
+              className="type-res-small cursor-pointer rounded-full bg-res-brand px-5 py-2.5 font-semibold text-res-ink-inverted shadow-res-low transition-colors hover:bg-res-brand-hover disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {claiming ? 'Claiming…' : 'Claim room'}
+            </button>
+          </>
+        }
+      >
+        <div className="space-y-4">
+          <div>
+            <label className={labelClass} htmlFor="claim-room">
+              Open rooms
+            </label>
+            <select
+              id="claim-room"
+              value={claimUnitId}
+              onChange={(e) => setClaimUnitId(e.target.value)}
+              className={inputClass}
+            >
+              <option value="">Choose a room…</option>
+              {freeRooms.map((u) => (
+                <option key={u._id} value={u._id}>
+                  Room {u.label}
+                </option>
+              ))}
+            </select>
+            {freeRooms.length === 0 && (
+              <p className="type-res-small mt-1.5 font-normal text-res-ink-muted">
+                Every room is covered right now.
+              </p>
+            )}
+          </div>
+          <div>
+            <label className={labelClass} htmlFor="claim-role">
+              Your part
+            </label>
+            <select
+              id="claim-role"
+              value={claimRole}
+              onChange={(e) => setClaimRole(e.target.value as StaffAssignmentRole)}
+              className={inputClass}
+            >
+              <option value="lead">Lead — I own this room</option>
+              <option value="support">Support — I help out</option>
+            </select>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal
+        isOpen={!!noteForRoom}
+        onClose={() => setNoteForRoom(null)}
+        title={`Issue note — Room ${noteForRoom ? unitLabel(noteForRoom, units) : ''}`}
+        subtitle="Say what's wrong so maintenance can act on it."
+        footer={
+          <>
+            <button
+              type="button"
+              onClick={() => setNoteForRoom(null)}
+              className="type-res-small cursor-pointer rounded-full border border-res-line bg-res-card px-4 py-2.5 font-semibold text-res-ink hover:text-res-brand"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={submitNote}
+              disabled={noteSubmitting || noteDraft.trim().length === 0}
+              className="type-res-small cursor-pointer rounded-full bg-res-brand px-5 py-2.5 font-semibold text-res-ink-inverted shadow-res-low transition-colors hover:bg-res-brand-hover disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {noteSubmitting ? 'Saving…' : 'Save note'}
+            </button>
+          </>
+        }
+      >
+        <textarea
+          className={`${inputClass} min-h-[96px]`}
+          placeholder="e.g. Tap runs brown, AC rattles, stain on curtain…"
+          value={noteDraft}
+          onChange={(e) => setNoteDraft(e.target.value)}
+          autoFocus
+        />
+      </Modal>
     </div>
   );
 }

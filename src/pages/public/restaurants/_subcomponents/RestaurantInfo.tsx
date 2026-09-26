@@ -68,7 +68,7 @@ const RestaurantInfo = ({ data }: RestaurantInfoProps) => {
           })}
         </div>
       </div>
-      <div className="mt-6 px-4 md:px-0">
+      <div className="mt-5">
         {activeTab === 'overview' && (
           <RestaurantOverview
             address={data.address}

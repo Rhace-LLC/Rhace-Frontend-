@@ -1,5 +1,4 @@
 import { AllStaffTab } from './AllStaffTab';
-import DashboardPageHeader from '@/components/dashboard/DashboardPageHeader';
 
 const AllStaffPage = () => {
   const handleRefresh = () => {
@@ -7,13 +6,13 @@ const AllStaffPage = () => {
   };
 
   return (
-    <div className="p-6 md:p-8 space-y-6">
-      <DashboardPageHeader
-        heading="All Staff"
-        subtitle="Manage your team members, roles, and invitations"
-        primaryBtnText="Refresh"
-        primaryBtnAction={handleRefresh}
-      />
+    <div className="space-y-5 p-4 md:p-6">
+      <div>
+        <h1 className="type-res-h2 text-res-ink">All staff</h1>
+        <p className="type-res-body mt-1 font-normal text-res-ink-muted">
+          Manage your team members, roles, and invitations.
+        </p>
+      </div>
       <AllStaffTab onRefresh={handleRefresh} />
     </div>
   );

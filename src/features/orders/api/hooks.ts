@@ -19,6 +19,14 @@ export function useOrderByReservation(reservationId?: string, enabled = true) {
   });
 }
 
+/** The signed-in customer's own orders (backend scopes `user` role by customerId). */
+export function useMyOrders(params?: { status?: string; page?: number; limit?: number }) {
+  return useQuery({
+    queryKey: [...orderKeys.all, 'mine', params ?? {}] as const,
+    queryFn: async () => ordersApi.list({ withLines: true, limit: 50, ...params }),
+  });
+}
+
 export function useOrder(id?: string) {
   return useQuery({
     queryKey: orderKeys.detail(id ?? ''),

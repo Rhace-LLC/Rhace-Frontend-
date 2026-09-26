@@ -26,7 +26,9 @@ interface DateTimeFieldsProps {
 }
 
 const inputClass =
-  'w-full rounded-res-sm border border-res-line bg-res-surface px-3 py-2 text-sm text-gray-800 focus:border-res-brand focus:outline-none';
+  'w-full rounded-res-sm border border-res-line bg-res-surface px-3 py-2.5 type-res-body font-normal text-res-ink outline-none placeholder:text-res-ink-muted focus:border-res-brand';
+
+const labelClass = 'flex flex-col gap-1.5 type-res-small font-medium text-res-ink-muted';
 
 function localToIso(date: string, time: string): string | undefined {
   if (!date || !time) return undefined;
@@ -62,10 +64,10 @@ export function DateTimeFields({ vertical, onChange }: DateTimeFieldsProps) {
   }, [vertical, date, checkIn, checkOut, partySize]);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {vertical === 'hotel' ? (
         <div className="grid grid-cols-2 gap-3">
-          <label className="flex flex-col gap-1 text-xs text-gray-500">
+          <label className={labelClass}>
             Check-in
             <input
               type="date"
@@ -75,7 +77,7 @@ export function DateTimeFields({ vertical, onChange }: DateTimeFieldsProps) {
               className={inputClass}
             />
           </label>
-          <label className="flex flex-col gap-1 text-xs text-gray-500">
+          <label className={labelClass}>
             Check-out
             <input
               type="date"
@@ -87,7 +89,7 @@ export function DateTimeFields({ vertical, onChange }: DateTimeFieldsProps) {
           </label>
         </div>
       ) : (
-        <label className="flex flex-col gap-1 text-xs text-gray-500">
+        <label className={labelClass}>
           Date
           <input
             type="date"
@@ -99,7 +101,7 @@ export function DateTimeFields({ vertical, onChange }: DateTimeFieldsProps) {
         </label>
       )}
 
-      <label className="flex flex-col gap-1 text-xs text-gray-500">
+      <label className={labelClass}>
         {vertical === 'hotel' ? 'Guests' : 'Party size'}
         <input
           type="number"

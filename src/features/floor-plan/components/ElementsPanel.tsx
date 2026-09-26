@@ -48,7 +48,7 @@ export function ElementsPanel({ plugin, disabled, onAddEntity, onAddCustom, onCr
   };
 
   return (
-    <div className="flex h-full w-[220px] shrink-0 flex-col gap-6 overflow-y-auto border-r border-gray-200 bg-white px-4 py-5">
+    <div className="sticky top-0 flex max-h-[calc(100dvh-12rem)] w-[220px] shrink-0 self-start flex-col gap-6 overflow-y-auto border-r border-gray-200 bg-white px-4 py-5">
       {onCreateBlueprint && (
         <button
           type="button"

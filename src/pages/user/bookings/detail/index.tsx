@@ -13,6 +13,17 @@ import {
   usePayBalance,
 } from '@/features/reservations';
 
+function DetailCell({ label, value }: { label: string; value: React.ReactNode }) {
+  return (
+    <div className="rounded-res-sm bg-res-surface p-3">
+      <dt className="type-res-caption font-medium tracking-[0.2px] text-res-ink-muted uppercase">
+        {label}
+      </dt>
+      <dd className="type-res-body mt-1 font-semibold text-res-ink">{value}</dd>
+    </div>
+  );
+}
+
 const BookingDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -29,8 +40,13 @@ const BookingDetails = () => {
       const url = res.data?.authorization_url;
       if (!url) throw new Error('Could not start payment');
       window.location.href = url;
-    } catch {
-      toast.error('Could not start payment. Please try again.');
+    } catch (error) {
+      const message =
+        (error as { response?: { data?: { message?: string; paystackError?: string } } })?.response
+          ?.data?.paystackError ||
+        (error as { response?: { data?: { message?: string } } })?.response?.data?.message ||
+        'Could not start payment. Please try again.';
+      toast.error(message);
     }
   };
 
@@ -38,39 +54,53 @@ const BookingDetails = () => {
     if (!reservation) return;
     try {
       await cancelMutation.mutateAsync(reservation._id);
-      toast.success('Reservation cancelled');
+      toast.success('Booking cancelled');
       navigate('/bookings');
     } catch {
-      toast.error('Could not cancel the reservation.');
+      toast.error('Could not cancel your booking.');
     }
   };
 
+  const isRoom = reservation?.vertical === 'hotel';
+  const spotKind = isRoom ? 'Room' : 'Table';
+
   return (
-    <>
+    <div className="min-h-screen bg-res-surface">
       <div className="hidden md:block">
         <Header />
       </div>
-      <main className="mx-auto md:mt-[85px] mb-[120px] md:mb-8 max-w-3xl md:px-6 lg:px-8 md:py-8">
-        <div className="px-4 md:px-0">
-          <Link to="/bookings" className="text-xs text-gray-500 hover:text-[#0A6C6D]">
-            ← Back to reservations
+      <main className="mx-auto mb-[120px] max-w-3xl space-y-5 px-4 pt-4 pb-8 md:mt-[85px] md:mb-8 md:px-6 md:py-8 lg:px-8">
+        <div>
+          <Link
+            to="/bookings"
+            className="type-res-small font-medium text-res-ink-muted hover:text-res-brand"
+          >
+            ← Back to my bookings
           </Link>
         </div>
 
         {reservationQuery.isLoading ? (
-          <div className="mt-4 h-64 animate-pulse rounded-2xl bg-gray-100" />
+          <div className="h-64 animate-pulse rounded-res-lg bg-res-card shadow-res-low" />
         ) : !reservation ? (
-          <div className="mt-4 rounded-2xl border border-dashed border-gray-300 bg-white py-16 text-center text-sm text-gray-500">
-            Reservation not found.
+          <div className="rounded-res-lg bg-res-card px-6 py-16 text-center shadow-res-low">
+            <p className="type-res-h3 text-res-ink">Booking not found</p>
+            <p className="type-res-small mt-1 text-res-ink-muted">
+              This booking may have been removed.
+            </p>
           </div>
         ) : (
-          <div className="mt-4 space-y-4 px-4 md:px-0">
-            <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <h1 className="text-xl font-semibold text-gray-900">
-                  {reservation.blueprintName ?? 'Reservation'}
-                </h1>
-                <div className="flex gap-2">
+          <div className="space-y-5">
+            <section className="rounded-res-lg bg-res-card p-5 shadow-res-low md:p-6">
+              <div className="flex flex-wrap items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <p className="type-res-caption font-medium tracking-[0.2px] text-res-ink-muted uppercase">
+                    {reservation.vendorName ?? 'Booking'}
+                  </p>
+                  <h1 className="type-res-h2 mt-1 text-res-ink">
+                    {reservation.blueprintName ?? reservation.unitLabel ?? 'Booking'}
+                  </h1>
+                </div>
+                <div className="flex shrink-0 flex-wrap gap-1.5">
                   <ReservationStatusBadge status={reservation.status} />
                   <PaymentStatusBadge
                     status={reservation.group?.paymentStatus ?? reservation.paymentStatus}
@@ -78,43 +108,46 @@ const BookingDetails = () => {
                 </div>
               </div>
 
-              <dl className="mt-4 grid grid-cols-2 gap-y-2 text-sm">
-                <dt className="text-gray-500">Guest</dt>
-                <dd className="text-gray-900">{reservation.guestName}</dd>
-                <dt className="text-gray-500">Unit</dt>
-                <dd className="text-gray-900">{reservation.unitLabel ?? '—'}</dd>
-                <dt className="text-gray-500">When</dt>
-                <dd className="text-gray-900">
-                  {formatRange(reservation.start, reservation.end)}
-                </dd>
-                <dt className="text-gray-500">Party size</dt>
-                <dd className="text-gray-900">{reservation.partySize ?? '—'}</dd>
-                <dt className="text-gray-500">Total</dt>
-                <dd className="text-gray-900">
-                  {money(reservation.group?.totalAmount ?? reservation.amount)}
-                </dd>
-                <dt className="text-gray-500">Outstanding</dt>
-                <dd className="text-gray-900">{money(outstanding(reservation))}</dd>
+              <dl className="mt-4 grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+                <DetailCell label="Name" value={reservation.guestName} />
+                <DetailCell
+                  label={spotKind}
+                  value={
+                    reservation.unitLabel
+                      ? `${spotKind} ${reservation.unitLabel}`
+                      : (reservation.blueprintName ?? '—')
+                  }
+                />
+                <DetailCell
+                  label="Date & time"
+                  value={formatRange(reservation.start, reservation.end)}
+                />
+                <DetailCell label="Guests" value={reservation.partySize ?? '—'} />
+                <DetailCell
+                  label="Total"
+                  value={money(reservation.group?.totalAmount ?? reservation.amount)}
+                />
+                <DetailCell label="Still to pay" value={money(outstanding(reservation))} />
               </dl>
-            </div>
+            </section>
 
-            <div className="flex flex-wrap justify-end gap-3">
+            <div className="flex flex-col justify-end gap-2.5 sm:flex-row">
               {outstanding(reservation) > 0 && reservation.bookingGroup && (
                 <button
                   type="button"
                   onClick={handlePayBalance}
-                  className="rounded-xl bg-[#0A6C6D] px-5 py-2.5 text-sm font-medium text-white hover:bg-[#0A6C6D]/90"
+                  className="type-res-body cursor-pointer rounded-full bg-res-brand px-6 py-3 font-semibold text-res-ink-inverted shadow-res-low transition-colors hover:bg-res-brand-hover"
                 >
-                  Pay balance
+                  Pay {money(outstanding(reservation))} now
                 </button>
               )}
               {['pending_payment', 'upcoming'].includes(reservation.status) && (
                 <button
                   type="button"
                   onClick={handleCancel}
-                  className="rounded-xl border border-rose-200 px-5 py-2.5 text-sm font-medium text-rose-600 hover:bg-rose-50"
+                  className="type-res-body cursor-pointer rounded-full bg-res-card px-6 py-3 font-semibold text-res-ink-muted shadow-res-low transition-colors hover:text-res-ink"
                 >
-                  Cancel reservation
+                  Cancel booking
                 </button>
               )}
             </div>
@@ -124,7 +157,7 @@ const BookingDetails = () => {
       <div className="hidden md:block">
         <Footer />
       </div>
-    </>
+    </div>
   );
 };
 

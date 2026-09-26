@@ -25,6 +25,7 @@
   --res-surface: #f6f7f9;
   --res-card: #ffffff;
   --res-overlay: rgba(10, 108, 109, 0.4);
+  --res-scrim: rgba(17, 24, 39, 0.55);
 
   /* brand */
   --res-brand: #0a6c6d;
@@ -58,6 +59,8 @@
   --color-res-page: #eaeaea;
   --color-res-surface: #f6f7f9;
   --color-res-card: #ffffff;
+  --color-res-overlay: rgba(10, 108, 109, 0.4);
+  --color-res-scrim: rgba(17, 24, 39, 0.55);
   --color-res-brand: #0a6c6d;
   --color-res-brand-hover: #085758;
   --color-res-brand-active: #064344;

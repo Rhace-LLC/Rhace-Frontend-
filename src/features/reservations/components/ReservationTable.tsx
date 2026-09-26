@@ -15,7 +15,10 @@ interface ReservationTableProps {
 }
 
 const actionClass =
-  'rounded-lg border border-gray-200 px-2.5 py-1 text-[11px] font-medium text-gray-700 transition-colors hover:border-[#0A6C6D] hover:text-[#0A6C6D] disabled:opacity-50';
+  'type-res-small cursor-pointer rounded-full bg-res-surface px-3.5 py-1.5 font-semibold text-res-ink transition-colors outline-none hover:text-res-brand focus-visible:ring-2 focus-visible:ring-res-brand disabled:cursor-not-allowed disabled:opacity-50';
+
+const primaryActionClass =
+  'type-res-small cursor-pointer rounded-full bg-res-brand px-3.5 py-1.5 font-semibold text-res-ink-inverted shadow-res-low transition-colors outline-none hover:bg-res-brand-hover focus-visible:ring-2 focus-visible:ring-res-brand disabled:cursor-not-allowed disabled:opacity-50';
 
 export function ReservationTable({
   items,
@@ -30,9 +33,9 @@ export function ReservationTable({
 }: ReservationTableProps) {
   if (loading) {
     return (
-      <div className="space-y-2 p-4">
+      <div className="space-y-2.5">
         {Array.from({ length: 5 }).map((_, index) => (
-          <div key={index} className="h-12 animate-pulse rounded-xl bg-gray-100" />
+          <div key={index} className="h-14 animate-pulse rounded-res-sm bg-res-surface" />
         ))}
       </div>
     );
@@ -40,26 +43,49 @@ export function ReservationTable({
 
   if (!items.length) {
     return (
-      <div className="rounded-2xl border border-dashed border-gray-300 bg-white py-16 text-center text-sm text-gray-500">
-        No reservations found.
+      <div className="rounded-res-md bg-res-surface px-6 py-12 text-center">
+        <p className="type-res-h3 text-res-ink">No reservations found</p>
+        <p className="type-res-small mt-1 font-normal text-res-ink-muted">
+          Try adjusting the filters.
+        </p>
       </div>
     );
   }
 
   return (
-    <div className="overflow-x-auto rounded-2xl border border-gray-200 bg-white shadow-sm">
-      <table className="w-full min-w-[860px] text-left text-sm">
+    <div className="hide-scrollbar -mx-1 overflow-x-auto px-1 py-1">
+      <table className="w-full min-w-[860px] border-collapse text-left">
         <thead>
-          <tr className="border-b border-gray-100 text-xs uppercase tracking-wide text-gray-400">
-            <th className="px-4 py-3 font-medium">Guest</th>
-            {role === 'admin' && <th className="px-4 py-3 font-medium">Vendor</th>}
-            <th className="px-4 py-3 font-medium">Unit</th>
-            <th className="px-4 py-3 font-medium">When</th>
-            <th className="px-4 py-3 font-medium">Party</th>
-            <th className="px-4 py-3 font-medium">Status</th>
-            <th className="px-4 py-3 font-medium">Payment</th>
-            <th className="px-4 py-3 text-right font-medium">Amount</th>
-            <th className="px-4 py-3 text-right font-medium">Actions</th>
+          <tr className="border-b border-res-line">
+            <th className="type-res-caption px-4 py-3 font-medium tracking-[0.2px] text-res-ink-muted uppercase">
+              Guest
+            </th>
+            {role === 'admin' && (
+              <th className="type-res-caption px-4 py-3 font-medium tracking-[0.2px] text-res-ink-muted uppercase">
+                Venue
+              </th>
+            )}
+            <th className="type-res-caption px-4 py-3 font-medium tracking-[0.2px] text-res-ink-muted uppercase">
+              Table / Room
+            </th>
+            <th className="type-res-caption px-4 py-3 font-medium tracking-[0.2px] text-res-ink-muted uppercase">
+              Date & time
+            </th>
+            <th className="type-res-caption px-4 py-3 font-medium tracking-[0.2px] text-res-ink-muted uppercase">
+              Guests
+            </th>
+            <th className="type-res-caption px-4 py-3 font-medium tracking-[0.2px] text-res-ink-muted uppercase">
+              Status
+            </th>
+            <th className="type-res-caption px-4 py-3 font-medium tracking-[0.2px] text-res-ink-muted uppercase">
+              Payment
+            </th>
+            <th className="type-res-caption px-4 py-3 text-right font-medium tracking-[0.2px] text-res-ink-muted uppercase">
+              Total
+            </th>
+            <th className="type-res-caption px-4 py-3 text-right font-medium tracking-[0.2px] text-res-ink-muted uppercase">
+              Actions
+            </th>
           </tr>
         </thead>
         <tbody>
@@ -72,31 +98,35 @@ export function ReservationTable({
             return (
               <tr
                 key={reservation._id}
-                className="border-b border-gray-50 last:border-0 hover:bg-gray-50/60"
+                className="border-b border-res-line transition-colors last:border-0 hover:bg-res-surface/60"
               >
                 <td className="px-4 py-3">
-                  <span className="block font-medium text-gray-900">{reservation.guestName}</span>
-                  <span className="block text-xs text-gray-400">
+                  <span className="type-res-body block font-semibold text-res-ink">
+                    {reservation.guestName}
+                  </span>
+                  <span className="type-res-small block font-normal text-res-ink-muted">
                     {reservation.guestEmail ?? reservation.guestPhone ?? '—'}
                   </span>
                 </td>
                 {role === 'admin' && (
-                  <td className="px-4 py-3 text-gray-700">
+                  <td className="type-res-body px-4 py-3 font-normal text-res-ink">
                     {reservation.vendorName ?? reservation.vendor}
                   </td>
                 )}
                 <td className="px-4 py-3">
-                  <span className="block text-gray-800">
+                  <span className="type-res-body block font-medium text-res-ink">
                     {reservation.unitLabel ?? '—'}
                   </span>
-                  <span className="block text-xs text-gray-400">
+                  <span className="type-res-small block font-normal text-res-ink-muted">
                     {reservation.blueprintName ?? '—'}
                   </span>
                 </td>
-                <td className="px-4 py-3 text-gray-600">
+                <td className="type-res-body px-4 py-3 font-normal whitespace-nowrap text-res-ink-muted">
                   {formatRange(reservation.start, reservation.end)}
                 </td>
-                <td className="px-4 py-3 text-gray-700">{reservation.partySize ?? '—'}</td>
+                <td className="type-res-body px-4 py-3 font-medium text-res-ink">
+                  {reservation.partySize ?? '—'}
+                </td>
                 <td className="px-4 py-3">
                   <ReservationStatusBadge status={reservation.status} />
                 </td>
@@ -106,11 +136,11 @@ export function ReservationTable({
                   />
                 </td>
                 <td className="px-4 py-3 text-right">
-                  <span className="block font-medium text-gray-900">
+                  <span className="type-res-body block font-semibold text-res-ink">
                     {money(reservation.group?.totalAmount ?? reservation.amount)}
                   </span>
                   {balance > 0 && (
-                    <span className="block text-xs text-amber-600">
+                    <span className="type-res-small mt-1 inline-block rounded-full bg-res-secondary px-2 py-0.5 font-semibold text-res-brand">
                       {money(balance)} due
                     </span>
                   )}
@@ -125,10 +155,10 @@ export function ReservationTable({
                     {onPayBalance && balance > 0 && reservation.bookingGroup && (
                       <button
                         type="button"
-                        className={actionClass}
+                        className={primaryActionClass}
                         onClick={() => onPayBalance(reservation)}
                       >
-                        Pay balance
+                        Pay now
                       </button>
                     )}
                     {onRecordOffline && role !== 'customer' && balance > 0 && reservation.bookingGroup && (
@@ -143,7 +173,7 @@ export function ReservationTable({
                     {onCheckIn && canCheckIn && (
                       <button
                         type="button"
-                        className={actionClass}
+                        className={primaryActionClass}
                         onClick={() => onCheckIn(reservation)}
                       >
                         Check in
@@ -152,7 +182,7 @@ export function ReservationTable({
                     {onCheckOut && canCheckOut && (
                       <button
                         type="button"
-                        className={actionClass}
+                        className={primaryActionClass}
                         onClick={() => onCheckOut(reservation)}
                       >
                         Check out
@@ -161,7 +191,7 @@ export function ReservationTable({
                     {onCancel && canCancel && (
                       <button
                         type="button"
-                        className={`${actionClass} hover:border-rose-300 hover:text-rose-600`}
+                        className="type-res-small cursor-pointer rounded-full px-3.5 py-1.5 font-semibold text-res-ink-muted transition-colors outline-none hover:text-res-ink focus-visible:ring-2 focus-visible:ring-res-brand"
                         onClick={() => onCancel(reservation)}
                       >
                         Cancel

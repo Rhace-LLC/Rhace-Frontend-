@@ -59,7 +59,8 @@ const Header = ({ onClick = () => {}, activeTab = null }: HeaderProps) => {
   const navItems = [
     { name: 'Home', href: '/' },
     // { name: "Restaurants", href: "/userDashboard/search" },
-    { name: 'Bookings / Reservations', href: '/bookings' },
+    { name: 'My bookings', href: '/bookings' },
+    { name: 'My orders', href: '/orders' },
     { name: 'Favorites', href: '/favorites' },
   ];
 
@@ -153,7 +154,10 @@ const Header = ({ onClick = () => {}, activeTab = null }: HeaderProps) => {
 
             {/* Primary links */}
             <DropdownMenuItem asChild className="  px-4 py-2">
-              <Link to="/bookings">Bookings/Reservation</Link>
+              <Link to="/bookings">My bookings</Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild className="  px-4 py-2">
+              <Link to="/orders">My orders</Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild className="  px-4 py-2">
               <Link to="/favorites">Wishlist</Link>

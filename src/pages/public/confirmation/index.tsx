@@ -16,6 +16,17 @@ const PAYMENT_LABEL: Record<string, string> = {
   unpaid: 'Unpaid',
 };
 
+function DetailCell({ label, value }: { label: string; value: React.ReactNode }) {
+  return (
+    <div className="rounded-res-sm bg-res-surface p-3">
+      <dt className="type-res-caption font-medium tracking-[0.2px] text-res-ink-muted uppercase">
+        {label}
+      </dt>
+      <dd className="type-res-body mt-1 font-semibold text-res-ink">{value}</dd>
+    </div>
+  );
+}
+
 const ConfirmationPage = () => {
   const { id } = useParams();
   const location = useLocation();
@@ -56,99 +67,121 @@ const ConfirmationPage = () => {
   const awaitingPayment = reservation?.status === 'pending_payment';
 
   return (
-    <>
+    <div className="min-h-screen bg-res-surface">
       <div className="hidden md:block">
         <Header />
       </div>
-      <main className="mx-auto md:mt-[85px] mb-[120px] md:py-12 max-w-3xl px-4">
-        <div className="rounded-2xl border border-gray-200 bg-white p-8 text-center shadow-sm">
+      <main className="mx-auto mb-[120px] max-w-3xl px-4 pt-4 pb-8 md:mt-[85px] md:py-12">
+        <div className="rounded-res-lg bg-res-card p-6 text-center shadow-res-low md:p-8">
           <div
             className={`mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full ${
-              awaitingPayment ? 'bg-amber-100' : 'bg-green-100'
+              awaitingPayment ? 'bg-res-surface' : 'bg-res-secondary'
             }`}
           >
             {awaitingPayment ? (
-              <Clock className="h-8 w-8 text-amber-600" />
+              <Clock className="h-8 w-8 text-res-brand" />
             ) : (
-              <CheckCircle2 className="h-8 w-8 text-green-600" />
+              <CheckCircle2 className="h-8 w-8 text-res-brand" />
             )}
           </div>
-          <h1 className="text-2xl font-semibold text-gray-900">
+          <div className="flex justify-center">
+            <span
+              className={`type-res-small rounded-full px-3 py-1 font-semibold ${
+                awaitingPayment
+                  ? 'bg-res-surface text-res-ink-muted'
+                  : 'bg-res-secondary text-res-brand'
+              }`}
+            >
+              {finalizing
+                ? 'Finalizing…'
+                : awaitingPayment
+                  ? 'Awaiting payment'
+                  : 'Confirmed'}
+            </span>
+          </div>
+          <h1 className="type-res-h2 mt-3 text-res-ink">
             {awaitingPayment ? 'Complete your payment' : 'Reservation confirmed'}
           </h1>
-          <p className="mt-2 text-sm text-gray-500">
+          <p className="type-res-body mx-auto mt-2 max-w-md font-normal text-res-ink-muted">
             {finalizing
               ? 'Finalizing your payment…'
               : awaitingPayment
                 ? 'Your unit is held. Complete payment to confirm your booking.'
                 : 'Your booking is confirmed.'}{' '}
-            Reference <span className="font-medium">{id}</span>.
+            Booking ref <span className="font-mono font-semibold text-res-ink">{id}</span>.
           </p>
 
           {reservation && (
-            <dl className="mx-auto mt-6 grid max-w-md grid-cols-2 gap-y-2 text-left text-sm">
-              <dt className="text-gray-500">Guest</dt>
-              <dd className="text-gray-900">{reservation.guestName}</dd>
-              <dt className="text-gray-500">Party size</dt>
-              <dd className="text-gray-900">{reservation.partySize ?? '—'}</dd>
-              <dt className="text-gray-500">From</dt>
-              <dd className="text-gray-900">{new Date(reservation.start).toLocaleString()}</dd>
-              <dt className="text-gray-500">To</dt>
-              <dd className="text-gray-900">{new Date(reservation.end).toLocaleString()}</dd>
-              <dt className="text-gray-500">Status</dt>
-              <dd className="capitalize text-gray-900">{reservation.status.replace('_', ' ')}</dd>
+            <dl className="mx-auto mt-6 grid grid-cols-1 gap-2.5 text-left sm:grid-cols-2">
+              <DetailCell label="Guest" value={reservation.guestName} />
+              <DetailCell label="Party size" value={reservation.partySize ?? '—'} />
+              <DetailCell
+                label="From"
+                value={new Date(reservation.start).toLocaleString()}
+              />
+              <DetailCell label="To" value={new Date(reservation.end).toLocaleString()} />
+              <DetailCell
+                label="Status"
+                value={
+                  <span className="capitalize">
+                    {reservation.status.replace('_', ' ')}
+                  </span>
+                }
+              />
               {typeof reservation.amount === 'number' && reservation.amount > 0 && (
-                <>
-                  <dt className="text-gray-500">
-                    {reservation.vertical === 'hotel' ? 'Total' : 'Reservation deposit'}
-                  </dt>
-                  <dd className="text-gray-900">
-                    ₦{reservation.amount.toLocaleString()}{' '}
-                    <span className="text-xs text-gray-400">{reservation.currency ?? 'NGN'}</span>
-                  </dd>
-                </>
+                <DetailCell
+                  label={reservation.vertical === 'hotel' ? 'Total' : 'Reservation deposit'}
+                  value={
+                    <>
+                      ₦{reservation.amount.toLocaleString()}{' '}
+                      <span className="type-res-small font-normal text-res-ink-muted">
+                        {reservation.currency ?? 'NGN'}
+                      </span>
+                    </>
+                  }
+                />
               )}
               {reservation.paymentStatus && (
-                <>
-                  <dt className="text-gray-500">Payment</dt>
-                  <dd className="text-gray-900">
-                    {PAYMENT_LABEL[reservation.paymentStatus] ?? reservation.paymentStatus}
-                  </dd>
-                </>
+                <DetailCell
+                  label="Payment"
+                  value={
+                    PAYMENT_LABEL[reservation.paymentStatus] ?? reservation.paymentStatus
+                  }
+                />
               )}
             </dl>
           )}
 
           {reservation && ['restaurant', 'club'].includes(String(reservation.vertical)) &&
             !orderQuery.data && (
-              <div className="mt-6 rounded-2xl border border-[#0A6C6D]/20 bg-[#0A6C6D]/5 p-4 text-left">
-                <p className="text-sm font-medium text-gray-900">
+              <div className="mt-5 rounded-res-md bg-res-secondary p-4 text-left">
+                <p className="type-res-body font-semibold text-res-ink">
                   {reservation.vertical === 'club'
                     ? 'Want to pre-order your drinks?'
                     : 'Want to pre-order your meal?'}
                 </p>
-                <p className="mt-1 text-xs text-gray-500">
+                <p className="type-res-small mt-1 font-normal text-res-ink-muted">
                   Add items now and your table deposit is credited against the bill.
                 </p>
                 <Link
                   to={`/preorder/${reservation._id}`}
-                  className="mt-3 inline-block rounded-xl bg-[#0A6C6D] px-4 py-2 text-xs font-medium text-white hover:bg-[#0A6C6D]/90"
+                  className="type-res-small mt-3 inline-block rounded-full bg-res-brand px-5 py-2.5 font-semibold text-res-ink-inverted shadow-res-low transition-colors hover:bg-res-brand-hover"
                 >
                   {reservation.vertical === 'club' ? 'Pre-order drinks' : 'Pre-order a meal'}
                 </Link>
               </div>
             )}
 
-          <div className="mt-8 flex flex-wrap justify-center gap-3">
+          <div className="mt-8 flex flex-col justify-center gap-2.5 sm:flex-row">
             <Link
               to="/bookings"
-              className="rounded-xl bg-[#0A6C6D] px-5 py-2.5 text-sm font-medium text-white hover:bg-[#0A6C6D]/90"
+              className="type-res-body rounded-full bg-res-brand px-6 py-3 text-center font-semibold text-res-ink-inverted shadow-res-low transition-colors hover:bg-res-brand-hover"
             >
               My bookings
             </Link>
             <Link
               to="/"
-              className="rounded-xl border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              className="type-res-body rounded-full bg-res-surface px-6 py-3 text-center font-semibold text-res-ink transition-colors hover:text-res-brand"
             >
               Back home
             </Link>
@@ -158,7 +191,7 @@ const ConfirmationPage = () => {
       <div className="hidden md:block">
         <Footer />
       </div>
-    </>
+    </div>
   );
 };
 

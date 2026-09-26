@@ -31,7 +31,7 @@ const Images = ({ images, name }: ImagesProps) => {
 
   return (
     <>
-      <div className="hidden md:grid md:grid-flow-col gap-2 w-full rounded-xl overflow-clip h-[400px] md:h-[460px] relative">
+      <div className="hidden md:grid md:grid-flow-col gap-2 w-full rounded-res-md overflow-hidden h-[400px] md:h-[440px] relative bg-res-surface p-2">
         <Button
           onClick={() => {
             setCurrentImageIndex(0);
@@ -42,10 +42,10 @@ const Images = ({ images, name }: ImagesProps) => {
           See more photos
         </Button>
         {images.slice(0, 5).map((image, i) => (
-          <div key={i} className={`relative ${imageStyle(i)}`}>
+          <div key={i} className={`relative overflow-hidden rounded-res-sm ${imageStyle(i)}`}>
             <img
               src={image || '/hero-bg.png'}
-              className="object-cover cursor-pointer hover:opacity-80 duration-300 size-full"
+              className="object-cover cursor-pointer hover:opacity-90 duration-300 size-full"
               alt={`${name} Image ${i + 1}`}
               //   fill
               onClick={() => {

@@ -80,6 +80,7 @@ export interface ReservationFilters {
   page?: number;
   limit?: number;
   vendorId?: string;
+  vertical?: string;
 }
 
 export interface ReservationCounters {

@@ -1,11 +1,12 @@
 /* eslint-disable react-refresh/only-export-components */
 import { Clock, Users } from 'lucide-react';
 import type { BusinessData, FloorEntity, FloorPlan, SpatialData } from '../core/types';
-import type { DrawerContext, TileContext, TopBarContext, ToolbarItem, VerticalPlugin } from '../core/plugin';
+import type { DrawerContext, ManageCardActions, TileContext, TopBarContext, ToolbarItem, VerticalPlugin } from '../core/plugin';
 import { uid } from '../core/ids';
 import { SectionHeatmap } from '../components/overlays/SectionHeatmap';
 import { ScopeNav } from '../components/overlays/ScopeNav';
 import { BlueprintSpecs } from '../components/BlueprintSpecs';
+import { ManageUnitCard } from '../components/ManageUnitCard';
 import { stateMetaFor } from '../domain/states';
 import { canTransition } from '../domain/transitions';
 import { allBlueprints } from '../domain/blueprintStore';
@@ -167,43 +168,40 @@ function renderAreaTile(entity: FloorEntity, ctx: TileContext) {
   );
 }
 
-function renderManageCard(entity: FloorEntity) {
+function renderManageCard(entity: FloorEntity, actions: ManageCardActions) {
   const b = entity.businessData;
   const blueprint = restaurantBlueprint(entity);
   const meta = stateMetaFor('restaurant', String(b.status ?? 'available'));
-  const rows: Array<[string, string]> = [
-    ['Blueprint', blueprint?.type ?? '—'],
-    ['Area', String(b.area ?? b.section ?? '—')],
-    ['Floor', String(entity.spatialData.floor ?? '—')],
-    ['Capacity', String(b.capacity ?? '—')],
-    ['Price', blueprint ? formatBlueprintPricing(getBlueprintPricing(blueprint)) : '—'],
-  ];
+  const area = b.area ?? b.section;
+  const floor = entity.spatialData.floor;
+  const minutes = typeof b.minutesSeated === 'number' ? b.minutesSeated : undefined;
   return (
-    <div className="flex h-full w-full flex-col gap-3 rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-      <div className="flex items-center justify-between">
-        <div>
-          <h3 className="text-base font-semibold text-gray-900">{b.name}</h3>
-          <p className="text-xs text-gray-500">{blueprint?.name ?? 'Unassigned blueprint'}</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <ServiceRing state={String(b.status ?? 'available')} />
-          <span
-            className="rounded-full px-2 py-0.5 text-[10px] font-medium"
-            style={{ backgroundColor: `${meta.color}22`, color: meta.color }}
-          >
-            {meta.label}
+    <ManageUnitCard
+      kind="Table"
+      name={String(b.name)}
+      typeLabel={blueprint?.type}
+      statusLabel={meta.label}
+      statusColor={meta.color}
+      locationLabel={
+        [area ? String(area) : '', floor ? `Floor ${floor}` : ''].filter(Boolean).join(' · ') ||
+        undefined
+      }
+      extras={
+        <div className="flex items-center justify-between gap-2">
+          <p className="type-res-small font-normal text-res-ink-muted">
+            Seats {String(b.capacity ?? '—')}
+            {minutes !== undefined ? ` · sat ${minutes} min` : ''}
+          </p>
+          <span className="flex items-center gap-1.5">
+            <ServiceRing state={String(b.status ?? 'available')} />
+            <span className="type-res-small font-semibold text-res-ink">
+              {blueprint ? formatBlueprintPricing(getBlueprintPricing(blueprint)) : ''}
+            </span>
           </span>
         </div>
-      </div>
-      <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-        {rows.map(([label, value]) => (
-          <div key={label} className="flex flex-col">
-            <dt className="text-xs text-gray-500">{label}</dt>
-            <dd className="font-medium text-gray-900">{value}</dd>
-          </div>
-        ))}
-      </dl>
-    </div>
+      }
+      onManage={actions.onManage}
+    />
   );
 }
 
