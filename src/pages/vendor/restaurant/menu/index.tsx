@@ -99,10 +99,13 @@ interface ShowPopupState {
 const MenuDashboard = ({
   onCreateItem,
   onEditItem,
+  vendorId: vendorIdProp,
 }: {
   /** Embedded use (e.g. manager hub): intercept vendor-shell navigation. */
   onCreateItem?: () => void;
   onEditItem?: (id: string) => void;
+  /** Staff logins carry no vendor session — pass the venue id explicitly. */
+  vendorId?: string;
 } = {}) => {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -114,6 +117,7 @@ const MenuDashboard = ({
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { vendor } = useAuth();
+  const vendorId = vendorIdProp ?? vendor?._id;
   const [showPopup, setShowPopup] = useState<ShowPopupState>({
     display: false,
     details: {},
@@ -468,7 +472,8 @@ const MenuDashboard = ({
     async function fetchMenus() {
       try {
         setIsLoading(true);
-        const items = await menuService.getMenus(vendor._id);
+        if (!vendorId) return;
+        const items = await menuService.getMenus(vendorId);
         setMenus(items.menus);
       } catch (error) {
         console.error(error);
@@ -480,7 +485,8 @@ const MenuDashboard = ({
     async function fetchMenuItems() {
       try {
         setIsLoading(true);
-        const items = await menuService.getMenuItems(vendor._id);
+        if (!vendorId) return;
+        const items = await menuService.getMenuItems(vendorId);
         setMenuItems(items.menuItems);
       } catch (error) {
         console.error(error);

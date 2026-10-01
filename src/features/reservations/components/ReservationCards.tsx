@@ -146,9 +146,10 @@ export function ReservationCards({
                       e.stopPropagation();
                       onCancel(reservation);
                     }}
+                    title="Release just this table/room — the rest of the booking stays"
                     className="type-res-small cursor-pointer rounded-full px-3 py-2 font-semibold text-res-ink-muted transition-colors hover:text-res-ink"
                   >
-                    Cancel
+                    {reservation.vertical === 'hotel' ? 'Cancel room' : 'Cancel table'}
                   </button>
                 )}
               </div>

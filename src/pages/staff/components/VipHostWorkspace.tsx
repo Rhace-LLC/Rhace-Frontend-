@@ -51,7 +51,7 @@ import { boothSpend, clubStateMeta, minimumSpendFor, spendPct } from '../club';
 const todayKey = () => new Date().toISOString().slice(0, 10);
 
 /** Orders still on the floor — a cancelled bill never counts toward the target. */
-const OPEN_STATUSES = new Set(['open', 'placed', 'preparing', 'served']);
+const OPEN_STATUSES = new Set(['open', 'placed', 'preparing', 'ready', 'served']);
 
 /** Club plans first — the host only works booths. */
 const defaultPlanId = (plans: FloorPlanDto[]) =>

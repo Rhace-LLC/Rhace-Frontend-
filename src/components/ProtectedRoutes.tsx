@@ -9,7 +9,7 @@ import type { AuthVendor } from '@/types';
 
 export default function ProtectedRoute() {
   const dispatch = useDispatch<AppDispatch>();
-  const { vendor, admin } = useAuth();
+  const { vendor, admin, loading: authLoading } = useAuth();
   const location = useLocation();
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [hasValidToken, setHasValidToken] = useState(false);
@@ -20,7 +20,6 @@ export default function ProtectedRoute() {
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token && !vendor && !admin) {
-      console.log('ProtectedRoute: Token found, fetching vendor profile...');
       // authService.getVendorProfile()
       //   .then((profile) => {
       //     console.log('Profile fetched:', profile);
@@ -45,31 +44,25 @@ export default function ProtectedRoute() {
   const isAuthenticated = vendor || admin || hasValidToken;
 
   const authorized = () => {
-    console.log('🔍 ProtectedRoute DEBUG - vendor:', vendor);
-    console.log('🔍 Path:', location.pathname);
     const path = location.pathname;
 
     if (admin) {
-      console.log('✅ Admin authorized');
       return path.startsWith('/dashboard/admin');
     }
 
     if (!vendorData) {
-      console.warn('❌ No vendor in state');
       return false;
     }
 
     // Always allow dashboard if onboarded, flexible type matching
     if (vendorData.isOnboarded !== false) {
-      console.log('✅ Vendor onboarded, allowing dashboard access');
       return path.startsWith('/dashboard');
     }
 
-    console.log('Redirecting to onboarding - isOnboarded:', vendorData.isOnboarded);
     return path.startsWith('/auth/vendor/onboarding');
   };
   const isAuthorized = authorized();
-  if (isCheckingAuth) {
+  if (isCheckingAuth || authLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-50">
         <div className="text-lg">Verifying authentication...</div>

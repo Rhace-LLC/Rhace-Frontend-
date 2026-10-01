@@ -96,6 +96,14 @@ export function useCancelMyReservation() {
   });
 }
 
+export function useCancelMyGroup() {
+  const invalidate = useInvalidateReservations();
+  return useMutation({
+    mutationFn: (groupId: string) => reservationsApi.cancelMyGroup(groupId),
+    onSuccess: invalidate,
+  });
+}
+
 export function useCheckInReservation() {
   const invalidate = useInvalidateReservations();
   return useMutation({

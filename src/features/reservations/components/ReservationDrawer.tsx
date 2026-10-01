@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { Modal } from '@/components/others/RhaceModal';
 import { useBookingGroup } from '../api/hooks';
 import { formatRange, money, outstanding } from '../api/adapter';
+import { money as orderMoney } from '@/features/orders';
 import { PaymentStatusBadge, ReservationStatusBadge } from './ReservationBadges';
 import type { ReservationView } from '../types';
 import type { OrderDto } from '@/features/orders';
@@ -40,6 +41,7 @@ function Row({ label, value }: { label: string; value: React.ReactNode }) {
 export function ReservationDrawer({
   open,
   reservation,
+  order,
   onClose,
   footer,
 }: ReservationDrawerProps) {
@@ -85,6 +87,39 @@ export function ReservationDrawer({
           <Row label="Requests" value={reservation.specialRequests} />
         )}
       </div>
+
+      {order && (order.lines ?? []).length > 0 && (
+        <div className="rounded-res-md bg-res-surface p-4">
+          <h3 className="type-res-caption mb-2 font-medium tracking-[0.2px] text-res-ink-muted uppercase">
+            {reservation.vertical === 'club' ? 'Pre-ordered drinks' : 'Pre-ordered food'}
+          </h3>
+          <ul className="space-y-1.5">
+            {order.lines!.map((line) => (
+              <li
+                key={line._id}
+                className="type-res-body flex justify-between gap-2 font-normal text-res-ink"
+              >
+                <span className="min-w-0">
+                  <span className="font-semibold">{line.quantity} × </span>
+                  <span className="line-clamp-1">{line.name}</span>
+                  {line.addons?.length > 0 && (
+                    <span className="type-res-small block font-normal text-res-ink-muted">
+                      + {line.addons.map((a) => a.name).join(', ')}
+                    </span>
+                  )}
+                </span>
+                <span className="shrink-0 font-semibold">{orderMoney(line.lineTotal)}</span>
+              </li>
+            ))}
+          </ul>
+          <div className="mt-2 flex items-center justify-between border-t border-res-line pt-2">
+            <span className="type-res-small font-medium text-res-ink-muted">Order total</span>
+            <span className="type-res-body font-semibold text-res-ink">
+              {orderMoney(order.total)}
+            </span>
+          </div>
+        </div>
+      )}
 
       <div className="rounded-res-md bg-res-surface p-4">
         <h3 className="type-res-caption mb-1 font-medium tracking-[0.2px] text-res-ink-muted uppercase">

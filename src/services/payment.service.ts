@@ -78,6 +78,15 @@ class PaymentService {
     return res.data;
   }
 
+  /** Record a cash/card/transfer/POS payment against a standalone order. */
+  async recordOrderOfflinePayment(
+    orderId: string,
+    body: { amount: number; method: string; reference?: string; note?: string }
+  ) {
+    const res = await api.post(`/payments/order/${orderId}/offline-payment`, body);
+    return res.data;
+  }
+
   async completeReservation(trxref: string) {
     const response = await api.post('/bookings/complete-payment', {
       trxref,

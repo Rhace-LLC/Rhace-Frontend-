@@ -162,10 +162,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     [user, vendor, admin, staff, role, loading, setUser, setVendor, setAdmin, setStaff, logout]
   );
 
-  console.log("=============================================== AuthContext value Start ==================================================================");
-  console.log(value);
-  console.log("=============================================== AuthContext value End ====================================================================");
-
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 

@@ -41,9 +41,8 @@ const MenuPage = () => {
 
   return (
     <>
-      <div className="hidden md:block">
-        <Header />
-      </div>
+      <Header />
+      <div aria-hidden className="h-[96px] md:hidden" />
       <main className="mx-auto md:mt-[85px] mb-[160px] md:mb-[16px] md:py-8 max-w-7xl md:px-6 lg:px-8">
         <div className="flex flex-col md:flex-row gap-8 w-full">
           <div className="w-full space-y-4 md:space-y-8">

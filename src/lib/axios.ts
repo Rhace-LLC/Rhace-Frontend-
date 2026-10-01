@@ -1,6 +1,6 @@
 import { envConfig } from '@/envloader';
 import { clearAuthStorage } from '@/contexts/authSession';
-import { getStaffRefreshToken, setStaffRefreshToken } from '@/lib/storage';
+import { getStaffRefreshToken, getToken, setStaffRefreshToken } from '@/lib/storage';
 import axios from 'axios';
 
 // Force absolute protocol sanitization to prevent accidental HTTPS upgrades on localhost
@@ -15,7 +15,8 @@ const api = axios.create({
 // Request interceptor
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token');
+    // getToken() covers the live key plus legacy vendor keys from older builds.
+    const token = getToken();
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -63,12 +64,10 @@ api.interceptors.response.use(
         // Re-execute original request with fresh credentials
         return api(originalRequest);
       } catch (refreshError) {
-        // Clear all session storage scopes completely if refresh fails
-        setStaffRefreshToken(null);
-        localStorage.removeItem('token');
-        localStorage.removeItem('auth_token');
-        localStorage.removeItem('vendor-token');
-        localStorage.removeItem('vendor_token');
+        // Refresh failed: the session is dead. Wipe role objects AND tokens
+        // together so context and storage can't disagree (a leftover
+        // auth_* object with no token 401-loops instead of logging in).
+        clearAuthStorage();
 
         if (typeof window !== 'undefined') {
           const currentPath = window.location.pathname;

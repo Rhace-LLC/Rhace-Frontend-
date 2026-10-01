@@ -230,6 +230,7 @@ export default function ManagerWorkspace() {
               {tab === 'canvas' && <PrototypeFloorPlanView plugin={PLUGINS[vertical]} />}
               {tab === 'menu' && (
                 <MenuDashboard
+                  vendorId={staff?.vendor}
                   onCreateItem={() => openTab('menuItemNew')}
                   onEditItem={(id) => openTab('menuItemEdit', { id })}
                 />
@@ -240,12 +241,13 @@ export default function ManagerWorkspace() {
               )}
               {tab === 'drinks' && (
                 <DrinksTable
+                  vendorId={staff?.vendor}
                   onAddBottleSet={
                     vertical === 'club' ? () => openTab('addDrinks') : undefined
                   }
                 />
               )}
-              {tab === 'addDrinks' && <BottleServiceManager />}
+              {tab === 'addDrinks' && <BottleServiceManager vendorId={staff?.vendor} />}
               {tab === 'categories' && (
                 <div className="space-y-5">
                   {vertical === 'restaurant' && <CategoriesPage kind="menu" />}

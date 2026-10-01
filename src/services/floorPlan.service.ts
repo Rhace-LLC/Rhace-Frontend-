@@ -49,6 +49,14 @@ class FloorPlanService {
     return res.data;
   }
 
+  /** Public (unauthenticated) layout — customer quick-order table picker. */
+  async getPublicLayout(id: string) {
+    const res = await api.get<FloorPlanApiEnvelope<FloorPlanLayoutDto>>(
+      `/floor-plans/${id}/layout/public`
+    );
+    return res.data;
+  }
+
   async update(id: string, input: UpdateFloorPlanInput) {
     const res = await api.patch<FloorPlanApiEnvelope<FloorPlanDto>>(`/floor-plans/${id}`, input);
     return res.data;

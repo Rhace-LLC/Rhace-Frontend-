@@ -17,6 +17,12 @@ interface PrototypeTimelineViewProps {
   planId?: string;
 }
 
+const DAY_MS = 1000 * 60 * 60 * 24;
+/** Timeline data window: the backend defaults to [now, now+3h], which hides
+ * everything outside the next few hours — including all past reservations. */
+const TIMELINE_PAST_DAYS = 90;
+const TIMELINE_FUTURE_DAYS = 90;
+
 /** Standalone Reservation Calendar / Grand Timeline page. */
 export function PrototypeTimelineView({ plugin, planId: preferredPlanId }: PrototypeTimelineViewProps) {
   const vertical = plugin.id as Vertical;
@@ -46,7 +52,14 @@ export function PrototypeTimelineView({ plugin, planId: preferredPlanId }: Proto
     [plan.entities, vertical, blueprints]
   );
 
-  const timelineQuery = useFloorPlanTimeline(planId);
+  const timelineWindow = useMemo(() => {
+    const now = Date.now();
+    return {
+      start: new Date(now - TIMELINE_PAST_DAYS * DAY_MS).toISOString(),
+      end: new Date(now + TIMELINE_FUTURE_DAYS * DAY_MS).toISOString(),
+    };
+  }, []);
+  const timelineQuery = useFloorPlanTimeline(planId, timelineWindow);
   const reservations = useMemo(
     () => (timelineQuery.data?.reservations ?? []).map(toDomainReservation),
     [timelineQuery.data]

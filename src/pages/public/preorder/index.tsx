@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 import { toast } from 'react-toastify';
 import Header from '@/components/user/Header';
@@ -5,10 +6,11 @@ import Footer from '@/navigation/user_layout/_sub_component/Footer';
 import { useMyReservation } from '@/features/reservations';
 import {
   OrderBuilder,
+  OrderPaymentChoiceModal,
   money,
   useCreateOrder,
   useOrderByReservation,
-  useOrderIntent,
+  type OrderDto,
 } from '@/features/orders';
 import type { CreateOrderLineInput } from '@/features/orders';
 
@@ -22,7 +24,7 @@ const PreOrderPage = () => {
   const existingOrder = orderQuery.data;
 
   const createOrder = useCreateOrder();
-  const orderIntent = useOrderIntent();
+  const [payOrder, setPayOrder] = useState<OrderDto | null>(null);
 
   const handleSubmit = async (lines: CreateOrderLineInput[]) => {
     if (!reservation || !lines.length) return;
@@ -38,13 +40,7 @@ const PreOrderPage = () => {
         idempotencyKey: crypto.randomUUID(),
         lines,
       });
-      const intent = await orderIntent.mutateAsync(order._id);
-      if (intent?.authorization_url) {
-        window.location.href = intent.authorization_url;
-        return;
-      }
-      toast.success('Pre-order placed');
-      navigate('/bookings');
+      setPayOrder(order);
     } catch (error) {
       const message =
         (error as { response?: { data?: { message?: string } } })?.response?.data?.message ||
@@ -53,28 +49,18 @@ const PreOrderPage = () => {
     }
   };
 
-  const handlePayExisting = async () => {
-    if (!existingOrder) return;
-    try {
-      const intent = await orderIntent.mutateAsync(existingOrder._id);
-      if (intent?.authorization_url) window.location.href = intent.authorization_url;
-    } catch (error) {
-      const message =
-        (error as { response?: { data?: { message?: string; paystackError?: string } } })?.response
-          ?.data?.paystackError ||
-        (error as { response?: { data?: { message?: string } } })?.response?.data?.message ||
-        'Could not start payment.';
-      toast.error(message);
-    }
+  const handlePaidAtVenue = () => {
+    setPayOrder(null);
+    toast.success('Pre-order placed — you can settle it at the venue.');
+    navigate('/bookings');
   };
 
   const isClub = reservation?.vertical === 'club';
 
   return (
     <div className="min-h-screen bg-res-surface">
-      <div className="hidden md:block">
-        <Header />
-      </div>
+      <Header />
+      <div aria-hidden className="h-[96px] md:hidden" />
       <main className="mx-auto mb-[140px] max-w-5xl space-y-5 px-4 pt-4 pb-8 md:mt-[85px] md:mb-8 md:px-6 md:py-8 lg:px-8">
         <div>
           <Link
@@ -144,7 +130,7 @@ const PreOrderPage = () => {
             {existingOrder.balance > 0 && (
               <button
                 type="button"
-                onClick={handlePayExisting}
+                onClick={() => setPayOrder(existingOrder)}
                 className="type-res-body mt-4 w-full cursor-pointer rounded-full bg-res-brand px-4 py-3 font-semibold text-res-ink-inverted shadow-res-low transition-colors hover:bg-res-brand-hover"
               >
                 Pay {money(existingOrder.balance)} now
@@ -152,19 +138,24 @@ const PreOrderPage = () => {
             )}
           </section>
         ) : (
-          <OrderBuilder
-            vendorId={reservation.vendor}
-            vertical={reservation.vertical}
-            depositCredit={reservation.group?.minimumDeposit ?? reservation.amount ?? 0}
-            submitLabel="Place pre-order"
-            submitting={createOrder.isPending || orderIntent.isPending}
-            onSubmit={handleSubmit}
-          />
+            <OrderBuilder
+              vendorId={reservation.vendor}
+              vertical={reservation.vertical}
+              depositCredit={reservation.group?.minimumDeposit ?? reservation.amount ?? 0}
+              submitLabel="Place pre-order"
+              submitting={createOrder.isPending}
+              onSubmit={handleSubmit}
+            />
         )}
       </main>
       <div className="hidden md:block">
         <Footer />
       </div>
+      <OrderPaymentChoiceModal
+        order={payOrder}
+        onClose={() => setPayOrder(null)}
+        onPaidAtVenue={handlePaidAtVenue}
+      />
     </div>
   );
 };

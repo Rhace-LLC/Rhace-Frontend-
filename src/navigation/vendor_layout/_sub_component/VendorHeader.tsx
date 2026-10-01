@@ -1,5 +1,6 @@
-import { Bell, ChevronDown, Menu, User } from 'lucide-react';
+import { ChevronDown, Menu, User } from 'lucide-react';
 import { LogOut, Settings, User as UserIcon } from 'lucide-react';
+import { NotificationBell } from '@/components/notifications/NotificationBell';
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -53,11 +54,7 @@ const Header = ({ onMenuClick }: HeaderProps) => {
 
       {/* Right side items */}
       <div className="ml-auto flex items-center space-x-4">
-        {/* Notifications */}
-        <button className="relative p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
-          <Bell className="w-6 h-6" />
-          <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-        </button>
+        <NotificationBell />
 
         {/* User profile dropdown */}
         <div className="relative">

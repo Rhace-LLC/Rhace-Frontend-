@@ -57,7 +57,17 @@ function overlapsWindow(reservation: Reservation, startMs: number, endMs: number
   return new Date(reservation.start).getTime() < endMs && new Date(reservation.end).getTime() > startMs;
 }
 
+/** "T1" → "Table T1" / "Room 101"; leaves labels that already carry it alone. */
+function unitDisplayLabel(unit: PhysicalUnit, vertical: Vertical): string {
+  const raw = unit.label?.trim() || unit.id;
+  if (vertical === 'hotel') {
+    return /^room\b/i.test(raw) ? raw : `Room ${raw}`;
+  }
+  return /^table\b/i.test(raw) ? raw : `Table ${raw}`;
+}
+
 export function GrandTimeline({
+  vertical,
   blueprints,
   units,
   reservations,
@@ -254,7 +264,7 @@ export function GrandTimeline({
                         }`}
                       >
                         <div className="flex w-44 shrink-0 items-center gap-2 border-r border-gray-200 px-3 py-2 text-xs text-gray-700">
-                          <span className="truncate">{unit.label}</span>
+                          <span className="truncate">{unitDisplayLabel(unit, vertical)}</span>
                           {isLocked(unit.id) && <LockBadge compact />}
                         </div>
                         <div className="relative grid flex-1 grid-cols-[repeat(24,minmax(0,1fr))]">

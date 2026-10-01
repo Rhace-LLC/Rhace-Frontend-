@@ -142,7 +142,7 @@ export default function StaffWorkspace() {
 
   if (station) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-5">
         <TicketBoard
           title={station.title}
           itemTypes={station.itemTypes}
