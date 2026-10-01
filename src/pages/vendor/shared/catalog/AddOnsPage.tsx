@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import DashboardPageHeader from '@/components/dashboard/DashboardPageHeader';
+import { Modal } from '@/components/others/RhaceModal';
 import { addOnService, type AddOnDto, type AddOnTarget } from '@/services/addon.service';
 
-const inputClass =
-  'w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm text-gray-800 focus:border-[#0A6C6D] focus:outline-none';
+const fieldInputClass =
+  'type-res-body w-full rounded-res-sm border border-res-line bg-res-surface px-3 py-2.5 font-normal text-res-ink outline-none placeholder:text-res-ink-muted focus:border-res-brand';
+const fieldLabelClass = 'type-res-small mb-1.5 block font-medium text-res-ink-muted';
 
 interface FormState {
   name: string;
@@ -25,6 +27,7 @@ const emptyForm: FormState = {
 export function AddOnsPage() {
   const [items, setItems] = useState<AddOnDto[]>([]);
   const [loading, setLoading] = useState(true);
+  const [modalOpen, setModalOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<FormState>(emptyForm);
@@ -47,6 +50,29 @@ export function AddOnsPage() {
   const reset = () => {
     setEditingId(null);
     setForm(emptyForm);
+  };
+
+  const openCreate = () => {
+    reset();
+    setModalOpen(true);
+  };
+
+  const openEdit = (addOn: AddOnDto) => {
+    setEditingId(addOn._id);
+    setForm({
+      name: addOn.name,
+      price: String(addOn.price),
+      discountPrice: addOn.discountPrice != null ? String(addOn.discountPrice) : '',
+      minOrderQuantity: String(addOn.minOrderQuantity ?? 1),
+      appliesTo: addOn.appliesTo?.length ? addOn.appliesTo : ['dish', 'drink'],
+    });
+    setModalOpen(true);
+  };
+
+  const closeModal = () => {
+    if (saving) return;
+    setModalOpen(false);
+    reset();
   };
 
   const toggleTarget = (target: AddOnTarget) => {
@@ -76,6 +102,7 @@ export function AddOnsPage() {
         await addOnService.create(payload);
         toast.success('Add-on created');
       }
+      setModalOpen(false);
       reset();
       await load();
     } catch (error) {
@@ -88,16 +115,7 @@ export function AddOnsPage() {
     }
   };
 
-  const startEdit = (addOn: AddOnDto) => {
-    setEditingId(addOn._id);
-    setForm({
-      name: addOn.name,
-      price: String(addOn.price),
-      discountPrice: addOn.discountPrice != null ? String(addOn.discountPrice) : '',
-      minOrderQuantity: String(addOn.minOrderQuantity ?? 1),
-      appliesTo: addOn.appliesTo?.length ? addOn.appliesTo : ['dish', 'drink'],
-    });
-  };
+
 
   const remove = async (addOn: AddOnDto) => {
     try {
@@ -114,87 +132,16 @@ export function AddOnsPage() {
       <DashboardPageHeader
         title="Add-ons"
         subtitle="Extras guests can attach to dishes and drinks (e.g. sparklers, ice buckets, sides)."
-      />
-
-      <div className="grid gap-3 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm md:grid-cols-4">
-        <label className="flex flex-col gap-1 text-xs text-gray-500 md:col-span-2">
-          Name
-          <input
-            value={form.name}
-            onChange={(e) => setForm({ ...form, name: e.target.value })}
-            placeholder="e.g. Sparkler Show"
-            className={inputClass}
-          />
-        </label>
-        <label className="flex flex-col gap-1 text-xs text-gray-500">
-          Price (₦)
-          <input
-            type="number"
-            min={0}
-            value={form.price}
-            onChange={(e) => setForm({ ...form, price: e.target.value })}
-            className={inputClass}
-          />
-        </label>
-        <label className="flex flex-col gap-1 text-xs text-gray-500">
-          Discount price (₦)
-          <input
-            type="number"
-            min={0}
-            value={form.discountPrice}
-            onChange={(e) => setForm({ ...form, discountPrice: e.target.value })}
-            className={inputClass}
-          />
-        </label>
-        <label className="flex flex-col gap-1 text-xs text-gray-500">
-          Min order qty
-          <input
-            type="number"
-            min={1}
-            value={form.minOrderQuantity}
-            onChange={(e) => setForm({ ...form, minOrderQuantity: e.target.value })}
-            className={inputClass}
-          />
-        </label>
-        <div className="flex flex-col gap-1 text-xs text-gray-500 md:col-span-2">
-          Applies to
-          <div className="flex gap-2">
-            {(['dish', 'drink'] as AddOnTarget[]).map((target) => (
-              <button
-                key={target}
-                type="button"
-                onClick={() => toggleTarget(target)}
-                className={`rounded-full border px-3 py-1 text-[11px] font-medium capitalize transition-colors ${
-                  form.appliesTo.includes(target)
-                    ? 'border-[#0A6C6D] bg-[#0A6C6D]/5 text-[#0A6C6D]'
-                    : 'border-gray-200 text-gray-600 hover:border-gray-300'
-                }`}
-              >
-                {target}s
-              </button>
-            ))}
-          </div>
-        </div>
-        <div className="flex items-end gap-2">
+        actions={
           <button
             type="button"
-            onClick={handleSave}
-            disabled={saving || !form.name.trim() || form.price === ''}
-            className="w-full rounded-xl bg-[#0A6C6D] px-4 py-2 text-sm font-medium text-white hover:bg-[#0A6C6D]/90 disabled:opacity-50"
+            onClick={openCreate}
+            className="type-res-small cursor-pointer rounded-full bg-res-brand px-4 py-2.5 font-semibold text-res-ink-inverted shadow-res-low transition-colors hover:bg-res-brand-hover"
           >
-            {editingId ? 'Save' : 'Add add-on'}
+            Add add-on
           </button>
-          {editingId && (
-            <button
-              type="button"
-              onClick={reset}
-              className="rounded-xl border border-gray-200 px-3 py-2 text-sm text-gray-600 hover:bg-gray-50"
-            >
-              Cancel
-            </button>
-          )}
-        </div>
-      </div>
+        }
+      />
 
       {loading ? (
         <div className="space-y-2">
@@ -226,14 +173,14 @@ export function AddOnsPage() {
                     {(addOn.appliesTo ?? ['dish', 'drink']).join(' · ')}
                   </td>
                   <td className="px-4 py-3">
-                    <div className="flex justify-end gap-2">
-                      <button
-                        type="button"
-                        onClick={() => startEdit(addOn)}
-                        className="rounded-lg border border-gray-200 px-2.5 py-1 text-[11px] font-medium text-gray-700 hover:border-[#0A6C6D] hover:text-[#0A6C6D]"
-                      >
-                        Edit
-                      </button>
+                      <div className="flex justify-end gap-2">
+                        <button
+                          type="button"
+                          onClick={() => openEdit(addOn)}
+                          className="rounded-lg border border-gray-200 px-2.5 py-1 text-[11px] font-medium text-gray-700 hover:border-[#0A6C6D] hover:text-[#0A6C6D]"
+                        >
+                          Edit
+                        </button>
                       <button
                         type="button"
                         onClick={() => remove(addOn)}
@@ -248,6 +195,114 @@ export function AddOnsPage() {
             </tbody>
           </table>
         </div>
+      )}
+
+      {modalOpen && (
+        <Modal
+          isOpen
+          onClose={closeModal}
+          title={editingId ? 'Edit add-on' : 'Add add-on'}
+          subtitle="Extras guests can attach to dishes and drinks."
+          footer={
+            <>
+              <button
+                type="button"
+                onClick={closeModal}
+                disabled={saving}
+                className="type-res-small cursor-pointer rounded-full border border-res-line bg-res-card px-4 py-2.5 font-semibold text-res-ink hover:text-res-brand disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleSave}
+                disabled={saving || !form.name.trim() || form.price === ''}
+                className="type-res-small cursor-pointer rounded-full bg-res-brand px-5 py-2.5 font-semibold text-res-ink-inverted shadow-res-low transition-colors hover:bg-res-brand-hover disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {saving ? 'Saving…' : editingId ? 'Save changes' : 'Add add-on'}
+              </button>
+            </>
+          }
+        >
+          <div className="space-y-4">
+            <div>
+              <label className={fieldLabelClass} htmlFor="addon-name">
+                Name
+              </label>
+              <input
+                id="addon-name"
+                value={form.name}
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
+                placeholder="e.g. Sparkler Show"
+                className={fieldInputClass}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className={fieldLabelClass} htmlFor="addon-price">
+                  Price (₦)
+                </label>
+                <input
+                  id="addon-price"
+                  type="number"
+                  min={0}
+                  value={form.price}
+                  onChange={(e) => setForm({ ...form, price: e.target.value })}
+                  className={fieldInputClass}
+                />
+              </div>
+              <div>
+                <label className={fieldLabelClass} htmlFor="addon-discount-price">
+                  Discount price (₦)
+                </label>
+                <input
+                  id="addon-discount-price"
+                  type="number"
+                  min={0}
+                  value={form.discountPrice}
+                  onChange={(e) => setForm({ ...form, discountPrice: e.target.value })}
+                  className={fieldInputClass}
+                />
+              </div>
+            </div>
+            <div>
+              <label className={fieldLabelClass} htmlFor="addon-min-qty">
+                Min order qty
+              </label>
+              <input
+                id="addon-min-qty"
+                type="number"
+                min={1}
+                value={form.minOrderQuantity}
+                onChange={(e) => setForm({ ...form, minOrderQuantity: e.target.value })}
+                className={fieldInputClass}
+              />
+            </div>
+            <div>
+              <span className={fieldLabelClass}>Applies to</span>
+              <div className="flex gap-2">
+                {(['dish', 'drink'] as AddOnTarget[]).map((target) => {
+                  const active = form.appliesTo.includes(target);
+                  return (
+                    <button
+                      key={target}
+                      type="button"
+                      onClick={() => toggleTarget(target)}
+                      aria-pressed={active}
+                      className={`type-res-small cursor-pointer rounded-full px-4 py-2 font-semibold capitalize transition-all outline-none focus-visible:ring-2 focus-visible:ring-res-brand ${
+                        active
+                          ? 'bg-res-brand text-res-ink-inverted shadow-res-low'
+                          : 'bg-res-surface text-res-ink-muted hover:text-res-ink'
+                      }`}
+                    >
+                      {target}s
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </Modal>
       )}
     </div>
   );

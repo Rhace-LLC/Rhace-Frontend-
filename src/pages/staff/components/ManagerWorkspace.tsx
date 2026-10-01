@@ -242,6 +242,7 @@ export default function ManagerWorkspace() {
               {tab === 'drinks' && (
                 <DrinksTable
                   vendorId={staff?.vendor}
+                  vertical={vertical === 'restaurant' ? 'restaurant' : 'club'}
                   onAddBottleSet={
                     vertical === 'club' ? () => openTab('addDrinks') : undefined
                   }
