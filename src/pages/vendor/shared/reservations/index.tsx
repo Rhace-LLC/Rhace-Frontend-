@@ -16,6 +16,7 @@ import {
   useReservations,
 } from '@/features/reservations';
 import type { ReservationFilterParams, ReservationView } from '@/features/reservations';
+import DashboardPageHeader from '@/components/dashboard/DashboardPageHeader';
 import RecordOfflinePaymentModal from '@/pages/vendor/shared/payments/RecordOfflinePayment';
 
 type Vertical = 'hotel' | 'club' | 'restaurant';
@@ -104,20 +105,18 @@ export function VendorReservationsPage({ vertical }: { vertical: Vertical }) {
 
   return (
     <div className="space-y-5 p-4 md:p-6">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 className="type-res-h2 text-res-ink">{TITLE[vertical]}</h1>
-          <p className="type-res-body mt-1 font-normal text-res-ink-muted">
-            Manage check-ins, payments and cancellations.
-          </p>
-        </div>
-        <Link
-          to={TIMELINE_PATH[vertical]}
-          className="type-res-small rounded-full bg-res-card px-4 py-2.5 font-semibold text-res-ink shadow-res-low transition-all hover:text-res-brand hover:shadow-res-medium"
-        >
-          View timeline
-        </Link>
-      </div>
+      <DashboardPageHeader
+        title={TITLE[vertical]}
+        subtitle="Manage check-ins, payments and cancellations."
+        actions={
+          <Link
+            to={TIMELINE_PATH[vertical]}
+            className="type-res-small rounded-full bg-res-card px-4 py-2.5 font-semibold text-res-ink shadow-res-low transition-all hover:text-res-brand hover:shadow-res-medium"
+          >
+            View timeline
+          </Link>
+        }
+      />
 
       <ReservationStatCards counters={countersQuery.data} loading={countersQuery.isLoading} />
 

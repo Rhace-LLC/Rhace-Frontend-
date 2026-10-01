@@ -5,6 +5,7 @@ import {
   Flag,
   MapPinned,
   MoreVertical,
+  Plus,
   RefreshCw,
   ShoppingBag,
   Trash2,
@@ -31,7 +32,14 @@ import MyStationsCard from './MyStationsCard';
 
 const todayKey = () => new Date().toISOString().slice(0, 10);
 
-const ACTIVE_STATUSES = new Set(['open', 'placed', 'preparing', 'ready', 'served']);
+const ACTIVE_STATUSES = new Set([
+  'open',
+  'awaiting_confirmation',
+  'placed',
+  'preparing',
+  'ready',
+  'served',
+]);
 
 const TABLE_POLL_MS = 30_000;
 
@@ -47,12 +55,24 @@ const stateChip = (state: string) => {
 
 const ORDER_STATUS_STYLE: Record<string, string> = {
   open: 'bg-res-surface text-res-ink-muted',
+  awaiting_confirmation: 'bg-amber-50 text-amber-700',
   placed: 'bg-res-secondary text-res-brand',
   preparing: 'bg-res-brand text-res-ink-inverted',
   ready: 'bg-amber-50 text-amber-700',
   served: 'bg-res-secondary text-res-brand',
   completed: 'bg-res-surface text-res-ink-muted',
   cancelled: 'bg-res-surface text-res-ink-muted line-through',
+};
+
+const ORDER_STATUS_LABEL: Record<string, string> = {
+  open: 'Open',
+  awaiting_confirmation: 'Awaiting confirmation',
+  placed: 'Placed',
+  preparing: 'Preparing',
+  ready: 'Ready',
+  served: 'Served',
+  completed: 'Completed',
+  cancelled: 'Cancelled',
 };
 
 const SOURCE_LABEL: Record<string, string> = {
@@ -83,7 +103,7 @@ const formatAge = (minutes: number): string => {
 /** Unprocessed orders older than a day — likely no-shows, duplicates, misfires. */
 const STALE_MINUTES = 24 * 60;
 const isStaleOrder = (order: OrderDto): boolean =>
-  ['open', 'placed', 'preparing'].includes(order.status) &&
+  ['open', 'awaiting_confirmation', 'placed', 'preparing'].includes(order.status) &&
   ageMinutes(order.createdAt) >= STALE_MINUTES;
 
 export default function WaiterWorkspace() {
@@ -101,6 +121,9 @@ export default function WaiterWorkspace() {
   const [tableRefreshKey, setTableRefreshKey] = useState(0);
 
   const [payOrder, setPayOrder] = useState<OrderDto | null>(null);
+  const [confirmTarget, setConfirmTarget] = useState<OrderDto | null>(null);
+  const [addTarget, setAddTarget] = useState<OrderDto | null>(null);
+  const [addingBusy, setAddingBusy] = useState(false);
 
   // Order pad
   const [padOpen, setPadOpen] = useState(false);
@@ -236,8 +259,11 @@ export default function WaiterWorkspace() {
   );
   const visibleOrders = orderTab === 'active' ? activeOrders : completedOrders;
 
-  /** Waiter handoff: ready -> served at the table, served -> completed on exit. */
-  const advanceOrder = async (order: OrderDto, next: 'served' | 'completed') => {
+  /**
+   * Waiter handoff: confirm a table order (-> placed, kitchen sees it),
+   * ready -> served at the table, served -> completed on exit.
+   */
+  const advanceOrder = async (order: OrderDto, next: 'placed' | 'served' | 'completed') => {
     try {
       setUpdatingOrderId(order._id);
       const updated = await ordersApi.updateStatus(order._id, next);
@@ -245,7 +271,13 @@ export default function WaiterWorkspace() {
         prev.map((o) => (o._id === order._id ? { ...o, ...updated } : o));
       setOrders(apply);
       setVenueOrders(apply);
-      toast.success(next === 'served' ? 'Order marked as served' : 'Order completed');
+      toast.success(
+        next === 'placed'
+          ? 'Order confirmed — sent to the kitchen'
+          : next === 'served'
+            ? 'Order marked as served'
+            : 'Order completed',
+      );
     } catch {
       toast.error('Failed to update order');
     } finally {
@@ -337,6 +369,26 @@ export default function WaiterWorkspace() {
       toast.error(message || 'Failed to place the order');
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  /** Extra rounds on an existing order: totals recompute and the balance grows. */
+  const handleAddLines = async (lines: CreateOrderLineInput[]) => {
+    if (!addTarget || !lines.length) return;
+    try {
+      setAddingBusy(true);
+      for (const line of lines) {
+        await ordersApi.addLine(addTarget._id, line);
+      }
+      toast.success('Items added to the order');
+      setAddTarget(null);
+      setTableRefreshKey((k) => k + 1);
+    } catch (error) {
+      const message = (error as { response?: { data?: { message?: string } } })?.response?.data
+        ?.message;
+      toast.error(message || 'Failed to add items');
+    } finally {
+      setAddingBusy(false);
     }
   };
 
@@ -554,9 +606,9 @@ export default function WaiterWorkspace() {
                         </td>
                         <td className="px-4 py-3 whitespace-nowrap">
                           <span
-                            className={`type-res-small inline-flex items-center rounded-full px-2.5 py-1 font-semibold whitespace-nowrap capitalize ${ORDER_STATUS_STYLE[order.status] ?? 'bg-res-surface text-res-ink-muted'}`}
+                            className={`type-res-small inline-flex items-center rounded-full px-2.5 py-1 font-semibold whitespace-nowrap ${ORDER_STATUS_STYLE[order.status] ?? 'bg-res-surface text-res-ink-muted'}`}
                           >
-                            {order.status}
+                            {ORDER_STATUS_LABEL[order.status] ?? order.status}
                           </span>
                         </td>
                         <td className="px-4 py-3 text-right">
@@ -592,6 +644,20 @@ export default function WaiterWorkspace() {
                                 style={{ top: menuPos.top, left: menuPos.left }}
                                 className="fixed z-50 w-56 rounded-res-md border border-res-line bg-res-card p-1.5 text-left shadow-res-high"
                               >
+                                {order.status === 'awaiting_confirmation' && (
+                                  <button
+                                    type="button"
+                                    role="menuitem"
+                                    onClick={() => {
+                                      setOpenMenuId(null);
+                                      setConfirmTarget(order);
+                                    }}
+                                    className="type-res-small flex w-full cursor-pointer items-center gap-2.5 rounded-res-sm px-3 py-2.5 font-semibold text-res-ink transition-colors outline-none hover:bg-res-surface focus-visible:ring-2 focus-visible:ring-res-brand"
+                                  >
+                                    <Check className="h-4 w-4 text-res-brand" />
+                                    Confirm order
+                                  </button>
+                                )}
                                 {order.status === 'ready' && (
                                   <button
                                     type="button"
@@ -636,6 +702,22 @@ export default function WaiterWorkspace() {
                                     Record payment
                                   </button>
                                 )}
+                                {orderTab === 'active' &&
+                                  !['completed', 'cancelled'].includes(order.status) && (
+                                    <button
+                                      type="button"
+                                      role="menuitem"
+                                      title="Add more items to this order"
+                                      onClick={() => {
+                                        setOpenMenuId(null);
+                                        setAddTarget(order);
+                                      }}
+                                      className="type-res-small flex w-full cursor-pointer items-center gap-2.5 rounded-res-sm px-3 py-2.5 font-semibold text-res-ink transition-colors outline-none hover:bg-res-surface focus-visible:ring-2 focus-visible:ring-res-brand"
+                                    >
+                                      <Plus className="h-4 w-4 text-res-brand" />
+                                      Add items
+                                    </button>
+                                  )}
                                 {orderTab === 'active' && order.status !== 'completed' && (
                                   <button
                                     type="button"
@@ -719,6 +801,79 @@ export default function WaiterWorkspace() {
         </div>
       </section>
 
+      {confirmTarget &&
+        (() => {
+          const lines = confirmTarget.lines ?? [];
+          const itemCount = lines.reduce((sum, l) => sum + (l.quantity ?? 0), 0);
+          const confirming = updatingOrderId === confirmTarget._id;
+          return (
+            <Modal
+              isOpen
+              onClose={() => !confirming && setConfirmTarget(null)}
+              title={`Confirm order — ${unitLabel(confirmTarget.unitId)}`}
+              subtitle={`${confirmTarget.guestName || 'Guest'} · Placed ${formatPlacedAt(confirmTarget.createdAt)}`}
+              footer={
+                <>
+                  <button
+                    type="button"
+                    onClick={() => setConfirmTarget(null)}
+                    disabled={confirming}
+                    className="type-res-small cursor-pointer rounded-full border border-res-line bg-res-card px-4 py-2.5 font-semibold text-res-ink hover:text-res-brand disabled:opacity-50"
+                  >
+                    Not now
+                  </button>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      await advanceOrder(confirmTarget, 'placed');
+                      setConfirmTarget(null);
+                    }}
+                    disabled={confirming}
+                    className="type-res-small cursor-pointer rounded-full bg-res-brand px-5 py-2.5 font-semibold text-res-ink-inverted shadow-res-low transition-colors hover:bg-res-brand-hover disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {confirming ? 'Confirming…' : 'Confirm order'}
+                  </button>
+                </>
+              }
+            >
+              <div className="space-y-3">
+                <p className="type-res-small font-normal text-res-ink-muted">
+                  Verify the table and items with the guest — confirming sends this
+                  order straight to the kitchen queue.
+                </p>
+                {lines.length > 0 && (
+                  <ul className="rounded-res-md bg-res-surface p-3">
+                    {lines.map((line) => (
+                      <li
+                        key={line._id}
+                        className="type-res-body flex justify-between gap-2 border-b border-res-line py-2 font-normal text-res-ink last:border-0 last:pb-0 first:pt-0"
+                      >
+                        <span className="min-w-0">
+                          <span className="font-semibold">{line.quantity} × </span>
+                          {line.name}
+                        </span>
+                        <span className="shrink-0 font-semibold">{money(line.lineTotal)}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                <div className="flex items-center justify-between border-t border-res-line pt-3">
+                  <span className="type-res-small font-medium text-res-ink-muted">
+                    {itemCount} item{itemCount === 1 ? '' : 's'} · Total
+                  </span>
+                  <span className="type-res-h3 text-res-ink">{money(confirmTarget.total)}</span>
+                </div>
+                {confirmTarget.balance > 0 && (
+                  <p className="type-res-small font-medium text-res-brand">
+                    {money(confirmTarget.balance)} still to pay — collect it or record it
+                    after confirming.
+                  </p>
+                )}
+              </div>
+            </Modal>
+          );
+        })()}
+
       {cancelTarget && (
         <Modal
           isOpen
@@ -793,6 +948,23 @@ export default function WaiterWorkspace() {
             submitLabel={`Place order for ${padUnit?.label ?? 'table'}`}
             submitting={submitting || createOrder.isPending}
             onSubmit={handleSubmit}
+          />
+        </Modal>
+      )}
+
+      {addTarget && (
+        <Modal
+          isOpen
+          onClose={() => !addingBusy && setAddTarget(null)}
+          title={`Add to order — ${addTarget.guestName || 'Guest'}`}
+          subtitle={`${unitLabel(addTarget.unitId)} · totals update and the balance grows`}
+        >
+          <OrderBuilder
+            vendorId={addTarget.vendor}
+            vertical={addTarget.vertical ?? vertical}
+            submitLabel="Add to order"
+            submitting={addingBusy}
+            onSubmit={handleAddLines}
           />
         </Modal>
       )}

@@ -1,12 +1,11 @@
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
+import DashboardPageHeader from '@/components/dashboard/DashboardPageHeader';
+import { Modal } from '@/components/others/RhaceModal';
 import { menuCategoryService, type CategoryDto } from '@/services/menuCategory.service';
 import { drinkCategoryService } from '@/services/drinkCategory.service';
 
 type Kind = 'menu' | 'drink';
-
-const inputClass =
-  'w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm text-gray-800 focus:border-[#0A6C6D] focus:outline-none';
 
 const serviceFor = (kind: Kind) =>
   kind === 'menu' ? menuCategoryService : drinkCategoryService;
@@ -20,7 +19,9 @@ export function CategoriesPage({ kind }: { kind: Kind }) {
   const service = serviceFor(kind);
   const [items, setItems] = useState<CategoryDto[]>([]);
   const [loading, setLoading] = useState(true);
+  const [modalOpen, setModalOpen] = useState(false);
   const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
   const [order, setOrder] = useState('0');
   const [saving, setSaving] = useState(false);
   const [editing, setEditing] = useState<CategoryDto | null>(null);
@@ -44,7 +45,27 @@ export function CategoriesPage({ kind }: { kind: Kind }) {
   const reset = () => {
     setEditing(null);
     setName('');
+    setDescription('');
     setOrder('0');
+  };
+
+  const openCreate = () => {
+    reset();
+    setModalOpen(true);
+  };
+
+  const openEdit = (category: CategoryDto) => {
+    setEditing(category);
+    setName(category.name);
+    setDescription(category.description ?? '');
+    setOrder(String(category.order ?? 0));
+    setModalOpen(true);
+  };
+
+  const closeModal = () => {
+    if (saving) return;
+    setModalOpen(false);
+    reset();
   };
 
   const handleSave = async () => {
@@ -52,12 +73,21 @@ export function CategoriesPage({ kind }: { kind: Kind }) {
     setSaving(true);
     try {
       if (editing) {
-        await service.update(editing._id, { name: name.trim(), order: Number(order) || 0 });
+        await service.update(editing._id, {
+          name: name.trim(),
+          description: description.trim(),
+          order: Number(order) || 0,
+        });
         toast.success('Category updated');
       } else {
-        await service.create({ name: name.trim(), order: Number(order) || 0 });
+        await service.create({
+          name: name.trim(),
+          description: description.trim(),
+          order: Number(order) || 0,
+        });
         toast.success('Category created');
       }
+      setModalOpen(false);
       reset();
       await load();
     } catch (error) {
@@ -68,12 +98,6 @@ export function CategoriesPage({ kind }: { kind: Kind }) {
     } finally {
       setSaving(false);
     }
-  };
-
-  const startEdit = (category: CategoryDto) => {
-    setEditing(category);
-    setName(category.name);
-    setOrder(String(category.order ?? 0));
   };
 
   const toggleActive = async (category: CategoryDto) => {
@@ -97,50 +121,19 @@ export function CategoriesPage({ kind }: { kind: Kind }) {
 
   return (
     <div className="space-y-5 p-4 md:p-6">
-      <div>
-        <h1 className="text-xl font-semibold text-gray-900">{COPY[kind].title}</h1>
-        <p className="mt-1 text-sm text-gray-500">
-          Group your items so guests can browse them easily.
-        </p>
-      </div>
-
-      <div className="flex flex-wrap items-end gap-3 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
-        <label className="flex min-w-[220px] flex-1 flex-col gap-1 text-xs text-gray-500">
-          Name
-          <input
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder={`e.g. ${kind === 'drink' ? 'Cocktails' : 'Starters'}`}
-            className={inputClass}
-          />
-        </label>
-        <label className="flex w-24 flex-col gap-1 text-xs text-gray-500">
-          Order
-          <input
-            type="number"
-            value={order}
-            onChange={(e) => setOrder(e.target.value)}
-            className={inputClass}
-          />
-        </label>
-        <button
-          type="button"
-          onClick={handleSave}
-          disabled={saving || !name.trim()}
-          className="rounded-xl bg-[#0A6C6D] px-4 py-2 text-sm font-medium text-white hover:bg-[#0A6C6D]/90 disabled:opacity-50"
-        >
-          {editing ? 'Save changes' : `Add ${COPY[kind].singular}`}
-        </button>
-        {editing && (
+      <DashboardPageHeader
+        title={COPY[kind].title}
+        subtitle="Group your items so guests can browse them easily."
+        actions={
           <button
             type="button"
-            onClick={reset}
-            className="rounded-xl border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50"
+            onClick={openCreate}
+            className="type-res-small cursor-pointer rounded-full bg-res-brand px-4 py-2.5 font-semibold text-res-ink-inverted shadow-res-low transition-colors hover:bg-res-brand-hover"
           >
-            Cancel
+            {`Add ${COPY[kind].singular}`}
           </button>
-        )}
-      </div>
+        }
+      />
 
       {loading ? (
         <div className="space-y-2">
@@ -156,9 +149,14 @@ export function CategoriesPage({ kind }: { kind: Kind }) {
         <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
           <table className="w-full text-left text-sm">
             <thead>
-              <tr className="border-b border-gray-100 text-xs uppercase tracking-wide text-gray-400">
-                <th className="px-4 py-3 font-medium">Name</th>
-                <th className="px-4 py-3 font-medium">Order</th>
+                <tr className="border-b border-gray-100 text-xs uppercase tracking-wide text-gray-400">
+                  <th className="px-4 py-3 font-medium">Name</th>
+                  <th
+                    className="px-4 py-3 font-medium"
+                    title="Display position — lower numbers appear first on the guest menu"
+                  >
+                    Sort order
+                  </th>
                 <th className="px-4 py-3 font-medium">Status</th>
                 <th className="px-4 py-3 text-right font-medium">Actions</th>
               </tr>
@@ -166,7 +164,14 @@ export function CategoriesPage({ kind }: { kind: Kind }) {
             <tbody>
               {items.map((category) => (
                 <tr key={category._id} className="border-b border-gray-50 last:border-0">
-                  <td className="px-4 py-3 font-medium text-gray-900">{category.name}</td>
+                  <td className="px-4 py-3">
+                    <p className="font-medium text-gray-900">{category.name}</p>
+                    {category.description && (
+                      <p className="mt-0.5 line-clamp-1 text-xs font-normal text-gray-500">
+                        {category.description}
+                      </p>
+                    )}
+                  </td>
                   <td className="px-4 py-3 text-gray-600">{category.order ?? 0}</td>
                   <td className="px-4 py-3">
                     <button
@@ -182,14 +187,14 @@ export function CategoriesPage({ kind }: { kind: Kind }) {
                     </button>
                   </td>
                   <td className="px-4 py-3">
-                    <div className="flex justify-end gap-2">
-                      <button
-                        type="button"
-                        onClick={() => startEdit(category)}
-                        className="rounded-lg border border-gray-200 px-2.5 py-1 text-[11px] font-medium text-gray-700 hover:border-[#0A6C6D] hover:text-[#0A6C6D]"
-                      >
-                        Edit
-                      </button>
+                      <div className="flex justify-end gap-2">
+                        <button
+                          type="button"
+                          onClick={() => openEdit(category)}
+                          className="rounded-lg border border-gray-200 px-2.5 py-1 text-[11px] font-medium text-gray-700 hover:border-[#0A6C6D] hover:text-[#0A6C6D]"
+                        >
+                          Edit
+                        </button>
                       <button
                         type="button"
                         onClick={() => remove(category)}
@@ -204,6 +209,90 @@ export function CategoriesPage({ kind }: { kind: Kind }) {
             </tbody>
           </table>
         </div>
+      )}
+
+      {modalOpen && (
+        <Modal
+          isOpen
+          onClose={closeModal}
+          title={editing ? `Edit ${COPY[kind].singular}` : `Add ${COPY[kind].singular}`}
+          subtitle={
+            kind === 'drink'
+              ? 'Group drinks so guests can browse them easily.'
+              : 'Group dishes so guests can browse them easily.'
+          }
+          footer={
+            <>
+              <button
+                type="button"
+                onClick={closeModal}
+                disabled={saving}
+                className="type-res-small cursor-pointer rounded-full border border-res-line bg-res-card px-4 py-2.5 font-semibold text-res-ink hover:text-res-brand disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleSave}
+                disabled={saving || !name.trim()}
+                className="type-res-small cursor-pointer rounded-full bg-res-brand px-5 py-2.5 font-semibold text-res-ink-inverted shadow-res-low transition-colors hover:bg-res-brand-hover disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {saving ? 'Saving…' : editing ? 'Save changes' : `Add ${COPY[kind].singular}`}
+              </button>
+            </>
+          }
+        >
+          <div className="space-y-4">
+            <div>
+              <label
+                className="type-res-small mb-1.5 block font-medium text-res-ink-muted"
+                htmlFor="category-name"
+              >
+                Name
+              </label>
+              <input
+                id="category-name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder={`e.g. ${kind === 'drink' ? 'Cocktails' : 'Starters'}`}
+                className="type-res-body w-full rounded-res-sm border border-res-line bg-res-surface px-3 py-2.5 font-normal text-res-ink outline-none placeholder:text-res-ink-muted focus:border-res-brand"
+              />
+            </div>
+            <div>
+              <label
+                className="type-res-small mb-1.5 block font-medium text-res-ink-muted"
+                htmlFor="category-description"
+              >
+                Description
+              </label>
+              <input
+                id="category-description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder={`e.g. ${kind === 'drink' ? 'Signature pours to start the night' : 'Small plates to start the meal'}`}
+                className="type-res-body w-full rounded-res-sm border border-res-line bg-res-surface px-3 py-2.5 font-normal text-res-ink outline-none placeholder:text-res-ink-muted focus:border-res-brand"
+              />
+            </div>
+            <div>
+              <label
+                className="type-res-small mb-1.5 block font-medium text-res-ink-muted"
+                htmlFor="category-order"
+              >
+                Sort order
+              </label>
+              <input
+                id="category-order"
+                type="number"
+                value={order}
+                onChange={(e) => setOrder(e.target.value)}
+                className="type-res-body w-full rounded-res-sm border border-res-line bg-res-surface px-3 py-2.5 font-normal text-res-ink outline-none placeholder:text-res-ink-muted focus:border-res-brand"
+              />
+              <p className="type-res-small mt-1.5 font-normal text-res-ink-muted">
+                Display position — lower numbers appear first on the guest menu.
+              </p>
+            </div>
+          </div>
+        </Modal>
       )}
     </div>
   );

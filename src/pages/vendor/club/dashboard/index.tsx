@@ -1,4 +1,5 @@
 import { BookingsIcon, GuestsIcon, PendingPaymentIcon, PrepaidIcon } from '@/components/icons/icons';
+import DashboardPageHeader from '@/components/dashboard/DashboardPageHeader';
 
 import UniversalLoader from '@/components/user/ui/LogoLoader';
 import { reservationService } from '@/services/reservation.service';
@@ -164,12 +165,10 @@ const ClubDashboard = () => {
           )}
 
           {/* Header */}
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">
-              Welcome Back, {capitalize(vendor.businessName)}!
-            </h1>
-            <p className="text-gray-600 mt-1">Here's what is happening at your club today.</p>
-          </div>
+          <DashboardPageHeader
+            title={`Welcome Back, ${capitalize(vendor.businessName)}!`}
+            subtitle="Here's what is happening at your club today."
+          />
 
           {/* Stats Grid */}
           <div className="grid grid-cols-1 bg-white md:grid-cols-2 lg:grid-cols-4 gap-4 rounded-lg border border-gray-200">

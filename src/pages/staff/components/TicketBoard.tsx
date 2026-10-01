@@ -23,6 +23,7 @@ const SOURCE_LABEL: Record<string, string> = {
 
 const ORDER_STATUS_STYLE: Record<string, string> = {
   open: 'bg-res-surface text-res-ink-muted',
+  awaiting_confirmation: 'bg-amber-50 text-amber-700',
   placed: 'bg-res-secondary text-res-brand',
   preparing: 'bg-res-brand text-res-ink-inverted',
   ready: 'bg-amber-50 text-amber-700',
@@ -49,7 +50,9 @@ const ageChipClass = (minutes: number) =>
       ? 'bg-amber-50 text-amber-700'
       : 'bg-res-surface text-res-ink-muted';
 
-const isOpenTicket = (status: string) => !['served', 'completed', 'cancelled'].includes(status);
+/** Unconfirmed table orders stay invisible until the waiter confirms them. */
+const isOpenTicket = (status: string) =>
+  !['awaiting_confirmation', 'served', 'completed', 'cancelled'].includes(status);
 
 const lineState = (line: OrderLineDto) => line.prepStatus ?? 'queued';
 

@@ -2,6 +2,7 @@ export type OrderSource = 'reservation' | 'quick_order' | 'pos';
 export type OrderItemType = 'dish' | 'drink' | 'bottle_set';
 export type OrderStatus =
   | 'open'
+  | 'awaiting_confirmation'
   | 'placed'
   | 'preparing'
   | 'ready'

@@ -1,4 +1,5 @@
 import { StatCard } from '@/components/dashboard/stats/mainStats';
+import DashboardPageHeader from '@/components/dashboard/DashboardPageHeader';
 import DashboardButton from '@/components/dashboard/ui/DashboardButton';
 import { Calendar, Cash2, Eye, EyeClose, Group3 } from '@/components/dashboard/ui/svg';
 import { useAuth } from '@/contexts/AuthContext';
@@ -133,24 +134,26 @@ export default function ManageRestaurantTables() {
     <>
       <div className="min-h-screen bg-gray-50 p-2 md:p-6 mb-12">
         <div className="max-w-7xl mx-auto">
-          <div className="md:flex justify-between items-center mb-6">
-            <h2 className="text-[#111827] font-semibold mb-2">Table Management</h2>
-            <div className="grid sm:grid-cols-2 md:grid-cols-2 gap-2 md:gap-6">
-              <DashboardButton
-                onClick={() => setHideTab(!hideTab)}
-                variant="secondary"
-                text={hideTab ? 'Open tabs' : 'Hide tabs'}
-                icon={hideTab ? <Eye /> : <EyeClose />}
-              />
-              <button
-                onClick={() => setShowModal(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-teal-700 text-white rounded-lg hover:bg-teal-800 transition-colors"
-              >
-                <Plus size={18} />
-                <span>Add New Table</span>
-              </button>
-            </div>
-          </div>
+          <DashboardPageHeader
+            title="Table Management"
+            actions={
+              <>
+                <DashboardButton
+                  onClick={() => setHideTab(!hideTab)}
+                  variant="secondary"
+                  text={hideTab ? 'Open tabs' : 'Hide tabs'}
+                  icon={hideTab ? <Eye /> : <EyeClose />}
+                />
+                <button
+                  onClick={() => setShowModal(true)}
+                  className="flex items-center gap-2 px-4 py-2 bg-teal-700 text-white rounded-lg hover:bg-teal-800 transition-colors"
+                >
+                  <Plus size={18} />
+                  <span>Add New Table</span>
+                </button>
+              </>
+            }
+          />
 
           {!hideTab && (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 mb-8 rounded-lg bg-white border border-gray-200 divide-y sm:divide-y-0 sm:divide-x divide-gray-200">

@@ -1,100 +1,81 @@
-
-import React, { useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import DashboardPageHeader from '@/components/dashboard/DashboardPageHeader';
 import DashboardButton from '@/components/dashboard/ui/DashboardButton';
-import {
-  Add,
-  ArrowsRight,
-  Calendar,
-  CardPay,
-  Cash2,
-  CheckCircle,
-  Copy,
-  Export,
-  Eye,
-  Eye2,
-  EyeClose,
-  Filter2,
-  Group3,
-  LayoutGrid,
-  ListCheck3,
-  Pencil,
-  Phone,
-  Printer,
-  XCircle,
-} from '@/components/dashboard/ui/svg';
+import { Add, ArrowsRight, Export } from '@/components/dashboard/ui/svg';
 import { useAuth } from '@/contexts/AuthContext';
-import { StatCard } from '@/components/dashboard/stats/mainStats';
-import {
-  flexRender,
-  getCoreRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
-  useReactTable,
-} from '@tanstack/react-table';
-import type {
-  ColumnDef,
-  ColumnFiltersState,
-  RowSelectionState,
-  SortingState,
-} from '@tanstack/react-table';
-import {
-  ArrowUpDown,
-  Check,
-  ChevronDown,
-  ChevronLeft,
-  ChevronRight,
-  MoreHorizontal,
-  MoreVertical,
-  Search,
-  XIcon,
-} from 'lucide-react';
-
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import type { CheckedState as RadixCheckedState } from '@radix-ui/react-checkbox';
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Input } from '@/components/ui/input';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from '@/components/ui/pagination';
-import { useNavigate } from 'react-router';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ChevronLeft, ChevronRight, Pencil, Search } from 'lucide-react';
+import { useSearchParams } from 'react-router';
 import { menuService } from '@/services/menu.service';
+import { stockService } from '@/services/stock.service';
 import { toast } from 'react-toastify';
-import { Switch } from '@/components/ui/switch';
-import type { RootState } from '@/redux/store';
+import { Modal } from '@/components/others/RhaceModal';
 import UniversalLoader from '@/components/user/ui/LogoLoader';
+import { DishWorkspace } from './components/DishWorkspace';
+import {
+  deleteDishDraft,
+  getDishDraft,
+  listDishDrafts,
+  type DishDraft,
+} from './dishDrafts';
 
-const categories = ['All Menu Items'];
+const PAGE_SIZE = 12;
 
-interface ShowPopupState {
-  display: boolean;
-  details: any;
-  item?: boolean;
+type AvailabilityFilter = 'all' | 'available' | 'unavailable';
+type SortKey = 'newest' | 'name' | 'price-asc' | 'price-desc';
+
+const AVAILABILITY_OPTIONS: { value: AvailabilityFilter; label: string }[] = [
+  { value: 'all', label: 'All availability' },
+  { value: 'available', label: 'Available' },
+  { value: 'unavailable', label: 'Unavailable' },
+];
+
+const SORT_OPTIONS: { value: SortKey; label: string }[] = [
+  { value: 'newest', label: 'Newest first' },
+  { value: 'name', label: 'Name A–Z' },
+  { value: 'price-asc', label: 'Price: low to high' },
+  { value: 'price-desc', label: 'Price: high to low' },
+];
+
+const selectClass =
+  'rounded-res-sm border border-res-line bg-res-card px-3 py-2.5 type-res-body font-normal text-res-ink shadow-res-low outline-none focus:border-res-brand';
+
+const money = (value: unknown) => `₦${Number(value ?? 0).toLocaleString()}`;
+
+interface DishItem {
+  _id: string;
+  name: string;
+  description?: string;
+  price: number;
+  discount?: boolean;
+  discountPrice?: number;
+  coverImage?: string;
+  images?: string[];
+  category?: string;
+  categoryId?: { _id: string; name: string } | string | null;
+  menuType?: string[];
+  mealTimes?: string[];
+  tags?: string[];
+  status?: string;
+  availability?: boolean;
+  addOns?: boolean;
+  addonIds?: unknown[];
 }
+
+const categoryName = (item: DishItem): string => {
+  const fromRef =
+    typeof item.categoryId === 'object' && item.categoryId !== null
+      ? (item.categoryId.name ?? '')
+      : '';
+  return item.category || fromRef || 'Uncategorized';
+};
+
+const isAvailable = (item: DishItem): boolean => item.availability !== false;
+
+const isDeal = (item: DishItem): boolean =>
+  Boolean(item.discount && item.discountPrice && item.discountPrice < item.price);
+
+const sellPrice = (item: DishItem): number =>
+  isDeal(item) ? (item.discountPrice as number) : (item.price ?? 0);
 
 const MenuDashboard = ({
   onCreateItem,
@@ -107,840 +88,656 @@ const MenuDashboard = ({
   /** Staff logins carry no vendor session — pass the venue id explicitly. */
   vendorId?: string;
 } = {}) => {
-  const [sorting, setSorting] = useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>({});
-  const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
-  const [activeCategory, setActiveCategory] = useState('All Menu Items');
-  const [menus, setMenus] = useState<any[]>([]);
-  const [menuItems, setMenuItems] = useState<any[]>([]);
+  const [query, setQuery] = useState('');
+  const [category, setCategory] = useState('all');
+  const [availability, setAvailability] = useState<AvailabilityFilter>('all');
+  const [sort, setSort] = useState<SortKey>('newest');
+  const [page, setPage] = useState(1);
+  const [menuItems, setMenuItems] = useState<DishItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const navigate = useNavigate();
+  const [busyId, setBusyId] = useState<string | null>(null);
+  const [details, setDetails] = useState<DishItem | null>(null);
   const { vendor } = useAuth();
   const vendorId = vendorIdProp ?? vendor?._id;
-  const [showPopup, setShowPopup] = useState<ShowPopupState>({
-    display: false,
-    details: {},
-    item: false,
-  });
+  const [searchParams, setSearchParams] = useSearchParams();
+  const dishParam = searchParams.get('dish');
+  const showingDrafts = searchParams.get('view') === 'drafts';
+  const draftParam = searchParams.get('draft');
+  const [drafts, setDrafts] = useState<DishDraft[]>([]);
 
-  const menuColumns: ColumnDef<any, any>[] = [
-    {
-      id: 'select',
-      header: ({ table }) => (
-        <Checkbox
-          checked={
-            (table.getIsAllPageRowsSelected() ||
-            (table.getIsSomePageRowsSelected() && ('indeterminate' as const))) as RadixCheckedState
-          }
-          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-          aria-label="Select all"
-          className="bg-white"
-        />
-      ),
-      cell: ({ row }) => (
-        <Checkbox
-          checked={row.getIsSelected()}
-          onCheckedChange={(value) => row.toggleSelected(!!value)}
-          aria-label="Select row"
-        />
-      ),
-      enableSorting: false,
-      enableHiding: false,
-    },
-    {
-      accessorKey: 'image',
-      header: 'Image',
-      cell: ({ row }) => {
-        const m = row.original;
-        return (
-          <div className="rounded-full overflow-hidden relative size-9">
-            <img src={m.coverImage} alt={m.name} className="size-full object-cover" />
-          </div>
-        );
-      },
-    },
-    {
-      accessorKey: 'menu_name',
-      header: 'Menu Name',
-      cell: ({ row }) => {
-        const m = row.original;
-        return <span className="text-[#111827] font-medium text-sm">{m.name}</span>;
-      },
-    },
-    {
-      accessorKey: 'price',
-      header: 'Price',
-      cell: ({ row }) => (
-        <span className="text-[#111827] font-medium text-sm">₦{row.getValue('price')}</span>
-      ),
-    },
-    {
-      accessorKey: 'meal_type',
-      header: 'Meal Type',
-      cell: ({ row }) => {
-        const m = row.original;
-        return <div>{m.menuType.join(', ')}</div>;
-      },
-    },
-    {
-      accessorKey: 'meal_times',
-      header: 'Meal Times',
-      cell: ({ row }) => {
-        const m = row.original;
-        return <div>{m.mealTimes.join(', ')}</div>;
-      },
-    },
-    {
-      accessorKey: 'items',
-      header: 'Items',
-      cell: ({ row }) => (
-        <span className="text-[#111827] font-medium text-sm">{(row.getValue('items') as any[]).length}</span>
-      ),
-    },
-    {
-      accessorKey: 'tags',
-      header: 'Tags',
-      cell: ({ row }) => {
-        return (
-          <div className="flex gap-1">
-            {(row.getValue('tags') as string[]).slice(0, 3).map((tag: string, i: number) => (
-                <div key={i} className="text-xs bg-[#E6F2F2] text-[#0A6C6D] px-2 py-1 rounded-full">
-                  {tag}
-                </div>
-              ))}
-          </div>
-        );
-      },
-    },
+  const resetPage = () => setPage(1);
 
-    {
-      accessorKey: 'status',
-      header: 'Status',
-      cell: ({ row }) => {
-        const rowId = row.original._id; // or whatever uniquely identifies the row
-
-        const handleToggle = (checked: boolean) => {
-          setMenus((prev) =>
-            prev.map((item) =>
-              item._id === rowId ? { ...item, status: checked ? 'active' : 'inactive' } : item
-            )
-          );
-        };
-
-        return (
-          <div className="flex gap-1">
-            <Switch
-              checked={row.getValue('status') === 'active'}
-              onCheckedChange={handleToggle}
-              aria-label="Toggle status"
-            />
-          </div>
-        );
-      },
-    },
-    {
-      id: 'actions',
-      enableHiding: false,
-      cell: () => {
-        // const payment = row.original
-
-        return (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0">
-                <span className="sr-only">Open menu</span>
-                <MoreVertical />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {/* <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(payment.id)}
-            >
-              Copy payment ID
-            </DropdownMenuItem> */}
-              <DropdownMenuItem>
-                <Eye2 /> View Reservation
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Pencil /> Edit Reservation
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Phone /> Contact Customer
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Printer /> Print Receipt
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <CheckCircle /> Mark as Completed
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <CheckCircle /> Mark as No-Show
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Copy /> Dupllicate Reservation
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-[#EF4444]">
-                <XCircle /> Cancel Reservation
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        );
-      },
-    },
-  ];
-
-  const menuItemColumns: ColumnDef<any, any>[] = [
-    {
-      id: 'select',
-      header: ({ table }) => (
-        <Checkbox
-          checked={
-            (table.getIsAllPageRowsSelected() ||
-            (table.getIsSomePageRowsSelected() && ('indeterminate' as const))) as RadixCheckedState
-          }
-          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-          aria-label="Select all"
-          className="bg-white"
-        />
-      ),
-      cell: ({ row }) => (
-        <Checkbox
-          checked={row.getIsSelected()}
-          onCheckedChange={(value) => row.toggleSelected(!!value)}
-          aria-label="Select row"
-        />
-      ),
-      enableSorting: false,
-      enableHiding: false,
-    },
-    {
-      accessorKey: 'image',
-      header: 'Image',
-      cell: ({ row }) => {
-        const m = row.original;
-        return (
-          <div className="rounded-full overflow-hidden relative size-9">
-            <img src={m.coverImage} alt={m.name} className="size-full object-cover" />
-          </div>
-        );
-      },
-    },
-    {
-      accessorKey: 'menu_name',
-      header: 'Menu Name',
-      cell: ({ row }) => {
-        const m = row.original;
-        return <span className="text-[#111827] font-medium text-sm">{m.name}</span>;
-      },
-    },
-    {
-      accessorKey: 'price',
-      header: 'Price',
-      cell: ({ row }) => (
-        <span className="text-[#111827] font-medium text-sm">₦{row.getValue('price')}</span>
-      ),
-    },
-    {
-      accessorKey: 'category',
-      header: 'Category',
-      cell: ({ row }) => (
-        <span className="text-[#111827] font-medium text-sm">{row.getValue('category')}</span>
-      ),
-    },
-    {
-      accessorKey: 'menu_assigned',
-      header: 'Menu Assigned',
-      cell: ({ row }) => {
-        const m = row.original;
-        const menuAssigned = menus
-          .filter((i) => m.assignedMenus && m.assignedMenus.includes(i._id))
-          .map((i) => i.name);
-        return <div>{menuAssigned.join(', ')}</div>;
-      },
-    },
-    {
-      accessorKey: 'meal_times',
-      header: 'Meal Times',
-      cell: ({ row }) => {
-        const m = row.original;
-        return <div>{m.mealTimes.join(', ')}</div>;
-      },
-    },
-    {
-      accessorKey: 'tags',
-      header: 'Tags',
-      cell: ({ row }) => {
-        return (
-          <div className="flex gap-1 items-center">
-            <div className="flex gap-2">
-              {(row.getValue('tags') as string[]).slice(0, 3).map((tag: string, i: number) => (
-                  <div
-                    key={i}
-                    className="text-xs bg-[#F4F4F4] text-[#606368] border border-[#E5E7EB] p-2 rounded-md"
-                  >
-                    {tag}
-                  </div>
-                ))}
-            </div>
-            {(row.getValue('tags') as string[]).length > 3 && (
-              <span>+{(row.getValue('tags') as string[]).length - 3} more</span>
-            )}
-          </div>
-        );
-      },
-    },
-    {
-      accessorKey: 'status',
-      header: 'Status',
-      cell: ({ row }) => {
-        const rowId = row.original._id; // or whatever uniquely identifies the row
-
-        const handleToggle = (checked: boolean) => {
-          setMenuItems((prev) =>
-            prev.map((item) =>
-              item._id === rowId ? { ...item, status: checked ? 'active' : 'inactive' } : item
-            )
-          );
-        };
-
-        return (
-          <div className="flex gap-1">
-            <Switch
-              checked={row.getValue('status') === 'active'}
-              onCheckedChange={handleToggle}
-              aria-label="Toggle status"
-            />
-          </div>
-        );
-      },
-    },
-    {
-      id: 'actions',
-      enableHiding: false,
-      cell: ({ row }) => {
-        return (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0">
-                <span className="sr-only">Open menu</span>
-                <MoreVertical />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem
-                onClick={() =>
-                  onEditItem
-                    ? onEditItem(row.original._id)
-                    : navigate(`/dashboard/restaurant/menu/items/${row.original._id}/edit`)
-                }
-              >
-                <Pencil /> Edit dish
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                className="text-[#EF4444]"
-                onClick={() => handleDelete(row.original._id, 'item')}
-              >
-                <XCircle /> Delete dish
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        );
-      },
-    },
-  ];
-
-  const data = activeCategory === 'All Menu Items' ? menuItems : menus;
-  const columns = activeCategory === 'All Menu Items' ? menuItemColumns : menuColumns;
-
-  const handleDelete = async (id: string, type: string) => {
-    if (!window.confirm('Are you sure you want to delete this menu item?')) return;
-
+  const fetchMenuItems = useCallback(async () => {
     try {
-      await menuService.deleteMenu(id, type);
-      alert('Item deleted successfully!');
-      setShowPopup({ display: false, details: {} });
+      setIsLoading(true);
+      if (!vendorId) return;
+      const items = await menuService.getMenuItems(vendorId);
+      setMenuItems(items.menuItems ?? []);
     } catch (error) {
-      console.error('Delete failed:', error);
-      alert('Failed to delete item.');
+      console.error(error);
+      toast.error('Failed to fetch dishes');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [vendorId]);
+
+  useEffect(() => {
+    fetchMenuItems();
+  }, [fetchMenuItems]);
+
+  const reloadDrafts = useCallback(() => {
+    if (!vendorId) {
+      setDrafts([]);
+      return;
+    }
+    setDrafts(listDishDrafts(vendorId));
+  }, [vendorId]);
+
+  useEffect(() => {
+    reloadDrafts();
+  }, [reloadDrafts]);
+
+  const handleDeleteDraft = (id: string) => {
+    if (!vendorId) return;
+    deleteDishDraft(vendorId, id);
+    reloadDrafts();
+    toast.success('Draft deleted');
+  };
+
+  const categories = useMemo(() => {
+    const seen = new Map<string, string>();
+    for (const item of menuItems) {
+      const key = categoryName(item).toLowerCase();
+      if (!seen.has(key)) seen.set(key, categoryName(item));
+    }
+    return [...seen.values()].sort((a, b) => a.localeCompare(b));
+  }, [menuItems]);
+
+  const filtered = useMemo(() => {
+    const term = query.trim().toLowerCase();
+    const list = menuItems.filter((item) => {
+      if (category !== 'all' && categoryName(item).toLowerCase() !== category) return false;
+      if (availability === 'available' && !isAvailable(item)) return false;
+      if (availability === 'unavailable' && isAvailable(item)) return false;
+      if (!term) return true;
+      return (
+        item.name.toLowerCase().includes(term) ||
+        (item.description ?? '').toLowerCase().includes(term)
+      );
+    });
+    const sorted = [...list];
+    switch (sort) {
+      case 'name':
+        sorted.sort((a, b) => a.name.localeCompare(b.name));
+        break;
+      case 'price-asc':
+        sorted.sort((a, b) => sellPrice(a) - sellPrice(b));
+        break;
+      case 'price-desc':
+        sorted.sort((a, b) => sellPrice(b) - sellPrice(a));
+        break;
+      case 'newest':
+      default:
+        break;
+    }
+    return sorted;
+  }, [menuItems, query, category, availability, sort]);
+
+  const hasFilters =
+    query.trim() !== '' || category !== 'all' || availability !== 'all' || sort !== 'newest';
+
+  const clearFilters = () => {
+    setQuery('');
+    setCategory('all');
+    setAvailability('all');
+    setSort('newest');
+    resetPage();
+  };
+
+  const pages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const safePage = Math.min(page, pages);
+  const visible = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
+
+  const toggleAvailability = async (item: DishItem) => {
+    try {
+      setBusyId(item._id);
+      await stockService.setAvailability('dish', item._id, !isAvailable(item));
+      setMenuItems((prev) =>
+        prev.map((entry) =>
+          entry._id === item._id ? { ...entry, availability: !isAvailable(item) } : entry,
+        ),
+      );
+      toast.success(
+        isAvailable(item) ? `${item.name} marked unavailable` : `${item.name} is available again`,
+      );
+    } catch (error) {
+      toast.error(
+        (error as { response?: { data?: { message?: string } } })?.response?.data?.message ||
+          'Failed to update availability',
+      );
+    } finally {
+      setBusyId(null);
     }
   };
 
-  useEffect(() => {
-    async function fetchMenus() {
-      try {
-        setIsLoading(true);
-        if (!vendorId) return;
-        const items = await menuService.getMenus(vendorId);
-        setMenus(items.menus);
-      } catch (error) {
-        console.error(error);
-        toast.error('Failed to fetch menus');
-      } finally {
-        setIsLoading(false);
-      }
+  const handleDelete = async (id: string) => {
+    if (!window.confirm('Are you sure you want to delete this dish?')) return;
+    try {
+      await menuService.deleteMenu(id, 'item');
+      toast.success('Dish deleted');
+      setMenuItems((prev) => prev.filter((item) => item._id !== id));
+      setDetails(null);
+    } catch (error) {
+      console.error('Delete failed:', error);
+      toast.error('Failed to delete dish.');
     }
-    async function fetchMenuItems() {
-      try {
-        setIsLoading(true);
-        if (!vendorId) return;
-        const items = await menuService.getMenuItems(vendorId);
-        setMenuItems(items.menuItems);
-      } catch (error) {
-        console.error(error);
-        toast.error('Failed to fetch menu items');
-      } finally {
-        setIsLoading(false);
-      }
-    }
-    fetchMenus();
-    fetchMenuItems();
-  }, []);
+  };
 
-  const table = useReactTable({
-    data,
-    columns,
-    onSortingChange: setSorting,
-    onColumnFiltersChange: setColumnFilters,
-    getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    onColumnVisibilityChange: setColumnVisibility,
-    onRowSelectionChange: setRowSelection,
-    state: {
-      sorting,
-      columnFilters,
-      columnVisibility,
-      rowSelection,
-    },
-  });
+  const editDish = (id: string) => {
+    if (onEditItem) onEditItem(id);
+    else setSearchParams({ dish: id });
+  };
+
+  const handleWorkspaceSaved = () => {
+    setSearchParams({});
+    fetchMenuItems();
+  };
 
   if (isLoading) {
     return <UniversalLoader fullscreen type="dashboard-3" />;
   }
 
+  if (dishParam) {
+    const draft =
+      dishParam === 'new' && draftParam && vendorId
+        ? getDishDraft(vendorId, draftParam)
+        : null;
+    return (
+      <div className="mb-12 space-y-6 md:p-6">
+        <DishWorkspace
+          mode={dishParam === 'new' ? 'new' : 'edit'}
+          dishId={dishParam === 'new' ? undefined : dishParam}
+          initial={draft?.data ?? null}
+          draftId={draft?.id ?? null}
+          vendorId={vendorId}
+          onExit={() => setSearchParams({})}
+          onSaved={handleWorkspaceSaved}
+          onDraftSaved={reloadDrafts}
+        />
+      </div>
+    );
+  }
+
+  if (showingDrafts) {
+    return (
+      <div className="mb-12 space-y-5 md:p-6">
+        <nav aria-label="Breadcrumb" className="type-res-small flex items-center gap-1 font-medium">
+          <button
+            type="button"
+            onClick={() => setSearchParams({})}
+            className="cursor-pointer font-normal text-res-ink-muted transition-colors hover:text-res-brand"
+          >
+            Dishes
+          </button>
+          <ChevronRight className="h-3.5 w-3.5 text-res-ink-muted" />
+          <span aria-current="page" className="font-semibold text-res-ink">
+            Drafts
+          </span>
+        </nav>
+        <DashboardPageHeader
+          title="Drafts"
+          subtitle="Unfinished dishes — resume where you stopped."
+          actions={
+            <DashboardButton
+              variant="secondary"
+              text="Back to dishes"
+              onClick={() => setSearchParams({})}
+            />
+          }
+        />
+        {drafts.length === 0 ? (
+          <div className="rounded-res-lg bg-res-card px-6 py-12 text-center shadow-res-low">
+            <p className="type-res-h3 text-res-ink">No drafts yet</p>
+            <p className="type-res-small mx-auto mt-1 max-w-sm font-normal text-res-ink-muted">
+              Start a dish and save it as a draft to finish it later.
+            </p>
+          </div>
+        ) : (
+          <ul className="space-y-2.5">
+            {drafts.map((draft) => (
+              <li
+                key={draft.id}
+                className="flex flex-col gap-3 rounded-res-md border border-res-line bg-res-card p-4 shadow-res-low sm:flex-row sm:items-center sm:justify-between"
+              >
+                <div className="min-w-0">
+                  <p className="type-res-body truncate font-semibold text-res-ink">
+                    {draft.data.name || 'Untitled dish'}
+                  </p>
+                  <p className="type-res-small mt-0.5 font-normal text-res-ink-muted">
+                    Last edited{' '}
+                    {new Date(draft.updatedAt).toLocaleString(undefined, {
+                      month: 'short',
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })}
+                  </p>
+                </div>
+                <div className="flex shrink-0 items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteDraft(draft.id)}
+                    className="type-res-small cursor-pointer rounded-full px-4 py-2 font-semibold text-red-600 transition-colors hover:bg-red-50"
+                  >
+                    Delete
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSearchParams({ dish: 'new', draft: draft.id })}
+                    className="type-res-small cursor-pointer rounded-full bg-res-brand px-4 py-2 font-semibold text-res-ink-inverted shadow-res-low transition-colors hover:bg-res-brand-hover"
+                  >
+                    Resume
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    );
+  }
+
   return (
     <>
-          <div className="md:p-6 md:mb-12 space-y-6">
-            <div className="md:flex hidden justify-between items-center">
-              <h2 className="text-[#111827] font-semibold">Dishes</h2>
-              <div className="flex gap-6">
-                <DashboardButton variant="secondary" text="Export" icon={<Export />} />
+      <div className="mb-12 space-y-6 md:p-6">
+        <DashboardPageHeader
+          title="Dishes"
+          subtitle="Create, price and organize the dishes guests can order."
+          actions={
+            <>
+              <DashboardButton variant="secondary" text="Export" icon={<Export />} />
+              {vendorId && (
                 <DashboardButton
-                  onClick={() =>
-                    onCreateItem ? onCreateItem() : navigate('/dashboard/restaurant/menu/item/new')
-                  }
-                  variant="primary"
-                  text="Add Dish"
-                  icon={<Add fill="#fff" />}
+                  variant="secondary"
+                  text={drafts.length > 0 ? `Drafts (${drafts.length})` : 'Drafts'}
+                  onClick={() => setSearchParams({ view: 'drafts' })}
                 />
+              )}
+              <DashboardButton
+                onClick={() =>
+                  onCreateItem ? onCreateItem() : setSearchParams({ dish: 'new' })
+                }
+                variant="primary"
+                text="Add Dish"
+                icon={<Add fill="#fff" />}
+              />
+            </>
+          }
+        />
+
+        <section className="rounded-res-lg bg-res-card p-4 shadow-res-low md:p-5">
+          <div className="flex flex-wrap items-center gap-2.5">
+            <label className="flex min-w-[200px] flex-1 items-center gap-2 rounded-full bg-res-surface px-4 py-2.5">
+              <Search className="h-4 w-4 shrink-0 text-res-ink-muted" />
+              <input
+                value={query}
+                onChange={(e) => {
+                  setQuery(e.target.value);
+                  resetPage();
+                }}
+                placeholder="Search dishes…"
+                aria-label="Search dishes"
+                className="type-res-body w-full bg-transparent font-normal text-res-ink outline-none placeholder:text-res-ink-muted"
+              />
+            </label>
+            <select
+              aria-label="Filter by category"
+              value={category}
+              onChange={(e) => {
+                setCategory(e.target.value);
+                resetPage();
+              }}
+              className={selectClass}
+            >
+              <option value="all">All categories</option>
+              {categories.map((name) => (
+                <option key={name.toLowerCase()} value={name.toLowerCase()}>
+                  {name}
+                </option>
+              ))}
+            </select>
+            <select
+              aria-label="Filter by availability"
+              value={availability}
+              onChange={(e) => {
+                setAvailability(e.target.value as AvailabilityFilter);
+                resetPage();
+              }}
+              className={selectClass}
+            >
+              {AVAILABILITY_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+            <select
+              aria-label="Sort dishes"
+              value={sort}
+              onChange={(e) => setSort(e.target.value as SortKey)}
+              className={selectClass}
+            >
+              {SORT_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+            {hasFilters && (
+              <button
+                type="button"
+                onClick={clearFilters}
+                className="type-res-small cursor-pointer rounded-full bg-res-surface px-4 py-2.5 font-semibold text-res-ink-muted transition-colors outline-none hover:text-res-ink focus-visible:ring-2 focus-visible:ring-res-brand"
+              >
+                Clear all
+              </button>
+            )}
+          </div>
+
+          <div className="mt-4">
+            {filtered.length === 0 ? (
+              <div className="rounded-res-md bg-res-surface px-6 py-12 text-center">
+                <p className="type-res-h3 text-res-ink">
+                  {menuItems.length === 0 ? 'No dishes yet' : 'No dishes match'}
+                </p>
+                <p className="type-res-small mx-auto mt-1 max-w-sm font-normal text-res-ink-muted">
+                  {menuItems.length === 0
+                    ? 'Add your first dish and it will show up here.'
+                    : 'Try adjusting the search or filters.'}
+                </p>
               </div>
-            </div>
-            <div>
-              <div className="w-full">
-                <Tabs defaultValue="grid">
-                  <div className="flex md:items-center flex-col-reverse md:flex-row gap-4 justify-between py-4">
-                    <div className="flex flex-1 items-center">
-                      {categories.map((category, i) => (
-                        <div
-                          onClick={() => setActiveCategory(category)}
-                          className={`p-2 text-xs md:text-sm rounded-lg border font-medium cursor-pointer ${category === activeCategory ? 'border-[#B3D1D2] bg-[#E7F0F0] text-[#111827] ' : 'border-transparent text-[#606368]'}`}
-                          key={i}
-                        >
-                          {category}
-                        </div>
-                      ))}
-                    </div>
-                    <div className="flex items-center justify-between gap-4">
-                      <div className="relative items-center flex flex-1">
-                        <Search className="absolute left-2 text-[#606368] size-5" />
-                        <Input
-                          placeholder="Search by guest name or ID"
-                          value={(table.getColumn('name')?.getFilterValue() as string) ?? ''}
-                          onChange={(event) =>
-                            table.getColumn('name')?.setFilterValue(event.target.value)
-                          }
-                          className="max-w-sm pl-10 border-[#DAE9E9] "
-                        />
-                      </div>
-                      <div className="md:flex gap-2 h-full hidden">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="outline" className="ml-auto text-[#606368]">
-                              All Category <ChevronDown />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            {table
-                              .getAllColumns()
-                              .filter((column) => column.getCanHide())
-                              .map((column) => {
-                                return (
-                                  <DropdownMenuCheckboxItem
-                                    key={column.id}
-                                    className="capitalize"
-                                    checked={column.getIsVisible()}
-                                    onCheckedChange={(value) => column.toggleVisibility(!!value)}
-                                  >
-                                    {column.id}
-                                  </DropdownMenuCheckboxItem>
-                                );
-                              })}
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="outline" className="ml-auto text-[#606368]">
-                              Advanced filter <Filter2 fill="black" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            {table
-                              .getAllColumns()
-                              .filter((column) => column.getCanHide())
-                              .map((column) => {
-                                return (
-                                  <DropdownMenuCheckboxItem
-                                    key={column.id}
-                                    className="capitalize"
-                                    checked={column.getIsVisible()}
-                                    onCheckedChange={(value) => column.toggleVisibility(!!value)}
-                                  >
-                                    {column.id}
-                                  </DropdownMenuCheckboxItem>
-                                );
-                              })}
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                        <div className="my-1 w-0.5 bg-[#E5E7EB]" />
-                        <TabsList className="bg-[#E5E7EB]">
-                          <TabsTrigger value="list" className="group">
-                            <ListCheck3 className="group-data-[state=active]:text-[#111827] text-[#606368] size-4" />
-                          </TabsTrigger>
-                          <TabsTrigger value="grid" className="group">
-                            <LayoutGrid className="group-data-[state=active]:text-[#111827] text-[#606368] size-4" />
-                          </TabsTrigger>
-                        </TabsList>
-                      </div>
-                      <div className="md:hidden">
-                        <Button variant="outline" size="sm" className="ml-auto">
-                          <Filter2 fill="black" />
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                  <TabsContent value="list">
-                    <div className="overflow-hidden hidden md:block rounded-md border">
-                      <Table>
-                        <TableHeader className="bg-[#E6F2F2]">
-                          {table.getHeaderGroups().map((headerGroup) => (
-                            <TableRow key={headerGroup.id}>
-                              {headerGroup.headers.map((header) => {
-                                return (
-                                  <TableHead key={header.id}>
-                                    {header.isPlaceholder
-                                      ? null
-                                      : flexRender(
-                                          header.column.columnDef.header,
-                                          header.getContext()
-                                        )}
-                                  </TableHead>
-                                );
-                              })}
-                            </TableRow>
-                          ))}
-                        </TableHeader>
-                        <TableBody>
-                          {table.getRowModel().rows?.length ? (
-                            table.getRowModel().rows.map((row) => (
-                              <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'}>
-                                {row.getVisibleCells().map((cell) => (
-                                  <TableCell key={cell.id}>
-                                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                                  </TableCell>
-                                ))}
-                              </TableRow>
-                            ))
+            ) : (
+              <>
+                <p className="type-res-small mb-3 font-normal text-res-ink-muted">
+                  {filtered.length} dish{filtered.length === 1 ? '' : 'es'}
+                  {hasFilters ? ' match these filters' : ' on the menu'}
+                </p>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                  {visible.map((item) => {
+                    const available = isAvailable(item);
+                    const deal = isDeal(item);
+                    const image = item.images?.[0] || item.coverImage;
+                    const tags = item.tags ?? [];
+                    const addonCount = item.addonIds?.length ?? 0;
+                    const busy = busyId === item._id;
+                    return (
+                      <article
+                        key={item._id}
+                        className="flex w-full flex-col overflow-hidden rounded-res-md border border-res-line bg-res-card shadow-res-low"
+                      >
+                        <div className="relative h-44 shrink-0 bg-res-surface">
+                          {image ? (
+                            <img
+                              src={image}
+                              alt={item.name}
+                              loading="lazy"
+                              className={`h-full w-full object-cover transition-transform duration-200 hover:scale-105 ${
+                                available ? '' : 'opacity-60 grayscale'
+                              }`}
+                            />
                           ) : (
-                            <TableRow>
-                              <TableCell colSpan={columns.length} className="h-24 text-center">
-                                No results.
-                              </TableCell>
-                            </TableRow>
+                            <div className="flex h-full w-full items-center justify-center">
+                              <span className="type-res-small font-medium text-res-ink-muted">
+                                No photo
+                              </span>
+                            </div>
                           )}
-                        </TableBody>
-                      </Table>
-                    </div>
-                  </TabsContent>
-                  <TabsContent value="grid">
-                    <div className="grid md:grid-cols-3 gap-6 lg:grid-cols-4">
-                      {data &&
-                        data.map((item, i) => (
-                          <div key={i} className="p-1 bg-white border rounded-xl h-full">
-                            <div className="relative rounded-xl h-[178px] overflow-hidden">
-                              <img
-                                src={item.coverImage}
-                                alt={item.name || 'N/A'}
-                                className="size-full object-cover hover:scale-105 transition-transform duration-200"
+                          <div className="absolute top-3 left-3 flex flex-wrap gap-1.5">
+                            <button
+                              type="button"
+                              disabled={busy}
+                              onClick={() => toggleAvailability(item)}
+                              title={
+                                available
+                                  ? 'Pull off the menu (unavailable)'
+                                  : 'Put back on the menu'
+                              }
+                              className={`type-res-small inline-flex cursor-pointer items-center gap-1.5 rounded-full px-2.5 py-1 font-semibold whitespace-nowrap transition-colors outline-none focus-visible:ring-2 focus-visible:ring-res-brand disabled:cursor-not-allowed disabled:opacity-60 ${
+                                available
+                                  ? 'bg-emerald-50 text-emerald-700'
+                                  : 'bg-red-50 text-red-700'
+                              }`}
+                            >
+                              <span
+                                className={`h-1.5 w-1.5 rounded-full ${
+                                  available ? 'bg-emerald-500' : 'bg-red-500'
+                                }`}
                               />
-                            </div>
-                            <div className="p-2">
-                              {activeCategory === 'All Menu Items' ? (
-                                <div className="space-y-2">
-                                  <div className="flex justify-between w-full">
-                                    <span>{item.name}</span>
-                                    <button
-                                      onClick={() =>
-                                        setShowPopup({
-                                          details: item,
-                                          display: true,
-                                          item: true,
-                                        })
-                                      }
-                                      className="text-xs underline text-[#0A6C6D]"
-                                    >
-                                      View Menu
-                                    </button>
-                                  </div>
-                                  <div className="text-sm">{item.description}</div>
-                                </div>
-                              ) : (
-                                <div className="space-y-2">
-                                  <div className="flex justify-between w-full">
-                                    <span>{item.name}</span>
-                                    <button
-                                      onClick={() =>
-                                        setShowPopup({
-                                          details: item,
-                                          display: true,
-                                        })
-                                      }
-                                      className="text-xs underline text-[#0A6C6D]"
-                                    >
-                                      View Menu
-                                    </button>
-                                  </div>
-                                  <div className="text-sm">
-                                    <span>Menu Item:</span> {item.menuType.join(', ')}
-                                  </div>
-                                  <div className="flex items-center justify-between w-full">
-                                    <span>
-                                      {item.items.length} {item.items.length > 0 ? 'items' : 'item'}
-                                    </span>
-                                    <span>Updated {item.date} ago</span>
-                                  </div>
-                                </div>
-                              )}
-                              <div className="flex w-full justify-between">
-                                <span>₦{item.price.toLocaleString()}</span>
-                                <button
-                                  onClick={() =>
-                                    setShowPopup({
-                                      details: item,
-                                      display: true,
-                                    })
-                                  }
-                                  className="flex gap-2 items-center text-[#0A6C6D]"
-                                >
-                                  <ArrowsRight className="" /> view details
-                                </button>
-                              </div>
-                            </div>
+                              {busy ? 'Saving…' : available ? 'Available' : 'Unavailable'}
+                            </button>
+                            {deal && (
+                              <span className="type-res-small inline-flex items-center rounded-full bg-res-brand px-2.5 py-1 font-semibold whitespace-nowrap text-res-ink-inverted">
+                                Deal
+                              </span>
+                            )}
                           </div>
-                        ))}
-                    </div>
-                  </TabsContent>
-                </Tabs>
-              </div>
-            </div>
-          </div>
-          <div className="absolute hidden md:flex bottom-0 border-t border-[#E5E7EB] left-0 right-0 bg-white">
-            <div className="flex items-center w-full px-8 justify-between space-x-2 py-4">
-              <div className="text-muted-foreground text-sm">
-                Page {table.getFilteredSelectedRowModel().rows.length} of{' '}
-                {table.getFilteredRowModel().rows.length}
-              </div>
-              <div className="flex">
-                <Pagination>
-                  <PaginationContent>
-                    <PaginationItem>
-                      <PaginationLink href="#">1</PaginationLink>
-                    </PaginationItem>
-                    <PaginationItem>
-                      <PaginationLink href="#" isActive>
-                        2
-                      </PaginationLink>
-                    </PaginationItem>
-                    <PaginationItem>
-                      <PaginationLink href="#">3</PaginationLink>
-                    </PaginationItem>
-                    <PaginationItem>
-                      <PaginationEllipsis />
-                    </PaginationItem>
-                    <PaginationItem>
-                      <PaginationLink href="#">10</PaginationLink>
-                    </PaginationItem>
-                    <PaginationItem>
-                      <PaginationLink href="#">11</PaginationLink>
-                    </PaginationItem>
-                    <PaginationItem>
-                      <PaginationLink href="#">12</PaginationLink>
-                    </PaginationItem>
-                  </PaginationContent>
-                </Pagination>
-              </div>
-              <div className="gap-2 flex">
-                <DashboardButton
-                  variant="secondary"
-                  icon={<ChevronLeft className="size-5" />}
-                  // size="sm"
-                  onClick={() => table.previousPage()}
-                  disabled={!table.getCanPreviousPage()}
-                  className="shadow-md"
-                />
-                <DashboardButton
-                  variant="secondary"
-                  icon={<ChevronRight className="size-5" />}
-                  // size="sm"
-                  onClick={() => table.nextPage()}
-                  disabled={!table.getCanNextPage()}
-                  className="shadow-md"
-                />
-              </div>
-            </div>
-          </div>
-          {showPopup.display && (
-            <div className="inset-0 fixed top-0 left-0 w-full h-screen overflow-y-auto bg-black/80">
-              <div className="bg-gray-50 px-4 max-w-4xl mx-auto rounded-lg my-10 py-6 md:px-6 md:py-8">
-                <div className="max-w-4xl mx-auto">
-                  <div className="bg-white rounded-2xl border border-gray-200 mb-6">
-                    <h2 className="text-lg font-semibold text-[#111827] py-4 px-5">Menu Details</h2>
-
-                    <hr className="border-gray-200 mb-4" />
-                    <div className="p-5">
-                      {showPopup.details.coverImage && (
-                        <div className="mb-4">
-                          <img
-                            src={showPopup.details.coverImage}
-                            alt={showPopup.details.name}
-                            className="rounded-xl w-full h-48 object-cover"
-                          />
                         </div>
-                      )}
 
-                      <div>
-                        <ul className="divide-y divide-gray-100">
-                          <li className="flex justify-between py-2">
-                            <span className="text-gray-700 font-medium">Name</span>
-                            <span className="text-gray-900 font-semibold">
-                              {showPopup.details.name}
-                            </span>
-                          </li>
-                          <li className="flex justify-between py-2">
-                            <span className="text-gray-700 font-medium">Price</span>
-                            <span className="text-gray-900 font-semibold">
-                              ₦{showPopup.details.price?.toLocaleString()}
-                            </span>
-                          </li>
-                          {showPopup.details.description && (
-                            <li className="py-2">
-                              <span className="text-gray-700 font-medium block">Description</span>
-                              <p className="text-gray-600 mt-1">{showPopup.details.description}</p>
-                            </li>
+                        <div className="flex flex-1 flex-col p-4">
+                          <p className="type-res-caption font-medium tracking-[0.2px] text-res-ink-muted uppercase">
+                            {categoryName(item)}
+                            {(item.mealTimes ?? []).length > 0
+                              ? ` · ${item.mealTimes!.slice(0, 2).join(' · ')}`
+                              : ''}
+                          </p>
+                          <h3 className="type-res-h3 mt-1 line-clamp-1 text-res-ink">
+                            {item.name}
+                          </h3>
+                          {item.description && (
+                            <p className="type-res-small mt-0.5 line-clamp-2 font-normal text-res-ink-muted">
+                              {item.description}
+                            </p>
                           )}
-                        </ul>
-                      </div>
+                          {tags.length > 0 && (
+                            <div className="mt-2 flex flex-wrap gap-1.5">
+                              {tags.slice(0, 3).map((tag) => (
+                                <span
+                                  key={tag}
+                                  className="type-res-small rounded-full bg-res-surface px-2 py-0.5 font-medium text-res-ink-muted"
+                                >
+                                  {tag}
+                                </span>
+                              ))}
+                              {tags.length > 3 && (
+                                <span className="type-res-small px-1 py-0.5 font-semibold text-res-ink-muted">
+                                  +{tags.length - 3} more
+                                </span>
+                              )}
+                            </div>
+                          )}
 
-                      <div className="mt-4 space-y-2 text-sm text-gray-700">
-                        {showPopup.details.category && (
-                          <p>
-                            <span className="font-medium">Category:</span>{' '}
-                            {showPopup.details.category}
-                          </p>
-                        )}
-                        {showPopup.details.menuType && (
-                          <p>
-                            <span className="font-medium">Menu Type:</span>{' '}
-                            {Array.isArray(showPopup.details.menuType)
-                              ? showPopup.details.menuType.join(', ')
-                              : showPopup.details.menuType}
-                          </p>
-                        )}
-                        {showPopup.details.mealTimes && (
-                          <p>
-                            <span className="font-medium">Meal Times:</span>{' '}
-                            {showPopup.details.mealTimes.join(', ')}
-                          </p>
-                        )}
-                        {showPopup.details.tags?.length > 0 && (
-                          <p>
-                            <span className="font-medium">Tags:</span>{' '}
-                            {showPopup.details.tags.join(', ')}
-                          </p>
-                        )}
-                        {showPopup.details.status && (
-                          <p>
-                            <span className="font-medium">Status:</span> {showPopup.details.status}
-                          </p>
-                        )}
-                        {showPopup.details.published !== undefined && (
-                          <p>
-                            <span className="font-medium">Published:</span>{' '}
-                            {showPopup.details.published ? 'Yes' : 'No'}
-                          </p>
-                        )}
-                        {showPopup.details.addOns !== undefined && (
-                          <p>
-                            <span className="font-medium">Add-ons:</span>{' '}
-                            {showPopup.details.addOns ? 'Available' : 'Not available'}
-                          </p>
-                        )}
-                        {showPopup.details.availability !== undefined && (
-                          <p>
-                            <span className="font-medium">Availability:</span>{' '}
-                            {showPopup.details.availability ? 'Available' : 'Unavailable'}
-                          </p>
-                        )}
-                        {showPopup.details.discount && (
-                          <p>
-                            <span className="font-medium">Discount Price:</span> ₦
-                            {showPopup.details.discountPrice?.toLocaleString()}
-                          </p>
-                        )}
-                      </div>
+                          <div className="mt-3 flex items-baseline gap-2 border-t border-res-line pt-3">
+                            <p className="type-res-h3 text-res-ink">{money(sellPrice(item))}</p>
+                            {deal && (
+                              <p className="type-res-small font-medium text-res-ink-muted line-through">
+                                {money(item.price)}
+                              </p>
+                            )}
+                            <span className="type-res-small ml-auto font-normal whitespace-nowrap text-res-ink-muted">
+                              {item.status === 'inactive' ? 'Inactive' : 'Active'}
+                              {addonCount > 0
+                                ? ` · ${addonCount} add-on${addonCount === 1 ? '' : 's'}`
+                                : ''}
+                            </span>
+                          </div>
 
-                      <div className="flex flex-col md:flex-row w-full gap-3 mt-5">
-                        <Button
-                          variant="destructive"
-                          onClick={() =>
-                            handleDelete(showPopup.details._id, showPopup.item ? 'item' : 'menu')
-                          }
-                          className="flex-1 h-10 text-sm rounded-xl font-medium px-6 bg-red-600 text-white hover:bg-red-700"
-                        >
-                          Delete
-                        </Button>
-
-                        <Button
-                          variant="outline"
-                          onClick={() => {
-                            setShowPopup({ display: false, details: {} });
-                          }}
-                          className="flex-1 h-10 text-sm rounded-xl font-medium px-6 border-gray-300"
-                        >
-                          Close
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
+                          <div className="mt-3 flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => setDetails(item)}
+                              className="type-res-small flex flex-1 cursor-pointer items-center justify-center gap-1 rounded-full bg-res-surface px-4 py-2 font-semibold text-res-ink transition-colors outline-none hover:text-res-brand focus-visible:ring-2 focus-visible:ring-res-brand"
+                            >
+                              View details <ArrowsRight />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => editDish(item._id)}
+                              className="type-res-small cursor-pointer rounded-full bg-res-surface px-4 py-2 font-semibold text-res-ink transition-colors outline-none hover:text-res-brand focus-visible:ring-2 focus-visible:ring-res-brand"
+                            >
+                              Edit
+                            </button>
+                          </div>
+                        </div>
+                      </article>
+                    );
+                  })}
                 </div>
-              </div>
+
+                <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
+                  <span className="type-res-small font-normal text-res-ink-muted">
+                    Page {safePage} of {pages} · {filtered.length} total
+                  </span>
+                  {pages > 1 && (
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        disabled={safePage <= 1}
+                        onClick={() => setPage((p) => Math.max(1, p - 1))}
+                        aria-label="Previous page"
+                        className="cursor-pointer rounded-full bg-res-surface p-2.5 text-res-ink transition-colors outline-none hover:text-res-brand focus-visible:ring-2 focus-visible:ring-res-brand disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                      </button>
+                      <button
+                        type="button"
+                        disabled={safePage >= pages}
+                        onClick={() => setPage((p) => Math.min(pages, p + 1))}
+                        aria-label="Next page"
+                        className="cursor-pointer rounded-full bg-res-surface p-2.5 text-res-ink transition-colors outline-none hover:text-res-brand focus-visible:ring-2 focus-visible:ring-res-brand disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        <ChevronRight className="h-4 w-4" />
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
+        </section>
+      </div>
+
+      {details && (
+        <Modal
+          isOpen
+          onClose={() => setDetails(null)}
+          title={details.name}
+          subtitle={`${categoryName(details)} · ${money(sellPrice(details))}`}
+          footer={
+            <>
+              <button
+                type="button"
+                onClick={() => setDetails(null)}
+                className="type-res-small cursor-pointer rounded-full border border-res-line bg-res-card px-4 py-2.5 font-semibold text-res-ink hover:text-res-brand"
+              >
+                Close
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setDetails(null);
+                  editDish(details._id);
+                }}
+                className="type-res-small cursor-pointer rounded-full bg-res-surface px-5 py-2.5 font-semibold text-res-ink transition-colors hover:text-res-brand"
+              >
+                Edit dish
+              </button>
+              <button
+                type="button"
+                onClick={() => handleDelete(details._id)}
+                className="type-res-small cursor-pointer rounded-full bg-red-600 px-5 py-2.5 font-semibold text-white shadow-res-low transition-colors hover:bg-red-700"
+              >
+                Delete
+              </button>
+            </>
+          }
+        >
+          <div className="space-y-4">
+            {(details.images?.[0] || details.coverImage) && (
+              <img
+                src={details.images?.[0] || details.coverImage}
+                alt={details.name}
+                className="h-48 w-full rounded-res-md object-cover"
+              />
+            )}
+            <div className="flex flex-wrap items-center gap-1.5">
+              <span
+                className={`type-res-small inline-flex items-center rounded-full px-2.5 py-1 font-semibold whitespace-nowrap ${
+                  isAvailable(details)
+                    ? 'bg-emerald-50 text-emerald-700'
+                    : 'bg-red-50 text-red-700'
+                }`}
+              >
+                {isAvailable(details) ? 'Available' : 'Unavailable'}
+              </span>
+              {isDeal(details) && (
+                <span className="type-res-small inline-flex items-center rounded-full bg-res-brand px-2.5 py-1 font-semibold whitespace-nowrap text-res-ink-inverted">
+                  Deal
+                </span>
+              )}
+              <span className="type-res-small rounded-full bg-res-surface px-2.5 py-1 font-semibold text-res-ink-muted">
+                {details.status === 'inactive' ? 'Inactive' : 'Active'}
+              </span>
             </div>
-          )}
-        </>
-    );
+            {details.description && (
+              <p className="type-res-body font-normal text-res-ink">{details.description}</p>
+            )}
+            <dl className="type-res-small space-y-1.5 rounded-res-md bg-res-surface p-4 font-normal text-res-ink-muted">
+              <div className="flex justify-between gap-2">
+                <dt>Price</dt>
+                <dd className="font-semibold text-res-ink">{money(sellPrice(details))}</dd>
+              </div>
+              {isDeal(details) && (
+                <div className="flex justify-between gap-2">
+                  <dt>Original price</dt>
+                  <dd className="font-medium text-res-ink line-through">
+                    {money(details.price)}
+                  </dd>
+                </div>
+              )}
+              <div className="flex justify-between gap-2">
+                <dt>Category</dt>
+                <dd className="font-medium text-res-ink">{categoryName(details)}</dd>
+              </div>
+              {(details.mealTimes ?? []).length > 0 && (
+                <div className="flex justify-between gap-2">
+                  <dt>Meal times</dt>
+                  <dd className="text-right font-medium text-res-ink">
+                    {details.mealTimes!.join(', ')}
+                  </dd>
+                </div>
+              )}
+              {(details.tags ?? []).length > 0 && (
+                <div className="flex justify-between gap-2">
+                  <dt>Tags</dt>
+                  <dd className="text-right font-medium text-res-ink">
+                    {details.tags!.join(', ')}
+                  </dd>
+                </div>
+              )}
+              {(details.addonIds?.length ?? 0) > 0 && (
+                <div className="flex justify-between gap-2">
+                  <dt>Add-ons</dt>
+                  <dd className="font-medium text-res-ink">
+                    {details.addonIds!.length} available
+                  </dd>
+                </div>
+              )}
+            </dl>
+          </div>
+        </Modal>
+      )}
+    </>
+  );
 };
 
 export default MenuDashboard;

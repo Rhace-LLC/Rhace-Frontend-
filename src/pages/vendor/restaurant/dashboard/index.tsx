@@ -7,6 +7,7 @@ import { ChevronRight, ExternalLink, ListX, User } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import type { RootState } from '@/redux/store';
+import DashboardPageHeader from '@/components/dashboard/DashboardPageHeader';
 import { StatCard } from '@/components/dashboard/stats/mainStats';
 import { Calendar, CardPay, Cash2, Group3 } from '@/components/dashboard/ui/svg';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
@@ -85,14 +86,10 @@ const VendorDashboard = () => {
     <div className="bg-gray-50 p-4 lg:p-6">
         <div className="max-w-7xl mx-auto space-y-6">
           {/* Header */}
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">
-                Welcome Back, {capitalize(vendor.businessName)}!
-              </h1>
-              <p className="text-gray-600 mt-1">Here's what is happening today.</p>
-            </div>
-          </div>
+          <DashboardPageHeader
+            title={`Welcome Back, ${capitalize(vendor.businessName)}!`}
+            subtitle="Here's what is happening today."
+          />
 
           {/* Stats Grid */}
           <div className="grid grid-cols-2 md:grid-cols-4 border bg-white rounded-2xl">

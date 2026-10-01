@@ -7,9 +7,9 @@ const shimmerStyle = `
   .skeleton-shine {
     background: linear-gradient(
       90deg,
-      #e5e7eb 25%,
-      #f3f4f6 50%,
-      #e5e7eb 75%
+      #f0f2f5 25%,
+      #f6f7f9 50%,
+      #f0f2f5 75%
     );
     background-size: 200% 100%;
     animation: shimmer 1.6s ease-in-out infinite;
@@ -37,7 +37,7 @@ export function UniversalLoader({ fullscreen = false, size = 48, type = 'default
         <div
           className={`${
             fullscreen
-              ? 'fixed inset-0 flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm z-50'
+              ? 'fixed inset-0 z-50 flex flex-col items-center justify-center bg-res-surface/80'
               : 'flex items-center justify-center'
           }`}
         >
@@ -415,10 +415,10 @@ export function UniversalLoader({ fullscreen = false, size = 48, type = 'default
           {/* STATS */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="p-4 rounded-2xl shadow-sm space-y-3">
+              <div key={i} className="p-4 rounded-res-lg bg-res-card shadow-res-low space-y-3">
                 <div className="flex justify-between">
                   <Sk className="h-4 w-28 rounded" />
-                  <Sk className="h-10 w-10 rounded-xl" />
+                  <Sk className="h-10 w-10 rounded-res-sm" />
                 </div>
                 <Sk className="h-6 w-10 rounded" />
                 <Sk className="h-3 w-24 rounded" />
@@ -429,7 +429,7 @@ export function UniversalLoader({ fullscreen = false, size = 48, type = 'default
           {/* MAIN GRID */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* LEFT CARD */}
-            <div className="rounded-2xl shadow-sm p-4 space-y-6">
+            <div className="rounded-res-lg bg-res-card shadow-res-low p-4 space-y-6">
               <div className="flex justify-between items-center">
                 <Sk className="h-5 w-40 rounded" />
                 <Sk className="h-4 w-20 rounded" />
@@ -442,7 +442,7 @@ export function UniversalLoader({ fullscreen = false, size = 48, type = 'default
             </div>
 
             {/* RIGHT CARD (CHART) */}
-            <div className="rounded-2xl shadow-sm p-4 space-y-6">
+            <div className="rounded-res-lg bg-res-card shadow-res-low p-4 space-y-6">
               <div className="flex justify-between items-center">
                 <Sk className="h-5 w-40 rounded" />
                 <div className="flex gap-2">
@@ -474,56 +474,59 @@ export function UniversalLoader({ fullscreen = false, size = 48, type = 'default
         <div className="p-4 md:p-6 space-y-6">
           {/* HEADER */}
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <Sk className="h-6 w-48 rounded" />
+            <div className="space-y-2">
+              <Sk className="h-7 w-48 rounded" />
+              <Sk className="h-4 w-80 rounded" />
+            </div>
 
             <div className="flex gap-2">
-              <Sk className="h-10 w-24 rounded-lg" />
-              <Sk className="h-10 w-36 rounded-lg" />
-              <Sk className="h-10 w-28 rounded-lg" />
+              <Sk className="h-10 w-24 rounded-full" />
+              <Sk className="h-10 w-36 rounded-full" />
             </div>
           </div>
 
           {/* FILTER BAR */}
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-            {/* Tabs */}
-            <div className="flex gap-2">
-              <Sk className="h-9 w-24 rounded-lg" />
-              <Sk className="h-9 w-32 rounded-lg" />
-            </div>
+          <div className="rounded-res-lg bg-res-card p-4 shadow-res-low">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+              {/* Tabs */}
+              <div className="flex gap-2">
+                <Sk className="h-9 w-24 rounded-res-sm" />
+                <Sk className="h-9 w-32 rounded-res-sm" />
+              </div>
 
-            {/* Filters */}
-            <div className="flex flex-wrap gap-2">
-              <Sk className="h-10 w-64 rounded-lg" />
-              <Sk className="h-10 w-36 rounded-lg" />
-              <Sk className="h-10 w-40 rounded-lg" />
-              <Sk className="h-10 w-20 rounded-lg" />
+              {/* Filters */}
+              <div className="flex flex-wrap gap-2">
+                <Sk className="h-10 w-64 rounded-res-sm" />
+                <Sk className="h-10 w-36 rounded-res-sm" />
+                <Sk className="h-10 w-40 rounded-res-sm" />
+                <Sk className="h-10 w-20 rounded-res-sm" />
+              </div>
             </div>
           </div>
 
           {/* CARDS */}
-          <div className="flex flex-nowrap sm:grid grid-cols-1 sm:grid-cols-2 overflow-auto hide-scrollbar lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6 m-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {Array.from({ length: 6 }).map((_, i) => (
               <div
                 key={i}
-                className="rounded-2xl snap-start min-w-[250px] sm:min-w-0 w-[185px] sm:w-auto shadow-md overflow-hidden"
+                className="rounded-res-md border border-res-line bg-res-card shadow-res-low overflow-hidden"
               >
                 <Sk className="h-44 w-full" />
 
-                <div className="p-4 space-y-4">
+                <div className="p-4 space-y-3">
                   <Sk className="h-5 w-2/3 rounded" />
 
                   <div className="flex gap-2">
                     <Sk className="h-5 w-16 rounded-full" />
                     <Sk className="h-5 w-14 rounded-full" />
-                    <Sk className="h-5 w-12 rounded-full" />
                   </div>
 
                   <Sk className="h-4 w-5/6 rounded" />
                   <Sk className="h-6 w-20 rounded" />
 
-                  <div className="flex justify-between items-center">
+                  <div className="flex justify-between items-center border-t border-res-line pt-3">
                     <Sk className="h-4 w-24 rounded" />
-                    <Sk className="h-4 w-20 rounded" />
+                    <Sk className="h-8 w-20 rounded-full" />
                   </div>
                 </div>
               </div>

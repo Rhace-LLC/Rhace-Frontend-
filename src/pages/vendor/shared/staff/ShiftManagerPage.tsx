@@ -9,10 +9,8 @@ const ShiftManagerPage = () => {
   return (
     <div className="p-6 md:p-8 space-y-6">
       <DashboardPageHeader
-        heading="Shift Manager"
+        title="Shift Manager"
         subtitle="Manage staff shifts, rosters, and assignments"
-        primaryBtnText="Refresh"
-        primaryBtnAction={handleRefresh}
       />
       <ShiftManagerTab onRefresh={handleRefresh} />
     </div>

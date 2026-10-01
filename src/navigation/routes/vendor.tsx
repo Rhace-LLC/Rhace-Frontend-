@@ -98,7 +98,7 @@ const dashboardRestaurantRoutes: RouteObject[] = [
   { path: 'restaurant/menu', element: <MenuDashboard /> },
   { path: 'restaurant/menu/categories', element: <CategoriesPage kind="menu" /> },
   { path: 'restaurant/menu/addons', element: <AddOnsPage /> },
-  { path: 'restaurant/menu/drinks', element: <DrinksTable /> },
+  { path: 'restaurant/menu/drinks', element: <DrinksTable vertical="restaurant" /> },
   { path: 'restaurant/menu/drink-categories', element: <CategoriesPage kind="drink" /> },
   { path: 'restaurant/menu/item/new', element: <CreateMenuItem /> },
   { path: 'restaurant/menu/items/:id/edit', element: <CreateMenuItem /> },
@@ -156,7 +156,7 @@ const hotelVendorRoutes: RouteObject[] = [
 
 const clubVendorRoutes: RouteObject[] = [
   { path: 'club', element: <ClubDashboard /> },
-  { path: 'club/drinks', element: <DrinksTable /> },
+  { path: 'club/drinks', element: <DrinksTable vertical="club" /> },
   { path: 'club/drinks/categories', element: <CategoriesPage kind="drink" /> },
   { path: 'club/addons', element: <AddOnsPage /> },
   { path: 'club/tables', element: <ManageTables /> },

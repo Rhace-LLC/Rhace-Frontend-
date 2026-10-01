@@ -5,17 +5,21 @@ import Footer from '@/navigation/user_layout/_sub_component/Footer';
 import { Modal } from '@/components/others/RhaceModal';
 import {
   money,
+  OrderBuilder,
   OrderPaymentChoiceModal,
+  ordersApi,
   useMyOrders,
   useVendorBottleSets,
   useVendorDishes,
   useVendorDrinks,
+  type CreateOrderLineInput,
   type OrderDto,
   type OrderItemType,
   type OrderStatus,
 } from '@/features/orders';
 import { PaymentStatusBadge } from '@/features/reservations';
-import { useMemo, useState } from 'react';
+import { userService } from '@/services/user.service';
+import { useEffect, useMemo, useState } from 'react';
 import { GlassWater, Package, UtensilsCrossed } from 'lucide-react';
 
 const SOURCE_LABEL: Record<string, string> = {
@@ -26,6 +30,7 @@ const SOURCE_LABEL: Record<string, string> = {
 
 const ORDER_STATUS_LABEL: Record<OrderStatus, string> = {
   open: 'Open',
+  awaiting_confirmation: 'Awaiting confirmation',
   placed: 'Placed',
   preparing: 'Being prepared',
   ready: 'Ready',
@@ -36,6 +41,7 @@ const ORDER_STATUS_LABEL: Record<OrderStatus, string> = {
 
 const ORDER_STATUS_STYLE: Record<OrderStatus, string> = {
   open: 'bg-res-surface text-res-ink-muted',
+  awaiting_confirmation: 'bg-amber-50 text-amber-700',
   placed: 'bg-res-secondary text-res-brand',
   preparing: 'bg-res-brand text-res-ink-inverted',
   ready: 'bg-amber-50 text-amber-700',
@@ -199,15 +205,71 @@ function OrderDetailsModal({
   order,
   onClose,
   onPay,
+  onUpdated,
 }: {
   order: OrderDto | null;
   onClose: () => void;
   onPay: (order: OrderDto) => void;
+  onUpdated: (order: OrderDto) => void;
 }) {
   const vendorId = order?.vendor;
   const dishesQuery = useVendorDishes(vendorId);
   const drinksQuery = useVendorDrinks(vendorId);
   const bottleSetsQuery = useVendorBottleSets(vendorId);
+
+  // Add-more-items mode: same menu, submitted onto this order.
+  const [adding, setAdding] = useState(false);
+  const [menuVertical, setMenuVertical] = useState<string | undefined>(order?.vertical);
+  const [menuLoading, setMenuLoading] = useState(false);
+  const [addingBusy, setAddingBusy] = useState(false);
+
+  // Vendor type drives the menu (dishes vs bottle sets); quick orders often
+  // carry no `vertical`, so resolve it from the venue when add mode opens.
+  useEffect(() => {
+    if (!adding || menuVertical || !order) return;
+    let active = true;
+    setMenuLoading(true);
+    userService
+      .getVendor(order.vendor)
+      .then((body) => {
+        const venue = ((body as { data?: unknown })?.data ?? body) as {
+          vendorType?: string;
+        };
+        if (active) setMenuVertical(venue?.vendorType?.toLowerCase());
+      })
+      .catch(() => undefined)
+      .finally(() => {
+        if (active) setMenuLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [adding, menuVertical, order]);
+
+  const openAdding = () => {
+    setMenuVertical(order?.vertical);
+    setAdding(true);
+  };
+
+  const handleAdd = async (newLines: CreateOrderLineInput[]) => {
+    if (!order || !newLines.length) return;
+    try {
+      setAddingBusy(true);
+      for (const line of newLines) {
+        await ordersApi.addLine(order._id, line);
+      }
+      const updated = await ordersApi.get(order._id);
+      setAdding(false);
+      onUpdated(updated);
+    } catch (error) {
+      toast.error(
+        (error as { response?: { data?: { message?: string } } })?.response?.data?.message ||
+          'Could not add items.',
+      );
+    } finally {
+      setAddingBusy(false);
+    }
+  };
 
   const catalogMap = useMemo(() => {
     const map = new Map<string, CatalogDetail>();
@@ -244,6 +306,7 @@ function OrderDetailsModal({
   const placedAt = formatPlacedAt(order.createdAt);
   const itemCount = lines.reduce((sum, l) => sum + (l.quantity ?? 0), 0);
   const shortId = order._id.slice(-6).toUpperCase();
+  const editable = !['completed', 'cancelled'].includes(order.status);
   return (
     <Modal
       isOpen
@@ -290,13 +353,48 @@ function OrderDetailsModal({
           </p>
         )}
 
-        {lines.length === 0 ? (
+        {adding ? (
+          <div className="space-y-3">
+            <button
+              type="button"
+              onClick={() => setAdding(false)}
+              disabled={addingBusy}
+              className="type-res-small font-semibold text-res-ink-muted transition-colors hover:text-res-brand disabled:opacity-50"
+            >
+              ← Back to order
+            </button>
+            {menuLoading ? (
+              <div className="h-64 animate-pulse rounded-res-lg bg-res-surface" />
+            ) : (
+              <OrderBuilder
+                vendorId={order.vendor}
+                vertical={menuVertical}
+                submitLabel="Add to order"
+                submitting={addingBusy}
+                onSubmit={handleAdd}
+              />
+            )}
+          </div>
+        ) : (
+          <>
+            {lines.length === 0 ? (
           <p className="type-res-small font-normal text-res-ink-muted">No items on this order.</p>
         ) : (
           <div className="space-y-3">
-            <p className="type-res-small font-semibold tracking-wide text-res-ink-muted uppercase">
-              Items ({itemCount})
-            </p>
+            <div className="flex items-center justify-between gap-2">
+              <p className="type-res-small font-semibold tracking-wide text-res-ink-muted uppercase">
+                Items ({itemCount})
+              </p>
+              {editable && (
+                <button
+                  type="button"
+                  onClick={openAdding}
+                  className="type-res-small cursor-pointer rounded-full bg-res-surface px-3.5 py-1.5 font-semibold text-res-ink transition-colors hover:text-res-brand"
+                >
+                  + Add more
+                </button>
+              )}
+            </div>
             <ul className="space-y-3">
               {lines.map((line) => {
                 const detail = catalogMap.get(`${line.itemType}:${line.itemId}`);
@@ -429,6 +527,8 @@ function OrderDetailsModal({
             Order note: {order.notes}
           </p>
         )}
+          </>
+        )}
       </div>
     </Modal>
   );
@@ -453,6 +553,17 @@ const UserOrdersPage = () => {
     );
   };
 
+  /** Fresh order after the guest adds items: refresh + collect new balance. */
+  const handleUpdated = (updated: OrderDto) => {
+    setSelected(updated);
+    ordersQuery.refetch();
+    if (updated.balance > 0) {
+      setPayOrder(updated);
+    } else {
+      toast.success('Items added to your order');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-res-surface">
       <Header />
@@ -474,6 +585,7 @@ const UserOrdersPage = () => {
             >
               {[
                 { id: '', label: 'All' },
+                { id: 'awaiting_confirmation', label: 'Awaiting confirmation' },
                 { id: 'placed', label: 'Placed' },
                 { id: 'preparing', label: 'Being prepared' },
                 { id: 'ready', label: 'Ready' },
@@ -533,7 +645,12 @@ const UserOrdersPage = () => {
         <Footer />
       </div>
 
-      <OrderDetailsModal order={selected} onClose={() => setSelected(null)} onPay={handlePay} />
+      <OrderDetailsModal
+        order={selected}
+        onClose={() => setSelected(null)}
+        onPay={handlePay}
+        onUpdated={handleUpdated}
+      />
       <OrderPaymentChoiceModal
         order={payOrder}
         onClose={() => setPayOrder(null)}

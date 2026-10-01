@@ -52,7 +52,7 @@ const Sidebar = ({ isOpen, onClose, onNavigate, type }: SidebarProps) => {
   const { menuItems, bottomItems } = useMenuConfig(type);
   const location = useLocation();
   const navigate = useNavigate();
-  const { logout } = useAuth();
+  const { logout, vendor } = useAuth();
 
   const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false);
   const [pendingLogoutItem, setPendingLogoutItem] = useState<SideMenuItem | null>(null);
@@ -69,7 +69,6 @@ const Sidebar = ({ isOpen, onClose, onNavigate, type }: SidebarProps) => {
   }, [location.pathname, type]);
 
   const executeLogout = (item: SideMenuItem) => {
-    console.log('Sidebar: logging out verified');
     logout('vendor');
 
     setTimeout(() => {
@@ -100,7 +99,9 @@ const Sidebar = ({ isOpen, onClose, onNavigate, type }: SidebarProps) => {
     }
   };
 
+  // The venue name per the presentation vocabulary (never "Vendor").
   const getBusinessName = () => {
+    if (vendor?.businessName) return vendor.businessName;
     return type === 'hotel'
       ? 'Hotel 1 - HQ'
       : type === 'restaurant'
@@ -112,23 +113,28 @@ const Sidebar = ({ isOpen, onClose, onNavigate, type }: SidebarProps) => {
     <>
       {/* Desktop Sidebar */}
       <div className="hidden lg:flex lg:shrink-0">
-        <div className="flex flex-col w-64 bg-emerald-950 text-white">
+        <div className="flex w-64 flex-col bg-emerald-950 pt-0">
           {/* Logo */}
-          <div className="flex items-center h-16 px-4">
-            <div className="flex items-center">
-              <img src={logo} alt="Rhace Logo" className="w-20 h-20 object-contain" />
+          <div className="px-4 py-2.5">
+            <div className="flex items-center justify-center rounded-md bg-[#083808] px-0 py-[13px]">
+              <img src={logo} alt="Rhace Logo" className="h-[22px] w-auto object-contain" />
             </div>
           </div>
 
           {/* Business selector */}
-          <div className="px-4 py-3 border-b border-teal-700">
-            <div className="bg-slate-300 text-gray-900 px-3 py-2 rounded text-sm">
-              {getBusinessName()}
+          <div className="border-b border-t border-white/10 px-4 py-3 mt-0">
+            <div className="rounded-res-sm bg-white/10 px-3 py-2">
+              <p className="type-res-small truncate font-semibold text-slate-100">
+                {getBusinessName()}
+              </p>
+              <p className="type-res-caption font-normal text-white/60 capitalize">
+                {type ?? 'Venue'}
+              </p>
             </div>
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 py-4 space-y-1">
+          <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
             {menuItems.map((item) => (
               <div key={item.label}>
                 <SidebarItem
@@ -154,7 +160,7 @@ const Sidebar = ({ isOpen, onClose, onNavigate, type }: SidebarProps) => {
           </nav>
 
           {/* Bottom items */}
-          <div className="px py-4 space-y-1">
+          <div className="space-y-1 border-t border-white/10 px-3 py-4">
             {bottomItems.map((item) => (
               <SidebarItem key={item.label} item={item} onClick={handleItemClick} />
             ))}
@@ -163,90 +169,98 @@ const Sidebar = ({ isOpen, onClose, onNavigate, type }: SidebarProps) => {
       </div>
 
       {/* Mobile Navbar */}
-      <div className="fixed md:hidden bottom-0 left-0 right-0 z-10 w-full bg-transparent py-4 px-2 flex gap-2 items-center">
-        <button className="p-4 bg-white rounded-full border">
-          <Search className="shrink-0 size-5" />
+      <div className="fixed bottom-0 right-0 left-0 z-10 flex w-full items-center gap-2 bg-transparent px-2 py-4 md:hidden">
+        <button
+          aria-label="Search"
+          className="cursor-pointer rounded-full bg-emerald-950 p-4 text-slate-100 shadow-res-low transition-colors outline-none hover:text-white focus-visible:ring-2 focus-visible:ring-white"
+        >
+          <Search className="size-5 shrink-0" />
         </button>
-        <nav className="flex items-center justify-between flex-1 gap-1 bg-white border rounded-full p-1">
+        <nav
+          aria-label="Primary"
+          className="flex flex-1 items-center justify-between gap-1 rounded-full bg-emerald-950 p-1 shadow-res-low"
+        >
           {menuItems.map((item) => {
             const target = item.children?.[0]?.path ?? item.path;
             return (
               <button
                 key={item.label}
+                aria-label={item.label}
+                aria-current={item.active ? 'page' : undefined}
                 onClick={() => handleItemClick({ ...item, path: target, children: undefined })}
-                className={`p-3 rounded-full ${
+                className={`cursor-pointer rounded-full p-3 transition-colors outline-none focus-visible:ring-2 focus-visible:ring-white ${
                   item.active
-                    ? 'bg-teal-700 text-white'
-                    : 'text-[#606368] hover:bg-teal-700 hover:text-white'
+                    ? 'bg-white text-emerald-950 shadow-res-low'
+                    : 'text-slate-100/70 hover:bg-white/10 hover:text-white'
                 }`}
               >
-                <item.icon className="w-5 shrink-0 h-5" />
+                <item.icon className="h-5 w-5 shrink-0" />
               </button>
             );
           })}
           <button
+            aria-label="Open menu"
             onClick={() => {}}
-            className={`p-3 rounded-full text-[#606368] hover:bg-teal-700 hover:text-white`}
+            className="cursor-pointer rounded-full p-3 text-slate-100/70 transition-colors outline-none hover:bg-white/10 hover:text-white focus-visible:ring-2 focus-visible:ring-white"
           >
-            <Menu className="w-5 shrink-0 h-5" />
+            <Menu className="h-5 w-5 shrink-0" />
           </button>
         </nav>
       </div>
 
       {/* Mobile Sidebar */}
       <div
-        className={`fixed inset-y-0 left-0 z-30 w-64 bg-teal-800 text-white transform transition-transform duration-300 ease-in-out lg:hidden ${
+        className={`fixed inset-y-0 left-0 z-30 flex w-64 transform flex-col bg-emerald-950 pt-2 transition-transform duration-300 ease-in-out lg:hidden ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
         {/* Mobile Logo with close button */}
-        <div className="flex items-center justify-between h-16 px-4 bg-teal-900">
-          <div className="flex items-center">
-            <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center mr-3">
-              <div className="w-6 h-6 bg-teal-800 rounded-full"></div>
+        <div className="border-b border-white/10 p-4">
+          <div className="flex items-center gap-2">
+            <div className="flex flex-1 items-center justify-center rounded-md bg-[#083808] px-0 py-[13px]">
+              <img src={logo} alt="Rhace Logo" className="h-[19px] w-auto object-contain" />
             </div>
-            <span className="text-xl font-bold">Rhace</span>
+            <button
+              onClick={onClose}
+              aria-label="Close menu"
+              className="cursor-pointer rounded-res-sm p-1.5 text-slate-100/70 transition-colors outline-none hover:bg-white/10 hover:text-white focus-visible:ring-2 focus-visible:ring-white"
+            >
+              <X className="h-5 w-5" />
+            </button>
           </div>
-          <button onClick={onClose} className="text-white hover:bg-teal-700 p-1 rounded">
-            <X className="w-6 h-6" />
-          </button>
         </div>
 
         {/* Business selector */}
-        <div className="px-4 py-3 border-b border-teal-700">
-          <div className="bg-teal-700 px-3 py-2 rounded text-sm">{getBusinessName()}</div>
+        <div className="border-b border-white/10 px-4 py-3">
+          <div className="rounded-res-sm bg-white/10 px-3 py-2">
+            <p className="type-res-small truncate font-semibold text-slate-100">
+              {getBusinessName()}
+            </p>
+            <p className="type-res-caption font-normal text-white/60 capitalize">
+              {type ?? 'Venue'}
+            </p>
+          </div>
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 px-4 py-4 space-y-1">
+        <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
           {menuItems.map((item) => (
             <div key={item.label}>
-              <button
-                onClick={() => handleItemClick(item)}
-                className={`w-full flex items-center px-3 py-2 rounded-lg text-left transition-colors duration-200 ${
-                  item.active
-                    ? 'bg-teal-700 text-white'
-                    : 'text-teal-100 hover:bg-teal-700 hover:text-white'
-                }`}
-              >
-                <item.icon className="w-5 h-5 mr-3" />
-                <span className="flex-1">{item.label}</span>
-              </button>
+              <SidebarItem
+                item={item}
+                onClick={handleItemClick}
+                hasChildren={!!item.children?.length}
+                expanded={!!expandedItems[item.label]}
+              />
               {item.children?.length && expandedItems[item.label] && (
                 <div className="mt-1 space-y-1">
                   {item.children.map((child) => (
-                    <button
+                    <SidebarItem
                       key={child.label}
-                      onClick={() => handleItemClick(child)}
-                      className={`w-full flex items-center pl-10 pr-3 py-2 rounded-lg text-left transition-colors duration-200 ${
-                        child.active
-                          ? 'bg-teal-700 text-white'
-                          : 'text-teal-100 hover:bg-teal-700 hover:text-white'
-                      }`}
-                    >
-                      <child.icon className="w-4 h-4 mr-3" />
-                      {child.label}
-                    </button>
+                      item={child}
+                      onClick={handleItemClick}
+                      indent
+                    />
                   ))}
                 </div>
               )}
@@ -255,20 +269,9 @@ const Sidebar = ({ isOpen, onClose, onNavigate, type }: SidebarProps) => {
         </nav>
 
         {/* Bottom items */}
-        <div className="px-4 py-4 border-t border-teal-700 space-y-1">
+        <div className="space-y-1 border-t border-white/10 px-3 py-4">
           {bottomItems.map((item) => (
-            <button
-              key={item.label}
-              onClick={() => handleItemClick(item)}
-              className={`w-full flex items-center px-3 py-2 rounded-lg text-left transition-colors duration-200 ${
-                item.active
-                  ? 'bg-teal-700 text-white'
-                  : 'text-teal-100 hover:bg-teal-700 hover:text-white'
-              }`}
-            >
-              <item.icon className="w-5 h-5 mr-3" />
-              {item.label}
-            </button>
+            <SidebarItem key={item.label} item={item} onClick={handleItemClick} />
           ))}
         </div>
       </div>
@@ -285,7 +288,6 @@ const Sidebar = ({ isOpen, onClose, onNavigate, type }: SidebarProps) => {
           }
         }}
         onCancel={() => {
-          console.log('Logout aborted');
           setPendingLogoutItem(null);
         }}
       />

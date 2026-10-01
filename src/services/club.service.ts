@@ -53,6 +53,22 @@ class ClubService {
     return res.data;
   }
 
+  async getDrink(id: string) {
+    const res = await api.get(`/drinks/${id}`);
+    const body = res.data as { drink?: unknown; data?: unknown };
+    return (body?.drink ?? body?.data ?? res.data) as Record<string, any>;
+  }
+
+  async updateDrinkType(id: string, drinksData: Record<string, unknown>) {
+    const res = await api.put(`/drinks/${id}`, drinksData);
+    return res.data;
+  }
+
+  async deleteDrink(id: string) {
+    const res = await api.delete(`/drinks/${id}`);
+    return res.data;
+  }
+
   async getTables(clubId: string) {
     const res = await api.get(`/tables?clubId=${clubId}`);
     return res.data;

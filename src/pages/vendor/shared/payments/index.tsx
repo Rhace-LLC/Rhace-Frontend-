@@ -3,6 +3,7 @@ import { useSelector } from 'react-redux';
 import type { RootState } from '@/redux/store';
 import { useAuth } from '@/contexts/AuthContext';
 
+import DashboardPageHeader from "@/components/dashboard/DashboardPageHeader";
 import PaymentStats from "./components/PaymentStats"
 import PaymentInformation from "./components/PaymentInformation"
 import EarningsTrends from "./components/EarningTrends";
@@ -13,6 +14,11 @@ const VendorPaymentOverview = () => {
 
   return (
     <div className="md:p-6 py-2 mb-14 space-y-6">
+
+        <DashboardPageHeader
+          title="Payments"
+          subtitle="Payouts, earnings and transaction history."
+        />
 
         <PaymentStats />
 
