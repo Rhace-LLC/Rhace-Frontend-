@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
+import DashboardPageHeader from '@/components/dashboard/DashboardPageHeader';
 import { addOnService, type AddOnDto, type AddOnTarget } from '@/services/addon.service';
 
 const inputClass =
@@ -110,12 +111,10 @@ export function AddOnsPage() {
 
   return (
     <div className="space-y-5 p-4 md:p-6">
-      <div>
-        <h1 className="text-xl font-semibold text-gray-900">Add-ons</h1>
-        <p className="mt-1 text-sm text-gray-500">
-          Extras guests can attach to dishes and drinks (e.g. sparklers, ice buckets, sides).
-        </p>
-      </div>
+      <DashboardPageHeader
+        title="Add-ons"
+        subtitle="Extras guests can attach to dishes and drinks (e.g. sparklers, ice buckets, sides)."
+      />
 
       <div className="grid gap-3 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm md:grid-cols-4">
         <label className="flex flex-col gap-1 text-xs text-gray-500 md:col-span-2">

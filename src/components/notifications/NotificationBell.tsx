@@ -79,8 +79,8 @@ export function NotificationBell() {
     }
   };
 
-  if (failed && items.length === 0) return null;
-
+  // The bell itself always renders — a failed feed shows an error state
+  // inside the panel instead of making the bell vanish.
   return (
     <div ref={boxRef} className="relative">
       <button
@@ -113,7 +113,14 @@ export function NotificationBell() {
             )}
           </div>
           <ul className="max-h-80 overflow-y-auto">
-            {items.length === 0 ? (
+            {failed && items.length === 0 ? (
+              <li className="px-4 py-8 text-center">
+                <p className="type-res-h3 text-res-ink">Couldn&apos;t load notifications</p>
+                <p className="type-res-small mt-1 font-normal text-res-ink-muted">
+                  Check your connection and try again.
+                </p>
+              </li>
+            ) : items.length === 0 ? (
               <li className="px-4 py-8 text-center">
                 <p className="type-res-h3 text-res-ink">All caught up</p>
                 <p className="type-res-small mt-1 font-normal text-res-ink-muted">

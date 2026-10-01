@@ -1,4 +1,5 @@
 
+import DashboardPageHeader from '@/components/dashboard/DashboardPageHeader';
 import UniversalLoader from '@/components/user/ui/LogoLoader';
 import { BookingsIcon, GuestsIcon, PendingPaymentIcon, PrepaidIcon } from '@/components/icons/icons';
 import { reservationService } from '@/services/reservation.service';
@@ -156,12 +157,10 @@ const HotelDashboard = () => {
           )}
 
           {/* Header */}
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">
-              Welcome Back, {capitalize(vendor.businessName)}!
-            </h1>
-            <p className="text-gray-600 mt-1">Here's what is happening with your hotel today.</p>
-          </div>
+          <DashboardPageHeader
+            title={`Welcome Back, ${capitalize(vendor.businessName)}!`}
+            subtitle="Here's what is happening with your hotel today."
+          />
 
           {/* Stats Grid */}
           {/* FIX: old getHotelStats() recalculated pending payments client-side from

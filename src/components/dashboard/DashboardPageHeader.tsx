@@ -1,39 +1,28 @@
-import { Button } from '@/components/ui/button';
-import { ReactNode } from 'react';
+import type { ReactNode } from 'react';
 
 interface DashboardPageHeaderProps {
-  heading: string;
-  subtitle?: string;
-  primaryBtn?: ReactNode;
-  primaryBtnText?: string;
-  primaryBtnAction?: () => void;
-  secondaryBtn?: ReactNode;
+  /** Page title — plain words per the presentation vocabulary standard. */
+  title: ReactNode;
+  /** One-line helper under the title. */
+  subtitle?: ReactNode;
+  /** Right-side actions (buttons, links, selects). */
+  actions?: ReactNode;
 }
 
-const DashboardPageHeader = ({
-  heading,
-  subtitle,
-  primaryBtn,
-  primaryBtnText,
-  primaryBtnAction,
-  secondaryBtn,
-}: DashboardPageHeaderProps) => {
+/**
+ * Standard dashboard page heading: title + subtitle on the left, optional
+ * actions on the right. Same pattern as the orders and reservations pages.
+ */
+const DashboardPageHeader = ({ title, subtitle, actions }: DashboardPageHeaderProps) => {
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">{heading}</h1>
-        {subtitle && <p className="text-sm text-muted-foreground mt-1">{subtitle}</p>}
+    <div className="flex flex-wrap items-start justify-between gap-3">
+      <div className="min-w-0">
+        <h1 className="type-res-h2 text-res-ink">{title}</h1>
+        {subtitle && (
+          <p className="type-res-body mt-1 font-normal text-res-ink-muted">{subtitle}</p>
+        )}
       </div>
-      <div className="flex items-center gap-3">
-        {primaryBtn ? (
-          primaryBtn
-        ) : primaryBtnAction ? (
-          <Button onClick={primaryBtnAction}>
-            {primaryBtnText || 'Action'}
-          </Button>
-        ) : null}
-        {secondaryBtn || null}
-      </div>
+      {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
     </div>
   );
 };

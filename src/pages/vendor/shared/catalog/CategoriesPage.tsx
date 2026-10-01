@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
+import DashboardPageHeader from '@/components/dashboard/DashboardPageHeader';
 import { menuCategoryService, type CategoryDto } from '@/services/menuCategory.service';
 import { drinkCategoryService } from '@/services/drinkCategory.service';
 
@@ -97,12 +98,10 @@ export function CategoriesPage({ kind }: { kind: Kind }) {
 
   return (
     <div className="space-y-5 p-4 md:p-6">
-      <div>
-        <h1 className="text-xl font-semibold text-gray-900">{COPY[kind].title}</h1>
-        <p className="mt-1 text-sm text-gray-500">
-          Group your items so guests can browse them easily.
-        </p>
-      </div>
+      <DashboardPageHeader
+        title={COPY[kind].title}
+        subtitle="Group your items so guests can browse them easily."
+      />
 
       <div className="flex flex-wrap items-end gap-3 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
         <label className="flex min-w-[220px] flex-1 flex-col gap-1 text-xs text-gray-500">

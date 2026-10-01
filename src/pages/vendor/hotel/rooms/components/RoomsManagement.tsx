@@ -16,6 +16,7 @@ import ViewToggle from './ViewToggle';
 import NoDataFallback from '@/components/NoDataFallback';
 import UniversalLoader from '@/components/user/ui/LogoLoader';
 import RoomFilter, { type RoomFilterHandle } from './RoomFilter';
+import DashboardPageHeader from '@/components/dashboard/DashboardPageHeader';
 import DashboardButton from '@/components/dashboard/ui/DashboardButton';
 import { Add } from '@/components/dashboard/ui/svg';
 import { useAuth } from '@/contexts/AuthContext';
@@ -350,10 +351,9 @@ const RoomsManagementComponent = ({
   return (
     <div className="min-h-screen text-gray-900 p-4 sm:p-0">
       <div className="space-y-6">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <h1 className="text-xl font-bold text-gray-900">Room Management</h1>
-          <div className="flex items-center gap-3">
-            {/* <ViewToggle view={view} onViewChange={setView} /> */}
+        <DashboardPageHeader
+          title="Room Management"
+          actions={
             <DashboardButton
               onClick={handleAddRoom}
               variant="primary"
@@ -361,8 +361,8 @@ const RoomsManagementComponent = ({
               icon={<Add className="" />}
               className="flex items-center px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors shadow-sm"
             />
-          </div>
-        </div>
+          }
+        />
 
         <RoomFilter
           ref={filterRef}

@@ -9,10 +9,8 @@ const ReportsPage = () => {
   return (
     <div className="p-6 md:p-8 space-y-6">
       <DashboardPageHeader
-        heading="Staff Analytics"
+        title="Staff Analytics"
         subtitle="Performance metrics and analytics by staff"
-        primaryBtnText="Refresh"
-        primaryBtnAction={handleRefresh}
       />
       <ReportsTab onRefresh={handleRefresh} />
     </div>

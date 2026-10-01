@@ -23,17 +23,20 @@ export function SidebarItem({ item, onClick, hasChildren, expanded, indent }: Si
   return (
     <button
       onClick={() => onClick(item)}
-      className={`${indent ? 'w-[86%] ml-[6%] pl-9' : 'w-[90%] pl-7'} flex items-center py-2 gap-3 rounded-tr-[36px] rounded-br-[36px] text-left transition-colors duration-200 ${
+      aria-current={item.active ? 'page' : undefined}
+      className={`type-res-small flex w-full cursor-pointer items-center gap-3 rounded-res-sm px-3 py-2.5 text-left font-semibold transition-colors outline-none focus-visible:ring-2 focus-visible:ring-white ${
+        indent ? 'pl-9' : ''
+      } ${
         item.active
-          ? 'bg-teal-700 text-white shadow-[0px_1px_3px_0px_rgba(122,122,122,0.10)]'
-          : 'text-teal-100 hover:bg-teal-700 hover:text-white'
+          ? 'bg-white text-emerald-950 shadow-res-medium'
+          : 'text-slate-100/80 hover:bg-white/10 hover:text-white'
       }`}
     >
-      <Icon className="w-5 h-5" />
-      <span className="flex-1">{item.label}</span>
+      <Icon className="h-[18px] w-[18px] shrink-0" />
+      <span className="flex-1 truncate">{item.label}</span>
       {hasChildren && (
         <ChevronDown
-          className={`mr-4 w-4 h-4 transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`}
+          className={`h-4 w-4 shrink-0 transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`}
         />
       )}
     </button>

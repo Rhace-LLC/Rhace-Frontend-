@@ -18,6 +18,7 @@ const SOURCE_LABEL: Record<string, string> = {
 
 const ORDER_STATUS_LABEL: Record<OrderStatus, string> = {
   open: 'Open',
+  awaiting_confirmation: 'Awaiting confirmation',
   placed: 'Placed',
   preparing: 'Preparing',
   ready: 'Ready',
@@ -28,6 +29,7 @@ const ORDER_STATUS_LABEL: Record<OrderStatus, string> = {
 
 const ORDER_STATUS_STYLE: Record<OrderStatus, string> = {
   open: 'bg-res-surface text-res-ink-muted',
+  awaiting_confirmation: 'bg-amber-50 text-amber-700',
   placed: 'bg-res-secondary text-res-brand',
   preparing: 'bg-res-brand text-res-ink-inverted',
   ready: 'bg-amber-50 text-amber-700',
@@ -39,6 +41,7 @@ const ORDER_STATUS_STYLE: Record<OrderStatus, string> = {
 const STATUS_OPTIONS = [
   { value: '', label: 'All statuses' },
   { value: 'open', label: 'Open' },
+  { value: 'awaiting_confirmation', label: 'Awaiting confirmation' },
   { value: 'placed', label: 'Placed' },
   { value: 'preparing', label: 'Preparing' },
   { value: 'ready', label: 'Ready' },
@@ -295,7 +298,9 @@ export function ManagerOrdersTab() {
     const outstanding = orders.reduce((sum, o) => sum + (o.balance ?? 0), 0);
     const today = orders.filter((o) => isToday(o.createdAt)).length;
     const active = orders.filter((o) =>
-      ['open', 'placed', 'preparing', 'ready', 'served'].includes(o.status),
+      ['open', 'awaiting_confirmation', 'placed', 'preparing', 'ready', 'served'].includes(
+        o.status,
+      ),
     ).length;
     return [
       { label: 'Total orders', value: String(total) },

@@ -1,18 +1,29 @@
-import { ChevronDown, Menu, User } from 'lucide-react';
-import { LogOut, Settings, User as UserIcon } from 'lucide-react';
+import { ChevronDown, Menu, User, User as UserIcon, Settings, LogOut } from 'lucide-react';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import type { AuthVendor } from '@/types';
 
 interface HeaderProps {
   onMenuClick: () => void;
 }
 
+const VERTICAL_TITLE: Record<string, string> = {
+  hotel: 'Hotel Management System',
+  club: 'Club Management System',
+  restaurant: 'Restaurant Management System',
+};
+
+function verticalFromPath(pathname: string): string {
+  if (pathname.includes('/dashboard/hotel')) return 'hotel';
+  if (pathname.includes('/dashboard/club')) return 'club';
+  return 'restaurant';
+}
+
 const Header = ({ onMenuClick }: HeaderProps) => {
-  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   const { vendor, logout } = useAuth();
   const [profile, setProfile] = useState<AuthVendor | null>(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -30,112 +41,142 @@ const Header = ({ onMenuClick }: HeaderProps) => {
     }
   }, [vendor]);
 
+  useEffect(() => {
+    if (!dropdownOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setDropdownOpen(false);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [dropdownOpen]);
+
   const handleLogout = () => {
     logout('vendor');
   };
 
   const handleProfile = () => {
+    setDropdownOpen(false);
     navigate(`/dashboard/${vendor?.vendorType}/profile`);
   };
 
   const handleSettings = () => {
+    setDropdownOpen(false);
     navigate(`/dashboard/${vendor?.vendorType}/settings`);
   };
 
   return (
-    <header className="bg-white border-b border-gray-200 h-16 hidden md:flex items-center px-6 relative">
+    <header className="relative hidden h-16 items-center border-b border-res-line bg-res-card px-6 md:flex">
       {/* Mobile menu button */}
       <button
         onClick={onMenuClick}
-        className="lg:hidden mr-4 p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors z-10"
+        aria-label="Open menu"
+        className="z-10 mr-3 rounded-res-sm p-2 text-res-ink-muted transition-colors outline-none hover:bg-res-surface hover:text-res-ink focus-visible:ring-2 focus-visible:ring-res-brand lg:hidden"
       >
-        <Menu className="w-6 h-6" />
+        <Menu className="h-5 w-5" />
       </button>
 
+      {/* Dashboard title */}
+      <div className="min-w-0">
+        <h1 className="font-semibold tracking-tight truncate text-gray-600">
+          {VERTICAL_TITLE[verticalFromPath(pathname)]}
+        </h1>
+      </div>
+
       {/* Right side items */}
-      <div className="ml-auto flex items-center space-x-4">
+      <div className="ml-auto flex items-center gap-1.5">
         <NotificationBell />
 
         {/* User profile dropdown */}
         <div className="relative">
           <button
             onClick={() => setDropdownOpen(!dropdownOpen)}
-            className="flex items-center space-x-3 p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            aria-expanded={dropdownOpen}
+            aria-label="Account menu"
+            className="flex cursor-pointer items-center gap-2.5 rounded-full p-1.5 pr-2 transition-colors outline-none hover:bg-res-surface focus-visible:ring-2 focus-visible:ring-res-brand"
           >
             {profile?.logo ? (
               <img
                 src={profile.logo}
-                alt="Vendor Logo"
-                className="w-9 h-9 rounded-full object-cover ring-2 ring-gray-200"
+                alt="Venue logo"
+                className="h-9 w-9 rounded-full object-cover"
               />
             ) : (
-              <div className="w-9 h-9 bg-gradient-to-br from-teal-500 to-blue-600 rounded-full flex items-center justify-center ring-2 ring-gray-200">
-                <UserIcon className="w-5 h-5 text-white" />
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-res-brand">
+                <UserIcon className="h-5 w-5 text-res-ink-inverted" />
               </div>
             )}
-            <div className="hidden md:block text-left">
-              <div className="text-sm font-semibold text-gray-900 line-clamp-1 max-w-32">
-                {profile?.businessName ?? 'Vendor'}
+            <div className="hidden text-left lg:block">
+              <div className="type-res-small max-w-32 truncate font-semibold text-res-ink">
+                {profile?.businessName ?? 'Venue'}
               </div>
-              <div className="text-xs text-gray-500 capitalize">{profile?.vendorType ?? ''}</div>
+              <div className="type-res-caption font-normal text-res-ink-muted capitalize">
+                {profile?.vendorType ?? ''}
+              </div>
             </div>
             <ChevronDown
-              className={`w-4 h-4 text-gray-500 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`}
+              className={`h-4 w-4 text-res-ink-muted transition-transform ${dropdownOpen ? 'rotate-180' : ''}`}
             />
           </button>
 
           {/* Dropdown Menu */}
           {dropdownOpen && (
-            <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl border border-gray-200 shadow-lg py-1 z-50 animate-in slide-in-from-top-2 duration-200">
-              <div className="px-4 py-3 border-b border-gray-100">
-                <div className="flex items-center space-x-3">
-                  {profile?.logo ? (
-                    <img
-                      src={profile.logo}
-                      alt="Vendor Logo"
-                      className="w-10 h-10 rounded-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-10 h-10 bg-gradient-to-br from-teal-500 to-blue-600 rounded-full flex items-center justify-center">
-                      <UserIcon className="w-6 h-6 text-white" />
-                    </div>
-                  )}
-                  <div>
-                    <div className="font-semibold text-gray-900 text-sm">
-                      {profile?.businessName ?? 'Vendor'}
-                    </div>
-                    <div className="text-xs text-gray-500 capitalize">
-                      {profile?.email ?? profile?.vendorType}
+            <>
+              <div
+                aria-hidden
+                className="fixed inset-0 z-40 cursor-default"
+                onClick={() => setDropdownOpen(false)}
+              />
+              <div className="absolute right-0 z-50 mt-2 w-60 overflow-hidden rounded-res-md border border-res-line bg-res-card shadow-res-high">
+                <div className="border-b border-res-line px-4 py-3">
+                  <div className="flex items-center gap-3">
+                    {profile?.logo ? (
+                      <img
+                        src={profile.logo}
+                        alt="Venue logo"
+                        className="h-10 w-10 rounded-full object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-res-brand">
+                        <UserIcon className="h-5 w-5 text-res-ink-inverted" />
+                      </div>
+                    )}
+                    <div className="min-w-0">
+                      <div className="type-res-small truncate font-semibold text-res-ink">
+                        {profile?.businessName ?? 'Venue'}
+                      </div>
+                      <div className="type-res-small truncate font-normal text-res-ink-muted">
+                        {profile?.email ?? profile?.vendorType ?? ''}
+                      </div>
                     </div>
                   </div>
                 </div>
+                <div className="p-1.5">
+                  <button
+                    onClick={handleProfile}
+                    className="type-res-small flex w-full cursor-pointer items-center gap-2.5 rounded-res-sm px-3 py-2.5 font-semibold text-res-ink transition-colors outline-none hover:bg-res-surface focus-visible:ring-2 focus-visible:ring-res-brand"
+                  >
+                    <User className="h-4 w-4 text-res-brand" />
+                    <span>Profile</span>
+                  </button>
+                  <button
+                    onClick={handleSettings}
+                    className="type-res-small flex w-full cursor-pointer items-center gap-2.5 rounded-res-sm px-3 py-2.5 font-semibold text-res-ink transition-colors outline-none hover:bg-res-surface focus-visible:ring-2 focus-visible:ring-res-brand"
+                  >
+                    <Settings className="h-4 w-4 text-res-brand" />
+                    <span>Settings</span>
+                  </button>
+                </div>
+                <div className="border-t border-res-line p-1.5">
+                  <button
+                    onClick={handleLogout}
+                    className="type-res-small flex w-full cursor-pointer items-center gap-2.5 rounded-res-sm px-3 py-2.5 font-semibold text-red-600 transition-colors outline-none hover:bg-red-50 focus-visible:ring-2 focus-visible:ring-red-500"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    <span>Logout</span>
+                  </button>
+                </div>
               </div>
-              <div className="py-1">
-                <button
-                  onClick={handleProfile}
-                  className="w-full flex items-center space-x-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-                >
-                  <User className="w-4 h-4" />
-                  <span>Profile</span>
-                </button>
-                <button
-                  onClick={handleSettings}
-                  className="w-full flex items-center space-x-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-                >
-                  <Settings className="w-4 h-4" />
-                  <span>Settings</span>
-                </button>
-              </div>
-              <div className="border-t border-gray-100 mt-1">
-                <button
-                  onClick={handleLogout}
-                  className="w-full flex items-center space-x-3 px-4 py-3 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                >
-                  <LogOut className="w-4 h-4" />
-                  <span>Logout</span>
-                </button>
-              </div>
-            </div>
+            </>
           )}
         </div>
       </div>

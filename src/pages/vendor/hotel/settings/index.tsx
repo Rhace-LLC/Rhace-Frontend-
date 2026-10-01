@@ -1,6 +1,7 @@
 // HotelSettings.tsx
 
 import TagInput from '@/components/TagInput';
+import DashboardPageHeader from '@/components/dashboard/DashboardPageHeader';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -11,7 +12,6 @@ import {
   Tag,
   Save,
   RotateCcw,
-  Hotel,
   Briefcase,
   Coffee,
   Wifi,
@@ -60,19 +60,10 @@ const HotelSettings = () => {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/30">
         <div className="max-w-5xl mx-auto px-4 py-8 md:px-6 lg:px-8">
           {/* Header Section */}
-          <div className="mb-8">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="p-2 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl shadow-lg shadow-blue-500/20">
-                <Hotel className="w-6 h-6 text-white" />
-              </div>
-              <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
-                Hotel Settings
-              </h1>
-            </div>
-            <p className="text-slate-500 ml-12">
-              Manage your hotel profile, amenities, pricing, and booking preferences
-            </p>
-          </div>
+          <DashboardPageHeader
+            title="Hotel Settings"
+            subtitle="Manage your hotel profile, amenities, pricing, and booking preferences"
+          />
 
           <div className="grid gap-6">
             {/* Business Information Card */}

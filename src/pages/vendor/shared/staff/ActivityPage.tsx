@@ -9,10 +9,8 @@ const ActivityPage = () => {
   return (
     <div className="p-6 md:p-8 space-y-6">
       <DashboardPageHeader
-        heading="Activity"
+        title="Activity"
         subtitle="View staff activity and action history"
-        primaryBtnText="Refresh"
-        primaryBtnAction={handleRefresh}
       />
       <ActivityTab onRefresh={handleRefresh} />
     </div>

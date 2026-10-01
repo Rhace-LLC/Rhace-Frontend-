@@ -1,6 +1,7 @@
 // ClubSettings.tsx
 
 import TagInput from '@/components/TagInput';
+import DashboardPageHeader from '@/components/dashboard/DashboardPageHeader';
 import { Card } from '@/components/ui/card';
 import { Input as UiInput } from '@/components/ui/input';
 import { Select as UiSelect } from '@/components/ui/select';
@@ -14,7 +15,6 @@ import {
   Tag,
   Save,
   RotateCcw,
-  Music,
   MapPin,
   Sparkles,
   Users,
@@ -81,19 +81,10 @@ const ClubSettings = () => {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-purple-50/30">
         <div className="max-w-5xl mx-auto px-4 py-8 md:px-6 lg:px-8">
           {/* Header Section */}
-          <div className="mb-8">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="p-2 bg-gradient-to-br from-purple-600 to-pink-600 rounded-xl shadow-lg shadow-purple-500/20">
-                <Music className="w-6 h-6 text-white" />
-              </div>
-              <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
-                Club Settings
-              </h1>
-            </div>
-            <p className="text-slate-500 ml-12">
-              Manage your club profile, capacity, entry requirements, and entertainment options
-            </p>
-          </div>
+          <DashboardPageHeader
+            title="Club Settings"
+            subtitle="Manage your club profile, capacity, entry requirements, and entertainment options"
+          />
 
           {/* Logo Section */}
           <div className="mb-8 p-6 bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow duration-300">
