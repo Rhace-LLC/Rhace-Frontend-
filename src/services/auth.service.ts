@@ -61,7 +61,6 @@ class AuthService {
   // Vendors Auth
   async vendorLogin(email: string, password: string) {
     const res = await api.post('/auth/vendors/login', { email, password });
-    console.log('vendorLogin response:', res.data);
     const token = res.data.accessToken || res.data.token;
     if (!token) {
       throw new Error('Login response missing token');

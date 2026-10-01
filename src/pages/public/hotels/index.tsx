@@ -55,9 +55,8 @@ const HotelsPage = () => {
 
   return (
     <div className="bg-white">
-      <div className="hidden md:block">
-        <Header />
-      </div>
+      <Header />
+      <div aria-hidden className="h-[96px] md:hidden" />
       <main className="mx-auto md:mt-[85px] mb-[160px] md:mb-[16px] md:py-8 max-w-7xl sm:px-6 lg:px-8 space-y-8 md:space-y-10">
         {/* Row 1 — name / rating (LHS) + share-save & location-contact (RHS) */}
         <div className="flex flex-col md:flex-row md:justify-between gap-4 px-4 md:px-0">

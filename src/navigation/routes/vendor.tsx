@@ -15,6 +15,7 @@ import RestaurantTableManagement from '@/pages/vendor/restaurant/tables';
 import RestaurantFloorLayout from '@/pages/vendor/restaurant/tables/layout';
 import StaffManagementSystem from '@/pages/vendor/shared/staff';
 import VendorReservationsPage from '@/pages/vendor/shared/reservations';
+import VendorOrdersPage from '@/pages/vendor/shared/orders';
 import CategoriesPage from '@/pages/vendor/shared/catalog/CategoriesPage';
 import AddOnsPage from '@/pages/vendor/shared/catalog/AddOnsPage';
 
@@ -93,6 +94,7 @@ const dashboardRestaurantRoutes: RouteObject[] = [
   { path: 'restaurant/staffs/reports', element: <ReportsPage /> },
   { path: 'restaurant/staffs/activity', element: <ActivityPage /> },
   { path: 'restaurant/reservation', element: <VendorReservationsPage vertical="restaurant" /> },
+  { path: 'restaurant/orders', element: <VendorOrdersPage /> },
   { path: 'restaurant/menu', element: <MenuDashboard /> },
   { path: 'restaurant/menu/categories', element: <CategoriesPage kind="menu" /> },
   { path: 'restaurant/menu/addons', element: <AddOnsPage /> },
@@ -128,6 +130,7 @@ const dashboardRestaurantRoutes: RouteObject[] = [
 const hotelVendorRoutes: RouteObject[] = [
   { path: 'hotel', element: <HotelDashboard /> },
   { path: 'hotel/bookings', element: <VendorReservationsPage vertical="hotel" /> },
+  { path: 'hotel/orders', element: <VendorOrdersPage /> },
   { path: 'hotel/rooms', element: <RoomsManagement /> },
   { path: 'hotel/rooms/layout', element: <HotelRoomLayout /> },
   { path: 'hotel/room/prototype', element: withSuspense(<PrototypeManageRoomHotel />) },
@@ -170,6 +173,7 @@ const clubVendorRoutes: RouteObject[] = [
   },
   { path: 'club/timeline/prototype', element: withSuspense(<PrototypeTimelineClub />) },
   { path: 'club/reservations', element: <VendorReservationsPage vertical="club" /> },
+  { path: 'club/orders', element: <VendorOrdersPage /> },
   { path: 'club/payments', element: <PaymentDashboard /> },
   { path: 'club/staffs', element: <StaffManagementSystem /> },
   { path: 'club/staffs/all', element: <AllStaffPage /> },

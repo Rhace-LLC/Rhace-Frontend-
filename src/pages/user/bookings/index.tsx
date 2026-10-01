@@ -10,6 +10,7 @@ import {
   ReservationFilters,
   bucketReservations,
   outstanding,
+  useCancelMyGroup,
   useCancelMyReservation,
   useMyReservations,
   usePayBalance,
@@ -32,6 +33,7 @@ const UserBookingsPage = () => {
 
   const reservationsQuery = useMyReservations(filters);
   const cancelMutation = useCancelMyReservation();
+  const cancelGroupMutation = useCancelMyGroup();
   const payMutation = usePayBalance();
   const selectedOrderQuery = useOrderByReservation(selected?._id, !!selected);
 
@@ -69,21 +71,41 @@ const UserBookingsPage = () => {
     }
   };
 
-  const handleCancel = async (reservation: ReservationView) => {
+  /** Cards act on the line level: release just this table/room. */
+  const handleCancelLine = async (reservation: ReservationView) => {
     try {
       await cancelMutation.mutateAsync(reservation._id);
+      toast.success('Reservation cancelled');
+    } catch (error) {
+      toast.error(
+        (error as { response?: { data?: { message?: string } } })?.response?.data?.message ||
+          'Could not cancel your reservation.',
+      );
+    }
+  };
+
+  /** Drawer + detail act on the booking level: release the whole booking. */
+  const handleCancel = async (reservation: ReservationView) => {
+    try {
+      if (reservation.bookingGroup) {
+        await cancelGroupMutation.mutateAsync(reservation.bookingGroup);
+      } else {
+        await cancelMutation.mutateAsync(reservation._id);
+      }
       toast.success('Booking cancelled');
       setSelected(null);
-    } catch {
-      toast.error('Could not cancel your booking.');
+    } catch (error) {
+      toast.error(
+        (error as { response?: { data?: { message?: string } } })?.response?.data?.message ||
+          'Could not cancel your booking.',
+      );
     }
   };
 
   return (
     <div className="min-h-screen bg-res-surface">
-      <div className="hidden md:block">
-        <Header />
-      </div>
+      <Header />
+      <div aria-hidden className="h-[96px] md:hidden" />
       <main className="mx-auto mb-[120px] max-w-7xl space-y-5 px-4 pt-4 pb-8 md:mt-[85px] md:mb-8 md:space-y-6 md:px-6 md:py-8 lg:px-8">
         <div>
           <h1 className="type-res-h2 text-res-ink">My bookings</h1>
@@ -136,7 +158,7 @@ const UserBookingsPage = () => {
               items={visible}
               loading={reservationsQuery.isLoading}
               onView={setSelected}
-              onCancel={handleCancel}
+              onCancel={handleCancelLine}
               onPayBalance={handlePayBalance}
             />
           </div>
@@ -149,6 +171,7 @@ const UserBookingsPage = () => {
       <ReservationDrawer
         open={!!selected}
         reservation={selected}
+        order={selectedOrderQuery.data ?? undefined}
         onClose={() => setSelected(null)}
         footer={
           selected ? (

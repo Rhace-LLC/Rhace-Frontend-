@@ -291,9 +291,8 @@ const ReserveBlueprintPage = () => {
 
   return (
     <div className="min-h-screen bg-res-surface">
-      <div className="hidden md:block">
-        <Header />
-      </div>
+      <Header />
+      <div aria-hidden className="h-[96px] md:hidden" />
       <main className="mx-auto max-w-7xl space-y-5 px-4 pt-4 pb-24 md:mt-[85px] md:space-y-6 md:px-6 md:py-8 lg:px-8">
         <nav className="type-res-small flex items-center gap-1.5 font-normal text-res-ink-muted">
           <Link to={`/${SEGMENT[vertical]}/${id}`} className="font-medium hover:text-res-brand">

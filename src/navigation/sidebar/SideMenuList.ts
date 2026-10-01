@@ -9,6 +9,7 @@ import {
   LayoutDashboard,
   LayoutGrid,
   LogOut,
+  Receipt,
   Settings,
   Users,
   UtensilsCrossed,
@@ -88,6 +89,11 @@ export const ClubList: SideMenuListConfig = {
       label: 'Reservations',
       path: '/dashboard/club/reservations',
       icon: CalendarCheck,
+    },
+    {
+      label: 'Orders',
+      path: '/dashboard/club/orders',
+      icon: Receipt,
     },
     {
       label: 'Drinks',
@@ -203,6 +209,11 @@ export const HotelList: SideMenuListConfig = {
       icon: CalendarCheck,
     },
     {
+      label: 'Orders',
+      path: '/dashboard/hotel/orders',
+      icon: Receipt,
+    },
+    {
       label: 'Inventory',
       path: '/dashboard/hotel/room/prototype',
       icon: Boxes,
@@ -287,6 +298,11 @@ export const RestaurantList: SideMenuListConfig = {
       label: 'Reservations',
       path: '/dashboard/restaurant/reservation',
       icon: CalendarCheck,
+    },
+    {
+      label: 'Orders',
+      path: '/dashboard/restaurant/orders',
+      icon: Receipt,
     },
     {
       label: 'Menu',

@@ -1,3 +1,5 @@
+import { useEffect, useState } from 'react';
+import { Eye, LogIn, LogOut, MoreVertical, Trash2, Wallet } from 'lucide-react';
 import { ReservationStatusBadge, PaymentStatusBadge } from './ReservationBadges';
 import { formatRange, money, outstanding } from '../api/adapter';
 import type { ReservationView } from '../types';
@@ -14,11 +16,11 @@ interface ReservationTableProps {
   onRecordOffline?: (reservation: ReservationView) => void;
 }
 
-const actionClass =
-  'type-res-small cursor-pointer rounded-full bg-res-surface px-3.5 py-1.5 font-semibold text-res-ink transition-colors outline-none hover:text-res-brand focus-visible:ring-2 focus-visible:ring-res-brand disabled:cursor-not-allowed disabled:opacity-50';
+const menuItemClass =
+  'type-res-small flex w-full cursor-pointer items-center gap-2.5 rounded-res-sm px-3 py-2.5 font-semibold text-res-ink transition-colors outline-none hover:bg-res-surface focus-visible:ring-2 focus-visible:ring-res-brand';
 
-const primaryActionClass =
-  'type-res-small cursor-pointer rounded-full bg-res-brand px-3.5 py-1.5 font-semibold text-res-ink-inverted shadow-res-low transition-colors outline-none hover:bg-res-brand-hover focus-visible:ring-2 focus-visible:ring-res-brand disabled:cursor-not-allowed disabled:opacity-50';
+const menuDangerClass =
+  'type-res-small flex w-full cursor-pointer items-center gap-2.5 rounded-res-sm px-3 py-2.5 font-semibold text-red-700 transition-colors outline-none hover:bg-red-50 focus-visible:ring-2 focus-visible:ring-red-500';
 
 export function ReservationTable({
   items,
@@ -31,6 +33,36 @@ export function ReservationTable({
   onPayBalance,
   onRecordOffline,
 }: ReservationTableProps) {
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const [menuPos, setMenuPos] = useState<{ top: number; left: number } | null>(null);
+
+  useEffect(() => {
+    if (!openMenuId) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpenMenuId(null);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [openMenuId]);
+
+  /** Kebab menu is `fixed` so it escapes the table's scroll container. */
+  const openMenu = (reservationId: string, anchor: HTMLElement) => {
+    if (openMenuId === reservationId) {
+      setOpenMenuId(null);
+      return;
+    }
+    const rect = anchor.getBoundingClientRect();
+    const width = 224;
+    const height = 230;
+    const left = Math.max(8, Math.min(rect.right - width, window.innerWidth - width - 8));
+    const top =
+      rect.bottom + 6 + height > window.innerHeight
+        ? Math.max(8, rect.top - height - 6)
+        : rect.bottom + 6;
+    setMenuPos({ top, left });
+    setOpenMenuId(reservationId);
+  };
+
   if (loading) {
     return (
       <div className="space-y-2.5">
@@ -145,59 +177,116 @@ export function ReservationTable({
                     </span>
                   )}
                 </td>
-                <td className="px-4 py-3">
-                  <div className="flex flex-wrap justify-end gap-1.5">
-                    {onView && (
-                      <button type="button" className={actionClass} onClick={() => onView(reservation)}>
-                        View
-                      </button>
-                    )}
-                    {onPayBalance && balance > 0 && reservation.bookingGroup && (
-                      <button
-                        type="button"
-                        className={primaryActionClass}
-                        onClick={() => onPayBalance(reservation)}
+                <td className="px-4 py-3 text-right whitespace-nowrap">
+                  <button
+                    type="button"
+                    onClick={(e) => openMenu(reservation._id, e.currentTarget)}
+                    aria-expanded={openMenuId === reservation._id}
+                    aria-label={`Actions for ${reservation.guestName}'s reservation`}
+                    className="type-res-small cursor-pointer rounded-full bg-res-surface p-2 font-semibold text-res-ink transition-colors outline-none hover:text-res-brand focus-visible:ring-2 focus-visible:ring-res-brand"
+                  >
+                    <MoreVertical className="h-4 w-4" />
+                  </button>
+                  {openMenuId === reservation._id && menuPos && (
+                    <>
+                      <div
+                        aria-hidden
+                        className="fixed inset-0 z-40 cursor-default"
+                        onClick={() => setOpenMenuId(null)}
+                      />
+                      <div
+                        role="menu"
+                        aria-label="Reservation actions"
+                        style={{ top: menuPos.top, left: menuPos.left }}
+                        className="fixed z-50 w-56 rounded-res-md border border-res-line bg-res-card p-1.5 text-left shadow-res-high"
                       >
-                        Pay now
-                      </button>
-                    )}
-                    {onRecordOffline && role !== 'customer' && balance > 0 && reservation.bookingGroup && (
-                      <button
-                        type="button"
-                        className={actionClass}
-                        onClick={() => onRecordOffline(reservation)}
-                      >
-                        Record payment
-                      </button>
-                    )}
-                    {onCheckIn && canCheckIn && (
-                      <button
-                        type="button"
-                        className={primaryActionClass}
-                        onClick={() => onCheckIn(reservation)}
-                      >
-                        Check in
-                      </button>
-                    )}
-                    {onCheckOut && canCheckOut && (
-                      <button
-                        type="button"
-                        className={primaryActionClass}
-                        onClick={() => onCheckOut(reservation)}
-                      >
-                        Check out
-                      </button>
-                    )}
-                    {onCancel && canCancel && (
-                      <button
-                        type="button"
-                        className="type-res-small cursor-pointer rounded-full px-3.5 py-1.5 font-semibold text-res-ink-muted transition-colors outline-none hover:text-res-ink focus-visible:ring-2 focus-visible:ring-res-brand"
-                        onClick={() => onCancel(reservation)}
-                      >
-                        Cancel
-                      </button>
-                    )}
-                  </div>
+                        {onView && (
+                          <button
+                            type="button"
+                            role="menuitem"
+                            onClick={() => {
+                              setOpenMenuId(null);
+                              onView(reservation);
+                            }}
+                            className={menuItemClass}
+                          >
+                            <Eye className="h-4 w-4 text-res-brand" />
+                            View
+                          </button>
+                        )}
+                        {onPayBalance && balance > 0 && reservation.bookingGroup && (
+                          <button
+                            type="button"
+                            role="menuitem"
+                            onClick={() => {
+                              setOpenMenuId(null);
+                              onPayBalance(reservation);
+                            }}
+                            className={menuItemClass}
+                          >
+                            <Wallet className="h-4 w-4 text-res-brand" />
+                            Pay now
+                          </button>
+                        )}
+                        {onRecordOffline && role !== 'customer' && balance > 0 && reservation.bookingGroup && (
+                          <button
+                            type="button"
+                            role="menuitem"
+                            onClick={() => {
+                              setOpenMenuId(null);
+                              onRecordOffline(reservation);
+                            }}
+                            className={menuItemClass}
+                          >
+                            <Wallet className="h-4 w-4 text-res-brand" />
+                            Record payment
+                          </button>
+                        )}
+                        {onCheckIn && canCheckIn && (
+                          <button
+                            type="button"
+                            role="menuitem"
+                            onClick={() => {
+                              setOpenMenuId(null);
+                              onCheckIn(reservation);
+                            }}
+                            className={menuItemClass}
+                          >
+                            <LogIn className="h-4 w-4 text-res-brand" />
+                            Check in
+                          </button>
+                        )}
+                        {onCheckOut && canCheckOut && (
+                          <button
+                            type="button"
+                            role="menuitem"
+                            onClick={() => {
+                              setOpenMenuId(null);
+                              onCheckOut(reservation);
+                            }}
+                            className={menuItemClass}
+                          >
+                            <LogOut className="h-4 w-4 text-res-brand" />
+                            Check out
+                          </button>
+                        )}
+                        {onCancel && canCancel && (
+                          <button
+                            type="button"
+                            role="menuitem"
+                            onClick={() => {
+                              setOpenMenuId(null);
+                              onCancel(reservation);
+                            }}
+                            className={menuDangerClass}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                            Cancel
+                          </button>
+                        )}
+                      </div>
+                    </>
+                  )}
                 </td>
               </tr>
             );

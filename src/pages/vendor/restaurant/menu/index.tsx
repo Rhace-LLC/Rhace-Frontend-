@@ -96,7 +96,17 @@ interface ShowPopupState {
   item?: boolean;
 }
 
-const MenuDashboard = () => {
+const MenuDashboard = ({
+  onCreateItem,
+  onEditItem,
+  vendorId: vendorIdProp,
+}: {
+  /** Embedded use (e.g. manager hub): intercept vendor-shell navigation. */
+  onCreateItem?: () => void;
+  onEditItem?: (id: string) => void;
+  /** Staff logins carry no vendor session — pass the venue id explicitly. */
+  vendorId?: string;
+} = {}) => {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>({});
@@ -107,6 +117,7 @@ const MenuDashboard = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { vendor } = useAuth();
+  const vendorId = vendorIdProp ?? vendor?._id;
   const [showPopup, setShowPopup] = useState<ShowPopupState>({
     display: false,
     details: {},
@@ -420,7 +431,9 @@ const MenuDashboard = () => {
             <DropdownMenuContent align="end">
               <DropdownMenuItem
                 onClick={() =>
-                  navigate(`/dashboard/restaurant/menu/items/${row.original._id}/edit`)
+                  onEditItem
+                    ? onEditItem(row.original._id)
+                    : navigate(`/dashboard/restaurant/menu/items/${row.original._id}/edit`)
                 }
               >
                 <Pencil /> Edit dish
@@ -459,7 +472,8 @@ const MenuDashboard = () => {
     async function fetchMenus() {
       try {
         setIsLoading(true);
-        const items = await menuService.getMenus(vendor._id);
+        if (!vendorId) return;
+        const items = await menuService.getMenus(vendorId);
         setMenus(items.menus);
       } catch (error) {
         console.error(error);
@@ -471,7 +485,8 @@ const MenuDashboard = () => {
     async function fetchMenuItems() {
       try {
         setIsLoading(true);
-        const items = await menuService.getMenuItems(vendor._id);
+        if (!vendorId) return;
+        const items = await menuService.getMenuItems(vendorId);
         setMenuItems(items.menuItems);
       } catch (error) {
         console.error(error);
@@ -515,7 +530,9 @@ const MenuDashboard = () => {
               <div className="flex gap-6">
                 <DashboardButton variant="secondary" text="Export" icon={<Export />} />
                 <DashboardButton
-                  onClick={() => navigate('/dashboard/restaurant/menu/item/new')}
+                  onClick={() =>
+                    onCreateItem ? onCreateItem() : navigate('/dashboard/restaurant/menu/item/new')
+                  }
                   variant="primary"
                   text="Add Dish"
                   icon={<Add fill="#fff" />}

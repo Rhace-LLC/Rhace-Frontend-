@@ -4,6 +4,7 @@ export type OrderStatus =
   | 'open'
   | 'placed'
   | 'preparing'
+  | 'ready'
   | 'served'
   | 'completed'
   | 'cancelled';

@@ -43,10 +43,28 @@ function bookingLabel(reservation: ReservationView): string {
 
 export function VendorReservationsPage({ vertical }: { vertical: Vertical }) {
   const [filters, setFilters] = useState<ReservationFilterParams>({ page: 1, limit: 20 });
+  const [todayOnly, setTodayOnly] = useState(true);
   const [selected, setSelected] = useState<ReservationView | null>(null);
   const [paymentTarget, setPaymentTarget] = useState<ReservationView | null>(null);
 
-  const reservationsQuery = useReservations(filters);
+  // "For Today" owns the date bounds (reservation `start`): local day start
+  // through day end so the whole of today is included. Off = everything,
+  // unless the guest picks a manual range in the filter bar.
+  const effectiveFilters = useMemo(() => {
+    if (!todayOnly) return filters;
+    const from = new Date();
+    from.setHours(0, 0, 0, 0);
+    const to = new Date();
+    to.setHours(23, 59, 59, 999);
+    return { ...filters, from: from.toISOString(), to: to.toISOString() };
+  }, [filters, todayOnly]);
+
+  const handleToggleToday = (next: boolean) => {
+    setTodayOnly(next);
+    setFilters((prev) => ({ ...prev, page: 1 }));
+  };
+
+  const reservationsQuery = useReservations(effectiveFilters);
   const countersQuery = useReservationCounters({ vertical });
   const cancelMutation = useCancelReservation();
   const checkInMutation = useCheckInReservation();
@@ -104,7 +122,12 @@ export function VendorReservationsPage({ vertical }: { vertical: Vertical }) {
       <ReservationStatCards counters={countersQuery.data} loading={countersQuery.isLoading} />
 
       <section className="rounded-res-lg bg-res-card p-4 shadow-res-low md:p-5">
-        <ReservationFilters value={filters} onChange={setFilters} />
+        <ReservationFilters
+          value={filters}
+          onChange={setFilters}
+          todayOnly={todayOnly}
+          onToggleToday={handleToggleToday}
+        />
         <div className="mt-4">
           <ReservationTable
             items={items}

@@ -54,6 +54,14 @@ class ReservationsApi {
     return res.data;
   }
 
+  /** Customer self-cancel of a whole booking (all its lines). */
+  async cancelMyGroup(groupId: string) {
+    const res = await api.delete<ApiEnvelope<BookingGroupView>>(
+      `/booking-groups/me/${groupId}`
+    );
+    return res.data;
+  }
+
   async checkIn(id: string) {
     const res = await api.post<ApiEnvelope<{ reservation: ReservationView }>>(
       `/reservations/${id}/check-in`

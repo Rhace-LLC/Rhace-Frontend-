@@ -10,6 +10,8 @@ export interface VendorDishDto {
   discountPrice?: number;
   images?: string[];
   coverImage?: string;
+  /** Kitchen availability toggle; `false` means 86'd (hidden from customers). */
+  availability?: boolean;
   categoryId?: { _id: string; name: string } | string | null;
   addonIds?: AddOnDto[];
 }
@@ -22,6 +24,8 @@ export interface VendorDrinkDto {
   price: number;
   discountPrice?: number;
   images?: string[];
+  /** Kitchen availability toggle writes `"hidden"`; anything else is orderable. */
+  status?: string;
   categoryId?: { _id: string; name: string } | string | null;
   addonIds?: AddOnDto[];
 }

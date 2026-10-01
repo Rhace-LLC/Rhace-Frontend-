@@ -52,7 +52,15 @@ interface Stat {
   change: number;
 }
 
-export function DrinksTable() {
+export function DrinksTable({
+  onAddBottleSet,
+  vendorId: vendorIdProp,
+}: {
+  /** Embedded use (e.g. manager hub): intercept vendor-shell navigation. */
+  onAddBottleSet?: () => void;
+  /** Staff logins carry no vendor session — pass the venue id explicitly. */
+  vendorId?: string;
+} = {}) {
   const [drinks, setDrinks] = useState<any[]>([]);
   const [bottleSets, setBottleSets] = useState<any[]>([]);
   const [selectedTab, setSelectedTab] = useState('drinks');
@@ -63,6 +71,7 @@ export function DrinksTable() {
   const [totalItems, setTotalItems] = useState(0);
   const [showAddDrinkModal, setShowAddDrinkModal] = useState(false);
   const { vendor } = useAuth();
+  const vendorId = vendorIdProp ?? vendor?._id;
   const navigate = useNavigate();
 
   // Filter states
@@ -124,7 +133,8 @@ export function DrinksTable() {
     const fetchDrinks = async () => {
       try {
         setIsLoading(true);
-        const data = await clubService.getDrinks(vendor._id);
+        if (!vendorId) return;
+        const data = await clubService.getDrinks(vendorId);
         setDrinks(data.drinks || []);
       } catch (error) {
         console.error('Error fetching drinks:', error);
@@ -135,7 +145,8 @@ export function DrinksTable() {
 
     const fetchBottleSets = async () => {
       try {
-        const data = await clubService.getBottleSet(vendor._id);
+        if (!vendorId) return;
+        const data = await clubService.getBottleSet(vendorId);
         setBottleSets(data.bottleSets || []);
       } catch (error) {
         console.error('Error fetching bottle sets:', error);
@@ -145,7 +156,7 @@ export function DrinksTable() {
 
     fetchDrinks();
     fetchBottleSets();
-  }, [vendor?._id]);
+  }, [vendorId]);
 
   // Calculate stats
   useEffect(() => {
@@ -253,7 +264,9 @@ export function DrinksTable() {
                     icon={hideTab ? <Eye /> : <EyeClose />}
                   />
                   <button
-                    onClick={() => navigate('/dashboard/club/add-drinks')}
+                    onClick={() =>
+                      onAddBottleSet ? onAddBottleSet() : navigate('/dashboard/club/add-drinks')
+                    }
                     className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 transition-colors"
                   >
                     <Plus size={18} />
@@ -668,7 +681,8 @@ export function DrinksTable() {
                 // Refresh drinks list
                 const fetchDrinks = async () => {
                   try {
-                    const data = await clubService.getDrinks(vendor._id);
+                    if (!vendorId) return;
+                    const data = await clubService.getDrinks(vendorId);
                     setDrinks(data.drinks || []);
                   } catch (error) {
                     console.error('Error fetching drinks:', error);

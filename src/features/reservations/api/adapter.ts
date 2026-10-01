@@ -6,6 +6,7 @@ export const STATUS_LABEL: Record<ReservationStatus, string> = {
   active: 'In progress',
   completed: 'Completed',
   cancelled: 'Cancelled',
+  no_show: 'No-show',
 };
 
 export const STATUS_STYLE: Record<ReservationStatus, string> = {
@@ -14,6 +15,7 @@ export const STATUS_STYLE: Record<ReservationStatus, string> = {
   active: 'bg-res-accent text-res-ink-inverted',
   completed: 'bg-res-surface text-res-ink-muted',
   cancelled: 'bg-res-surface text-res-ink-muted line-through',
+  no_show: 'bg-res-surface text-res-ink-muted',
 };
 
 export const PAYMENT_LABEL: Record<string, string> = {

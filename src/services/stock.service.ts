@@ -12,11 +12,21 @@ export interface StockItem {
   kind: StockItemKind;
   available: boolean;
   category?: string;
+  description?: string;
+  image?: string;
+  /** Effective sell price (deal price when discounted). */
+  price?: number;
+  volume?: string;
 }
 
 interface RawDish {
   _id: string;
   name: string;
+  description?: string;
+  price?: number;
+  discountPrice?: number;
+  images?: string[];
+  coverImage?: string;
   availability?: boolean;
   category?: string;
   categoryId?: { name?: string } | string;
@@ -25,11 +35,17 @@ interface RawDish {
 interface RawDrink {
   _id: string;
   name: string;
+  description?: string;
+  volume?: string;
+  price?: number;
+  discountPrice?: number;
+  images?: string[];
   status?: string;
   category?: string;
+  categoryId?: { name?: string } | string | null;
 }
 
-const categoryLabel = (value: RawDish['categoryId']): string | undefined => {
+const categoryLabel = (value: RawDish['categoryId'] | RawDrink['categoryId']): string | undefined => {
   if (!value) return undefined;
   return typeof value === 'string' ? undefined : (value.name ?? undefined);
 };
@@ -44,6 +60,12 @@ class StockService {
       kind: 'dish' as const,
       available: dish.availability !== false,
       category: categoryLabel(dish.categoryId) ?? dish.category,
+      description: dish.description,
+      image: dish.images?.[0] || dish.coverImage || undefined,
+      price:
+        dish.discountPrice && dish.price && dish.discountPrice < dish.price
+          ? dish.discountPrice
+          : dish.price,
     }));
   }
 
@@ -56,7 +78,14 @@ class StockService {
       name: drink.name,
       kind: 'drink' as const,
       available: drink.status !== 'hidden',
-      category: drink.category,
+      category: categoryLabel(drink.categoryId) ?? drink.category,
+      description: drink.description,
+      image: drink.images?.[0] || undefined,
+      volume: drink.volume,
+      price:
+        drink.discountPrice && drink.price && drink.discountPrice < drink.price
+          ? drink.discountPrice
+          : drink.price,
     }));
   }
 

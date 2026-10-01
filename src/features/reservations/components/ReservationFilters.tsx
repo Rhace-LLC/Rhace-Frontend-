@@ -7,6 +7,7 @@ const STATUS_OPTIONS = [
   { value: 'active', label: 'In progress' },
   { value: 'completed', label: 'Completed' },
   { value: 'cancelled', label: 'Cancelled' },
+  { value: 'no_show', label: 'No-show' },
 ];
 
 const PAYMENT_OPTIONS = [
@@ -24,16 +25,39 @@ export function ReservationFilters({
   value,
   onChange,
   showVendor,
+  todayOnly,
+  onToggleToday,
 }: {
   value: ReservationFiltersType;
   onChange: (next: ReservationFiltersType) => void;
   showVendor?: boolean;
+  /** Optional "For Today" scope (vendor dashboard). Absent = no capsule. */
+  todayOnly?: boolean;
+  onToggleToday?: (next: boolean) => void;
 }) {
   const set = (patch: Partial<ReservationFiltersType>) =>
     onChange({ ...value, ...patch, page: 1 });
 
+  // While the today scope is on it owns the date bounds, so the manual
+  // range inputs stay hidden to avoid conflicting filters.
+  const showDateRange = !(onToggleToday && todayOnly);
+
   return (
     <div className="flex flex-wrap items-end gap-2.5">
+      {onToggleToday && (
+        <div className="flex flex-wrap items-center gap-2.5">
+          <p aria-live="polite" className="type-res-small font-medium text-res-ink-muted">
+            {todayOnly ? "Showing Today's Reservations" : 'Showing All Reservations'}
+          </p>
+          <button
+            type="button"
+            onClick={() => onToggleToday(!todayOnly)}
+            className="type-res-small cursor-pointer rounded-full bg-res-surface px-4 py-2.5 font-semibold text-res-ink transition-colors outline-none hover:text-res-brand focus-visible:ring-2 focus-visible:ring-res-brand"
+          >
+            {todayOnly ? 'Show All Reservations' : "Show Today's Reservations"}
+          </button>
+        </div>
+      )}
       <input
         type="search"
         placeholder="Search bookings…"
@@ -66,18 +90,25 @@ export function ReservationFilters({
         ))}
       </select>
 
-      <input
-        type="date"
-        value={value.from ?? ''}
-        onChange={(e) => set({ from: e.target.value })}
-        className={inputClass}
-      />
-      <input
-        type="date"
-        value={value.to ?? ''}
-        onChange={(e) => set({ to: e.target.value })}
-        className={inputClass}
-      />
+      {showDateRange && (
+        <>
+          <input
+            type="date"
+            aria-label="From date"
+            value={value.from ?? ''}
+            onChange={(e) => set({ from: e.target.value })}
+            className={inputClass}
+          />
+          <input
+            type="date"
+            aria-label="To date"
+            value={value.to ?? ''}
+            min={value.from || undefined}
+            onChange={(e) => set({ to: e.target.value })}
+            className={inputClass}
+          />
+        </>
+      )}
 
       {showVendor && (
         <input

@@ -20,7 +20,12 @@ import Header2 from '@/navigation/vendor_layout/_sub_component/VendorHeader2';
 import UniversalLoader from '@/components/user/ui/LogoLoader';
 import type { RootState } from '@/redux/store';
 
-const BottleServiceManager = () => {
+const BottleServiceManager = ({
+  vendorId: vendorIdProp,
+}: {
+  /** Staff logins carry no vendor session — pass the venue id explicitly. */
+  vendorId?: string;
+} = {}) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [bottleSetName, setBottleSetName] = useState('');
   const [selectedTab, setSelectedTab] = useState('existing');
@@ -32,6 +37,7 @@ const BottleServiceManager = () => {
   const [uploadImageLoading, setUploadImageLoading] = useState(false);
   const [bottleSetImage, setBottleSetImage] = useState(null);
   const { vendor } = useAuth();
+  const vendorId = vendorIdProp ?? vendor?._id;
   const [isLoading, setIsLoading] = useState(true);
 
   // New drink form state
@@ -130,7 +136,7 @@ const BottleServiceManager = () => {
 
       const bottleSetPayload = {
         name: bottleSetName,
-        clubId: vendor._id,
+        clubId: vendorId,
         items: selectedDrinks.map((drink) => ({
           drinkId: drink._id,
           quantity: drink.quantity,
@@ -229,8 +235,12 @@ const BottleServiceManager = () => {
   useEffect(() => {
     const fetchDrinks = async () => {
       try {
+        if (!vendorId) {
+          setIsLoading(false);
+          return;
+        }
         const [data, addOnList] = await Promise.all([
-          clubService.getDrinks(vendor._id),
+          clubService.getDrinks(vendorId),
           addOnService.list({ appliesTo: 'drink' }),
         ]);
         setDrinks(data.drinks);

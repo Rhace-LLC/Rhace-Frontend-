@@ -7,6 +7,8 @@ interface RecordOfflinePaymentModalProps {
   reservationId?: string;
   /** New unit engine: the BookingGroup is the payment subject. */
   groupId?: string;
+  /** Standalone order is the payment subject (waiter collecting at the table). */
+  orderId?: string;
   /** Shown in the header so staff know which booking this is for. */
   bookingLabel?: string;
   /** Outstanding balance — pre-fills the amount. */
@@ -25,6 +27,7 @@ interface OfflinePaymentForm {
 
 const METHODS = [
   { id: 'cash', label: 'Cash' },
+  { id: 'card', label: 'Card' },
   { id: 'bank_transfer', label: 'Bank transfer' },
   { id: 'pos', label: 'POS' },
 ];
@@ -36,6 +39,7 @@ const labelClass = 'type-res-small mb-1.5 block font-medium text-res-ink-muted';
 export default function RecordOfflinePaymentModal({
   reservationId: propReservationId,
   groupId,
+  orderId,
   bookingLabel,
   dueAmount,
   isOpen,
@@ -62,7 +66,7 @@ export default function RecordOfflinePaymentModal({
       });
       setError(null);
     }
-  }, [isOpen, groupId, propReservationId, dueAmount]);
+  }, [isOpen, groupId, propReservationId, orderId, dueAmount]);
 
   const generateReference = () => {
     const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -98,12 +102,19 @@ export default function RecordOfflinePaymentModal({
             reference: formData.reference,
             note: formData.note,
           })
-        : await paymentService.recordOfflinePayment(resId as string, {
-            amount: formData.amount,
-            method: formData.method,
-            reference: formData.reference,
-            note: formData.note,
-          } as Record<string, unknown>);
+        : orderId
+          ? await paymentService.recordOrderOfflinePayment(orderId, {
+              amount: Number(formData.amount),
+              method: formData.method,
+              reference: formData.reference,
+              note: formData.note,
+            })
+          : await paymentService.recordOfflinePayment(resId as string, {
+              amount: formData.amount,
+              method: formData.method,
+              reference: formData.reference,
+              note: formData.note,
+            } as Record<string, unknown>);
       if (onSuccess) onSuccess(response);
       onClose();
     } catch (err) {
@@ -121,7 +132,7 @@ export default function RecordOfflinePaymentModal({
       isOpen={isOpen}
       onClose={onClose}
       title="Record payment"
-      subtitle={bookingLabel ?? 'Cash, transfer or POS received at the venue'}
+      subtitle={bookingLabel ?? 'Cash, card, transfer or POS received at the venue'}
       footer={
         <>
           <button

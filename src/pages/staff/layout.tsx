@@ -4,6 +4,7 @@ import { toast } from 'react-toastify';
 import { Clock, LayoutDashboard, LogOut, Loader2, UserRound } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { NotificationBell } from '@/components/notifications/NotificationBell';
 import { useAuth } from '@/contexts/AuthContext';
 import { staffService, type StaffShiftDto } from '@/services/staff.service';
 import { staffRoleLabel } from './roles';
@@ -68,6 +69,7 @@ export default function StaffLayout() {
           </div>
 
           <div className="flex items-center gap-2">
+            <NotificationBell />
             {shift && (
               <span className="hidden sm:flex items-center gap-1 text-xs text-muted-foreground">
                 <span className="w-2 h-2 rounded-full bg-green-500" />

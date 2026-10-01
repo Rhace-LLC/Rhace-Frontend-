@@ -40,9 +40,23 @@ class OrdersApi {
     withLines?: boolean;
     /** Staff token only: restrict to orders this staff member created. */
     mine?: boolean;
+    /** ISO date bounds on `createdAt` (backend `from`/`to`). */
+    from?: string;
+    to?: string;
+    /** Restrict to orders on one table/room, or any of several. */
+    unitId?: string;
+    unitIds?: string[];
   }) {
     const res = await api.get('/orders', {
-      params: params ? { ...params, mine: params.mine ? 'true' : undefined } : undefined,
+      params: params
+        ? {
+            ...params,
+            mine: params.mine ? 'true' : undefined,
+            // CSV keeps parsing deterministic across query parsers.
+            unitIds:
+              params.unitIds && params.unitIds.length > 0 ? params.unitIds.join(',') : undefined,
+          }
+        : undefined,
     });
     // `paginated()` wraps the page in a `{ success, data }` envelope; callers read
     // `.items` straight off the result, so unwrap it here.

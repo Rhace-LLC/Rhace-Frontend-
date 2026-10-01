@@ -78,9 +78,11 @@ export function OrderBuilder({
   submitting,
   onSubmit,
 }: OrderBuilderProps) {
-  const dishesQuery = useVendorDishes(vertical === 'restaurant' ? vendorId : undefined);
+  // Vendor profiles don't all spell it the same way — match case-insensitively.
+  const normVertical = vertical?.toLowerCase();
+  const dishesQuery = useVendorDishes(normVertical === 'restaurant' ? vendorId : undefined);
   const drinksQuery = useVendorDrinks(vendorId);
-  const bottleSetsQuery = useVendorBottleSets(vertical === 'club' ? vendorId : undefined);
+  const bottleSetsQuery = useVendorBottleSets(normVertical === 'club' ? vendorId : undefined);
 
   const [cart, setCart] = useState<Record<string, CartLine>>({});
   const [query, setQuery] = useState('');
@@ -88,8 +90,10 @@ export function OrderBuilder({
 
   const catalog: CatalogItem[] = useMemo(() => {
     const items: CatalogItem[] = [];
-    if (vertical === 'restaurant') {
+    if (normVertical === 'restaurant') {
       for (const dish of dishesQuery.data ?? []) {
+        // Kitchen 86 toggle: never offer a dish the kitchen marked unavailable.
+        if (dish.availability === false) continue;
         const deal = Boolean(dish.discount && dish.discountPrice && dish.discountPrice < dish.price);
         items.push({
           key: `dish:${dish._id}`,
@@ -107,6 +111,8 @@ export function OrderBuilder({
       }
     }
     for (const drink of drinksQuery.data ?? []) {
+      // Kitchen 86 toggle writes `status: "hidden"` for unavailable drinks.
+      if (drink.status === 'hidden') continue;
       const deal = Boolean(drink.discountPrice && drink.discountPrice < drink.price);
       items.push({
         key: `drink:${drink._id}`,
@@ -123,7 +129,7 @@ export function OrderBuilder({
         addons: drink.addonIds ?? [],
       });
     }
-    if (vertical === 'club') {
+    if (normVertical === 'club') {
       for (const set of bottleSetsQuery.data ?? []) {
         const contents = (set.items ?? [])
           .slice(0, 3)
@@ -143,7 +149,7 @@ export function OrderBuilder({
       }
     }
     return items;
-  }, [vertical, dishesQuery.data, drinksQuery.data, bottleSetsQuery.data]);
+  }, [normVertical, dishesQuery.data, drinksQuery.data, bottleSetsQuery.data]);
 
   const kinds = useMemo(() => {
     const seen: string[] = [];
@@ -169,9 +175,9 @@ export function OrderBuilder({
   const loading =
     dishesQuery.isLoading || drinksQuery.isLoading || bottleSetsQuery.isLoading;
   const loadFailed =
-    (dishesQuery.isError && vertical === 'restaurant') ||
+    (dishesQuery.isError && normVertical === 'restaurant') ||
     drinksQuery.isError ||
-    (bottleSetsQuery.isError && vertical === 'club');
+    (bottleSetsQuery.isError && normVertical === 'club');
   const cartLines = Object.values(cart);
 
   const lineTotal = (line: CartLine) => {

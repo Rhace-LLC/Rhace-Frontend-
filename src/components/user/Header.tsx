@@ -12,6 +12,7 @@ import { Link, useLocation } from 'react-router';
 // import AccountTypeModal from "./AccountTypeModal";
 // import { AuthService } from "@/app/lib/api/services/userAuth.service";
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { NotificationBell } from '@/components/notifications/NotificationBell';
 // import { SearchSectionTwo } from "./SearchSection";
 import { useAuth } from '@/contexts/AuthContext';
 import type { AuthUser } from '@/types';
@@ -329,7 +330,10 @@ const Header = ({ onClick = () => {}, activeTab = null }: HeaderProps) => {
               </nav>
             </div>
           )}
-          <div className="md:ml-6 flex items-center space-x-4">{renderAuthButtons()}</div>
+          <div className="md:ml-6 flex items-center space-x-4">
+            {user && <NotificationBell />}
+            {renderAuthButtons()}
+          </div>
         </div>
       </div>
     </nav>

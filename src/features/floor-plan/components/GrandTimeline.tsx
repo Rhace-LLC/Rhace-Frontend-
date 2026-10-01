@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react';
 import { LockBadge } from './LockBadge';
 import { isLocked, reservationsForUnit } from '../domain/reservations';
+import { unitDisplayName } from '../domain/unitDisplay';
 import type { InventoryBlueprint, PhysicalUnit, Reservation, Vertical } from '../domain/types';
 
 interface GrandTimelineProps {
@@ -58,6 +59,7 @@ function overlapsWindow(reservation: Reservation, startMs: number, endMs: number
 }
 
 export function GrandTimeline({
+  vertical,
   blueprints,
   units,
   reservations,
@@ -254,7 +256,9 @@ export function GrandTimeline({
                         }`}
                       >
                         <div className="flex w-44 shrink-0 items-center gap-2 border-r border-gray-200 px-3 py-2 text-xs text-gray-700">
-                          <span className="truncate">{unit.label}</span>
+                          <span className="truncate">
+                            {unitDisplayName(unit.label, vertical, unit.id)}
+                          </span>
                           {isLocked(unit.id) && <LockBadge compact />}
                         </div>
                         <div className="relative grid flex-1 grid-cols-[repeat(24,minmax(0,1fr))]">

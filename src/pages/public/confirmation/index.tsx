@@ -68,9 +68,8 @@ const ConfirmationPage = () => {
 
   return (
     <div className="min-h-screen bg-res-surface">
-      <div className="hidden md:block">
-        <Header />
-      </div>
+      <Header />
+      <div aria-hidden className="h-[96px] md:hidden" />
       <main className="mx-auto mb-[120px] max-w-3xl px-4 pt-4 pb-8 md:mt-[85px] md:py-12">
         <div className="rounded-res-lg bg-res-card p-6 text-center shadow-res-low md:p-8">
           <div

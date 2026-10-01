@@ -8,10 +8,12 @@ import {
   formatRange,
   money,
   outstanding,
+  useCancelMyGroup,
   useCancelMyReservation,
   useMyReservation,
   usePayBalance,
 } from '@/features/reservations';
+import { money as orderMoney, useOrderByReservation } from '@/features/orders';
 
 function DetailCell({ label, value }: { label: string; value: React.ReactNode }) {
   return (
@@ -29,9 +31,13 @@ const BookingDetails = () => {
   const navigate = useNavigate();
   const reservationQuery = useMyReservation(id);
   const cancelMutation = useCancelMyReservation();
+  const cancelGroupMutation = useCancelMyGroup();
   const payMutation = usePayBalance();
 
   const reservation = reservationQuery.data;
+  const orderQuery = useOrderByReservation(reservation?._id, !!reservation);
+  const preorder = orderQuery.data;
+  const preorderLines = preorder?.lines ?? [];
 
   const handlePayBalance = async () => {
     if (!reservation?.bookingGroup) return;
@@ -53,11 +59,20 @@ const BookingDetails = () => {
   const handleCancel = async () => {
     if (!reservation) return;
     try {
-      await cancelMutation.mutateAsync(reservation._id);
+      // A booking can span several tables/rooms — cancelling here releases
+      // the whole booking, not just this line.
+      if (reservation.bookingGroup) {
+        await cancelGroupMutation.mutateAsync(reservation.bookingGroup);
+      } else {
+        await cancelMutation.mutateAsync(reservation._id);
+      }
       toast.success('Booking cancelled');
       navigate('/bookings');
-    } catch {
-      toast.error('Could not cancel your booking.');
+    } catch (error) {
+      toast.error(
+        (error as { response?: { data?: { message?: string } } })?.response?.data?.message ||
+          'Could not cancel your booking.',
+      );
     }
   };
 
@@ -66,9 +81,8 @@ const BookingDetails = () => {
 
   return (
     <div className="min-h-screen bg-res-surface">
-      <div className="hidden md:block">
-        <Header />
-      </div>
+      <Header />
+      <div aria-hidden className="h-[96px] md:hidden" />
       <main className="mx-auto mb-[120px] max-w-3xl space-y-5 px-4 pt-4 pb-8 md:mt-[85px] md:mb-8 md:px-6 md:py-8 lg:px-8">
         <div>
           <Link
@@ -130,6 +144,42 @@ const BookingDetails = () => {
                 <DetailCell label="Still to pay" value={money(outstanding(reservation))} />
               </dl>
             </section>
+
+            {preorderLines.length > 0 && (
+              <section className="rounded-res-lg bg-res-card p-4 shadow-res-low md:p-6">
+                <div className="flex items-center justify-between gap-2">
+                  <h2 className="type-res-h3 text-res-ink">
+                    {reservation.vertical === 'club' ? 'Pre-ordered drinks' : 'Pre-ordered food'}
+                  </h2>
+                  <span className="type-res-small rounded-full bg-res-surface px-2.5 py-1 font-semibold text-res-ink-muted">
+                    {preorderLines.reduce((sum, l) => sum + (l.quantity ?? 0), 0)} items
+                  </span>
+                </div>
+                <ul className="mt-3 rounded-res-md bg-res-surface p-3">
+                  {preorderLines.map((line) => (
+                    <li
+                      key={line._id}
+                      className="type-res-body flex justify-between gap-2 border-b border-res-line py-2 font-normal text-res-ink last:border-0 last:pb-0 first:pt-0"
+                    >
+                      <span className="min-w-0">
+                        <span className="font-semibold">{line.quantity} × </span>
+                        <span className="line-clamp-1">{line.name}</span>
+                        {line.addons?.length > 0 && (
+                          <span className="type-res-small block font-normal text-res-ink-muted">
+                            + {line.addons.map((a) => a.name).join(', ')}
+                          </span>
+                        )}
+                      </span>
+                      <span className="shrink-0 font-semibold">{orderMoney(line.lineTotal)}</span>
+                    </li>
+                  ))}
+                </ul>
+                <div className="mt-3 flex items-center justify-between">
+                  <span className="type-res-small font-medium text-res-ink-muted">Order total</span>
+                  <span className="type-res-h3 text-res-ink">{orderMoney(preorder!.total)}</span>
+                </div>
+              </section>
+            )}
 
             <div className="flex flex-col justify-end gap-2.5 sm:flex-row">
               {outstanding(reservation) > 0 && reservation.bookingGroup && (

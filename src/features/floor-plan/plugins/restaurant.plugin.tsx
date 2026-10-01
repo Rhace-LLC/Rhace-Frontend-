@@ -8,6 +8,7 @@ import { ScopeNav } from '../components/overlays/ScopeNav';
 import { BlueprintSpecs } from '../components/BlueprintSpecs';
 import { ManageUnitCard } from '../components/ManageUnitCard';
 import { stateMetaFor } from '../domain/states';
+import { unitDisplayName } from '../domain/unitDisplay';
 import { canTransition } from '../domain/transitions';
 import { allBlueprints } from '../domain/blueprintStore';
 import { findBlueprint } from '../domain/blueprints';
@@ -134,7 +135,9 @@ function renderTile(entity: FloorEntity, ctx: TileContext) {
     >
       <div className="flex items-start justify-between">
         <div>
-          <div className="text-xs font-semibold text-gray-900">{name}</div>
+          <div className="text-xs font-semibold text-gray-900">
+            {unitDisplayName(name, ctx.vertical)}
+          </div>
           <div className="flex items-center gap-1 text-[10px] text-gray-500">
             <Users size={10} /> {capacity ?? '—'}
           </div>

@@ -2,22 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { Armchair, Clock, DoorOpen, Loader2, MapPin, RefreshCw } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { Modal } from '@/components/others/RhaceModal';
 import { useAuth } from '@/contexts/AuthContext';
 import { floorPlanService } from '@/services/floorPlan.service';
 import { physicalUnitService } from '@/services/physicalUnit.service';
@@ -73,6 +58,9 @@ const claimErrorMessage = (error: unknown, fallback: string): string => {
 };
 
 const stateLabel = (state?: string) => (state ? state.replace(/_/g, ' ') : '');
+
+const selectClass =
+  'w-full rounded-res-sm border border-res-line bg-res-surface px-3 py-2.5 type-res-body font-normal text-res-ink outline-none focus:border-res-brand';
 
 /**
  * My stations (plan §6.2): the caller's active lead/support slots for today
@@ -215,153 +203,206 @@ export default function MyStationsCard({
     }
   };
 
+  const unitWord = unitType === 'room' ? 'room' : 'table';
+
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-start justify-between gap-3">
+    <section className="rounded-res-lg bg-res-card p-4 shadow-res-low md:p-5">
+      <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Armchair className="h-4 w-4 text-[#0A6C6D]" /> My stations
-            <Badge variant="secondary">{mine.length}</Badge>
-          </CardTitle>
-          <p className="mt-1 text-xs text-muted-foreground">
-            {unitType === 'room' ? 'Rooms' : 'Tables'} you&apos;ve claimed or been assigned today.
+          <div className="flex items-center gap-2">
+            <Armchair className="h-4 w-4 text-res-brand" />
+            <h2 className="type-res-h3 text-res-ink">My stations</h2>
+            <span
+              className={`type-res-small inline-flex items-center rounded-full px-2.5 py-1 font-semibold whitespace-nowrap ${
+                mine.length
+                  ? 'bg-res-brand text-res-ink-inverted'
+                  : 'bg-res-surface text-res-ink-muted'
+              }`}
+            >
+              {mine.length}
+            </span>
+          </div>
+          <p className="type-res-small mt-1 font-normal text-res-ink-muted">
+            {unitType === 'room' ? 'Rooms' : 'Tables'} you&apos;ve claimed or been assigned
+            today.
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" onClick={load} disabled={isLoading}>
-            {isLoading ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <RefreshCw className="h-4 w-4" />
-            )}
-          </Button>
-          <Button
-            size="sm"
-            className="bg-[#0A6C6D] hover:bg-[#085a5b]"
+          <button
+            type="button"
+            onClick={load}
+            disabled={isLoading}
+            aria-label="Refresh stations"
+            title="Refresh stations"
+            className="type-res-small cursor-pointer rounded-full bg-res-surface p-2.5 font-semibold text-res-ink transition-colors outline-none hover:text-res-brand focus-visible:ring-2 focus-visible:ring-res-brand disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+          </button>
+          <button
+            type="button"
             onClick={openClaimDialog}
             disabled={!onShift}
             title={onShift ? 'Claim an open station' : 'Clock in first'}
+            className="type-res-small inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-res-brand px-4 py-2.5 font-semibold text-res-ink-inverted shadow-res-low transition-colors outline-none hover:bg-res-brand-hover focus-visible:ring-2 focus-visible:ring-res-brand disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {!onShift && <Clock className="mr-1 h-3 w-3" />}
+            {!onShift && <Clock className="h-3.5 w-3.5" />}
             Claim station
-          </Button>
+          </button>
         </div>
-      </CardHeader>
-      <CardContent>
-        {mine.length === 0 ? (
-          <p className="text-sm text-muted-foreground">
-            {onShift
-              ? `You hold no ${unitType === 'room' ? 'rooms' : 'tables'} right now — claim one to get started.`
-              : 'Clock in to claim or view your stations.'}
-          </p>
+      </div>
+
+      <div className="mt-4">
+        {isLoading ? (
+          <div className="space-y-2.5">
+            {Array.from({ length: 2 }).map((_, i) => (
+              <div key={i} className="h-16 animate-pulse rounded-res-sm bg-res-surface" />
+            ))}
+          </div>
+        ) : mine.length === 0 ? (
+          <div className="rounded-res-md bg-res-surface px-6 py-8 text-center">
+            <p className="type-res-h3 text-res-ink">No stations yet</p>
+            <p className="type-res-small mx-auto mt-1 max-w-sm font-normal text-res-ink-muted">
+              {onShift
+                ? `You hold no ${unitWord}s right now — claim one to get started.`
+                : 'Clock in to claim or view your stations.'}
+            </p>
+          </div>
         ) : (
-          <ul className="space-y-2">
+          <ul className="space-y-2.5">
             {mine.map((a) => {
               const unitId = assignmentUnitId(a.refId);
               const role = assignmentRole(a);
               const unitState = layout?.units.find((u) => u._id === unitId)?.state;
+              const busy = busyId === a._id;
               return (
                 <li
                   key={a._id}
-                  className="flex flex-wrap items-center justify-between gap-2 rounded-lg border bg-white p-3 shadow-sm"
+                  className="flex flex-col gap-3 rounded-res-md border border-res-line bg-res-card p-3 shadow-res-low sm:flex-row sm:items-center sm:justify-between"
                 >
-                  <div className="flex items-center gap-2">
-                    <MapPin className="h-4 w-4 text-[#0A6C6D]" />
-                    <span className="font-medium">
-                      {assignmentUnitId(a.refId) ? unitLabel(unitId) : 'Station'}
+                  <div className="flex min-w-0 items-center gap-2.5">
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-res-sm bg-res-surface">
+                      <MapPin className="h-4 w-4 text-res-brand" />
                     </span>
-                    <Badge
-                      variant="outline"
-                      className={role === 'lead' ? 'border-[#0A6C6D] text-[#0A6C6D]' : ''}
-                    >
-                      {role === 'lead' ? 'Lead' : 'Support'}
-                    </Badge>
-                    {unitState && (
-                      <span className="text-xs capitalize text-muted-foreground">
-                        {stateLabel(unitState)}
-                      </span>
-                    )}
+                    <div className="min-w-0">
+                      <p className="type-res-body truncate font-semibold text-res-ink">
+                        {assignmentUnitId(a.refId) ? unitLabel(unitId) : 'Station'}
+                      </p>
+                      <p className="type-res-small flex flex-wrap items-center gap-1.5 font-normal text-res-ink-muted">
+                        <span
+                          className={`inline-flex items-center rounded-full px-2 py-0.5 font-semibold ${
+                            role === 'lead'
+                              ? 'bg-res-secondary text-res-brand'
+                              : 'bg-res-surface text-res-ink-muted'
+                          }`}
+                        >
+                          {role === 'lead' ? 'Lead' : 'Support'}
+                        </span>
+                        {unitState && <span className="capitalize">{stateLabel(unitState)}</span>}
+                      </p>
+                    </div>
                   </div>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="h-8 text-xs"
-                    disabled={busyId === a._id}
+                  <button
+                    type="button"
+                    disabled={busy}
                     onClick={() => release(a._id)}
+                    className="type-res-small inline-flex shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-full bg-res-surface px-4 py-2 font-semibold text-res-ink transition-colors outline-none hover:text-res-brand focus-visible:ring-2 focus-visible:ring-res-brand disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    {busyId === a._id ? (
-                      <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+                    {busy ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
                     ) : (
-                      <DoorOpen className="mr-1 h-3 w-3" />
+                      <DoorOpen className="h-3.5 w-3.5" />
                     )}
-                    Release
-                  </Button>
+                    {busy ? 'Releasing…' : 'Release'}
+                  </button>
                 </li>
               );
             })}
           </ul>
         )}
-      </CardContent>
+      </div>
 
-      <Dialog open={claimOpen} onOpenChange={setClaimOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Claim a station</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-3">
-            <p className="text-sm text-muted-foreground">
-              Pick an open {unitType === 'room' ? 'room' : 'table'} that has free slots. You take
-              the lead slot unless the station already has an owner.
+      {claimOpen && (
+        <Modal
+          isOpen
+          onClose={() => setClaimOpen(false)}
+          title="Claim a station"
+          subtitle={`Pick an open ${unitWord} with a free slot`}
+          footer={
+            <button
+              type="button"
+              disabled={!claimUnitId || busyId === claimUnitId}
+              onClick={submitClaim}
+              className="type-res-small inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-res-brand px-5 py-2.5 font-semibold text-res-ink-inverted shadow-res-low transition-colors outline-none hover:bg-res-brand-hover focus-visible:ring-2 focus-visible:ring-res-brand disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {busyId === claimUnitId ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <Armchair className="h-3.5 w-3.5" />
+              )}
+              Claim station
+            </button>
+          }
+        >
+          <div className="space-y-4">
+            <p className="type-res-small font-normal text-res-ink-muted">
+              You take the lead slot unless the station already has an owner.
             </p>
             {claimLoading ? (
               <div className="flex items-center justify-center py-6">
-                <Loader2 className="h-5 w-5 animate-spin text-[#0A6C6D]" />
+                <Loader2 className="h-5 w-5 animate-spin text-res-brand" />
               </div>
             ) : claimUnits.length === 0 ? (
-              <p className="py-4 text-center text-sm text-muted-foreground">
-                No open stations available right now.
-              </p>
+              <div className="rounded-res-md bg-res-surface px-6 py-8 text-center">
+                <p className="type-res-small font-medium text-res-ink-muted">
+                  No open stations available right now.
+                </p>
+              </div>
             ) : (
               <>
-                <Select value={claimUnitId} onValueChange={setClaimUnitId}>
-                  <SelectTrigger>
-                    <SelectValue placeholder={`Choose a ${unitType === 'room' ? 'room' : 'table'}…`} />
-                  </SelectTrigger>
-                  <SelectContent>
+                <div>
+                  <label
+                    className="type-res-small mb-1.5 block font-medium text-res-ink-muted"
+                    htmlFor="claim-station-unit"
+                  >
+                    Station
+                  </label>
+                  <select
+                    id="claim-station-unit"
+                    value={claimUnitId}
+                    onChange={(e) => setClaimUnitId(e.target.value)}
+                    className={selectClass}
+                  >
+                    <option value="">Choose a {unitWord}…</option>
                     {claimUnits.map((u) => (
-                      <SelectItem key={u._id} value={u._id}>
+                      <option key={u._id} value={u._id}>
                         {u.label || u._id}
                         {u.state ? ` · ${stateLabel(u.state)}` : ''}
-                      </SelectItem>
+                      </option>
                     ))}
-                  </SelectContent>
-                </Select>
-                <Select value={claimRole} onValueChange={(v) => setClaimRole(v as StaffAssignmentRole)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Slot role" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="lead">Lead — own the station</SelectItem>
-                    <SelectItem value="support">Support — assist on it</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Button
-                  className="w-full bg-[#0A6C6D] hover:bg-[#085a5b]"
-                  disabled={!claimUnitId || busyId === claimUnitId}
-                  onClick={submitClaim}
-                >
-                  {busyId === claimUnitId ? (
-                    <Loader2 className="mr-1 h-4 w-4 animate-spin" />
-                  ) : (
-                    <Armchair className="mr-1 h-4 w-4" />
-                  )}
-                  Claim station
-                </Button>
+                  </select>
+                </div>
+                <div>
+                  <label
+                    className="type-res-small mb-1.5 block font-medium text-res-ink-muted"
+                    htmlFor="claim-station-role"
+                  >
+                    Slot role
+                  </label>
+                  <select
+                    id="claim-station-role"
+                    value={claimRole}
+                    onChange={(e) => setClaimRole(e.target.value as StaffAssignmentRole)}
+                    className={selectClass}
+                  >
+                    <option value="lead">Lead — own the station</option>
+                    <option value="support">Support — assist on it</option>
+                  </select>
+                </div>
               </>
             )}
           </div>
-        </DialogContent>
-      </Dialog>
-    </Card>
+        </Modal>
+      )}
+    </section>
   );
 }

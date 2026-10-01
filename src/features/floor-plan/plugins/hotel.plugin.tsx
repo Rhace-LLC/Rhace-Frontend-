@@ -6,6 +6,7 @@ import { ScopeNav } from '../components/overlays/ScopeNav';
 import { BlueprintSpecs } from '../components/BlueprintSpecs';
 import { ManageUnitCard } from '../components/ManageUnitCard';
 import { stateMetaFor } from '../domain/states';
+import { unitDisplayName } from '../domain/unitDisplay';
 import { canTransition } from '../domain/transitions';
 import { allBlueprints } from '../domain/blueprintStore';
 import { findBlueprint } from '../domain/blueprints';
@@ -75,7 +76,9 @@ function renderTile(entity: FloorEntity, ctx: TileContext) {
       }
     >
       <div className="flex items-start justify-between">
-        <div className="text-xs font-semibold text-gray-900">{b.name}</div>
+        <div className="text-xs font-semibold text-gray-900">
+          {unitDisplayName(b.name, ctx.vertical)}
+        </div>
         {isOOO && <Wrench size={12} className="text-red-500" />}
       </div>
       <div className="text-[10px] text-gray-500">

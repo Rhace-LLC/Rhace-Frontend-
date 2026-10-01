@@ -1,29 +1,23 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
-import { Loader2, MapPinned, ShoppingBag } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Skeleton } from '@/components/ui/skeleton';
+  Check,
+  Flag,
+  MapPinned,
+  MoreVertical,
+  RefreshCw,
+  ShoppingBag,
+  Trash2,
+  Wallet,
+} from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCreateOrder } from '@/features/orders/api/hooks';
 import { ordersApi } from '@/features/orders/api/service';
 import type { CreateOrderLineInput, OrderDto } from '@/features/orders/types';
 import { OrderBuilder } from '@/features/orders';
 import { money } from '@/features/orders/money';
+import { Modal } from '@/components/others/RhaceModal';
+import RecordOfflinePaymentModal from '@/pages/vendor/shared/payments/RecordOfflinePayment';
 import { floorPlanService } from '@/services/floorPlan.service';
 import {
   staffService,
@@ -37,7 +31,9 @@ import MyStationsCard from './MyStationsCard';
 
 const todayKey = () => new Date().toISOString().slice(0, 10);
 
-const ACTIVE_STATUSES = new Set(['open', 'placed', 'preparing', 'served']);
+const ACTIVE_STATUSES = new Set(['open', 'placed', 'preparing', 'ready', 'served']);
+
+const TABLE_POLL_MS = 30_000;
 
 /** Free → seated → paid; mirrors the state machine, read-only here. */
 const stateChip = (state: string) => {
@@ -49,16 +45,62 @@ const stateChip = (state: string) => {
   return 'bg-gray-400';
 };
 
+const ORDER_STATUS_STYLE: Record<string, string> = {
+  open: 'bg-res-surface text-res-ink-muted',
+  placed: 'bg-res-secondary text-res-brand',
+  preparing: 'bg-res-brand text-res-ink-inverted',
+  ready: 'bg-amber-50 text-amber-700',
+  served: 'bg-res-secondary text-res-brand',
+  completed: 'bg-res-surface text-res-ink-muted',
+  cancelled: 'bg-res-surface text-res-ink-muted line-through',
+};
+
+const SOURCE_LABEL: Record<string, string> = {
+  reservation: 'Pre-order',
+  quick_order: 'Table order',
+  pos: 'Counter order',
+};
+
+const selectClass =
+  'rounded-res-sm border border-res-line bg-res-card px-3 py-2.5 type-res-body font-normal text-res-ink shadow-res-low outline-none focus:border-res-brand';
+
+function formatPlacedAt(iso?: string): string {
+  if (!iso) return '—';
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return '—';
+  return `${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} · ${date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}`;
+}
+
+const ageMinutes = (createdAt?: string) =>
+  createdAt ? Math.floor((Date.now() - new Date(createdAt).getTime()) / 60000) : 0;
+
+const formatAge = (minutes: number): string => {
+  if (minutes < 60) return `${minutes} min ago`;
+  if (minutes < 24 * 60) return `${Math.floor(minutes / 60)}h ago`;
+  return `${Math.floor(minutes / (24 * 60))}d ago`;
+};
+
+/** Unprocessed orders older than a day — likely no-shows, duplicates, misfires. */
+const STALE_MINUTES = 24 * 60;
+const isStaleOrder = (order: OrderDto): boolean =>
+  ['open', 'placed', 'preparing'].includes(order.status) &&
+  ageMinutes(order.createdAt) >= STALE_MINUTES;
+
 export default function WaiterWorkspace() {
   const { staff } = useAuth();
+  const myStaffId = staff?._id ?? staff?.id;
 
   const [plans, setPlans] = useState<FloorPlanDto[]>([]);
   const [planId, setPlanId] = useState('');
   const [layout, setLayout] = useState<FloorPlanLayoutDto | null>(null);
   const [assignments, setAssignments] = useState<StaffAssignmentDto[]>([]);
   const [orders, setOrders] = useState<OrderDto[]>([]);
+  const [venueOrders, setVenueOrders] = useState<OrderDto[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [mapLoading, setMapLoading] = useState(false);
+  const [tableRefreshKey, setTableRefreshKey] = useState(0);
+
+  const [payOrder, setPayOrder] = useState<OrderDto | null>(null);
 
   // Order pad
   const [padOpen, setPadOpen] = useState(false);
@@ -122,10 +164,148 @@ export default function WaiterWorkspace() {
     () => new Set(assignments.map((a) => assignmentUnitId(a.refId))),
     [assignments],
   );
-  const active = useMemo(
-    () => orders.filter((o) => ACTIVE_STATUSES.has(o.status)),
-    [orders],
+
+  const assignedKey = useMemo(() => [...assignedIds].sort().join(','), [assignedIds]);
+
+  // Guest orders (QR quick-order, pre-orders) carry no staffId, so the `mine`
+  // lens misses them — the backend `unitIds` filter returns only orders on the
+  // waiter's assigned tables. Polled silently so new guest orders appear live.
+  useEffect(() => {
+    if (!assignedKey) {
+      setVenueOrders([]);
+      return;
+    }
+    let cancelled = false;
+    const fetchTableOrders = async (silent = false) => {
+      try {
+        const res = await ordersApi.list({
+          limit: 60,
+          withLines: true,
+          unitIds: assignedKey.split(','),
+        });
+        if (!cancelled) setVenueOrders(res.items ?? []);
+      } catch {
+        if (!cancelled && !silent) toast.error('Failed to load table orders');
+      }
+    };
+    fetchTableOrders();
+    const timer = setInterval(() => fetchTableOrders(true), TABLE_POLL_MS);
+    return () => {
+      cancelled = true;
+      clearInterval(timer);
+    };
+  }, [assignedKey, tableRefreshKey]);
+
+  const refreshAll = () => {
+    setTableRefreshKey((k) => k + 1);
+    load();
+  };
+
+  const [orderTab, setOrderTab] = useState<'active' | 'completed'>('active');
+  const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
+
+  /**
+   * Every order the waiter owns or is responsible for: guest orders land
+   * on an order with only `unitId` set, so they arrive via the `unitIds`
+   * table filter; POS orders the waiter took themselves match by `mine`.
+   */
+  const tableOrders = useMemo(() => {
+    const seen = new Set<string>();
+    const merged: OrderDto[] = [];
+    for (const order of [...orders, ...venueOrders]) {
+      if (seen.has(order._id)) continue;
+      seen.add(order._id);
+      if (order.status === 'cancelled') continue;
+      const onMyTable = order.unitId ? assignedIds.has(order.unitId) : false;
+      const isMine = myStaffId ? order.staffId === myStaffId : false;
+      if (onMyTable || isMine) merged.push(order);
+    }
+    return merged.sort(
+      (a, b) =>
+        new Date(a.createdAt ?? 0).getTime() - new Date(b.createdAt ?? 0).getTime(),
+    );
+  }, [orders, venueOrders, assignedIds, myStaffId]);
+
+  const activeOrders = useMemo(
+    () => tableOrders.filter((o) => ACTIVE_STATUSES.has(o.status)),
+    [tableOrders],
   );
+  const completedOrders = useMemo(
+    () => tableOrders.filter((o) => o.status === 'completed'),
+    [tableOrders],
+  );
+  const visibleOrders = orderTab === 'active' ? activeOrders : completedOrders;
+
+  /** Waiter handoff: ready -> served at the table, served -> completed on exit. */
+  const advanceOrder = async (order: OrderDto, next: 'served' | 'completed') => {
+    try {
+      setUpdatingOrderId(order._id);
+      const updated = await ordersApi.updateStatus(order._id, next);
+      const apply = (prev: OrderDto[]) =>
+        prev.map((o) => (o._id === order._id ? { ...o, ...updated } : o));
+      setOrders(apply);
+      setVenueOrders(apply);
+      toast.success(next === 'served' ? 'Order marked as served' : 'Order completed');
+    } catch {
+      toast.error('Failed to update order');
+    } finally {
+      setUpdatingOrderId(null);
+    }
+  };
+
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const [menuPos, setMenuPos] = useState<{ top: number; left: number } | null>(null);
+  const [cancelTarget, setCancelTarget] = useState<OrderDto | null>(null);
+  const [cancelling, setCancelling] = useState(false);
+
+  /** Kebab menu is `fixed` so it escapes the table's scroll container. */
+  const openMenu = (orderId: string, anchor: HTMLElement) => {
+    if (openMenuId === orderId) {
+      setOpenMenuId(null);
+      return;
+    }
+    const rect = anchor.getBoundingClientRect();
+    const width = 224;
+    const height = 210;
+    const left = Math.max(8, Math.min(rect.right - width, window.innerWidth - width - 8));
+    const top =
+      rect.bottom + 6 + height > window.innerHeight
+        ? Math.max(8, rect.top - height - 6)
+        : rect.bottom + 6;
+    setMenuPos({ top, left });
+    setOpenMenuId(orderId);
+  };
+
+  useEffect(() => {
+    if (!openMenuId) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpenMenuId(null);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [openMenuId]);
+
+  /**
+   * Dead orders (no-show, duplicate, misfire) leave the board via the cancel
+   * confirmation modal. Cancelled orders are soft-deleted server-side.
+   */
+  const cancelTableOrder = async () => {
+    if (!cancelTarget) return;
+    try {
+      setCancelling(true);
+      await ordersApi.cancel(cancelTarget._id);
+      const drop = (prev: OrderDto[]) => prev.filter((o) => o._id !== cancelTarget._id);
+      setOrders(drop);
+      setVenueOrders(drop);
+      toast.success('Order cancelled');
+      setCancelTarget(null);
+    } catch {
+      toast.error('Failed to cancel order');
+    } finally {
+      setCancelling(false);
+    }
+  };
+
   const vertical = layout?.plan?.vertical ?? 'restaurant';
 
   const unitLabel = (unitId?: string | null) =>
@@ -162,12 +342,12 @@ export default function WaiterWorkspace() {
 
   if (isLoading) {
     return (
-      <div className="space-y-6">
-        <Skeleton className="h-10 w-64" />
-        <Skeleton className="h-72 w-full" />
-        <div className="grid gap-4 md:grid-cols-3">
+      <div className="space-y-5">
+        <div className="h-8 w-64 animate-pulse rounded-full bg-res-surface" />
+        <div className="h-72 animate-pulse rounded-res-lg bg-res-card" />
+        <div className="grid gap-3 md:grid-cols-3">
           {[...Array(3)].map((_, i) => (
-            <Skeleton key={i} className="h-40 w-full" />
+            <div key={i} className="h-40 animate-pulse rounded-res-md bg-res-card" />
           ))}
         </div>
       </div>
@@ -175,59 +355,318 @@ export default function WaiterWorkspace() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+    <div className="space-y-5">
+      <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="flex items-center gap-2 text-2xl font-bold">
-            <MapPinned className="h-6 w-6 text-[#0A6C6D]" /> Floor map
+          <h1 className="type-res-h2 flex items-center gap-2 text-res-ink">
+            <MapPinned className="h-5 w-5 text-res-brand" /> My tables
           </h1>
-          <p className="text-sm text-muted-foreground">
-            Your assigned tables are highlighted — tap one to start an order.
+          <p className="type-res-body mt-1 font-normal text-res-ink-muted">
+            Your orders, stations and the floor map.
           </p>
         </div>
         <div className="flex items-center gap-2">
           {plans.length > 1 && (
-            <Select value={planId} onValueChange={setPlanId}>
-              <SelectTrigger className="w-48">
-                <SelectValue placeholder="Floor plan" />
-              </SelectTrigger>
-              <SelectContent>
-                {plans.map((p) => (
-                  <SelectItem key={p._id} value={p._id}>
-                    {p.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <select
+              aria-label="Floor plan"
+              value={planId}
+              onChange={(e) => setPlanId(e.target.value)}
+              className={`${selectClass} w-48`}
+            >
+              {plans.map((p) => (
+                <option key={p._id} value={p._id}>
+                  {p.name}
+                </option>
+              ))}
+            </select>
           )}
-          <Button variant="outline" size="sm" onClick={load}>
-            <Loader2 className="mr-1 hidden h-4 w-4 animate-spin" />
-            Refresh
-          </Button>
+          <button
+            type="button"
+            onClick={refreshAll}
+            aria-label="Refresh floor map and orders"
+            title="Refresh floor map and orders"
+            className="type-res-small cursor-pointer rounded-full bg-res-card p-2.5 font-semibold text-res-ink shadow-res-low transition-colors outline-none hover:text-res-brand focus-visible:ring-2 focus-visible:ring-res-brand"
+          >
+            <RefreshCw className="h-4 w-4" />
+          </button>
         </div>
       </div>
 
+      <section className="rounded-res-lg bg-res-card p-4 shadow-res-low md:p-5">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <ShoppingBag className="h-4 w-4 text-res-brand" />
+            <h2 className="type-res-h3 text-res-ink">Live orders</h2>
+            <span
+              className={`type-res-small inline-flex items-center rounded-full px-2.5 py-1 font-semibold whitespace-nowrap ${
+                activeOrders.length
+                  ? 'bg-res-brand text-res-ink-inverted'
+                  : 'bg-res-surface text-res-ink-muted'
+              }`}
+            >
+              {activeOrders.length}
+            </span>
+          </div>
+          <div
+            role="tablist"
+            aria-label="Filter orders"
+            className="flex gap-1 rounded-res-md bg-res-surface p-1"
+          >
+            {(
+              [
+                { id: 'active', label: `Active · ${activeOrders.length}` },
+                { id: 'completed', label: `Completed · ${completedOrders.length}` },
+              ] as const
+            ).map((tab) => {
+              const isActive = orderTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={isActive}
+                  onClick={() => setOrderTab(tab.id)}
+                  className={`type-res-small cursor-pointer rounded-full px-4 py-2 whitespace-nowrap transition-all outline-none focus-visible:ring-2 focus-visible:ring-res-brand ${
+                    isActive
+                      ? 'bg-res-card text-res-brand shadow-res-low'
+                      : 'text-res-ink-muted hover:text-res-ink'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+        <p className="type-res-small mt-1 font-normal text-res-ink-muted">
+          Orders on your tables — yours and your guests&apos;. Mark them served at the
+          table, completed when guests leave.
+        </p>
+
+        <div className="mt-4">
+          {visibleOrders.length === 0 ? (
+            <div className="rounded-res-md bg-res-surface px-6 py-10 text-center">
+              <p className="type-res-h3 text-res-ink">
+                {orderTab === 'active' ? 'No orders on your tables yet' : 'No completed orders yet'}
+              </p>
+              <p className="type-res-small mx-auto mt-1 max-w-sm font-normal text-res-ink-muted">
+                {orderTab === 'active'
+                  ? 'Guest orders placed on your assigned tables will appear here.'
+                  : 'Orders you complete will land on this tab.'}
+              </p>
+            </div>
+          ) : (
+            <div className="hide-scrollbar -mx-1 overflow-x-auto px-1 py-1">
+              <table className="w-full min-w-[1020px] border-collapse text-left">
+                <thead>
+                  <tr className="border-b border-res-line">
+                    <th className="type-res-caption px-4 py-3 font-medium tracking-[0.2px] text-res-ink-muted uppercase">
+                      Ticket
+                    </th>
+                    <th className="type-res-caption px-4 py-3 font-medium tracking-[0.2px] text-res-ink-muted uppercase">
+                      Table
+                    </th>
+                    <th className="type-res-caption px-4 py-3 font-medium tracking-[0.2px] text-res-ink-muted uppercase">
+                      Placed at
+                    </th>
+                    <th className="type-res-caption px-4 py-3 font-medium tracking-[0.2px] text-res-ink-muted uppercase">
+                      Items
+                    </th>
+                    <th className="type-res-caption px-4 py-3 font-medium tracking-[0.2px] text-res-ink-muted uppercase">
+                      Status
+                    </th>
+                    <th className="type-res-caption px-4 py-3 text-right font-medium tracking-[0.2px] text-res-ink-muted uppercase">
+                      Total
+                    </th>
+                    <th className="type-res-caption px-4 py-3 text-right font-medium tracking-[0.2px] text-res-ink-muted uppercase">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {visibleOrders.map((order) => {
+                    const lines = order.lines ?? [];
+                    const itemCount = lines.reduce((sum, l) => sum + (l.quantity ?? 0), 0);
+                    const preview = lines
+                      .slice(0, 3)
+                      .map((l) => `${l.quantity}× ${l.name}`)
+                      .join(' · ');
+                    const placedByMe = myStaffId ? order.staffId === myStaffId : false;
+                    const busy = updatingOrderId === order._id;
+                    return (
+                      <tr
+                        key={order._id}
+                        className="border-b border-res-line transition-colors last:border-0 hover:bg-res-surface/60"
+                      >
+                        <td className="px-4 py-3">
+                          <span className="type-res-body block font-semibold text-res-ink">
+                            {order.guestName || `Order …${order._id.slice(-6)}`}
+                          </span>
+                          <span className="type-res-small block font-normal text-res-ink-muted">
+                            {SOURCE_LABEL[order.source] ?? order.source} · #
+                            {order._id.slice(-6).toUpperCase()}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3">
+                          <span className="type-res-body font-semibold whitespace-nowrap text-res-ink">
+                            {unitLabel(order.unitId)}
+                          </span>
+                          <span
+                            className={`type-res-small mt-1 block w-fit rounded-full px-2 py-0.5 font-semibold whitespace-nowrap ${
+                              placedByMe
+                                ? 'bg-res-secondary text-res-brand'
+                                : 'bg-res-surface text-res-ink-muted'
+                            }`}
+                          >
+                            {placedByMe ? 'Placed by you' : 'Guest order'}
+                          </span>
+                        </td>
+                        <td className="type-res-body px-4 py-3 font-normal whitespace-nowrap text-res-ink-muted">
+                          {formatPlacedAt(order.createdAt)}
+                          {orderTab === 'active' &&
+                            (() => {
+                              const minutes = ageMinutes(order.createdAt);
+                              const stale = isStaleOrder(order);
+                              return (
+                                <>
+                                  <span className="type-res-small block font-normal text-res-ink-muted">
+                                    {formatAge(minutes)}
+                                  </span>
+                                  {stale && (
+                                    <span className="type-res-small mt-1 inline-block rounded-full bg-red-50 px-2 py-0.5 font-semibold text-red-700">
+                                      Stale · no action taken
+                                    </span>
+                                  )}
+                                </>
+                              );
+                            })()}
+                        </td>
+                        <td className="px-4 py-3">
+                          <span className="type-res-body block font-medium text-res-ink">
+                            {itemCount} item{itemCount === 1 ? '' : 's'}
+                          </span>
+                          {preview && (
+                            <span className="type-res-small block max-w-[280px] truncate font-normal text-res-ink-muted">
+                              {preview}
+                              {lines.length > 3 ? ` +${lines.length - 3} more` : ''}
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          <span
+                            className={`type-res-small inline-flex items-center rounded-full px-2.5 py-1 font-semibold whitespace-nowrap capitalize ${ORDER_STATUS_STYLE[order.status] ?? 'bg-res-surface text-res-ink-muted'}`}
+                          >
+                            {order.status}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          <span className="type-res-body font-semibold whitespace-nowrap text-res-ink">
+                            {money(order.total)}
+                          </span>
+                          {order.balance > 0 && (
+                            <span className="type-res-small mt-1 inline-block rounded-full bg-res-secondary px-2 py-0.5 font-semibold text-res-brand">
+                              {money(order.balance)} due
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3 text-right whitespace-nowrap">
+                          <button
+                            type="button"
+                            onClick={(e) => openMenu(order._id, e.currentTarget)}
+                            aria-expanded={openMenuId === order._id}
+                            aria-label={`Actions for order ${order._id.slice(-6).toUpperCase()}`}
+                            className="type-res-small cursor-pointer rounded-full bg-res-surface p-2 font-semibold text-res-ink transition-colors outline-none hover:text-res-brand focus-visible:ring-2 focus-visible:ring-res-brand"
+                          >
+                            <MoreVertical className="h-4 w-4" />
+                          </button>
+                          {openMenuId === order._id && menuPos && (
+                            <>
+                              <div
+                                aria-hidden
+                                className="fixed inset-0 z-40 cursor-default"
+                                onClick={() => setOpenMenuId(null)}
+                              />
+                              <div
+                                role="menu"
+                                aria-label="Order actions"
+                                style={{ top: menuPos.top, left: menuPos.left }}
+                                className="fixed z-50 w-56 rounded-res-md border border-res-line bg-res-card p-1.5 text-left shadow-res-high"
+                              >
+                                {order.status === 'ready' && (
+                                  <button
+                                    type="button"
+                                    role="menuitem"
+                                    disabled={busy}
+                                    onClick={() => {
+                                      setOpenMenuId(null);
+                                      advanceOrder(order, 'served');
+                                    }}
+                                    className="type-res-small flex w-full cursor-pointer items-center gap-2.5 rounded-res-sm px-3 py-2.5 font-semibold text-res-ink transition-colors outline-none hover:bg-res-surface focus-visible:ring-2 focus-visible:ring-res-brand disabled:cursor-not-allowed disabled:opacity-50"
+                                  >
+                                    <Check className="h-4 w-4 text-res-brand" />
+                                    {busy ? 'Saving…' : 'Mark served'}
+                                  </button>
+                                )}
+                                {order.status === 'served' && (
+                                  <button
+                                    type="button"
+                                    role="menuitem"
+                                    disabled={busy}
+                                    onClick={() => {
+                                      setOpenMenuId(null);
+                                      advanceOrder(order, 'completed');
+                                    }}
+                                    className="type-res-small flex w-full cursor-pointer items-center gap-2.5 rounded-res-sm px-3 py-2.5 font-semibold text-res-ink transition-colors outline-none hover:bg-res-surface focus-visible:ring-2 focus-visible:ring-res-brand disabled:cursor-not-allowed disabled:opacity-50"
+                                  >
+                                    <Flag className="h-4 w-4 text-res-brand" />
+                                    {busy ? 'Saving…' : 'Complete order'}
+                                  </button>
+                                )}
+                                {order.balance > 0 && (
+                                  <button
+                                    type="button"
+                                    role="menuitem"
+                                    onClick={() => {
+                                      setOpenMenuId(null);
+                                      setPayOrder(order);
+                                    }}
+                                    className="type-res-small flex w-full cursor-pointer items-center gap-2.5 rounded-res-sm px-3 py-2.5 font-semibold text-res-ink transition-colors outline-none hover:bg-res-surface focus-visible:ring-2 focus-visible:ring-res-brand"
+                                  >
+                                    <Wallet className="h-4 w-4 text-res-brand" />
+                                    Record payment
+                                  </button>
+                                )}
+                                {orderTab === 'active' && order.status !== 'completed' && (
+                                  <button
+                                    type="button"
+                                    role="menuitem"
+                                    title="Cancel a dead order (no-show, duplicate, misfire)"
+                                    onClick={() => {
+                                      setOpenMenuId(null);
+                                      setCancelTarget(order);
+                                    }}
+                                    className="type-res-small flex w-full cursor-pointer items-center gap-2.5 rounded-res-sm px-3 py-2.5 font-semibold text-red-700 transition-colors outline-none hover:bg-red-50 focus-visible:ring-2 focus-visible:ring-red-500"
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                    Cancel order
+                                  </button>
+                                )}
+                              </div>
+                            </>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      </section>
+
       {/* Self-service stations (plan §6.2) — claim/release own slots anytime. */}
       <MyStationsCard unitType="table" onChanged={load} />
-
-      <Card>
-        <CardContent className="pt-6">
-          {mapLoading ? (
-            <Skeleton className="h-72 w-full" />
-          ) : layout ? (
-            <TableMap
-              plan={layout.plan}
-              units={layout.units}
-              assignedIds={assignedIds}
-              onOpenTable={openPad}
-            />
-          ) : (
-            <p className="py-8 text-center text-sm text-muted-foreground">
-              No floor plan available yet.
-            </p>
-          )}
-        </CardContent>
-      </Card>
 
       {assignments.length > 0 && (
         <div className="flex flex-wrap gap-2">
@@ -239,64 +678,115 @@ export default function WaiterWorkspace() {
                 type="button"
                 onClick={() => unit && openPad(unit)}
                 disabled={!unit}
-                className="flex items-center gap-1.5 rounded-full border bg-white px-3 py-1.5 text-sm shadow-sm hover:bg-[#0A6C6D]/5 disabled:opacity-60"
+                className="type-res-small flex cursor-pointer items-center gap-1.5 rounded-full bg-res-card px-3.5 py-2 font-semibold text-res-ink shadow-res-low transition-colors outline-none hover:text-res-brand focus-visible:ring-2 focus-visible:ring-res-brand disabled:cursor-not-allowed disabled:opacity-60"
                 title={unit ? 'Open order pad' : a.label || assignmentUnit(a.refId)?.label || assignmentUnitId(a.refId)}
               >
                 <span className={`h-2 w-2 rounded-full ${stateChip(unit?.state ?? '')}`} />
                 {a.label || unit?.label || assignmentUnit(a.refId)?.label || assignmentUnitId(a.refId)}
-                <span className="text-xs text-muted-foreground">· order</span>
+                <span className="font-normal text-res-ink-muted">· order</span>
               </button>
             );
           })}
         </div>
       )}
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <ShoppingBag className="h-4 w-4" /> My live orders
-            <Badge variant="secondary">{active.length}</Badge>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {active.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No orders on your tables yet.</p>
+      <section className="rounded-res-lg bg-res-card p-4 shadow-res-low md:p-5">
+        <div className="flex items-center gap-2">
+          <MapPinned className="h-4 w-4 text-res-brand" />
+          <h2 className="type-res-h3 text-res-ink">Floor map</h2>
+        </div>
+        <p className="type-res-small mt-1 font-normal text-res-ink-muted">
+          Your assigned tables are highlighted — tap one to start an order.
+        </p>
+        <div className="mt-4">
+          {mapLoading ? (
+            <div className="h-72 animate-pulse rounded-res-md bg-res-surface" />
+          ) : layout ? (
+            <TableMap
+              plan={layout.plan}
+              units={layout.units}
+              assignedIds={assignedIds}
+              onOpenTable={openPad}
+            />
           ) : (
-            <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-              {active.map((order) => (
-                <div
-                  key={order._id}
-                  className="rounded-lg border border-l-4 border-l-[#0A6C6D] p-4"
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="font-semibold">{unitLabel(order.unitId)}</span>
-                    <Badge variant={order.status === 'placed' ? 'destructive' : 'secondary'}>
-                      {order.status}
-                    </Badge>
-                  </div>
-                  <ul className="mt-2 space-y-0.5 text-sm text-muted-foreground">
-                    {(order.lines ?? []).slice(0, 4).map((line) => (
-                      <li key={line._id}>
-                        {line.quantity}× {line.name}
-                      </li>
-                    ))}
-                    {(order.lines?.length ?? 0) > 4 && (
-                      <li>… +{(order.lines?.length ?? 0) - 4} more</li>
-                    )}
-                  </ul>
-                  <p className="mt-2 text-xs font-medium">{money(order.total)}</p>
-                </div>
-              ))}
+            <div className="rounded-res-md bg-res-surface px-6 py-10 text-center">
+              <p className="type-res-h3 text-res-ink">No floor plan yet</p>
+              <p className="type-res-small mt-1 font-normal text-res-ink-muted">
+                Tables will appear here once a floor plan is published.
+              </p>
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </section>
 
-      <Dialog open={padOpen} onOpenChange={setPadOpen}>
-        <DialogContent className="max-h-[85vh] max-w-3xl overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Order pad — {padUnit?.label}</DialogTitle>
-          </DialogHeader>
+      {cancelTarget && (
+        <Modal
+          isOpen
+          onClose={() => !cancelling && setCancelTarget(null)}
+          title="Cancel this order?"
+          subtitle={`${cancelTarget.guestName || 'Order'} · ${unitLabel(cancelTarget.unitId)} · ${money(cancelTarget.total)}`}
+          footer={
+            <>
+              <button
+                type="button"
+                onClick={() => setCancelTarget(null)}
+                disabled={cancelling}
+                className="type-res-small cursor-pointer rounded-full border border-res-line bg-res-card px-4 py-2.5 font-semibold text-res-ink hover:text-res-brand disabled:opacity-50"
+              >
+                Keep order
+              </button>
+              <button
+                type="button"
+                onClick={cancelTableOrder}
+                disabled={cancelling}
+                className="type-res-small cursor-pointer rounded-full bg-red-600 px-5 py-2.5 font-semibold text-white shadow-res-low transition-colors hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {cancelling ? 'Cancelling…' : 'Yes, cancel order'}
+              </button>
+            </>
+          }
+        >
+          <p className="type-res-small font-normal text-res-ink-muted">
+            This removes the order from your board. Use it for dead orders — no-shows,
+            duplicates or misfires. The linked booking, if any, is left untouched.
+          </p>
+        </Modal>
+      )}
+
+      <RecordOfflinePaymentModal
+        isOpen={!!payOrder}
+        orderId={payOrder?._id}
+        bookingLabel={
+          payOrder
+            ? `${payOrder.guestName || 'Order'} · ${unitLabel(payOrder.unitId)}`
+            : undefined
+        }
+        dueAmount={payOrder?.balance}
+        onClose={() => setPayOrder(null)}
+        onSuccess={(response) => {
+          const updated = (response as { data?: { order?: OrderDto } })?.data?.order;
+          if (updated) {
+            setOrders((prev) => prev.map((o) => (o._id === updated._id ? { ...o, ...updated } : o)));
+            setVenueOrders((prev) =>
+              prev.map((o) => (o._id === updated._id ? { ...o, ...updated } : o)),
+            );
+          }
+          toast.success('Payment recorded');
+          setPayOrder(null);
+          setTableRefreshKey((k) => k + 1);
+        }}
+      />
+
+      {padOpen && padUnit && (
+        <Modal
+          isOpen
+          onClose={() => {
+            setPadOpen(false);
+            setPadUnit(null);
+          }}
+          title={`Order pad — ${padUnit.label}`}
+          subtitle="Items go straight to the kitchen queue"
+        >
           <OrderBuilder
             vendorId={staff?.vendor}
             vertical={vertical}
@@ -304,8 +794,8 @@ export default function WaiterWorkspace() {
             submitting={submitting || createOrder.isPending}
             onSubmit={handleSubmit}
           />
-        </DialogContent>
-      </Dialog>
+        </Modal>
+      )}
     </div>
   );
 }

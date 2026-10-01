@@ -8,7 +8,8 @@ export type ReservationStatus =
   | 'upcoming'
   | 'active'
   | 'completed'
-  | 'cancelled';
+  | 'cancelled'
+  | 'no_show';
 
 export type PaymentStatus = 'unpaid' | 'partly_paid' | 'paid' | 'pay_later' | string;
 
