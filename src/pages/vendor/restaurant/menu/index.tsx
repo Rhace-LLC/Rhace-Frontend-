@@ -1,15 +1,22 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import DashboardPageHeader from '@/components/dashboard/DashboardPageHeader';
 import DashboardButton from '@/components/dashboard/ui/DashboardButton';
 import { Add, ArrowsRight, Export } from '@/components/dashboard/ui/svg';
 import { useAuth } from '@/contexts/AuthContext';
 import { ChevronLeft, ChevronRight, Pencil, Search } from 'lucide-react';
-import { useNavigate } from 'react-router';
+import { useSearchParams } from 'react-router';
 import { menuService } from '@/services/menu.service';
 import { stockService } from '@/services/stock.service';
 import { toast } from 'react-toastify';
 import { Modal } from '@/components/others/RhaceModal';
 import UniversalLoader from '@/components/user/ui/LogoLoader';
+import { DishWorkspace } from './components/DishWorkspace';
+import {
+  deleteDishDraft,
+  getDishDraft,
+  listDishDrafts,
+  type DishDraft,
+} from './dishDrafts';
 
 const PAGE_SIZE = 12;
 
@@ -90,28 +97,52 @@ const MenuDashboard = ({
   const [isLoading, setIsLoading] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [details, setDetails] = useState<DishItem | null>(null);
-  const navigate = useNavigate();
   const { vendor } = useAuth();
   const vendorId = vendorIdProp ?? vendor?._id;
+  const [searchParams, setSearchParams] = useSearchParams();
+  const dishParam = searchParams.get('dish');
+  const showingDrafts = searchParams.get('view') === 'drafts';
+  const draftParam = searchParams.get('draft');
+  const [drafts, setDrafts] = useState<DishDraft[]>([]);
 
   const resetPage = () => setPage(1);
 
-  useEffect(() => {
-    async function fetchMenuItems() {
-      try {
-        setIsLoading(true);
-        if (!vendorId) return;
-        const items = await menuService.getMenuItems(vendorId);
-        setMenuItems(items.menuItems ?? []);
-      } catch (error) {
-        console.error(error);
-        toast.error('Failed to fetch dishes');
-      } finally {
-        setIsLoading(false);
-      }
+  const fetchMenuItems = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      if (!vendorId) return;
+      const items = await menuService.getMenuItems(vendorId);
+      setMenuItems(items.menuItems ?? []);
+    } catch (error) {
+      console.error(error);
+      toast.error('Failed to fetch dishes');
+    } finally {
+      setIsLoading(false);
     }
-    fetchMenuItems();
   }, [vendorId]);
+
+  useEffect(() => {
+    fetchMenuItems();
+  }, [fetchMenuItems]);
+
+  const reloadDrafts = useCallback(() => {
+    if (!vendorId) {
+      setDrafts([]);
+      return;
+    }
+    setDrafts(listDishDrafts(vendorId));
+  }, [vendorId]);
+
+  useEffect(() => {
+    reloadDrafts();
+  }, [reloadDrafts]);
+
+  const handleDeleteDraft = (id: string) => {
+    if (!vendorId) return;
+    deleteDishDraft(vendorId, id);
+    reloadDrafts();
+    toast.success('Draft deleted');
+  };
 
   const categories = useMemo(() => {
     const seen = new Map<string, string>();
@@ -204,11 +235,116 @@ const MenuDashboard = ({
 
   const editDish = (id: string) => {
     if (onEditItem) onEditItem(id);
-    else navigate(`/dashboard/restaurant/menu/items/${id}/edit`);
+    else setSearchParams({ dish: id });
+  };
+
+  const handleWorkspaceSaved = () => {
+    setSearchParams({});
+    fetchMenuItems();
   };
 
   if (isLoading) {
     return <UniversalLoader fullscreen type="dashboard-3" />;
+  }
+
+  if (dishParam) {
+    const draft =
+      dishParam === 'new' && draftParam && vendorId
+        ? getDishDraft(vendorId, draftParam)
+        : null;
+    return (
+      <div className="mb-12 space-y-6 md:p-6">
+        <DishWorkspace
+          mode={dishParam === 'new' ? 'new' : 'edit'}
+          dishId={dishParam === 'new' ? undefined : dishParam}
+          initial={draft?.data ?? null}
+          draftId={draft?.id ?? null}
+          vendorId={vendorId}
+          onExit={() => setSearchParams({})}
+          onSaved={handleWorkspaceSaved}
+          onDraftSaved={reloadDrafts}
+        />
+      </div>
+    );
+  }
+
+  if (showingDrafts) {
+    return (
+      <div className="mb-12 space-y-5 md:p-6">
+        <nav aria-label="Breadcrumb" className="type-res-small flex items-center gap-1 font-medium">
+          <button
+            type="button"
+            onClick={() => setSearchParams({})}
+            className="cursor-pointer font-normal text-res-ink-muted transition-colors hover:text-res-brand"
+          >
+            Dishes
+          </button>
+          <ChevronRight className="h-3.5 w-3.5 text-res-ink-muted" />
+          <span aria-current="page" className="font-semibold text-res-ink">
+            Drafts
+          </span>
+        </nav>
+        <DashboardPageHeader
+          title="Drafts"
+          subtitle="Unfinished dishes — resume where you stopped."
+          actions={
+            <DashboardButton
+              variant="secondary"
+              text="Back to dishes"
+              onClick={() => setSearchParams({})}
+            />
+          }
+        />
+        {drafts.length === 0 ? (
+          <div className="rounded-res-lg bg-res-card px-6 py-12 text-center shadow-res-low">
+            <p className="type-res-h3 text-res-ink">No drafts yet</p>
+            <p className="type-res-small mx-auto mt-1 max-w-sm font-normal text-res-ink-muted">
+              Start a dish and save it as a draft to finish it later.
+            </p>
+          </div>
+        ) : (
+          <ul className="space-y-2.5">
+            {drafts.map((draft) => (
+              <li
+                key={draft.id}
+                className="flex flex-col gap-3 rounded-res-md border border-res-line bg-res-card p-4 shadow-res-low sm:flex-row sm:items-center sm:justify-between"
+              >
+                <div className="min-w-0">
+                  <p className="type-res-body truncate font-semibold text-res-ink">
+                    {draft.data.name || 'Untitled dish'}
+                  </p>
+                  <p className="type-res-small mt-0.5 font-normal text-res-ink-muted">
+                    Last edited{' '}
+                    {new Date(draft.updatedAt).toLocaleString(undefined, {
+                      month: 'short',
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })}
+                  </p>
+                </div>
+                <div className="flex shrink-0 items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteDraft(draft.id)}
+                    className="type-res-small cursor-pointer rounded-full px-4 py-2 font-semibold text-red-600 transition-colors hover:bg-red-50"
+                  >
+                    Delete
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSearchParams({ dish: 'new', draft: draft.id })}
+                    className="type-res-small cursor-pointer rounded-full bg-res-brand px-4 py-2 font-semibold text-res-ink-inverted shadow-res-low transition-colors hover:bg-res-brand-hover"
+                  >
+                    Resume
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    );
   }
 
   return (
@@ -220,9 +356,16 @@ const MenuDashboard = ({
           actions={
             <>
               <DashboardButton variant="secondary" text="Export" icon={<Export />} />
+              {vendorId && (
+                <DashboardButton
+                  variant="secondary"
+                  text={drafts.length > 0 ? `Drafts (${drafts.length})` : 'Drafts'}
+                  onClick={() => setSearchParams({ view: 'drafts' })}
+                />
+              )}
               <DashboardButton
                 onClick={() =>
-                  onCreateItem ? onCreateItem() : navigate('/dashboard/restaurant/menu/item/new')
+                  onCreateItem ? onCreateItem() : setSearchParams({ dish: 'new' })
                 }
                 variant="primary"
                 text="Add Dish"
