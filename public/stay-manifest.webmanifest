@@ -1,0 +1,17 @@
+{
+  "name": "Your stay · Rhace",
+  "short_name": "My Stay",
+  "description": "Order room service, amenities and spa, and see your room bill.",
+  "id": "/stay/resume",
+  "start_url": "/stay/resume",
+  "scope": "/stay/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#ffffff",
+  "theme_color": "#0b2926",
+  "icons": [
+    { "src": "/stay-icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/stay-icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/stay-icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

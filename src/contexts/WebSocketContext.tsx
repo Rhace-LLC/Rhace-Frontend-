@@ -1,6 +1,7 @@
 import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import io, { type Socket } from 'socket.io-client';
+import { socketHandshakeAuth } from '@/lib/storage';
 
 type SocketEvent = string;
 type SocketPayload = unknown;
@@ -26,7 +27,12 @@ export const WebSocketProvider = ({ url, children }: { url?: string; children: R
   const listeners = useRef(new Map<string, (payload: SocketPayload) => void>());
 
   useEffect(() => {
-    socket.current = io(url);
+    // Phase 0 (D1): authenticate the socket handshake so the server can
+    // derive rooms from the verified JWT instead of trusting client claims.
+    socket.current = io(url, {
+      transports: ['websocket'],
+      auth: socketHandshakeAuth(),
+    });
 
     socket.current.on('connect', () => {
       setConnected(true);

@@ -14,6 +14,7 @@ import {
 import { useAuth } from '@/contexts/AuthContext';
 import { useCreateOrder } from '@/features/orders/api/hooks';
 import { ordersApi } from '@/features/orders/api/service';
+import { useOrderRealtime } from '@/features/orders/realtime';
 import type { CreateOrderLineInput, OrderDto } from '@/features/orders/types';
 import { OrderBuilder } from '@/features/orders';
 import { money } from '@/features/orders/money';
@@ -41,6 +42,7 @@ const ACTIVE_STATUSES = new Set([
   'served',
 ]);
 
+/** Fallback refresh while the order socket is disconnected. */
 const TABLE_POLL_MS = 30_000;
 
 /** Free → seated → paid; mirrors the state machine, read-only here. */
@@ -119,6 +121,14 @@ export default function WaiterWorkspace() {
   const [isLoading, setIsLoading] = useState(true);
   const [mapLoading, setMapLoading] = useState(false);
   const [tableRefreshKey, setTableRefreshKey] = useState(0);
+  // Phase 5: order events refresh the table orders (coalesced bursts).
+  const [liveTick, setLiveTick] = useState(0);
+  const { connected: ordersLive } = useOrderRealtime(true, () => setLiveTick((t) => t + 1));
+  useEffect(() => {
+    if (liveTick === 0) return;
+    const timer = setTimeout(() => setTableRefreshKey((k) => k + 1), 250);
+    return () => clearTimeout(timer);
+  }, [liveTick]);
 
   const [payOrder, setPayOrder] = useState<OrderDto | null>(null);
   const [confirmTarget, setConfirmTarget] = useState<OrderDto | null>(null);
@@ -212,12 +222,13 @@ export default function WaiterWorkspace() {
       }
     };
     fetchTableOrders();
-    const timer = setInterval(() => fetchTableOrders(true), TABLE_POLL_MS);
+    // Phase 5: live via the order socket; poll only while it is down.
+    const timer = ordersLive ? null : setInterval(() => fetchTableOrders(true), TABLE_POLL_MS);
     return () => {
       cancelled = true;
-      clearInterval(timer);
+      if (timer) clearInterval(timer);
     };
-  }, [assignedKey, tableRefreshKey]);
+  }, [assignedKey, tableRefreshKey, ordersLive]);
 
   const refreshAll = () => {
     setTableRefreshKey((k) => k + 1);

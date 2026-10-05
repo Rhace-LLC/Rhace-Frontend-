@@ -36,6 +36,16 @@ import HotelProfile from '@/pages/vendor/hotel/profile';
 import RoomsManagement from '@/pages/vendor/hotel/rooms';
 import HotelRoomLayout from '@/pages/vendor/hotel/rooms/layout';
 import HotelSettings from '@/pages/vendor/hotel/settings';
+import HotelServicesPage from '@/pages/vendor/hotel/services';
+import ServiceBookingsPage from '@/pages/vendor/hotel/services/bookings';
+import HotelOutletsPage from '@/pages/vendor/hotel/outlets';
+import HotelZonesPage from '@/pages/vendor/hotel/zones';
+import HotelOrderingRulesPage from '@/pages/vendor/hotel/ordering-rules';
+import HotelOutletOrdersPage from '@/pages/vendor/hotel/outlet-orders';
+import RefundsPage from '@/pages/vendor/shared/refunds';
+import SettlementsPage from '@/pages/vendor/shared/settlements';
+import IntegrationsPage from '@/pages/vendor/shared/integrations';
+import LinkedHotelsPage from '@/pages/vendor/restaurant/linked-hotels';
 
 // Prototype (mock-backed) — lazy so the canvas engine stays out of the main bundle.
 const PrototypeManageTableRestaurant = lazy(
@@ -88,6 +98,9 @@ function withSuspense(node: ReactNode) {
 const dashboardRestaurantRoutes: RouteObject[] = [
   { path: 'restaurant', element: <VendorDashboard /> },
   { path: 'restaurant/payments', element: <PaymentDashboard /> },
+  { path: 'restaurant/refunds', element: <RefundsPage /> },
+  { path: 'restaurant/settlements', element: <SettlementsPage /> },
+  { path: 'restaurant/integrations', element: <IntegrationsPage /> },
   { path: 'restaurant/staffs', element: <StaffManagementSystem /> },
   { path: 'restaurant/staffs/all', element: <AllStaffPage /> },
   { path: 'restaurant/staffs/shifts', element: <ShiftManagerPage /> },
@@ -125,6 +138,7 @@ const dashboardRestaurantRoutes: RouteObject[] = [
     element: withSuspense(<PrototypeTimelineRestaurant />),
   },
   { path: 'restaurant/settings', element: <RestaurantSettings /> },
+  { path: 'restaurant/linked-hotels', element: <LinkedHotelsPage /> },
 ];
 
 const hotelVendorRoutes: RouteObject[] = [
@@ -145,6 +159,9 @@ const hotelVendorRoutes: RouteObject[] = [
   },
   { path: 'hotel/timeline/prototype', element: withSuspense(<PrototypeTimelineHotel />) },
   { path: 'hotel/payments', element: <PaymentDashboard /> },
+  { path: 'hotel/refunds', element: <RefundsPage /> },
+  { path: 'hotel/settlements', element: <SettlementsPage /> },
+  { path: 'hotel/integrations', element: <IntegrationsPage /> },
   { path: 'hotel/staffs', element: <StaffManagementSystem /> },
   { path: 'hotel/staffs/all', element: <AllStaffPage /> },
   { path: 'hotel/staffs/shifts', element: <ShiftManagerPage /> },
@@ -152,6 +169,13 @@ const hotelVendorRoutes: RouteObject[] = [
   { path: 'hotel/staffs/activity', element: <ActivityPage /> },
   { path: 'hotel/profile', element: <HotelProfile /> },
   { path: 'hotel/settings', element: <HotelSettings /> },
+  { path: 'hotel/services', element: <HotelServicesPage /> },
+  { path: 'hotel/services/categories', element: <CategoriesPage kind="service" /> },
+  { path: 'hotel/services/bookings', element: <ServiceBookingsPage /> },
+  { path: 'hotel/outlets', element: <HotelOutletsPage /> },
+  { path: 'hotel/zones', element: <HotelZonesPage /> },
+  { path: 'hotel/ordering-rules', element: <HotelOrderingRulesPage /> },
+  { path: 'hotel/outlet-orders', element: <HotelOutletOrdersPage /> },
 ];
 
 const clubVendorRoutes: RouteObject[] = [
@@ -175,6 +199,9 @@ const clubVendorRoutes: RouteObject[] = [
   { path: 'club/reservations', element: <VendorReservationsPage vertical="club" /> },
   { path: 'club/orders', element: <VendorOrdersPage /> },
   { path: 'club/payments', element: <PaymentDashboard /> },
+  { path: 'club/refunds', element: <RefundsPage /> },
+  { path: 'club/settlements', element: <SettlementsPage /> },
+  { path: 'club/integrations', element: <IntegrationsPage /> },
   { path: 'club/staffs', element: <StaffManagementSystem /> },
   { path: 'club/staffs/all', element: <AllStaffPage /> },
   { path: 'club/staffs/shifts', element: <ShiftManagerPage /> },
@@ -182,6 +209,7 @@ const clubVendorRoutes: RouteObject[] = [
   { path: 'club/staffs/activity', element: <ActivityPage /> },
   { path: 'club/add-drinks', element: <BottleServiceManager /> },
   { path: 'club/settings', element: <RestaurantSettings /> },
+  { path: 'club/linked-hotels', element: <LinkedHotelsPage /> },
 ];
 
 // Routes that render outside the vendor dashboard shell.

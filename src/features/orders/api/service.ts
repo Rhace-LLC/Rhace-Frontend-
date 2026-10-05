@@ -12,6 +12,24 @@ const unwrap = <T>(response: { data: unknown }): T => {
   return (body?.data ?? body) as T;
 };
 
+/** Whole room tab for a stay (Phase 0 D5): every order plus summed totals. */
+export interface ReservationTabSummary {
+  count: number;
+  subtotal: number;
+  discount: number;
+  serviceFee: number;
+  total: number;
+  amountPaid: number;
+  balance: number;
+}
+
+export interface ReservationTab {
+  orders: OrderDto[];
+  tab: ReservationTabSummary;
+  /** Earliest order; kept for backward compatibility. */
+  order: OrderDto | null;
+}
+
 class OrdersApi {
   async create(input: CreateOrderInput): Promise<OrderDto> {
     const res = await api.post('/orders', input);
@@ -23,9 +41,9 @@ class OrdersApi {
     return unwrap<OrderDto>(res);
   }
 
-  async getByReservation(reservationId: string): Promise<{ order: OrderDto | null }> {
+  async getByReservation(reservationId: string): Promise<ReservationTab> {
     const res = await api.get(`/orders/by-reservation/${reservationId}`);
-    return unwrap<{ order: OrderDto | null }>(res);
+    return unwrap<ReservationTab>(res);
   }
 
   /**
@@ -79,7 +97,7 @@ class OrdersApi {
   async bumpLine(
     id: string,
     lineId: string,
-    prepStatus: 'queued' | 'preparing' | 'ready',
+    prepStatus: 'queued' | 'preparing' | 'ready' | 'served',
   ): Promise<OrderDto> {
     const res = await api.patch(`/orders/${id}/lines/${lineId}/prep`, { prepStatus });
     return unwrap<OrderDto>(res);
@@ -92,6 +110,30 @@ class OrdersApi {
 
   async cancel(id: string): Promise<OrderDto> {
     const res = await api.delete(`/orders/${id}`);
+    return unwrap<OrderDto>(res);
+  }
+
+  /** Phase 5 outlet: accept a pending in-stay order (posts the room charge). */
+  async accept(id: string): Promise<OrderDto> {
+    const res = await api.post(`/orders/${id}/accept`);
+    return unwrap<OrderDto>(res);
+  }
+
+  /** Phase 5 outlet: reject a pending in-stay order (voids the room charge). */
+  async reject(id: string, reason: string): Promise<OrderDto> {
+    const res = await api.post(`/orders/${id}/reject`, { reason });
+    return unwrap<OrderDto>(res);
+  }
+
+  /** Phase 5 hotel: every in-stay order it hosts (own services + outlets). */
+  async hosted(params?: { status?: string; vendorLink?: string; from?: string; to?: string; limit?: number }) {
+    const res = await api.get('/orders/hosted', { params });
+    return unwrap<OrderDto[]>(res);
+  }
+
+  /** Phase 5 hotel runner: mark an outlet order out for delivery / delivered. */
+  async hostedDelivery(id: string, status: 'out_for_delivery' | 'delivered'): Promise<OrderDto> {
+    const res = await api.patch(`/orders/hosted/${id}/delivery`, { status });
     return unwrap<OrderDto>(res);
   }
 

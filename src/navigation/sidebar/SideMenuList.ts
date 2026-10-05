@@ -5,12 +5,17 @@ import {
   Boxes,
   Building2,
   CalendarCheck,
+  ConciergeBell,
+  Landmark,
+  Plug,
+  RotateCcw,
   CreditCard,
   LayoutDashboard,
   LayoutGrid,
   LogOut,
   Receipt,
   Settings,
+  Tags,
   Users,
   UtensilsCrossed,
 } from 'lucide-react';
@@ -153,6 +158,28 @@ export const ClubList: SideMenuListConfig = {
       label: 'Payments',
       path: '/dashboard/club/payments',
       icon: CreditCard,
+      children: [
+        {
+          label: 'Payments',
+          path: '/dashboard/club/payments',
+          icon: CreditCard,
+        },
+        {
+          label: 'Refunds',
+          path: '/dashboard/club/refunds',
+          icon: RotateCcw,
+        },
+        {
+          label: 'Settlements',
+          path: '/dashboard/club/settlements',
+          icon: Landmark,
+        },
+      ],
+    },
+    {
+      label: 'Linked hotels',
+      path: '/dashboard/club/linked-hotels',
+      icon: Building2,
     },
     {
       label: 'Staff',
@@ -187,6 +214,18 @@ export const ClubList: SideMenuListConfig = {
       label: 'Settings',
       path: '/dashboard/club/settings',
       icon: Settings,
+      children: [
+        {
+          label: 'General',
+          path: '/dashboard/club/settings',
+          icon: Settings,
+        },
+        {
+          label: 'Integrations',
+          path: '/dashboard/club/integrations',
+          icon: Plug,
+        },
+      ],
     },
     {
       label: 'Logout',
@@ -212,6 +251,28 @@ export const HotelList: SideMenuListConfig = {
       label: 'Orders',
       path: '/dashboard/hotel/orders',
       icon: Receipt,
+    },
+    {
+      label: 'Services',
+      path: '/dashboard/hotel/services',
+      icon: ConciergeBell,
+      children: [
+        {
+          label: 'Amenities & Experiences',
+          path: '/dashboard/hotel/services',
+          icon: ConciergeBell,
+        },
+        {
+          label: 'Service Categories',
+          path: '/dashboard/hotel/services/categories',
+          icon: Tags,
+        },
+        {
+          label: 'Experience Bookings',
+          path: '/dashboard/hotel/services/bookings',
+          icon: CalendarCheck,
+        },
+      ],
     },
     {
       label: 'Inventory',
@@ -244,6 +305,50 @@ export const HotelList: SideMenuListConfig = {
       label: 'Payments',
       path: '/dashboard/hotel/payments',
       icon: CreditCard,
+      children: [
+        {
+          label: 'Payments',
+          path: '/dashboard/hotel/payments',
+          icon: CreditCard,
+        },
+        {
+          label: 'Refunds',
+          path: '/dashboard/hotel/refunds',
+          icon: RotateCcw,
+        },
+        {
+          label: 'Settlements',
+          path: '/dashboard/hotel/settlements',
+          icon: Landmark,
+        },
+      ],
+    },
+    {
+      label: 'Outlets',
+      path: '/dashboard/hotel/outlets',
+      icon: UtensilsCrossed,
+      children: [
+        {
+          label: 'Linked outlets',
+          path: '/dashboard/hotel/outlets',
+          icon: UtensilsCrossed,
+        },
+        {
+          label: 'Delivery zones',
+          path: '/dashboard/hotel/zones',
+          icon: LayoutGrid,
+        },
+        {
+          label: 'Windows & fees',
+          path: '/dashboard/hotel/ordering-rules',
+          icon: CalendarCheck,
+        },
+        {
+          label: 'In-stay orders',
+          path: '/dashboard/hotel/outlet-orders',
+          icon: Receipt,
+        },
+      ],
     },
     {
       label: 'Staff',
@@ -278,6 +383,18 @@ export const HotelList: SideMenuListConfig = {
       label: 'Settings',
       path: '/dashboard/hotel/settings',
       icon: Settings,
+      children: [
+        {
+          label: 'General',
+          path: '/dashboard/hotel/settings',
+          icon: Settings,
+        },
+        {
+          label: 'Integrations',
+          path: '/dashboard/hotel/integrations',
+          icon: Plug,
+        },
+      ],
     },
     {
       label: 'Logout',
@@ -374,6 +491,28 @@ export const RestaurantList: SideMenuListConfig = {
       label: 'Payments',
       path: '/dashboard/restaurant/payments',
       icon: CreditCard,
+      children: [
+        {
+          label: 'Payments',
+          path: '/dashboard/restaurant/payments',
+          icon: CreditCard,
+        },
+        {
+          label: 'Refunds',
+          path: '/dashboard/restaurant/refunds',
+          icon: RotateCcw,
+        },
+        {
+          label: 'Settlements',
+          path: '/dashboard/restaurant/settlements',
+          icon: Landmark,
+        },
+      ],
+    },
+    {
+      label: 'Linked hotels',
+      path: '/dashboard/restaurant/linked-hotels',
+      icon: Building2,
     },
     {
       label: 'Staff',
@@ -408,6 +547,18 @@ export const RestaurantList: SideMenuListConfig = {
       label: 'Settings',
       path: '/dashboard/restaurant/settings',
       icon: Settings,
+      children: [
+        {
+          label: 'General',
+          path: '/dashboard/restaurant/settings',
+          icon: Settings,
+        },
+        {
+          label: 'Integrations',
+          path: '/dashboard/restaurant/integrations',
+          icon: Plug,
+        },
+      ],
     },
     {
       label: 'Logout',
