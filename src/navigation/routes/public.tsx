@@ -118,8 +118,10 @@ export const publicRoutes: RouteObject[] = [
   { path: '/hotels/:id/reserve/:blueprintId', element: <ReserveBlueprintPage /> },
   { path: '/hotels/:id', element: <HotelsPage /> },
 
-  // Paystack Callback
+  // Payment provider return (Paystack or Monnify). The old path stays for
+  // payments already in flight; new code can use /payment/callback.
   { path: '/paystack/callback', element: <PaystackCallback /> },
+  { path: '/payment/callback', element: <PaystackCallback /> },
   { path: '/q/:token', element: <QrRedirectPage /> },
 
   // Phase 1 guest stay app (own token storage; never AuthContext).

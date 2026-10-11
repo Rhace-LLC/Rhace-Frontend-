@@ -50,7 +50,8 @@ export function paymentLabel(status?: string): string {
 
 export function money(value?: number, currency = 'NGN'): string {
   if (typeof value !== 'number') return '—';
-  return `${currency === 'NGN' ? '₦' : ''}${value.toLocaleString()}`;
+  const code = (currency || 'NGN').toUpperCase();
+  return code === 'NGN' ? `₦${value.toLocaleString()}` : `${code} ${value.toLocaleString()}`;
 }
 
 /** Outstanding balance on a reservation's group (falls back to the line amount). */

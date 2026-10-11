@@ -46,6 +46,12 @@ class PaymentService {
     return res.data;
   }
 
+  /** Stripe Connect self-onboarding (foreign-currency opt-in). Returns an onboarding link. */
+  async connectStripe(country = 'NG') {
+    const res = await api.post('/vendors/me/connect-stripe', { country });
+    return res.data as { success: boolean; accountId?: string; onboardingUrl?: string; alreadyReady?: boolean };
+  }
+
   async initializePayment(bookingData: Record<string, unknown>) {
     const response = await api.post('/payments/initialize', bookingData);
     return response.data;

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { paymentService } from '@/services/payment.service';
+import { getReturnedReference } from '@/lib/paymentReturn';
 import { toast } from 'react-toastify';
 import UniversalLoader from './user/ui/LogoLoader';
 import Receipt from './Receipt';
@@ -21,7 +22,9 @@ const PaystackCallback = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
-  const reference = searchParams.get('reference');
+  // Paystack sends `reference` (+ `trxref`); Monnify sends `paymentReference`;
+  // Stripe sends `session_id` (resolved server-side). All verify the same way.
+  const reference = getReturnedReference(searchParams);
   const trxref = searchParams.get('trxref');
   const status = searchParams.get('status') || 'pending';
 

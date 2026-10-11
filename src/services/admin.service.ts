@@ -202,6 +202,14 @@ export const exportReservations = (params?: Record<string, unknown>) =>
 
 export const getTotalEarnings = () => api.get('/payments/stats');
 export const getVendorEarnings = (vendorId: string) => api.get(`/payments/vendor-earnings/${vendorId}`);
+/**
+ * @deprecated Manual platform→vendor payouts are deprecated. Vendors are paid
+ * directly by the PSP via gateway split/subaccount. These helpers hit the
+ * legacy `/payments/payouts` endpoints (kept mounted for backward-compat) —
+ * do not add new callers. Stripe pay history lives on `Payment.transfers[]`.
+ * Note: `getPayoutReceipt` targets a `/receipt` endpoint the backend never
+ * implemented; it is dead.
+ */
 export const initiatePayout = (data: unknown) => api.post('/payments/payouts', data);
 export const getPayouts = (params?: Record<string, unknown>) => api.get('/payments/payouts', { params });
 export const getPayoutById = (id: string | number) => api.get(`/payments/payouts/${id}`);
@@ -233,6 +241,69 @@ export const exportUsers = (params?: Record<string, unknown>) =>
 
 export const getSettings = () => api.get('/settings');
 export const updateSettings = (data: unknown) => api.put('/settings', data);
+
+export type FeeBearer = 'customer' | 'vendor' | 'platform' | 'split';
+export type PaymentProviderId = 'paystack' | 'monnify';
+
+export interface PaymentProviderInfo {
+  id: PaymentProviderId;
+  label: string;
+  /** API keys are set on the server. */
+  configured: boolean;
+  supportedFeeBearers: FeeBearer[];
+  vendorCoverage: { ready: number; total: number };
+}
+
+export interface RevenueSettingsPrevious {
+  platformPercentage: number;
+  vendorPercentage: number;
+  feeBearer: FeeBearer;
+  activeProvider?: PaymentProviderId;
+  providerFallback?: boolean;
+  updatedBy: string | null;
+  updatedAt: string | null;
+}
+
+export interface RevenueSettings {
+  platformPercentage: number;
+  vendorPercentage: number;
+  feeBearer: FeeBearer;
+  activeProvider: PaymentProviderId;
+  providerFallback: boolean;
+  source: 'db' | 'env';
+  version: number | null;
+  previous: RevenueSettingsPrevious | null;
+  updatedAt: string | null;
+  /** Who made the current values (resolved server-side). */
+  updatedByName: string | null;
+  gatewayBearerParity: boolean;
+  selectableFeeBearers: FeeBearer[];
+  providers: PaymentProviderInfo[];
+}
+
+export interface ProviderCoverage {
+  provider: PaymentProviderId;
+  missing: {
+    id: string;
+    businessName: string;
+    email: string;
+    bankName: string | null;
+    lastError: string | null;
+  }[];
+}
+
+/** Platform revenue split — dedicated endpoint, superadmin-only writes. */
+export const getRevenueSettings = () => api.get<RevenueSettings>('/settings/revenue');
+export const updateRevenueSettings = (data: {
+  platformPercentage: number;
+  feeBearer: FeeBearer;
+  version: number | null;
+  activeProvider?: PaymentProviderId;
+  providerFallback?: boolean;
+}) => api.put<RevenueSettings>('/settings/revenue', data);
+/** Vendors with bank details but no sub-account on a provider. */
+export const getProviderCoverage = (provider: PaymentProviderId) =>
+  api.get<ProviderCoverage>('/settings/revenue/provider-coverage', { params: { provider } });
 export const getAccountSettings = () => api.get('/settings/account');
 export const updateAccountSettings = (data: unknown) => api.put('/settings/account', data);
 

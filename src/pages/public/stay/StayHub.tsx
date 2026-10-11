@@ -11,6 +11,7 @@ import StayCatalogView from './StayCatalogView';
 import StayCheckoutModal from './StayCheckoutModal';
 import StayBillView from './StayBillView';
 import StayOrdersView from './StayOrdersView';
+import { getReturnedReference, PAYMENT_RETURN_PARAMS } from '@/lib/paymentReturn';
 
 interface Props {
   roomToken: string;
@@ -59,10 +60,11 @@ const StayHub = ({ roomToken, room }: Props) => {
   }, []);
   const featured = outlets.find((o) => o.open) ?? outlets[0] ?? null;
 
-  // Phase 6: back from Paystack (`?paid=1&reference=…`). Confirm the payment
+  // Phase 6: back from the payment page (`?paid=1&reference=…`, or
+  // `paymentReference=…` from Monnify). Confirm the payment
   // server-side now rather than waiting for the webhook, then tidy the URL.
   const [searchParams, setSearchParams] = useSearchParams();
-  const returnedReference = searchParams.get('reference') || searchParams.get('trxref');
+  const returnedReference = getReturnedReference(searchParams);
   useEffect(() => {
     if (!returnedReference) return;
     let cancelled = false;
@@ -82,7 +84,7 @@ const StayHub = ({ roomToken, room }: Props) => {
         void refresh();
         setView('orders');
         const next = new URLSearchParams(searchParams);
-        ['paid', 'reference', 'trxref'].forEach((k) => next.delete(k));
+        ['paid', ...PAYMENT_RETURN_PARAMS].forEach((k) => next.delete(k));
         setSearchParams(next, { replace: true });
       });
     return () => {

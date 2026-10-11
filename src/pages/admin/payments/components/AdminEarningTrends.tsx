@@ -46,7 +46,7 @@ const metricOptions: OptionItem[] = [
     value: 'platformRevenue',
   },
   {
-    label: 'Paystack Fees',
+    label: 'Gateway Fees',
     value: 'paystackFees',
   },
 ];

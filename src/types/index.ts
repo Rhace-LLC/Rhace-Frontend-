@@ -413,6 +413,11 @@ export interface Payment {
   [key: string]: unknown;
 }
 
+/**
+ * @deprecated Manual platform→vendor payouts are deprecated (PSP
+ * split/subaccount pays vendors directly). Kept for backward-compat with the
+ * legacy payout endpoints — do not extend.
+ */
 export interface Payout {
   _id?: string;
   id?: string;

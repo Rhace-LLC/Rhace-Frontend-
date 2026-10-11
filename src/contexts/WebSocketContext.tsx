@@ -360,6 +360,12 @@ export const WebSocketProvider = ({ url, children }: { url?: string; children: R
       }
     });
 
+    // Server-emitted to the admin room after PUT /settings/revenue.
+    socket.current.on('revenue_settings_updated', (payload: SocketPayload) => {
+      const handler = listeners.current.get('revenue_settings_updated');
+      if (handler) handler(payload);
+    });
+
     return () => {
       socket.current?.disconnect();
     };

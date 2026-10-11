@@ -1,9 +1,8 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import paystackLogo from '@/public/images/paystack.svg';
 import { paymentService } from '@/services/payment.service';
 import { buildInitializePayload } from '@/features/reservation/payload';
-import { AlertTriangle, Lock, Shield } from 'lucide-react';
+import { AlertTriangle, CreditCard, Lock, Shield } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 
@@ -12,7 +11,6 @@ type BookingData = Record<string, any>;
 
 interface PaymentMethod {
   name: string;
-  logo: string;
   description: string;
 }
 
@@ -29,9 +27,9 @@ export default function PaymentPage({ booking, setPopupOpen, payLater }: Payment
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const paymentMethods: PaymentMethod[] = [
     {
-      name: 'Paystack',
-      logo: paystackLogo,
-      description: 'Secure payment with cards, bank transfer, or USSD',
+      // The server picks the payment provider (Paystack or Monnify).
+      name: 'Pay online',
+      description: 'Secure payment with card or bank transfer',
     },
   ];
 
@@ -55,14 +53,14 @@ export default function PaymentPage({ booking, setPopupOpen, payLater }: Payment
       );
 
       // const reference = res.data.reference || res.data.reference;
-      toast.success('Redirecting to Paystack...');
+      toast.success('Redirecting to secure checkout...');
 
       // Brief delay then redirect
       setTimeout(() => {
         window.location.href = res.data.authorization_url;
       }, 800);
 
-      // Note: Full verification happens at /paystack/callback
+      // Note: Full verification happens on the return page (verify endpoint)
     } catch (error) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const err = error as any;
@@ -118,7 +116,7 @@ export default function PaymentPage({ booking, setPopupOpen, payLater }: Payment
                   onClick={() => setSelectedPayment(method)}
                 >
                   <div className="flex items-center gap-3">
-                    <img src={method.logo} alt={method.name} className="w-8 h-8" />
+                    <CreditCard className="w-8 h-8 text-res-brand" aria-hidden="true" />
                     <div>
                       <span className="text-sm font-medium text-gray-900 block">{method.name}</span>
                       <span className="text-xs text-gray-500">{method.description}</span>
@@ -140,7 +138,7 @@ export default function PaymentPage({ booking, setPopupOpen, payLater }: Payment
 
           <div className="flex items-center justify-center gap-2 text-xs text-gray-500 bg-gray-50 p-3 rounded-lg">
             <Shield className="w-4 h-4 shrink-0" />
-            <span>Secured by Paystack • PCI DSS Compliant</span>
+            <span>Secure checkout • PCI DSS Compliant</span>
             <Lock className="w-4 h-4 shrink-0" />
           </div>
 

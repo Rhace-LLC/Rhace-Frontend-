@@ -31,6 +31,7 @@ import {
   CheckCircle,
 } from 'lucide-react';
 import { getSettings, updateSettings } from '@/services/admin.service';
+import RevenueSplitCard from './RevenueSplitCard';
 import { useWebSocket } from '@/contexts/WebSocketContext';
 import { toast } from 'react-toastify';
 
@@ -350,18 +351,6 @@ export default function Settings() {
 
               <div className="space-y-6">
                 <div>
-                  <h3 className="font-semibold mb-2">Default Commission Rate</h3>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Set the default commission percentage for all vendors. This can be overridden
-                    for individual vendors.
-                  </p>
-                  <div className="flex gap-2">
-                    <Input defaultValue="10" type="number" className="max-w-24" />
-                    <span className="flex items-center text-sm">%</span>
-                  </div>
-                </div>
-
-                <div>
                   <h3 className="font-semibold mb-2">Onboarding Message</h3>
                   <p className="text-sm text-muted-foreground mb-4">
                     Customize the welcome message that vendors see after registration.
@@ -597,31 +586,21 @@ export default function Settings() {
         </TabsContent>
 
         <TabsContent value="payment" className="space-y-6">
+          <RevenueSplitCard />
+
           <Card className="p-6">
             <h3 className="font-semibold mb-4">Payment & Payouts</h3>
+            {/*
+              @deprecated Manual vendor payouts are deprecated (PSP split/subaccount
+              pays vendors directly). The payout controls below are uncontrolled legacy
+              inputs that don't persist — do not wire new logic to them.
+            */}
             <p className="text-sm text-muted-foreground mb-6">
               Configure payment processing and vendor payout settings.
             </p>
 
             <div className="space-y-6">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label htmlFor="payment-gateway">Primary Payment Gateway</Label>
-                  <Select defaultValue={settings.paymentGateway || 'paystack'}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="paystack">Paystack</SelectItem>
-                      <SelectItem value="flutterwave">Flutterwave</SelectItem>
-                      <SelectItem value="stripe">Stripe</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <p className="text-xs text-muted-foreground">
-                    Choose the primary payment processor for transactions.
-                  </p>
-                </div>
-
                 <div className="space-y-2">
                   <Label htmlFor="payout-frequency">Payout Frequency</Label>
                   <Select defaultValue={settings.payoutFrequency || 'weekly'}>
@@ -650,21 +629,6 @@ export default function Settings() {
                   />
                   <p className="text-xs text-muted-foreground">
                     Minimum amount required before processing a payout.
-                  </p>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="processing-fee">Processing Fee (%)</Label>
-                  <Input
-                    id="processing-fee"
-                    type="number"
-                    defaultValue={settings.processingFee || 1.5}
-                    min="0"
-                    max="5"
-                    step="0.1"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Fee charged per transaction by the payment gateway.
                   </p>
                 </div>
               </div>
