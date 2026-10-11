@@ -9,6 +9,7 @@ import { toast } from 'react-toastify';
 import { Edit3, Upload } from '@/components/icons/icons'; // Using requested icon path
 import { MailIcon, PhoneIcon } from 'lucide-react';
 import { BusinessLogo } from '@/pages/vendor/shared/components/BusinessInfo';
+import DashboardPageHeader from '@/components/dashboard/DashboardPageHeader';
 import type { RootState, AppDispatch } from '@/redux/store';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -47,30 +48,34 @@ const RestaurantSettings = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#F9FAFB] p-6 md:p-10">
-        <div className="max-w-6xl mx-auto space-y-8">
+    <div className="min-h-screen p-4 md:p-6">
+        <div className="space-y-6">
+          <DashboardPageHeader
+            title="Restaurant Settings"
+            subtitle="Manage your restaurant profile and contact details"
+          />
           {/* Main Grid Content */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Left Column: Business Info */}
-            <div className="space-y-8">
-              <Card className="p-6 bg-white border border-slate-200 rounded-xl shadow-sm">
+            <div className="space-y-6">
+              <Card className="p-6 rounded-res-lg border border-res-line bg-res-card shadow-res-low">
                 <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-lg font-semibold text-slate-800">Business Information</h2>
-                  <Edit3 className="w-5 h-5 text-slate-400 cursor-pointer" />
+                  <h2 className="type-res-h2 text-res-ink">Business Information</h2>
+                  <Edit3 className="w-5 h-5 text-res-ink-muted cursor-pointer" />
                 </div>
 
                 <div className="space-y-5">
                   <div>
-                    <label className="text-xs font-medium text-slate-500 mb-1.5 block uppercase tracking-wider">
+                    <label className="type-res-small font-medium text-res-ink-muted mb-1.5 block uppercase tracking-wider">
                       Business name
                     </label>
                     <div className="relative">
                       <Input
                         value={formData.businessName}
                         onChange={(e) => updateField('businessName', e.target.value)}
-                        className="bg-[#F8FAFC] border-slate-200 h-12 focus:bg-white transition-all"
+                        className="bg-res-surface border-res-line h-12 rounded-res-sm focus:bg-res-card transition-all"
                       />
-                      <span className="absolute right-3 top-3 text-[10px] text-slate-400">
+                      <span className="absolute right-3 top-3 text-[10px] text-res-ink-muted">
                         0/50
                       </span>
                     </div>
@@ -89,39 +94,39 @@ const RestaurantSettings = () => {
             </div>
 
             {/* Right Column: Contact Info */}
-            <div className="space-y-8">
-              <Card className="p-6 bg-white border border-slate-200 rounded-xl shadow-sm h-fit">
+            <div className="space-y-6">
+              <Card className="p-6 rounded-res-lg border border-res-line bg-res-card shadow-res-low h-fit">
                 <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-lg font-semibold text-slate-800">Contact Information</h2>
-                  <Edit3 className="w-5 h-5 text-slate-400 cursor-pointer" />
+                  <h2 className="type-res-h2 text-res-ink">Contact Information</h2>
+                  <Edit3 className="w-5 h-5 text-res-ink-muted cursor-pointer" />
                 </div>
 
                 <div className="space-y-5">
                   <div>
-                    <label className="text-xs font-medium text-slate-500 mb-1.5 block uppercase tracking-wider">
+                    <label className="type-res-small font-medium text-res-ink-muted mb-1.5 block uppercase tracking-wider">
                       Support Contact Email<span className="text-red-500">*</span>
                     </label>
                     <div className="relative">
                       <Input
                         value={formData.email}
-                        className="bg-[#F8FAFC] border-slate-200 h-12 pl-4 pr-10"
+                        className="bg-res-surface border-res-line h-12 pl-4 pr-10 rounded-res-sm"
                         onChange={(e) => updateField('email', e.target.value)}
                       />
-                      <MailIcon className="absolute right-3 top-3.5 w-5 h-5 text-slate-400" />
+                      <MailIcon className="absolute right-3 top-3.5 w-5 h-5 text-res-ink-muted" />
                     </div>
                   </div>
 
                   <div>
-                    <label className="text-xs font-medium text-slate-500 mb-1.5 block uppercase tracking-wider">
+                    <label className="type-res-small font-medium text-res-ink-muted mb-1.5 block uppercase tracking-wider">
                       Support Phone Number<span className="text-red-500">*</span>
                     </label>
                     <div className="relative">
                       <Input
                         value={formData.phone}
-                        className="bg-[#F8FAFC] border-slate-200 h-12 pl-4 pr-10"
+                        className="bg-res-surface border-res-line h-12 pl-4 pr-10 rounded-res-sm"
                         onChange={(e) => updateField('phone', e.target.value)}
                       />
-                      <PhoneIcon className="absolute right-3 top-3.5 w-5 h-5 text-slate-400" />
+                      <PhoneIcon className="absolute right-3 top-3.5 w-5 h-5 text-res-ink-muted" />
                     </div>
                   </div>
                 </div>
@@ -130,17 +135,19 @@ const RestaurantSettings = () => {
           </div>
 
           {/* Footer Actions */}
-          <div className="flex justify-end gap-4 pt-10 border-t border-slate-200">
+          <div className="flex justify-end gap-3 pt-6 border-t border-res-line">
             <button
+              type="button"
               onClick={() => setFormData(vendor)}
-              className="px-8 py-3 rounded-xl border border-slate-200 text-slate-700 font-semibold bg-white hover:bg-slate-50 transition-all"
+              className="type-res-small inline-flex cursor-pointer items-center rounded-full bg-res-card px-8 py-3 font-semibold text-res-ink shadow-res-low transition-all outline-none hover:text-res-brand hover:shadow-res-medium focus-visible:ring-2 focus-visible:ring-res-brand"
             >
               Reset to Default
             </button>
             <button
+              type="button"
               onClick={handleSubmit}
               disabled={isLoading}
-              className="px-8 py-3 rounded-xl bg-[#0F766E] text-white font-semibold hover:bg-[#0D635D] transition-all shadow-md active:scale-95 disabled:opacity-70"
+              className="type-res-small inline-flex cursor-pointer items-center rounded-full bg-res-brand px-8 py-3 font-semibold text-res-ink-inverted shadow-res-low transition-all outline-none hover:shadow-res-medium focus-visible:ring-2 focus-visible:ring-res-brand disabled:cursor-wait disabled:opacity-60"
             >
               {isLoading ? 'Saving...' : 'Save Changes'}
             </button>

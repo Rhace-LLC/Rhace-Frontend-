@@ -43,6 +43,7 @@ import HotelZonesPage from '@/pages/vendor/hotel/zones';
 import HotelOrderingRulesPage from '@/pages/vendor/hotel/ordering-rules';
 import HotelOutletOrdersPage from '@/pages/vendor/hotel/outlet-orders';
 import RefundsPage from '@/pages/vendor/shared/refunds';
+import BillingPage from '@/pages/vendor/shared/billing';
 import SettlementsPage from '@/pages/vendor/shared/settlements';
 import IntegrationsPage from '@/pages/vendor/shared/integrations';
 import LinkedHotelsPage from '@/pages/vendor/restaurant/linked-hotels';
@@ -100,6 +101,7 @@ const dashboardRestaurantRoutes: RouteObject[] = [
   { path: 'restaurant/payments', element: <PaymentDashboard /> },
   { path: 'restaurant/refunds', element: <RefundsPage /> },
   { path: 'restaurant/settlements', element: <SettlementsPage /> },
+  { path: 'restaurant/billing', element: <BillingPage /> },
   { path: 'restaurant/integrations', element: <IntegrationsPage /> },
   { path: 'restaurant/staffs', element: <StaffManagementSystem /> },
   { path: 'restaurant/staffs/all', element: <AllStaffPage /> },
@@ -161,6 +163,7 @@ const hotelVendorRoutes: RouteObject[] = [
   { path: 'hotel/payments', element: <PaymentDashboard /> },
   { path: 'hotel/refunds', element: <RefundsPage /> },
   { path: 'hotel/settlements', element: <SettlementsPage /> },
+  { path: 'hotel/billing', element: <BillingPage /> },
   { path: 'hotel/integrations', element: <IntegrationsPage /> },
   { path: 'hotel/staffs', element: <StaffManagementSystem /> },
   { path: 'hotel/staffs/all', element: <AllStaffPage /> },
@@ -201,6 +204,7 @@ const clubVendorRoutes: RouteObject[] = [
   { path: 'club/payments', element: <PaymentDashboard /> },
   { path: 'club/refunds', element: <RefundsPage /> },
   { path: 'club/settlements', element: <SettlementsPage /> },
+  { path: 'club/billing', element: <BillingPage /> },
   { path: 'club/integrations', element: <IntegrationsPage /> },
   { path: 'club/staffs', element: <StaffManagementSystem /> },
   { path: 'club/staffs/all', element: <AllStaffPage /> },

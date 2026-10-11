@@ -101,9 +101,17 @@ function selectableBearers(
   fallback: boolean
 ): FeeBearer[] {
   if (!data.gatewayBearerParity) return ['customer'];
-  const routable = data.providers.filter((p) => p.id === active || (fallback && p.configured));
+  // NGN rails only: Stripe is currency-routed, never part of the NGN fallback set.
+  const ngnRails = data.providers.filter((p) => (p.currencies ?? ['NGN']).includes('NGN'));
+  const routable = ngnRails.filter((p) => p.id === active || (fallback && p.configured));
   return FEE_BEARERS.filter((b) => routable.every((p) => p.supportedFeeBearers.includes(b)));
 }
+
+/** NGN rails take the active-provider radio; Stripe is currency-routed (own section below). */
+const ngnProviders = (data: RevenueSettings) =>
+  data.providers.filter((p) => (p.currencies ?? ['NGN']).includes('NGN'));
+const stripeProvider = (data: RevenueSettings) =>
+  data.providers.find((p) => p.id === 'stripe');
 
 const bearerLabel = (b: FeeBearer) => BEARER_OPTIONS.find((o) => o.value === b)?.label ?? b;
 const providerLabel = (data: RevenueSettings, id: PaymentProviderId | undefined) =>
@@ -182,6 +190,7 @@ export default function RevenueSplitCard() {
   const [bearer, setBearer] = useState<FeeBearer>('customer');
   const [provider, setProvider] = useState<PaymentProviderId>('paystack');
   const [fallback, setFallback] = useState(true);
+  const [stripeEnabled, setStripeEnabled] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [saving, setSaving] = useState(false);
 
@@ -189,8 +198,9 @@ export default function RevenueSplitCard() {
     setData(next);
     setPlatformInput(String(next.platformPercentage));
     setBearer(next.feeBearer);
-    setProvider(next.activeProvider);
+    setProvider(next.activeProvider === 'stripe' ? 'paystack' : next.activeProvider);
     setFallback(next.providerFallback);
+    setStripeEnabled(next.stripeEnabled);
   }, []);
 
   const load = useCallback(async () => {
@@ -221,7 +231,8 @@ export default function RevenueSplitCard() {
     (platformPct !== data.platformPercentage ||
       bearer !== data.feeBearer ||
       provider !== data.activeProvider ||
-      fallback !== data.providerFallback);
+      fallback !== data.providerFallback ||
+      stripeEnabled !== data.stripeEnabled);
 
   // Another superadmin saved: reload. Warn if this edit is being discarded.
   const dirtyRef = useRef(dirty);
@@ -254,6 +265,7 @@ export default function RevenueSplitCard() {
         feeBearer: bearer,
         activeProvider: provider,
         providerFallback: fallback,
+        stripeEnabled,
         version: data.version,
       });
       // The PUT response omits updatedByName; refetch for the full view.
@@ -276,7 +288,7 @@ export default function RevenueSplitCard() {
 
   if (loading && !data) {
     return (
-      <Card className="p-6">
+      <Card className="rounded-res-lg border border-res-line bg-res-card p-6 shadow-res-low">
         <p className="text-sm text-muted-foreground">Loading revenue settings…</p>
       </Card>
     );
@@ -284,7 +296,7 @@ export default function RevenueSplitCard() {
 
   if (loadError && !data) {
     return (
-      <Card className="p-6 space-y-3">
+      <Card className="rounded-res-lg border border-res-line bg-res-card p-6 shadow-res-low space-y-3">
         <h3 className="font-semibold">Revenue split &amp; payment provider</h3>
         <p className="text-sm text-destructive">{loadError}</p>
         <Button variant="outline" size="sm" onClick={() => void load()}>
@@ -300,9 +312,11 @@ export default function RevenueSplitCard() {
   const vendorPctDisplay =
     platformPct === null ? '—' : `${Math.round((100 - platformPct) * 100) / 100}%`;
   const providerChanged = provider !== data.activeProvider || fallback !== data.providerFallback;
+  const stripeChanged = stripeEnabled !== data.stripeEnabled;
+  const stripe = stripeProvider(data);
 
   return (
-    <Card className="p-6">
+    <Card className="rounded-res-lg border border-res-line bg-res-card p-6 shadow-res-low">
       <div className="flex flex-wrap items-start justify-between gap-3 mb-1">
         <h3 className="font-semibold">Revenue split &amp; payment provider</h3>
         <Badge variant={data.source === 'db' ? 'secondary' : 'destructive'}>
@@ -324,13 +338,13 @@ export default function RevenueSplitCard() {
 
       <div className="space-y-6">
         <div className="space-y-3">
-          <Label>Payment provider for new payments</Label>
+          <Label>Naira payment provider for new payments</Label>
           <RadioGroup
             value={provider}
             onValueChange={(v) => setProvider(v as PaymentProviderId)}
             disabled={!canEdit || saving}
           >
-            {data.providers.map((p) => {
+            {ngnProviders(data).map((p) => {
               const id = `provider-${p.id}`;
               return (
                 <div key={p.id} className="space-y-1">
@@ -379,6 +393,34 @@ export default function RevenueSplitCard() {
               disabled={!canEdit || saving}
             />
           </div>
+          {stripe && (
+            <div className="space-y-2 rounded-md border p-3">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <Label htmlFor="stripe-enabled">Foreign-currency payments (Stripe)</Label>
+                  <p className="text-xs text-muted-foreground">
+                    {stripe.currencies.length > 0
+                      ? `Takes ${stripe.currencies.join(', ')} checkouts automatically; naira keeps using the provider above.`
+                      : 'Not connected yet: set the Stripe keys on the server first.'}{' '}
+                    Turning this off stops new foreign-currency checkouts; payments already
+                    started still settle.
+                  </p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {stripe.configured ? 'Keys configured' : 'Keys not configured'} ·{' '}
+                    {stripe.vendorCoverage.ready} of {stripe.vendorCoverage.total} vendors
+                    Connect-ready
+                  </p>
+                </div>
+                <Switch
+                  id="stripe-enabled"
+                  checked={stripeEnabled}
+                  onCheckedChange={setStripeEnabled}
+                  disabled={!canEdit || saving || !stripe.configured}
+                />
+              </div>
+              <CoverageList provider={stripe} />
+            </div>
+          )}
         </div>
 
         <Separator />
@@ -491,6 +533,9 @@ export default function RevenueSplitCard() {
             {data.previous.activeProvider && data.previous.activeProvider !== data.activeProvider
               ? `, provider ${providerLabel(data, data.previous.activeProvider)} → ${providerLabel(data, data.activeProvider)}`
               : ''}
+            {data.previous.stripeEnabled !== undefined && data.previous.stripeEnabled !== data.stripeEnabled
+              ? `, Stripe foreign-currency ${data.previous.stripeEnabled ? 'on' : 'off'} → ${data.stripeEnabled ? 'on' : 'off'}`
+              : ''}
             .
           </p>
         )}
@@ -529,6 +574,13 @@ export default function RevenueSplitCard() {
                       {data.providerFallback ? ' (with fallback)' : ''} →{' '}
                       {providerLabel(data, provider)}
                       {fallback ? ' (with fallback)' : ''}
+                      <br />
+                    </>
+                  )}
+                  {stripeChanged && (
+                    <>
+                      Stripe foreign-currency: {data.stripeEnabled ? 'on' : 'off'} →{' '}
+                      {stripeEnabled ? 'on' : 'off'}
                       <br />
                     </>
                   )}

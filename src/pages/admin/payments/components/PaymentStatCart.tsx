@@ -24,13 +24,13 @@ const PaymentStatCard = ({
 }: PaymentStatCardProps) => {
   return (
     <div
-      className={`bg-white border border-slate-200 rounded-2xl p-5 shadow-sm ${className}`}
+      className={`rounded-res-md border border-res-line bg-res-card p-5 shadow-res-low ${className}`}
     >
       <div className="flex items-start justify-between">
         <div>
-          <p className="text-sm text-slate-500">{title}</p>
+          <p className="type-res-small text-res-ink-muted">{title}</p>
 
-          <h2 className="mt-2 text-3xl font-bold text-slate-900">
+          <h2 className="mt-2 text-3xl font-bold text-res-ink">
             {isCurrency
               ? `₦${Number(value).toLocaleString()}`
               : Number(value).toLocaleString()}
@@ -38,7 +38,7 @@ const PaymentStatCard = ({
         </div>
 
         <div
-          className="h-12 w-12 rounded-xl flex items-center justify-center"
+          className="h-12 w-12 rounded-res-sm flex items-center justify-center"
           style={{
             backgroundColor: `${color}15`,
           }}
@@ -54,7 +54,7 @@ const PaymentStatCard = ({
 
       <div className="mt-5 flex items-center justify-between">
 
-        <span className="text-xs text-slate-500">
+        <span className="type-res-small text-res-ink-muted">
           {comparison}
         </span>
 

@@ -8,11 +8,12 @@ const AdminLayout = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="flex h-dvh bg-white">
+    <div className="flex h-dvh bg-res-surface">
       <AdminSidebar
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
         onNavigate={navigate}
+        onMenuClick={() => setSidebarOpen(true)}
       />
 
       <div className="flex-1 flex flex-col relative overflow-hidden">

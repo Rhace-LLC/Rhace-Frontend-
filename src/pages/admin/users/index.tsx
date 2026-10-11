@@ -15,6 +15,7 @@ import {
   CheckCircle,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import DashboardPageHeader from '@/components/dashboard/DashboardPageHeader';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -649,73 +650,66 @@ export default function UserManagement() {
   }, [currentPage]);
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Header Section */}
-      <div className="flex flex-col space-y-4">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight text-gray-900">User Management</h1>
-            <p className="text-gray-600 mt-2">
-              Manage and monitor all user accounts in your system
-            </p>
-          </div>
-          <div className="flex items-center gap-3">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleExport}
-              className="gap-2 bg-white hover:bg-gray-50"
-            >
-              <Download className="w-4 h-4" />
-              Export
-            </Button>
-          </div>
-        </div>
+    <div className="space-y-5 p-4 md:p-6">
+      <DashboardPageHeader
+        title="User Management"
+        subtitle="Manage and monitor all user accounts in your system"
+        actions={
+          <button
+            type="button"
+            onClick={handleExport}
+            className="type-res-small inline-flex cursor-pointer items-center gap-2 rounded-full bg-res-card px-4 py-2.5 font-semibold text-res-ink shadow-res-low transition-all outline-none hover:text-res-brand hover:shadow-res-medium focus-visible:ring-2 focus-visible:ring-res-brand"
+          >
+            <Download className="w-4 h-4" />
+            Export
+          </button>
+        }
+      />
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-          <Card className="border-0 shadow-sm bg-gradient-to-br from-blue-50 to-indigo-50">
+          <Card className="rounded-res-md border border-res-line bg-res-card shadow-res-low">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-blue-700">Total Users</p>
-                  <p className="text-3xl font-bold text-gray-900">{totalUsers.toLocaleString()}</p>
+                  <p className="type-res-small font-medium text-res-ink-muted">Total Users</p>
+                  <p className="text-3xl font-bold text-res-ink">{totalUsers.toLocaleString()}</p>
                 </div>
-                <div className="h-12 w-12 rounded-lg bg-white flex items-center justify-center shadow-sm">
-                  <Users className="h-6 w-6 text-blue-600" />
+                <div className="h-12 w-12 rounded-res-sm bg-res-surface flex items-center justify-center">
+                  <Users className="h-6 w-6 text-res-brand" />
                 </div>
               </div>
               <Progress value={(stats.total / (stats.total || 1)) * 100} className="mt-4 h-1" />
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-sm bg-gradient-to-br from-emerald-50 to-green-50">
+          <Card className="rounded-res-md border border-res-line bg-res-card shadow-res-low">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-emerald-700">Active Users</p>
-                  <p className="text-3xl font-bold text-gray-900">
+                  <p className="type-res-small font-medium text-res-ink-muted">Active Users</p>
+                  <p className="text-3xl font-bold text-res-ink">
                     {stats.active.toLocaleString()}
                   </p>
                 </div>
-                <div className="h-12 w-12 rounded-lg bg-white flex items-center justify-center shadow-sm">
-                  <UserCheck className="h-6 w-6 text-emerald-600" />
+                <div className="h-12 w-12 rounded-res-sm bg-res-surface flex items-center justify-center">
+                  <UserCheck className="h-6 w-6 text-res-accent" />
                 </div>
               </div>
               <Progress value={(stats.active / (stats.total || 1)) * 100} className="mt-4 h-1" />
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-sm bg-gradient-to-br from-amber-50 to-orange-50">
+          <Card className="rounded-res-md border border-res-line bg-res-card shadow-res-low">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-amber-700">Inactive Users</p>
-                  <p className="text-3xl font-bold text-gray-900">
+                  <p className="type-res-small font-medium text-res-ink-muted">Inactive Users</p>
+                  <p className="text-3xl font-bold text-res-ink">
                     {stats.inactive.toLocaleString()}
                   </p>
                 </div>
-                <div className="h-12 w-12 rounded-lg bg-white flex items-center justify-center shadow-sm">
+                <div className="h-12 w-12 rounded-res-sm bg-res-surface flex items-center justify-center">
                   <UserMinus className="h-6 w-6 text-amber-600" />
                 </div>
               </div>
@@ -723,16 +717,16 @@ export default function UserManagement() {
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-sm bg-gradient-to-br from-rose-50 to-pink-50">
+          <Card className="rounded-res-md border border-res-line bg-res-card shadow-res-low">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-rose-700">Suspended</p>
-                  <p className="text-3xl font-bold text-gray-900">
+                  <p className="type-res-small font-medium text-res-ink-muted">Suspended</p>
+                  <p className="text-3xl font-bold text-res-ink">
                     {stats.suspended.toLocaleString()}
                   </p>
                 </div>
-                <div className="h-12 w-12 rounded-lg bg-white flex items-center justify-center shadow-sm">
+                <div className="h-12 w-12 rounded-res-sm bg-res-surface flex items-center justify-center">
                   <Shield className="h-6 w-6 text-rose-600" />
                 </div>
               </div>
@@ -740,15 +734,15 @@ export default function UserManagement() {
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-sm bg-gradient-to-br from-purple-50 to-violet-50">
+          <Card className="rounded-res-md border border-res-line bg-res-card shadow-res-low">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-purple-700">VIP Users</p>
-                  <p className="text-3xl font-bold text-gray-900">{stats.vip.toLocaleString()}</p>
+                  <p className="type-res-small font-medium text-res-ink-muted">VIP Users</p>
+                  <p className="text-3xl font-bold text-res-ink">{stats.vip.toLocaleString()}</p>
                 </div>
-                <div className="h-12 w-12 rounded-lg bg-white flex items-center justify-center shadow-sm">
-                  <Star className="h-6 w-6 text-purple-600" />
+                <div className="h-12 w-12 rounded-res-sm bg-res-surface flex items-center justify-center">
+                  <Star className="h-6 w-6 text-amber-500" />
                 </div>
               </div>
               <Progress value={(stats.vip / (stats.total || 1)) * 100} className="mt-4 h-1" />
@@ -757,15 +751,15 @@ export default function UserManagement() {
         </div>
 
         {/* Search and Filter Bar */}
-        <Card className="border-0 shadow-sm">
+        <Card className="rounded-res-md border border-res-line bg-res-card shadow-res-low">
           <CardContent className="p-4">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div className="flex-1">
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-res-ink-muted" />
                   <Input
                     placeholder="Search by name, email, or phone number..."
-                    className="pl-9 w-full md:w-[400px]"
+                    className="pl-9 w-full md:w-[400px] border-res-line rounded-res-sm bg-res-card"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                   />
@@ -774,17 +768,17 @@ export default function UserManagement() {
 
               <div className="flex items-center gap-3">
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full md:w-auto">
-                  <TabsList className="bg-gray-100 p-1">
-                    <TabsTrigger value="all" className="data-[state=active]:bg-white">
+                  <TabsList className="bg-res-surface p-1 rounded-full">
+                    <TabsTrigger value="all" className="rounded-full data-[state=active]:bg-res-ink data-[state=active]:text-res-ink-inverted">
                       All Users
                     </TabsTrigger>
-                    <TabsTrigger value="active" className="data-[state=active]:bg-white">
+                    <TabsTrigger value="active" className="rounded-full data-[state=active]:bg-res-ink data-[state=active]:text-res-ink-inverted">
                       Active
                     </TabsTrigger>
-                    <TabsTrigger value="inactive" className="data-[state=active]:bg-white">
+                    <TabsTrigger value="inactive" className="rounded-full data-[state=active]:bg-res-ink data-[state=active]:text-res-ink-inverted">
                       Inactive
                     </TabsTrigger>
-                    <TabsTrigger value="suspended" className="data-[state=active]:bg-white">
+                    <TabsTrigger value="suspended" className="rounded-full data-[state=active]:bg-res-ink data-[state=active]:text-res-ink-inverted">
                       Suspended
                     </TabsTrigger>
                   </TabsList>
@@ -793,15 +787,14 @@ export default function UserManagement() {
             </div>
           </CardContent>
         </Card>
-      </div>
 
       {/* Users Table */}
-      <Card className="border-0 shadow-sm overflow-hidden">
-        <CardHeader className="bg-gray-50/50 border-b">
+      <Card className="rounded-res-lg border border-res-line bg-res-card shadow-res-low overflow-hidden">
+        <CardHeader className="bg-res-surface/60 border-b border-res-line">
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="text-lg font-semibold">User Directory</CardTitle>
-              <CardDescription>{filteredUsers.length} users found</CardDescription>
+              <CardTitle className="type-res-h2 text-res-ink">User Directory</CardTitle>
+              <CardDescription className="text-res-ink-muted">{filteredUsers.length} users found</CardDescription>
             </div>
           </div>
         </CardHeader>

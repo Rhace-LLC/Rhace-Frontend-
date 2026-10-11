@@ -12,6 +12,7 @@ import {
   useReservations,
 } from '@/features/reservations';
 import type { ReservationFilterParams, ReservationView } from '@/features/reservations';
+import DashboardPageHeader from '@/components/dashboard/DashboardPageHeader';
 
 const AdminReservations = () => {
   const [filters, setFilters] = useState<ReservationFilterParams>({ page: 1, limit: 20 });
@@ -58,12 +59,10 @@ const AdminReservations = () => {
 
   return (
     <div className="space-y-5 p-4 md:p-6">
-      <div>
-        <h1 className="text-xl font-semibold text-gray-900">Reservations</h1>
-        <p className="mt-1 text-sm text-gray-500">
-          All unit reservations across vendors.
-        </p>
-      </div>
+      <DashboardPageHeader
+        title="Reservations"
+        subtitle="All unit reservations across vendors."
+      />
 
       <ReservationStatCards counters={countersQuery.data} loading={countersQuery.isLoading} />
 

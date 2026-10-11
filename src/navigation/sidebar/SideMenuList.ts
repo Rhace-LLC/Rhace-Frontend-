@@ -174,6 +174,11 @@ export const ClubList: SideMenuListConfig = {
           path: '/dashboard/club/settlements',
           icon: Landmark,
         },
+        {
+          label: 'Billing & plan',
+          path: '/dashboard/club/billing',
+          icon: Receipt,
+        },
       ],
     },
     {
@@ -320,6 +325,11 @@ export const HotelList: SideMenuListConfig = {
           label: 'Settlements',
           path: '/dashboard/hotel/settlements',
           icon: Landmark,
+        },
+        {
+          label: 'Billing & plan',
+          path: '/dashboard/hotel/billing',
+          icon: Receipt,
         },
       ],
     },
@@ -506,6 +516,11 @@ export const RestaurantList: SideMenuListConfig = {
           label: 'Settlements',
           path: '/dashboard/restaurant/settlements',
           icon: Landmark,
+        },
+        {
+          label: 'Billing & plan',
+          path: '/dashboard/restaurant/billing',
+          icon: Receipt,
         },
       ],
     },

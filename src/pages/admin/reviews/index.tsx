@@ -11,6 +11,7 @@ import {
   Clock,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import DashboardPageHeader from '@/components/dashboard/DashboardPageHeader';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -154,23 +155,21 @@ export default function AdminReviews() {
   };
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Review Management</h1>
-          <p className="text-gray-500 mt-1">Monitor, respond to, and manage customer reviews</p>
-        </div>
-      </div>
+    <div className="space-y-5 p-4 md:p-6">
+      <DashboardPageHeader
+        title="Review Management"
+        subtitle="Monitor, respond to, and manage customer reviews"
+      />
 
-      <Card>
-        <CardHeader className="border-b">
+      <Card className="rounded-res-lg border border-res-line bg-res-card shadow-res-low">
+        <CardHeader className="border-b border-res-line">
           <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
             <div className="flex-1 w-full">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-res-ink-muted" />
                 <Input
                   placeholder="Search by user, vendor, or review content..."
-                  className="pl-9 w-full"
+                  className="pl-9 w-full border-res-line rounded-res-sm bg-res-card"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
@@ -205,57 +204,57 @@ export default function AdminReviews() {
         </CardHeader>
         <CardContent className="p-0">
           {loading ? (
-            <div className="p-8 text-center text-gray-500">Loading reviews...</div>
+            <div className="p-8 text-center text-res-ink-muted">Loading reviews...</div>
           ) : filteredReviews.length === 0 ? (
             <div className="p-8 text-center">
-              <MessageSquare className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-              <p className="text-gray-500">No reviews found</p>
+              <MessageSquare className="h-12 w-12 text-res-ink-muted mx-auto mb-3" />
+              <p className="text-res-ink-muted">No reviews found</p>
             </div>
           ) : (
-            <div className="divide-y">
+            <div className="divide-y divide-res-line">
               {filteredReviews.map((review) => (
-                <div key={review._id} className="p-6 hover:bg-gray-50 transition-colors">
+                <div key={review._id} className="p-6 transition-colors hover:bg-res-surface">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-3">
                         <Avatar className="h-10 w-10">
-                          <AvatarFallback className="bg-blue-100 text-blue-600">
+                          <AvatarFallback className="bg-res-surface text-res-brand font-semibold">
                             {(review.user?.name || 'U').charAt(0).toUpperCase()}
                           </AvatarFallback>
                         </Avatar>
                         <div>
-                          <p className="font-semibold text-gray-900">
+                          <p className="font-semibold text-res-ink">
                             {review.user?.name || 'Anonymous'}
                           </p>
-                          <p className="text-sm text-gray-500">
+                          <p className="type-res-small text-res-ink-muted">
                             {review.vendor?.businessName || review.vendor?.name || 'Unknown Vendor'}
                           </p>
                         </div>
                       </div>
                       <div className="flex items-center gap-2 mb-2">
                         <div className="flex">{renderStars(review.rating)}</div>
-                        <span className="text-sm text-gray-500">•</span>
-                        <span className="text-xs text-gray-400">
+                        <span className="type-res-small text-res-ink-muted">•</span>
+                        <span className="type-res-small text-res-ink-muted">
                           {new Date(review.createdAt as string).toLocaleDateString()}
                         </span>
                         {review.isFlagged && (
                           <>
-                            <span className="text-sm text-gray-500">•</span>
-                            <Badge className="bg-red-100 text-red-700 border-red-200">
+                            <span className="type-res-small text-res-ink-muted">•</span>
+                            <Badge className="rounded-full bg-rose-50 text-rose-700 border border-rose-200">
                               Flagged
                             </Badge>
                           </>
                         )}
                       </div>
-                      <p className="text-gray-700 mb-3">
+                      <p className="text-res-ink mb-3">
                         {review.comment || review.reviewText || 'No comment provided'}
                       </p>
                       {review.adminResponse && (
-                        <div className="bg-blue-50 border border-blue-100 rounded-lg p-3 mt-3">
-                          <p className="text-xs font-semibold text-blue-700 mb-1">
+                        <div className="bg-res-surface border border-res-line rounded-res-sm p-3 mt-3">
+                          <p className="type-res-small font-semibold text-res-brand mb-1">
                             Admin Response:
                           </p>
-                          <p className="text-sm text-blue-900">{review.adminResponse}</p>
+                          <p className="type-res-small text-res-ink">{review.adminResponse}</p>
                         </div>
                       )}
                     </div>
@@ -263,7 +262,7 @@ export default function AdminReviews() {
                       {getStatusBadge(review.status)}
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 mt-3 pt-3 border-t">
+                  <div className="flex items-center gap-2 mt-3 pt-3 border-t border-res-line">
                     <Button
                       variant="ghost"
                       size="sm"

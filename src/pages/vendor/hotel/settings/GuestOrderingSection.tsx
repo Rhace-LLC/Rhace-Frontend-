@@ -76,38 +76,38 @@ const GuestOrderingSection = () => {
   };
 
   return (
-    <Card className="rounded-2xl border-0 p-6 shadow-lg shadow-slate-200/50 md:p-8">
-      <h2 className="text-xl font-semibold text-slate-800">Guest ordering</h2>
-      <p className="mt-1 text-sm text-slate-500">
+    <Card className="rounded-res-lg border border-res-line bg-res-card p-6 shadow-res-low md:p-8">
+      <h2 className="type-res-h2 text-res-ink">Guest ordering</h2>
+      <p className="mt-1 type-res-small text-res-ink-muted">
         Room QR codes, the guest challenge and the room-tab credit limit.
       </p>
 
       {settings && (
         <div className="mt-4 grid gap-4 md:grid-cols-2">
-          <label className="flex items-center gap-2 rounded-xl border border-slate-100 bg-slate-50 p-3 text-sm text-slate-700">
+          <label className="flex items-center gap-2 rounded-res-sm border border-res-line bg-res-surface p-3 type-res-small text-res-ink">
             <input
               type="checkbox"
               checked={settings.enabled}
               onChange={(e) => update({ enabled: e.target.checked })}
-              className="rounded border-slate-300 text-blue-600"
+              className="rounded border-res-line text-res-brand focus:ring-res-brand"
             />
             Enable guest ordering at this property
           </label>
-          <label className="text-sm text-slate-700">
+          <label className="type-res-small text-res-ink">
             Challenge method
             <select
               value={settings.challengeMode}
               onChange={(e) =>
                 update({ challengeMode: e.target.value as GuestOrderingSettings['challengeMode'] })
               }
-              className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2"
+              className="mt-1 w-full rounded-res-sm border border-res-line bg-res-card px-3 py-2 focus:ring-2 focus:ring-res-brand focus:border-res-brand outline-none"
             >
               <option value="either">Last name or PIN</option>
               <option value="lastName">Last name only</option>
               <option value="pin">Guest PIN only</option>
             </select>
           </label>
-          <label className="text-sm text-slate-700">
+          <label className="type-res-small text-res-ink">
             Default credit limit
             <Input
               type="number"
@@ -117,7 +117,7 @@ const GuestOrderingSection = () => {
               className="mt-1"
             />
           </label>
-          <label className="text-sm text-slate-700">
+          <label className="type-res-small text-res-ink">
             KDS acceptance timeout (minutes)
             <Input
               type="number"
@@ -133,21 +133,21 @@ const GuestOrderingSection = () => {
         type="button"
         onClick={save}
         disabled={saving || !settings}
-        className="mt-4 rounded-xl bg-blue-600 px-6 py-2.5 font-medium text-white disabled:opacity-60"
+        className="type-res-small mt-4 inline-flex cursor-pointer items-center rounded-full bg-res-brand px-6 py-2.5 font-semibold text-res-ink-inverted shadow-res-low transition-all outline-none hover:shadow-res-medium focus-visible:ring-2 focus-visible:ring-res-brand disabled:cursor-wait disabled:opacity-60"
       >
         {saving ? 'Saving…' : 'Save guest ordering'}
       </button>
 
-      <div className="mt-8 border-t border-slate-100 pt-6">
-        <h3 className="font-semibold text-slate-800">Room QR codes</h3>
-        <p className="mt-1 text-sm text-slate-500">
+      <div className="mt-8 border-t border-res-line pt-6">
+        <h3 className="font-semibold text-res-ink">Room QR codes</h3>
+        <p className="mt-1 type-res-small text-res-ink-muted">
           Print one per room. Guests scan to open <span className="font-mono">/stay/:token</span>.
         </p>
         <div className="mt-3 flex flex-wrap items-center gap-2">
           <select
             value={planId}
             onChange={(e) => setPlanId(e.target.value)}
-            className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm"
+            className="rounded-res-sm border border-res-line bg-res-card px-3 py-2 type-res-small text-res-ink focus:ring-2 focus:ring-res-brand focus:border-res-brand outline-none"
           >
             {plans.map((p) => (
               <option key={p._id} value={p._id}>
@@ -159,7 +159,7 @@ const GuestOrderingSection = () => {
             type="button"
             onClick={generate}
             disabled={generating || !planId}
-            className="rounded-xl bg-slate-900 px-5 py-2 text-sm font-semibold text-white disabled:opacity-60"
+            className="type-res-small inline-flex cursor-pointer items-center rounded-full bg-res-ink px-5 py-2 font-semibold text-res-ink-inverted transition-colors outline-none hover:opacity-90 focus-visible:ring-2 focus-visible:ring-res-brand disabled:cursor-wait disabled:opacity-60"
           >
             {generating ? 'Generating…' : 'Generate QR codes'}
           </button>
@@ -167,7 +167,7 @@ const GuestOrderingSection = () => {
             <button
               type="button"
               onClick={() => window.print()}
-              className="rounded-xl border border-slate-200 px-5 py-2 text-sm font-semibold"
+              className="type-res-small inline-flex cursor-pointer items-center rounded-full bg-res-surface px-5 py-2 font-semibold text-res-ink transition-colors outline-none hover:text-res-brand focus-visible:ring-2 focus-visible:ring-res-brand"
             >
               Print sheet
             </button>
@@ -178,7 +178,7 @@ const GuestOrderingSection = () => {
             {qrs.map((q) => (
               <div
                 key={q.unitId}
-                className="flex flex-col items-center gap-1 rounded-xl border border-slate-100 p-3"
+                className="flex flex-col items-center gap-1 rounded-res-sm border border-res-line bg-res-card p-3"
               >
                 <QrCode value={`${window.location.origin}${q.path}`} size={128} label={q.label} />
                 <button

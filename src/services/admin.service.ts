@@ -243,13 +243,17 @@ export const getSettings = () => api.get('/settings');
 export const updateSettings = (data: unknown) => api.put('/settings', data);
 
 export type FeeBearer = 'customer' | 'vendor' | 'platform' | 'split';
-export type PaymentProviderId = 'paystack' | 'monnify';
+export type PaymentProviderId = 'paystack' | 'monnify' | 'stripe';
 
 export interface PaymentProviderInfo {
   id: PaymentProviderId;
   label: string;
   /** API keys are set on the server. */
   configured: boolean;
+  /** Takes new payments (Stripe reads the kill-switch; NGN rails are always on). */
+  enabled: boolean;
+  /** ISO currencies this rail may charge in (empty until the adapter registers). */
+  currencies: string[];
   supportedFeeBearers: FeeBearer[];
   vendorCoverage: { ready: number; total: number };
 }
@@ -260,6 +264,7 @@ export interface RevenueSettingsPrevious {
   feeBearer: FeeBearer;
   activeProvider?: PaymentProviderId;
   providerFallback?: boolean;
+  stripeEnabled?: boolean;
   updatedBy: string | null;
   updatedAt: string | null;
 }
@@ -270,6 +275,11 @@ export interface RevenueSettings {
   feeBearer: FeeBearer;
   activeProvider: PaymentProviderId;
   providerFallback: boolean;
+  /** Kill-switch for NEW Stripe inits (webhooks/retries keep running). */
+  stripeEnabled: boolean;
+  /** Kill-switch for NEW vendor subscriptions (active ones always honoured). */
+  subscriptionEnabled: boolean;
+  subscriptionCohort: string[];
   source: 'db' | 'env';
   version: number | null;
   previous: RevenueSettingsPrevious | null;
@@ -300,10 +310,57 @@ export const updateRevenueSettings = (data: {
   version: number | null;
   activeProvider?: PaymentProviderId;
   providerFallback?: boolean;
+  stripeEnabled?: boolean;
+  subscriptionEnabled?: boolean;
+  subscriptionCohort?: string[];
 }) => api.put<RevenueSettings>('/settings/revenue', data);
 /** Vendors with bank details but no sub-account on a provider. */
 export const getProviderCoverage = (provider: PaymentProviderId) =>
   api.get<ProviderCoverage>('/settings/revenue/provider-coverage', { params: { provider } });
+
+/** PSP operations oversight (admin/finance). */
+export type PspId = 'paystack' | 'monnify' | 'stripe';
+export interface PspOverviewEntry {
+  id: PspId;
+  label: string;
+  configured: boolean;
+  enabled: boolean;
+  currencies: string[];
+  last24h: {
+    initialized: number;
+    settled: number;
+    settledViaWebhook: number;
+    failed: number;
+    needsReview: number;
+    pendingOlderThan15m: number;
+    transfersFailed: number;
+  };
+  webhookEvents24h: { type: string; count: number }[];
+}
+export const getPspOverview = () => api.get<{ providers: PspOverviewEntry[] }>('/ops/psp/overview');
+export interface PspWebhookEvent {
+  eventId: string;
+  type: string;
+  livemode: boolean;
+  receivedAt: string;
+  paymentId: string | null;
+}
+export const getPspEvents = (params?: { limit?: number; type?: string }) =>
+  api.get<{ events: PspWebhookEvent[] }>('/ops/psp/events', { params });
+export interface ReviewQueueItem {
+  paymentId: string;
+  provider: PspId | null;
+  currency: string;
+  amountPaid: number;
+  status: string;
+  reviewReason: string | null;
+  createdAt: string;
+  vendorName: string | null;
+}
+export const getReviewQueue = (params?: { page?: number; limit?: number }) =>
+  api.get<{ items: ReviewQueueItem[]; pagination: { total: number; page: number; limit: number; pages: number } }>('/ops/psp/review', { params });
+export const retryStripeTransfer = (paymentId: string) =>
+  api.post(`/stripe/retry/${paymentId}`);
 export const getAccountSettings = () => api.get('/settings/account');
 export const updateAccountSettings = (data: unknown) => api.put('/settings/account', data);
 

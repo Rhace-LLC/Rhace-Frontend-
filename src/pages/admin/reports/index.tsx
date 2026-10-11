@@ -9,7 +9,6 @@ import {
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import {
-  BarChart3,
   Download,
   FileText,
   Loader2,
@@ -20,6 +19,7 @@ import {
   Receipt,
   Store,
 } from 'lucide-react';
+import DashboardPageHeader from '@/components/dashboard/DashboardPageHeader';
 import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 import { format } from 'date-fns';
@@ -265,20 +265,26 @@ export default function Reports() {
   const statusOptions = getStatusOptions();
 
   return (
-    <div className="p-4 md:p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <BarChart3 className="h-6 w-6 text-primary" />
-          <h1 className="text-2xl font-bold">Reports</h1>
-        </div>
-      </div>
+    <div className="p-4 md:p-6 space-y-5">
+      <DashboardPageHeader
+        title="Reports"
+        subtitle="Export platform data for accounting and analysis."
+        actions={
+          selectedExportType ? (
+            <span className="type-res-small rounded-full bg-res-surface px-4 py-2 font-semibold text-res-ink-muted">
+              {EXPORT_TYPES.find((t) => t.value === selectedExportType)?.label}
+            </span>
+          ) : undefined
+        }
+      />
 
       {/* Export Configuration */}
-      <Card>
+      <Card className="rounded-res-lg border border-res-line bg-res-card shadow-res-low">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Download className="h-5 w-5" />
+          <CardTitle className="type-res-h2 text-res-ink flex items-center gap-2">
+            <span className="flex h-9 w-9 items-center justify-center rounded-res-sm bg-res-surface">
+              <Download className="h-5 w-5 text-res-brand" />
+            </span>
             Export Data
           </CardTitle>
         </CardHeader>
@@ -286,20 +292,25 @@ export default function Reports() {
           {/* Quick Export Buttons */}
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
             {EXPORT_TYPES.map((type) => (
-              <Button
+              <button
                 key={type.value}
-                variant={selectedExportType === type.value ? 'default' : 'outline'}
-                className="h-auto flex-col py-4 gap-2"
+                type="button"
                 onClick={() => {
                   setSelectedExportType(type.value);
                   if (!type.requiresVendor && selectedVendor) {
                     setSelectedVendor('');
                   }
                 }}
+                aria-pressed={selectedExportType === type.value}
+                className={`type-res-small flex h-auto cursor-pointer flex-col items-center gap-2 rounded-res-md border px-3 py-4 font-semibold transition-colors outline-none focus-visible:ring-2 focus-visible:ring-res-brand ${
+                  selectedExportType === type.value
+                    ? 'border-transparent bg-res-ink text-res-ink-inverted'
+                    : 'border-res-line bg-res-surface text-res-ink-muted hover:text-res-ink'
+                }`}
               >
                 {type.icon}
                 <span className="text-sm font-medium">{type.label}</span>
-              </Button>
+              </button>
             ))}
           </div>
 
@@ -418,11 +429,12 @@ export default function Reports() {
               </div>
 
               {/* Export Button */}
-              <div className="flex justify-end pt-4 border-t">
-                <Button
+              <div className="flex justify-end pt-4 border-t border-res-line">
+                <button
+                  type="button"
                   onClick={handleExport}
                   disabled={exporting}
-                  size="lg"
+                  className="type-res-small inline-flex cursor-pointer items-center gap-2 rounded-full bg-res-brand px-6 py-3 font-semibold text-res-ink-inverted shadow-res-low transition-all outline-none hover:shadow-res-medium focus-visible:ring-2 focus-visible:ring-res-brand disabled:cursor-wait disabled:opacity-60"
                 >
                   {exporting ? (
                     <>
@@ -435,7 +447,7 @@ export default function Reports() {
                       Export {currentExportType?.label || 'Data'}
                     </>
                   )}
-                </Button>
+                </button>
               </div>
             </div>
           )}
@@ -443,9 +455,9 @@ export default function Reports() {
           {/* No selection state */}
           {!selectedExportType && (
             <div className="text-center py-8">
-              <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <p className="text-muted-foreground">Select an export type above to begin</p>
-              <p className="text-sm text-muted-foreground mt-1">
+              <FileText className="h-12 w-12 text-res-ink-muted mx-auto mb-4" />
+              <p className="type-res-small text-res-ink-muted">Select an export type above to begin</p>
+              <p className="type-res-small text-res-ink-muted mt-1">
                 Choose a data type, apply optional filters, and download instantly
               </p>
             </div>
@@ -455,16 +467,16 @@ export default function Reports() {
 
       {/* Summary / Info Card */}
       {selectedExportType && currentExportType && (
-        <Card>
+        <Card className="rounded-res-lg border border-res-line bg-res-card shadow-res-low">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-sm text-muted-foreground">
+            <CardTitle className="flex items-center gap-2 type-res-small text-res-ink-muted">
               <Store className="h-4 w-4" />
               About this export
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-muted-foreground">{currentExportType.description}</p>
-            <div className="mt-2 flex items-center gap-4 text-xs text-muted-foreground">
+            <p className="type-res-small text-res-ink-muted">{currentExportType.description}</p>
+            <div className="mt-2 flex items-center gap-4 type-res-small text-res-ink-muted">
               <span>
                 Format: <strong>{exportFormat.toUpperCase()}</strong>
               </span>

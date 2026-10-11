@@ -134,7 +134,7 @@ const AdminEarningTrends = () => {
   }));
 
   return (
-    <div className="bg-white rounded-2xl border p-6">
+    <div className="rounded-res-lg border border-res-line bg-res-card shadow-res-low p-6">
 
       <div className="flex items-center justify-between">
 
