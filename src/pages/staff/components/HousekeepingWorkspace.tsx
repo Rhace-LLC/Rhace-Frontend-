@@ -27,6 +27,7 @@ import { physicalUnitService } from '@/services/physicalUnit.service';
 import type { FloorPlanDto, FloorPlanLayoutDto, PhysicalUnitDto } from '@/types';
 import { staffRoleLabel } from '../roles';
 import RoomGrid from './RoomGrid';
+import ServiceRequestsQueue from './ServiceRequestsQueue';
 import { roomStatusMeta } from './roomStatus';
 
 /** Clock-in gate lives on the staff layout's Outlet context. */
@@ -514,6 +515,16 @@ export default function HousekeepingWorkspace() {
             })}
           </ul>
         )}
+      </section>
+
+      <section className="rounded-res-lg bg-res-card p-4 shadow-res-low md:p-5">
+        <h2 className="type-res-h3 mb-1 flex items-center gap-2 text-res-ink">
+          <DoorOpen className="h-4 w-4 text-res-brand" /> Guest requests
+        </h2>
+        <p className="type-res-small mb-3 font-normal text-res-ink-muted">
+          Amenity and service requests routed to housekeeping — live, no refresh needed.
+        </p>
+        <ServiceRequestsQueue routeTo="housekeeping" />
       </section>
 
       <section className="rounded-res-lg bg-res-card p-4 shadow-res-low md:p-5">

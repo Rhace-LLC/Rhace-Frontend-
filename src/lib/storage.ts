@@ -30,10 +30,21 @@ export function setToken(token: string, isVendor = false): void {
 export function getStaffRefreshToken(): string | null {
   return localStorage.getItem(STAFF_REFRESH_TOKEN_KEY);
 }
-
 export function setStaffRefreshToken(token: string | null): void {
   if (token) localStorage.setItem(STAFF_REFRESH_TOKEN_KEY, token);
   else localStorage.removeItem(STAFF_REFRESH_TOKEN_KEY);
+}
+
+/**
+ * Socket handshake auth. The server derives every room from the verified
+ * JWT — including a staff member's lane room (`vendor:<id>:role:<role>`),
+ * which it reads from the staff record — so only the token is sent.
+ */
+export function socketHandshakeAuth(extra?: Record<string, string>): Record<string, string> {
+  const auth: Record<string, string> = {};
+  const token = getToken();
+  if (token) auth.token = token;
+  return { ...auth, ...extra };
 }
 
 export function clearTokens(): void {

@@ -12,6 +12,7 @@ export interface CategoryDto {
 export interface CategoryInput {
   name: string;
   description?: string;
+  kind?: 'food' | 'service';
   order?: number;
   isActive?: boolean;
 }
@@ -22,9 +23,9 @@ const unwrap = <T>(response: { data: unknown }): T => {
 };
 
 class MenuCategoryService {
-  async list(includeInactive = false): Promise<CategoryDto[]> {
+  async list(includeInactive = false, kind?: 'food' | 'service'): Promise<CategoryDto[]> {
     const res = await api.get('/menu-categories', {
-      params: includeInactive ? { includeInactive: true } : undefined,
+      params: { ...(includeInactive ? { includeInactive: true } : {}), ...(kind ? { kind } : {}) },
     });
     return unwrap<CategoryDto[]>(res);
   }

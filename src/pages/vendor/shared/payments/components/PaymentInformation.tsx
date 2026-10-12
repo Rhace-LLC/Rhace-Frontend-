@@ -9,6 +9,8 @@ interface PaymentInfo {
   accountNumber: string;
   subaccountCode: string;
 
+  // REDUNDANT: stored vendor balance is display-only — payments settle via
+  // gateway split/subaccount, not this accumulated field.
   balance: number;
   pendingBalance: number;
   totalPaidOut: number;
@@ -126,6 +128,7 @@ const PaymentInformation = () => {
           </p>
 
           <h3 className="text-2xl font-bold mt-1">
+            {/* REDUNDANT: stored balance is display-only; gateway split/subaccount settles the money. */}
             ₦{Number(info.balance || 0).toLocaleString()}
           </h3>
 

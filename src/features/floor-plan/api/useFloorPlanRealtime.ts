@@ -2,12 +2,14 @@ import { useEffect, useRef } from 'react';
 import { io, type Socket } from 'socket.io-client';
 import { useQueryClient } from '@tanstack/react-query';
 import { envConfig } from '@/envloader';
+import { socketHandshakeAuth } from '@/lib/storage';
 import { floorPlanKeys } from './keys';
 
 /**
  * Socket.io client for the backend `/floor-plan` namespace (D5).
- * Authenticates with `{ vendorId, planId }`; the server joins `vendor:<id>`
- * and `plan:<id>` rooms.
+ * Authenticates with the verified access token (Phase 0 D1); the server
+ * derives `vendor:<id>` rooms from the JWT and validates `planId` against
+ * the caller's vendor. Legacy `vendorId`-in-auth joins are no longer honored.
  */
 
 export interface FloorPlanSocketMessage {
@@ -56,7 +58,7 @@ export function useFloorPlanRealtime(options: {
 
     const socket: Socket = io(`${socketBaseUrl()}/floor-plan`, {
       transports: ['websocket'],
-      auth: { vendorId, planId },
+      auth: socketHandshakeAuth(planId ? { planId } : undefined),
     });
 
     FLOOR_PLAN_EVENTS.forEach((event) => {

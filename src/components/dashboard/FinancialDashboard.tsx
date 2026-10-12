@@ -18,6 +18,8 @@ interface TrendData {
 }
 
 interface FinancialInfo {
+  // REDUNDANT: stored vendor balance is display-only — payments settle via
+  // gateway split/subaccount, not this accumulated field.
   balance?: number | string;
   lastPaymentDate?: string | null;
   accountName?: string;

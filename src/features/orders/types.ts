@@ -1,5 +1,5 @@
-export type OrderSource = 'reservation' | 'quick_order' | 'pos';
-export type OrderItemType = 'dish' | 'drink' | 'bottle_set';
+export type OrderSource = 'reservation' | 'quick_order' | 'pos' | 'in_stay';
+export type OrderItemType = 'dish' | 'drink' | 'bottle_set' | 'hotel_service';
 export type OrderStatus =
   | 'open'
   | 'awaiting_confirmation'
@@ -7,8 +7,20 @@ export type OrderStatus =
   | 'preparing'
   | 'ready'
   | 'served'
+  | 'out_for_delivery'
+  | 'delivered'
   | 'completed'
-  | 'cancelled';
+  | 'cancelled'
+  | 'rejected';
+
+/** Phase 5: where an in-stay order goes. */
+export interface OrderFulfillmentDto {
+  mode?: 'room' | 'location' | 'pickup';
+  unitId?: string | null;
+  zoneId?: string | null;
+  locationLabel?: string | null;
+  scheduledFor?: string | null;
+}
 
 export interface OrderLineAddonDto {
   addonId?: string;
@@ -60,7 +72,46 @@ export interface OrderDto {
   notes?: string;
   createdAt?: string;
   lines?: OrderLineDto[];
+  /** Phase 3: itemised fees + settlement. */
+  fees?: Array<{ label: string; amount: number; beneficiary?: 'hotel' | 'partner' }>;
+  settlementMethod?: 'folio' | 'online' | 'offline';
+  folioEntry?: string | null;
+  /** Phase 5: linked in-stay ordering (fulfilling vendor ≠ host hotel). */
+  stay?: string | null;
+  /** Phase 6: guest checkout group (one online payment covers the whole cart). */
+  cart?: string | null;
+  hostVendor?: string | null;
+  vendorLink?: string | null;
+  /** Outlet display name (hotel/guest read models only). */
+  outletName?: string | null;
+  fulfillment?: OrderFulfillmentDto | null;
+  acceptBy?: string | null;
+  acceptedAt?: string | null;
+  rejectedAt?: string | null;
+  rejectReason?: string | null;
+  dispatchedAt?: string | null;
+  deliveredAt?: string | null;
 }
+
+/** Phase 5: an in-stay order fulfilled by a linked outlet (not the hotel). */
+export function isLinkedStayOrder(order: Pick<OrderDto, 'hostVendor' | 'vendor'>): boolean {
+  return Boolean(order.hostVendor) && String(order.hostVendor) !== String(order.vendor);
+}
+
+/** Human status label shared by order screens. */
+export const ORDER_STATUS_TEXT: Record<OrderStatus, string> = {
+  open: 'Open',
+  awaiting_confirmation: 'Awaiting confirmation',
+  placed: 'Placed',
+  preparing: 'Preparing',
+  ready: 'Ready',
+  served: 'Served',
+  out_for_delivery: 'Out for delivery',
+  delivered: 'Delivered',
+  completed: 'Completed',
+  cancelled: 'Cancelled',
+  rejected: 'Rejected',
+};
 
 export interface CreateOrderLineInput {
   itemType: OrderItemType;
@@ -68,6 +119,8 @@ export interface CreateOrderLineInput {
   quantity?: number;
   notes?: string;
   addonIds?: string[];
+  /** Phase 2/3: scheduled start for hotel experience lines. */
+  serviceStart?: string;
 }
 
 export interface CreateOrderInput {

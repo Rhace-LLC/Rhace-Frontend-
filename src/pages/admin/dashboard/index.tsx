@@ -28,8 +28,8 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import DashboardPageHeader from '@/components/dashboard/DashboardPageHeader';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { StatCard } from '@/components/Statcard';
 import { useEffect, useState, useRef, useCallback } from 'react';
@@ -454,23 +454,22 @@ export default function Dashboard() {
   const trendUp = pctChange >= 0;
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold mb-1">Welcome Back, Admin!</h1>
-          <p className="text-sm text-muted-foreground">Here's what is happening today.</p>
-        </div>
-        <Button
-          onClick={refreshDashboard}
-          disabled={isRefreshing}
-          variant="outline"
-          size="sm"
-          className="flex items-center gap-2"
-        >
-          <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-          {isRefreshing ? 'Refreshing...' : 'Refresh'}
-        </Button>
-      </div>
+    <div className="space-y-5 p-4 md:p-6">
+      <DashboardPageHeader
+        title="Welcome Back, Admin!"
+        subtitle="Here's what is happening today."
+        actions={
+          <button
+            type="button"
+            onClick={refreshDashboard}
+            disabled={isRefreshing}
+            className="type-res-small inline-flex cursor-pointer items-center gap-2 rounded-full bg-res-card px-4 py-2.5 font-semibold text-res-ink shadow-res-low transition-all outline-none hover:text-res-brand hover:shadow-res-medium focus-visible:ring-2 focus-visible:ring-res-brand disabled:cursor-wait disabled:opacity-60"
+          >
+            <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+            {isRefreshing ? 'Refreshing...' : 'Refresh'}
+          </button>
+        }
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {
@@ -521,39 +520,38 @@ export default function Dashboard() {
 
         <AdminEarningTrends />
 
-      <Card className="bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-950/50 dark:to-indigo-900/50 border-0 shadow-xl">
+      <Card className="rounded-res-lg border border-res-line bg-res-card shadow-res-low">
         <CardHeader className="flex flex-row items-center justify-between pb-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
-              <Users className="w-5 h-5 text-white" />
+            <div className="w-10 h-10 bg-res-surface rounded-res-sm flex items-center justify-center">
+              <Users className="w-5 h-5 text-res-brand" />
             </div>
             <div>
-              <CardTitle className="text-xl font-bold text-gray-900 dark:text-white">
+              <CardTitle className="type-res-h2 text-res-ink">
                 Today's Reservations
               </CardTitle>
               <div className="flex items-center gap-2 mt-1">
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                <span className="text-xs text-green-600 dark:text-green-400 font-medium">
+                <div className="w-2 h-2 bg-res-accent rounded-full animate-pulse"></div>
+                <span className="type-res-small font-medium text-res-ink-muted">
                   Live Updates
                 </span>
               </div>
             </div>
           </div>
-          <Button
-            variant="link"
-            size="sm"
-            className="text-primary p-0 h-auto hover:text-primary/80 transition-colors"
+          <button
+            type="button"
+            className="type-res-small inline-flex cursor-pointer items-center gap-1 rounded-full bg-res-surface px-4 py-2 font-semibold text-res-ink transition-colors outline-none hover:text-res-brand focus-visible:ring-2 focus-visible:ring-res-brand"
             onClick={() => navigate('/dashboard/admin/reservations')}
           >
             View All <ExternalLink className="w-3 h-3 ml-1" />
-          </Button>
+          </button>
         </CardHeader>
         <CardContent className="px-6 pb-6">
           <div className="space-y-4">
             {todaysReservations.length === 0 ? (
               <div className="text-center py-8">
-                <Users className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-                <p className="text-sm text-gray-500 dark:text-gray-400">
+                <Users className="w-12 h-12 text-res-ink-muted mx-auto mb-3" />
+                <p className="type-res-small text-res-ink-muted">
                   No reservations for today
                 </p>
               </div>
@@ -561,14 +559,14 @@ export default function Dashboard() {
               todaysReservations.slice(0, 5).map((res, i) => (
                 <div
                   key={i}
-                  className="group bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-200 border border-gray-100 dark:border-gray-700"
+                  className="rounded-res-md border border-res-line bg-res-surface p-4 transition-colors"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
                       <div className="relative">
-                        <Avatar className="w-12 h-12 ring-2 ring-blue-100 dark:ring-blue-900">
+                        <Avatar className="w-12 h-12 ring-2 ring-res-line">
                           <AvatarImage src="" alt={res.name} className="" />
-                          <AvatarFallback className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold">
+                          <AvatarFallback className="bg-res-brand text-res-ink-inverted font-semibold">
                             {res.name
                               .split(' ')
                               .map((n) => n[0])
@@ -576,21 +574,21 @@ export default function Dashboard() {
                               .toUpperCase()}
                           </AvatarFallback>
                         </Avatar>
-                        <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white dark:border-gray-800"></div>
+                        <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-res-accent rounded-full border-2 border-res-card"></div>
                       </div>
                       <div>
-                        <p className="font-semibold text-gray-900 dark:text-white">{res.name}</p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">ID: {res.id}</p>
+                        <p className="font-semibold text-res-ink">{res.name}</p>
+                        <p className="type-res-small text-res-ink-muted">ID: {res.id}</p>
                       </div>
                     </div>
                     <div className="text-right hidden sm:block">
-                      <p className="text-sm font-medium text-gray-900 dark:text-white">
+                      <p className="type-res-small font-medium text-res-ink">
                         {res.date}
                       </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">{res.time}</p>
+                      <p className="type-res-small text-res-ink-muted">{res.time}</p>
                     </div>
                     <div className="hidden md:block">
-                      <p className="text-sm font-medium text-gray-900 dark:text-white">
+                      <p className="type-res-small font-medium text-res-ink">
                         {res.venue}
                       </p>
                     </div>
@@ -600,10 +598,10 @@ export default function Dashboard() {
                           ? 'default'
                           : 'secondary'
                       }
-                      className={`px-3 py-1 ${
+                      className={`rounded-full px-3 py-1 type-res-small font-semibold ${
                         res.status === 'Active' || res.status === 'Confirmed'
-                          ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-sm'
-                          : 'bg-gradient-to-r from-yellow-500 to-orange-600 text-white shadow-sm'
+                          ? 'bg-res-brand text-res-ink-inverted'
+                          : 'bg-res-surface text-res-ink-muted'
                       }`}
                     >
                       {res.status}
@@ -616,44 +614,43 @@ export default function Dashboard() {
         </CardContent>
       </Card>
 
-      <Card className="bg-gradient-to-br from-emerald-50 to-teal-100 dark:from-emerald-950/50 dark:to-teal-900/50 border-0 shadow-xl">
+      <Card className="rounded-res-lg border border-res-line bg-res-card shadow-res-low">
         <CardHeader className="flex flex-row items-center justify-between pb-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center">
-              <TrendingUp className="w-5 h-5 text-white" />
+            <div className="w-10 h-10 bg-res-surface rounded-res-sm flex items-center justify-center">
+              <TrendingUp className="w-5 h-5 text-res-brand" />
             </div>
             <div>
-              <CardTitle className="text-xl font-bold text-gray-900 dark:text-white">
+              <CardTitle className="type-res-h2 text-res-ink">
                 Top Performing Vendors
               </CardTitle>
               <div className="flex items-center gap-2 mt-1">
-                <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
-                <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">
+                <div className="w-2 h-2 bg-res-accent rounded-full animate-pulse"></div>
+                <span className="type-res-small font-medium text-res-ink-muted">
                   Real-time Performance
                 </span>
               </div>
             </div>
           </div>
           <div className="flex gap-2">
-            <span className="text-xs px-3 py-1 border rounded bg-white/80 dark:bg-gray-800/80 text-gray-700 dark:text-gray-300 shadow-sm">
+            <span className="type-res-small px-3 py-1 rounded-full bg-res-surface text-res-ink-muted font-medium">
               Monthly
             </span>
-            <Button
-              variant="link"
-              size="sm"
-              className="text-primary p-0 h-auto hover:text-primary/80 transition-colors"
+            <button
+              type="button"
+              className="type-res-small inline-flex cursor-pointer items-center gap-1 rounded-full bg-res-surface px-4 py-2 font-semibold text-res-ink transition-colors outline-none hover:text-res-brand focus-visible:ring-2 focus-visible:ring-res-brand"
               onClick={() => navigate('/dashboard/admin/vendors')}
             >
               View All <ExternalLink className="w-3 h-3 ml-1" />
-            </Button>
+            </button>
           </div>
         </CardHeader>
         <CardContent className="px-6 pb-6">
           <div className="space-y-4">
             {topVendors.length === 0 ? (
               <div className="text-center py-8">
-                <TrendingUp className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-                <p className="text-sm text-gray-500 dark:text-gray-400">
+                <TrendingUp className="w-12 h-12 text-res-ink-muted mx-auto mb-3" />
+                <p className="type-res-small text-res-ink-muted">
                   No vendor performance data available
                 </p>
               </div>
@@ -661,42 +658,42 @@ export default function Dashboard() {
               topVendors.slice(0, 5).map((vendor, i) => (
                 <div
                   key={i}
-                  className="group bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-200 border border-gray-100 dark:border-gray-700"
+                  className="rounded-res-md border border-res-line bg-res-surface p-4 transition-colors"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
                       <div className="relative">
-                        <div className="w-12 h-12 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-lg">
+                        <div className="w-12 h-12 bg-res-brand rounded-full flex items-center justify-center text-res-ink-inverted font-bold text-lg">
                           {(vendor.businessName || vendor.name || 'V')[0].toUpperCase()}
                         </div>
-                        <div className="absolute -top-1 -left-1 w-5 h-5 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center text-xs font-bold text-white shadow-sm">
+                        <div className="absolute -top-1 -left-1 w-5 h-5 bg-res-ink rounded-full flex items-center justify-center text-xs font-bold text-res-ink-inverted">
                           {i + 1}
                         </div>
                       </div>
                       <div>
-                        <p className="font-semibold text-gray-900 dark:text-white">
+                        <p className="font-semibold text-res-ink">
                           {vendor.businessName || vendor.name || 'Vendor'}
                         </p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                        <p className="type-res-small text-res-ink-muted">
                           {vendor.vendorType || vendor.type || 'Business'}
                         </p>
                       </div>
                     </div>
                     <div className="text-right hidden sm:block">
-                      <p className="text-sm font-medium text-gray-900 dark:text-white">
+                      <p className="type-res-small font-medium text-res-ink">
                         {vendor.totalReservations || vendor.bookings || '0'} Bookings
                       </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">Total Bookings</p>
+                      <p className="type-res-small text-res-ink-muted">Total Bookings</p>
                     </div>
                     <div className="hidden md:block">
-                      <p className="text-lg font-bold text-emerald-600 dark:text-emerald-400">
+                      <p className="text-lg font-bold text-res-brand">
                         ₦{Number(vendor.totalRevenue || vendor.revenue || 0).toLocaleString()}
                       </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">Revenue</p>
+                      <p className="type-res-small text-res-ink-muted">Revenue</p>
                     </div>
                     <Badge
                       variant="default"
-                      className="px-3 py-1 bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-sm"
+                      className="rounded-full px-3 py-1 type-res-small font-semibold bg-res-brand text-res-ink-inverted"
                     >
                       Active
                     </Badge>

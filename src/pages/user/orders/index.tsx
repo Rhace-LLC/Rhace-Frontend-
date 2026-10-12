@@ -35,8 +35,11 @@ const ORDER_STATUS_LABEL: Record<OrderStatus, string> = {
   preparing: 'Being prepared',
   ready: 'Ready',
   served: 'Served',
+  out_for_delivery: 'Out for delivery',
+  delivered: 'Delivered',
   completed: 'Completed',
   cancelled: 'Cancelled',
+  rejected: 'Rejected',
 };
 
 const ORDER_STATUS_STYLE: Record<OrderStatus, string> = {
@@ -46,8 +49,11 @@ const ORDER_STATUS_STYLE: Record<OrderStatus, string> = {
   preparing: 'bg-res-brand text-res-ink-inverted',
   ready: 'bg-amber-50 text-amber-700',
   served: 'bg-res-secondary text-res-brand',
+  out_for_delivery: 'bg-res-brand text-res-ink-inverted',
+  delivered: 'bg-res-secondary text-res-brand',
   completed: 'bg-res-surface text-res-ink-muted',
   cancelled: 'bg-res-surface text-res-ink-muted line-through',
+  rejected: 'bg-red-50 text-red-700',
 };
 
 function OrderStatusPill({ status }: { status: OrderStatus }) {
@@ -80,6 +86,7 @@ const ITEM_TYPE_LABEL: Record<OrderItemType, string> = {
   dish: 'Dish',
   drink: 'Drink',
   bottle_set: 'Bottle set',
+  hotel_service: 'Hotel service',
 };
 
 interface CatalogDetail {

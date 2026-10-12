@@ -21,7 +21,9 @@ import {
   Shield,
   PartyPopper,
   Crown,
+  Image as ImageIcon,
 } from 'lucide-react';
+import { GalleryEditor } from '@/pages/vendor/shared/components/GalleryEditor';
 import { useAuth } from '@/contexts/AuthContext';
 import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -78,8 +80,8 @@ const ClubSettings = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-purple-50/30">
-        <div className="max-w-5xl mx-auto px-4 py-8 md:px-6 lg:px-8">
+    <div className="min-h-screen">
+        <div className="px-4 py-8 md:px-6 lg:px-8">
           {/* Header Section */}
           <DashboardPageHeader
             title="Club Settings"
@@ -87,29 +89,46 @@ const ClubSettings = () => {
           />
 
           {/* Logo Section */}
-          <div className="mb-8 p-6 bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow duration-300">
+          <div className="mb-8 p-6 rounded-res-lg border border-res-line bg-res-card shadow-res-low">
             <div className="flex items-center gap-2 mb-4">
-              <Sparkles className="w-5 h-5 text-purple-600" />
-              <h3 className="text-sm font-semibold text-slate-700 uppercase tracking-wide">
+              <Sparkles className="w-5 h-5 text-res-brand" />
+              <h3 className="type-res-small font-semibold text-res-ink uppercase tracking-wide">
                 Brand Identity
               </h3>
             </div>
             <BusinessLogo value={formData.logo} onChange={(value) => updateField('logo', value)} />
           </div>
 
+          {/* Photo Gallery */}
+          <div className="rounded-res-lg border border-res-line bg-res-card shadow-res-low p-6 md:p-8">
+            <div className="flex items-center gap-2">
+              <span className="p-1.5 bg-res-surface rounded-res-sm">
+                <ImageIcon className="w-5 h-5 text-res-brand" />
+              </span>
+              <h2 className="type-res-h2 text-res-ink">Photo Gallery</h2>
+            </div>
+            <p className="type-res-small font-normal text-res-ink-muted mt-1 mb-4">
+              Photos customers see on your listing. Changes save with the page.
+            </p>
+            <GalleryEditor
+              value={formData.profileImages}
+              onChange={(urls) => updateField('profileImages', urls)}
+              hint="Showcase the room, the crowd and the nights that define you."
+            />
+          </div>
+
           <div className="grid gap-6">
             {/* Business Information Card */}
-            <Card className="group border-0 shadow-lg shadow-slate-200/50 rounded-2xl overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-purple-100/30">
-              <div className="absolute inset-0 bg-gradient-to-r from-purple-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+            <Card className="rounded-res-lg border border-res-line bg-res-card shadow-res-low overflow-hidden">
               <div className="p-6 md:p-8 space-y-6">
-                <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-                  <h2 className="text-xl font-semibold text-slate-800 flex items-center gap-2">
-                    <div className="p-1.5 bg-purple-100 rounded-lg">
-                      <Building2 className="w-5 h-5 text-purple-700" />
+                <div className="flex items-center justify-between border-b border-res-line pb-4">
+                  <h2 className="type-res-h2 text-res-ink flex items-center gap-2">
+                    <div className="p-1.5 bg-res-surface rounded-res-sm">
+                      <Building2 className="w-5 h-5 text-res-brand" />
                     </div>
                     Business Information
                   </h2>
-                  <div className="text-xs text-slate-400 font-mono">Club details</div>
+                  <div className="type-res-small text-res-ink-muted font-mono">Club details</div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -117,14 +136,14 @@ const ClubSettings = () => {
                     label="Club Name"
                     value={formData.businessName}
                     onChange={(e) => updateField('businessName', e.target.value)}
-                    className="focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all"
+                    className="focus:ring-2 focus:ring-res-brand focus:border-res-brand transition-all"
                   />
                   <Input
                     label="Phone Number"
                     icon={Phone}
                     value={formData.phone}
                     onChange={(e) => updateField('phone', e.target.value)}
-                    className="focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all"
+                    className="focus:ring-2 focus:ring-res-brand focus:border-res-brand transition-all"
                   />
                 </div>
 
@@ -134,7 +153,7 @@ const ClubSettings = () => {
                   placeholder="https://yourclub.com"
                   value={formData.website}
                   onChange={(e) => updateField('website', e.target.value)}
-                  className="focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all"
+                  className="focus:ring-2 focus:ring-res-brand focus:border-res-brand transition-all"
                 />
 
                 <div className="space-y-6">
@@ -143,7 +162,7 @@ const ClubSettings = () => {
                     placeholder="Describe your club's atmosphere, music genres, entertainment, and what makes the nightlife experience special..."
                     value={formData.businessDescription}
                     onChange={(e) => updateField('businessDescription', e.target.value)}
-                    className="focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all min-h-[100px]"
+                    className="focus:ring-2 focus:ring-res-brand focus:border-res-brand transition-all min-h-[100px]"
                   />
                   <Textarea
                     label="Address"
@@ -151,23 +170,23 @@ const ClubSettings = () => {
                     placeholder="Enter your club's complete address..."
                     value={formData.address}
                     onChange={(e) => updateField('address', e.target.value)}
-                    className="focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all"
+                    className="focus:ring-2 focus:ring-res-brand focus:border-res-brand transition-all"
                   />
                 </div>
               </div>
             </Card>
 
             {/* Operating Hours & Capacity Card */}
-            <Card className="group border-0 shadow-lg shadow-slate-200/50 rounded-2xl overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-purple-100/30">
+            <Card className="rounded-res-lg border border-res-line bg-res-card shadow-res-low overflow-hidden">
               <div className="p-6 md:p-8 space-y-6">
-                <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-                  <h2 className="text-xl font-semibold text-slate-800 flex items-center gap-2">
-                    <div className="p-1.5 bg-purple-100 rounded-lg">
-                      <Clock className="w-5 h-5 text-purple-700" />
+                <div className="flex items-center justify-between border-b border-res-line pb-4">
+                  <h2 className="type-res-h2 text-res-ink flex items-center gap-2">
+                    <div className="p-1.5 bg-res-surface rounded-res-sm">
+                      <Clock className="w-5 h-5 text-res-brand" />
                     </div>
                     Operating Hours & Capacity
                   </h2>
-                  <div className="text-xs text-slate-400 font-mono">Nightlife schedule</div>
+                  <div className="type-res-small text-res-ink-muted font-mono">Nightlife schedule</div>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <Input
@@ -175,14 +194,14 @@ const ClubSettings = () => {
                     label="Opening Time"
                     value={formData.openingTime}
                     onChange={(e) => updateField('openingTime', e.target.value)}
-                    className="focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all"
+                    className="focus:ring-2 focus:ring-res-brand focus:border-res-brand transition-all"
                   />
                   <Input
                     type="time"
                     label="Closing Time"
                     value={formData.closingTime}
                     onChange={(e) => updateField('closingTime', e.target.value)}
-                    className="focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all"
+                    className="focus:ring-2 focus:ring-res-brand focus:border-res-brand transition-all"
                   />
                   <Input
                     type="number"
@@ -190,11 +209,11 @@ const ClubSettings = () => {
                     icon={Users}
                     value={formData.slots}
                     onChange={(e) => updateField('slots', Number(e.target.value))}
-                    className="focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all"
+                    className="focus:ring-2 focus:ring-res-brand focus:border-res-brand transition-all"
                   />
                 </div>
-                <div className="mt-2 p-3 bg-amber-50 rounded-lg border border-amber-100">
-                  <p className="text-xs text-amber-700 flex items-center gap-1">
+                <div className="mt-2 p-3 bg-res-surface rounded-res-sm border border-res-line">
+                  <p className="type-res-small text-res-ink-muted flex items-center gap-1">
                     <PartyPopper className="w-3 h-3" />
                     Tip: Set your available slots based on venue capacity for optimal crowd
                     management
@@ -204,41 +223,41 @@ const ClubSettings = () => {
             </Card>
 
             {/* Club Details Card */}
-            <Card className="group border-0 shadow-lg shadow-slate-200/50 rounded-2xl overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-purple-100/30">
+            <Card className="rounded-res-lg border border-res-line bg-res-card shadow-res-low overflow-hidden">
               <div className="p-6 md:p-8 space-y-6">
-                <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-                  <h2 className="text-xl font-semibold text-slate-800 flex items-center gap-2">
-                    <div className="p-1.5 bg-purple-100 rounded-lg">
-                      <Tag className="w-5 h-5 text-purple-700" />
+                <div className="flex items-center justify-between border-b border-res-line pb-4">
+                  <h2 className="type-res-h2 text-res-ink flex items-center gap-2">
+                    <div className="p-1.5 bg-res-surface rounded-res-sm">
+                      <Tag className="w-5 h-5 text-res-brand" />
                     </div>
                     Club Details
                   </h2>
-                  <div className="text-xs text-slate-400 font-mono">Guest policies</div>
+                  <div className="type-res-small text-res-ink-muted font-mono">Guest policies</div>
                 </div>
                 <div className="space-y-6">
-                  <div className="bg-gradient-to-r from-purple-50/50 to-transparent p-4 rounded-xl">
+                  <div className="bg-res-surface p-4 rounded-res-sm border border-res-line">
                     <TagInputField
                       label="Categories"
                       placeholder="Add categories (e.g., Nightclub, Lounge, Rooftop Bar)"
                       tags={formData.categories}
                       onAdd={(value) => addTag('categories', value)}
                       onRemove={(value) => removeTag('categories', value)}
-                      className="focus:ring-2 focus:ring-purple-500"
+                      className="focus:ring-2 focus:ring-res-brand"
                     />
                   </div>
-                  <div className="bg-gradient-to-r from-purple-50/50 to-transparent p-4 rounded-xl">
+                  <div className="bg-res-surface p-4 rounded-res-sm border border-res-line">
                     <TagInputField
                       label="Dress Code"
                       placeholder="Add dress code (e.g., Smart Casual, Elegant, Party Wear)"
                       tags={formData.dressCode}
                       onAdd={(value) => addTag('dressCode', value)}
                       onRemove={(value) => removeTag('dressCode', value)}
-                      className="focus:ring-2 focus:ring-purple-500"
+                      className="focus:ring-2 focus:ring-res-brand"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2 flex items-center gap-2">
-                      <Shield className="w-4 h-4 text-purple-600" />
+                    <label className="block type-res-small font-medium text-res-ink mb-2 flex items-center gap-2">
+                      <Shield className="w-4 h-4 text-res-brand" />
                       Age Limit
                     </label>
                     <Select
@@ -249,7 +268,7 @@ const ClubSettings = () => {
                         { value: '18', label: '18 years and above' },
                         { value: '21', label: '21 years and above' },
                       ]}
-                      className="focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all"
+                      className="focus:ring-2 focus:ring-res-brand focus:border-res-brand transition-all"
                     />
                   </div>
                 </div>
@@ -257,16 +276,16 @@ const ClubSettings = () => {
             </Card>
 
             {/* Pricing & Offers Card */}
-            <Card className="group border-0 shadow-lg shadow-slate-200/50 rounded-2xl overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-purple-100/30">
+            <Card className="rounded-res-lg border border-res-line bg-res-card shadow-res-low overflow-hidden">
               <div className="p-6 md:p-8 space-y-6">
-                <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-                  <h2 className="text-xl font-semibold text-slate-800 flex items-center gap-2">
-                    <div className="p-1.5 bg-purple-100 rounded-lg">
-                      <DollarSign className="w-5 h-5 text-purple-700" />
+                <div className="flex items-center justify-between border-b border-res-line pb-4">
+                  <h2 className="type-res-h2 text-res-ink flex items-center gap-2">
+                    <div className="p-1.5 bg-res-surface rounded-res-sm">
+                      <DollarSign className="w-5 h-5 text-res-brand" />
                     </div>
                     Pricing & Offers
                   </h2>
-                  <div className="text-xs text-slate-400 font-mono">Entry & promotions</div>
+                  <div className="type-res-small text-res-ink-muted font-mono">Entry & promotions</div>
                 </div>
                 <div className="space-y-6">
                   <Input
@@ -275,32 +294,34 @@ const ClubSettings = () => {
                     icon={Crown}
                     value={formData.priceRange}
                     onChange={(e) => updateField('priceRange', Number(e.target.value))}
-                    className="focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all"
+                    className="focus:ring-2 focus:ring-res-brand focus:border-res-brand transition-all"
                   />
                   <Input
                     label="Special Offers"
                     placeholder="e.g., Ladies night free entry, VIP packages, Bottle service deals"
                     value={formData.offer}
                     onChange={(e) => updateField('offer', e.target.value)}
-                    className="focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all"
+                    className="focus:ring-2 focus:ring-res-brand focus:border-res-brand transition-all"
                   />
                 </div>
               </div>
             </Card>
 
             {/* Action Buttons */}
-            <div className="flex justify-end gap-4 mt-6 pb-8">
+            <div className="flex justify-end gap-3 mt-6 pb-8">
               <button
+                type="button"
                 onClick={handleReset}
-                className="group px-6 py-2.5 rounded-xl border-2 border-slate-200 text-slate-600 font-medium bg-white hover:bg-slate-50 hover:border-slate-300 transition-all duration-200 flex items-center gap-2 shadow-sm"
+                className="type-res-small inline-flex cursor-pointer items-center gap-2 rounded-full bg-res-card px-6 py-2.5 font-semibold text-res-ink shadow-res-low transition-all outline-none hover:text-res-brand hover:shadow-res-medium focus-visible:ring-2 focus-visible:ring-res-brand"
               >
-                <RotateCcw className="w-4 h-4 transition-transform group-hover:rotate-[-180deg] duration-300" />
+                <RotateCcw className="w-4 h-4" />
                 Reset
               </button>
               <button
+                type="button"
                 disabled={isLoading}
                 onClick={handleSubmit}
-                className="group px-6 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-medium shadow-md shadow-purple-500/25 hover:shadow-lg hover:shadow-purple-500/30 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+                className="type-res-small inline-flex cursor-pointer items-center gap-2 rounded-full bg-res-brand px-6 py-2.5 font-semibold text-res-ink-inverted shadow-res-low transition-all outline-none hover:shadow-res-medium focus-visible:ring-2 focus-visible:ring-res-brand disabled:cursor-wait disabled:opacity-60"
               >
                 {isLoading ? (
                   <>

@@ -11,14 +11,18 @@ import {
   StickyNote,
 } from 'lucide-react';
 import { ordersApi } from '@/features/orders/api/service';
+import { useOrderRealtime } from '@/features/orders/realtime';
+import { InRoomDiningLane } from '@/features/orders/components/InRoomDiningLane';
 import type { OrderDto, OrderItemType, OrderLineDto } from '@/features/orders/types';
 
+/** Fallback refresh while the order socket is disconnected. */
 const POLL_MS = 20_000;
 
 const SOURCE_LABEL: Record<string, string> = {
   reservation: 'Pre-order',
   quick_order: 'Table order',
   pos: 'Counter order',
+  in_stay: 'Room service',
 };
 
 const ORDER_STATUS_STYLE: Record<string, string> = {
@@ -52,7 +56,15 @@ const ageChipClass = (minutes: number) =>
 
 /** Unconfirmed table orders stay invisible until the waiter confirms them. */
 const isOpenTicket = (status: string) =>
-  !['awaiting_confirmation', 'served', 'completed', 'cancelled'].includes(status);
+  ![
+    'awaiting_confirmation',
+    'served',
+    'out_for_delivery',
+    'delivered',
+    'completed',
+    'cancelled',
+    'rejected',
+  ].includes(status);
 
 const lineState = (line: OrderLineDto) => line.prepStatus ?? 'queued';
 
@@ -97,9 +109,29 @@ export default function TicketBoard({ title, itemTypes, addOnAlert = false }: Ti
 
   useEffect(() => {
     load();
+  }, [load]);
+
+  // Phase 5: tickets arrive over the order socket; bursts of events are
+  // coalesced into one silent reload.
+  const reloadTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const scheduleReload = useCallback(() => {
+    if (reloadTimer.current) clearTimeout(reloadTimer.current);
+    reloadTimer.current = setTimeout(() => load(true), 250);
+  }, [load]);
+  useEffect(
+    () => () => {
+      if (reloadTimer.current) clearTimeout(reloadTimer.current);
+    },
+    [],
+  );
+  const { connected } = useOrderRealtime(true, scheduleReload);
+
+  // Polling is only the fallback while the socket is down.
+  useEffect(() => {
+    if (connected) return;
     const timer = setInterval(() => load(true), POLL_MS);
     return () => clearInterval(timer);
-  }, [load]);
+  }, [connected, load]);
 
   const kinds = useMemo(() => itemTypesKey.split(',') as OrderItemType[], [itemTypesKey]);
 
@@ -112,7 +144,9 @@ export default function TicketBoard({ title, itemTypes, addOnAlert = false }: Ti
   const tickets = useMemo(
     () =>
       orders
+        // Online in-stay orders stay `open` until paid; they are not tickets yet.
         .filter((order) => isOpenTicket(order.status))
+        .filter((order) => !(order.source === 'in_stay' && order.status === 'open'))
         .map((order) => ({ order, lines: stationLines(order) }))
         .filter(
           ({ lines }) => lines.length > 0 && lines.some((line) => lineState(line) !== 'ready'),
@@ -216,7 +250,7 @@ export default function TicketBoard({ title, itemTypes, addOnAlert = false }: Ti
           </div>
           <p className="type-res-body mt-1 font-normal text-res-ink-muted">
             {tickets.length > 0
-              ? `Oldest ticket waiting ${ageMinutes(tickets[0].order.createdAt)} min · auto-refreshes`
+              ? `Oldest ticket waiting ${ageMinutes(tickets[0].order.createdAt)} min · ${connected ? 'live' : 'auto-refreshes'}`
               : 'New tickets appear here automatically.'}
           </p>
         </div>
@@ -241,6 +275,11 @@ export default function TicketBoard({ title, itemTypes, addOnAlert = false }: Ti
             {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
           </button>
         </div>
+      </div>
+
+      <div className="mt-4">
+        {/* Room-service menus are dishes, so the kitchen station owns the lane. */}
+        {kinds.includes('dish') && <InRoomDiningLane orders={orders} onChanged={replaceOrder} />}
       </div>
 
       <div className="mt-4">

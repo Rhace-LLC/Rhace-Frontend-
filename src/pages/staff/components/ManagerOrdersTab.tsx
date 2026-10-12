@@ -4,6 +4,8 @@ import { GlassWater, Package, Receipt, RefreshCw, UtensilsCrossed } from 'lucide
 import { ordersApi } from '@/features/orders/api/service';
 import { money } from '@/features/orders/money';
 import { useVendorBottleSets, useVendorDishes, useVendorDrinks } from '@/features/orders';
+import { useOrderRealtime } from '@/features/orders/realtime';
+import { InRoomDiningLane } from '@/features/orders/components/InRoomDiningLane';
 import { floorPlanService } from '@/services/floorPlan.service';
 import { staffService, type StaffMember } from '@/services/staff.service';
 import { PaymentStatusBadge } from '@/features/reservations';
@@ -14,6 +16,7 @@ const SOURCE_LABEL: Record<string, string> = {
   reservation: 'Pre-order',
   quick_order: 'Table order',
   pos: 'Counter order',
+  in_stay: 'Room service',
 };
 
 const ORDER_STATUS_LABEL: Record<OrderStatus, string> = {
@@ -23,8 +26,11 @@ const ORDER_STATUS_LABEL: Record<OrderStatus, string> = {
   preparing: 'Preparing',
   ready: 'Ready',
   served: 'Served',
+  out_for_delivery: 'Out for delivery',
+  delivered: 'Delivered',
   completed: 'Completed',
   cancelled: 'Cancelled',
+  rejected: 'Rejected',
 };
 
 const ORDER_STATUS_STYLE: Record<OrderStatus, string> = {
@@ -34,8 +40,11 @@ const ORDER_STATUS_STYLE: Record<OrderStatus, string> = {
   preparing: 'bg-res-brand text-res-ink-inverted',
   ready: 'bg-amber-50 text-amber-700',
   served: 'bg-res-secondary text-res-brand',
+  out_for_delivery: 'bg-res-brand text-res-ink-inverted',
+  delivered: 'bg-res-secondary text-res-brand',
   completed: 'bg-res-surface text-res-ink-muted',
   cancelled: 'bg-res-surface text-res-ink-muted line-through',
+  rejected: 'bg-red-50 text-red-700',
 };
 
 const STATUS_OPTIONS = [
@@ -46,8 +55,11 @@ const STATUS_OPTIONS = [
   { value: 'preparing', label: 'Preparing' },
   { value: 'ready', label: 'Ready' },
   { value: 'served', label: 'Served' },
+  { value: 'out_for_delivery', label: 'Out for delivery' },
+  { value: 'delivered', label: 'Delivered' },
   { value: 'completed', label: 'Completed' },
   { value: 'cancelled', label: 'Cancelled' },
+  { value: 'rejected', label: 'Rejected' },
 ];
 
 const SOURCE_OPTIONS = [
@@ -55,6 +67,7 @@ const SOURCE_OPTIONS = [
   { value: 'reservation', label: 'Pre-order' },
   { value: 'quick_order', label: 'Table order' },
   { value: 'pos', label: 'Counter order' },
+  { value: 'in_stay', label: 'Room service' },
 ];
 
 const PAGE_SIZE = 20;
@@ -102,6 +115,7 @@ const ITEM_TYPE_LABEL: Record<OrderItemType, string> = {
   dish: 'Dish',
   drink: 'Drink',
   bottle_set: 'Bottle set',
+  hotel_service: 'Hotel service',
 };
 
 interface CatalogDetail {
@@ -163,6 +177,30 @@ export function ManagerOrdersTab() {
   const [selected, setSelected] = useState<OrderDto | null>(null);
   const [unitLabels, setUnitLabels] = useState<Record<string, string>>({});
   const [staffMap, setStaffMap] = useState<Record<string, StaffMember>>({});
+  // Phase 5: room-service orders from linked hotels, independent of filters.
+  const [laneOrders, setLaneOrders] = useState<OrderDto[]>([]);
+  const [liveTick, setLiveTick] = useState(0);
+  useOrderRealtime(true, () => setLiveTick((t) => t + 1));
+  useEffect(() => {
+    if (liveTick === 0) return;
+    const timer = setTimeout(() => setRefreshKey((k) => k + 1), 300);
+    return () => clearTimeout(timer);
+  }, [liveTick]);
+
+  useEffect(() => {
+    let cancelled = false;
+    ordersApi
+      .list({ source: 'in_stay', limit: 60, withLines: true })
+      .then((res) => {
+        if (!cancelled) setLaneOrders(res.items ?? []);
+      })
+      .catch(() => {
+        // The lane is additive; the main list still loads.
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [refreshKey]);
 
   // Waiter names live on the staff roster: map both `_id` and `id` since
   // orders may reference either form in `staffId`.
@@ -298,7 +336,7 @@ export function ManagerOrdersTab() {
     const outstanding = orders.reduce((sum, o) => sum + (o.balance ?? 0), 0);
     const today = orders.filter((o) => isToday(o.createdAt)).length;
     const active = orders.filter((o) =>
-      ['open', 'awaiting_confirmation', 'placed', 'preparing', 'ready', 'served'].includes(
+      ['open', 'awaiting_confirmation', 'placed', 'preparing', 'ready', 'served', 'out_for_delivery'].includes(
         o.status,
       ),
     ).length;
@@ -315,6 +353,13 @@ export function ManagerOrdersTab() {
 
   return (
     <div className="space-y-4">
+      <InRoomDiningLane
+        orders={laneOrders}
+        onChanged={(updated) => {
+          setLaneOrders((prev) => prev.map((o) => (o._id === updated._id ? updated : o)));
+          setRefreshKey((k) => k + 1);
+        }}
+      />
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {stats.map((card) => (
           <div

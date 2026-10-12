@@ -41,6 +41,9 @@ import AcceptInvitePage from '@/pages/vendor-staff/accept-invite';
 
 import PaystackCallback from '@/components/PaystackCallback';
 import QrRedirectPage from '@/pages/public/qr-redirect';
+import StayGate from '@/pages/public/stay/StayGate';
+import StayPaymentComplete from '@/pages/public/stay/StayPaymentComplete';
+import StayResume from '@/pages/public/stay/StayResume';
 
 export const publicRoutes: RouteObject[] = [
   // Home / Info Pages
@@ -115,9 +118,18 @@ export const publicRoutes: RouteObject[] = [
   { path: '/hotels/:id/reserve/:blueprintId', element: <ReserveBlueprintPage /> },
   { path: '/hotels/:id', element: <HotelsPage /> },
 
-  // Paystack Callback
+  // Payment provider return (Paystack or Monnify). The old path stays for
+  // payments already in flight; new code can use /payment/callback.
   { path: '/paystack/callback', element: <PaystackCallback /> },
+  { path: '/payment/callback', element: <PaystackCallback /> },
   { path: '/q/:token', element: <QrRedirectPage /> },
+
+  // Phase 1 guest stay app (own token storage; never AuthContext).
+  // Phase 8: installed-app start page (more specific than /stay/:token).
+  { path: '/stay/resume', element: <StayResume /> },
+  { path: '/stay/:token', element: <StayGate /> },
+  // Phase 6: return page for desk-sent room-bill payment links.
+  { path: '/stay-payment/complete', element: <StayPaymentComplete /> },
 
   // Staff invitation onboarding — must stay public: the invitee has no session yet.
   { path: '/vendor-staff/accept-invite', element: <AcceptInvitePage /> },

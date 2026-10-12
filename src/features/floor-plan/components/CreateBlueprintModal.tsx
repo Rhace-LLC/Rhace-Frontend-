@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { ChevronLeft, ChevronRight, Upload } from 'lucide-react';
 import { Modal } from '@/components/others/RhaceModal';
 import { inventoryBlueprintService } from '@/services/inventoryBlueprint.service';
+import { paymentService } from '@/services/payment.service';
 import { uploadImageToCloudinary } from '@/lib/cloudinary';
 import { toDomainBlueprint } from '../api/adapter';
 import type { BookingPolicy, EntityShape, InventoryBlueprint, Vertical } from '../domain/types';
@@ -184,6 +185,10 @@ export function CreateBlueprintModal({
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  // Listing currency (default NGN). Foreign currencies need Stripe onboarding (D3).
+  const [currency, setCurrency] = useState('NGN');
+  const [stripeReady, setStripeReady] = useState(false);
+  const [connectingStripe, setConnectingStripe] = useState(false);
   const kind = CONFIG_LABEL[vertical];
 
   useEffect(() => {
@@ -200,6 +205,12 @@ export function CreateBlueprintModal({
     setSelectedPolicies((initial?.bookingPolicies ?? []).map((p) => p.label));
     setImages((initial?.images ?? []).join('\n'));
     setUploadError(null);
+    setCurrency(initial?.currency ?? 'NGN');
+    // Stripe readiness gates foreign-currency listings; the server re-checks on save.
+    paymentService
+      .getPaymentInfo()
+      .then((info) => setStripeReady(Boolean(info?.stripe?.ready)))
+      .catch(() => setStripeReady(false));
   }, [isOpen, initial]);
 
   const toggleAmenity = (label: string) => {
@@ -264,7 +275,7 @@ export function CreateBlueprintModal({
         // Rooms are priced; tables are not (they only carry a minimum deposit).
         basePrice: vertical === 'hotel' ? Number(basePrice) || 0 : 0,
         minimumDeposit: Number(minimumDeposit) || 0,
-        currency: 'NGN',
+        currency,
         capacity: Number(capacity) || 1,
         maxCapacity: Number(maxCapacity) || Number(capacity) || 1,
         canvasShape: DEFAULT_SHAPE[vertical],
@@ -281,6 +292,20 @@ export function CreateBlueprintModal({
       else onClose();
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleConnectStripe = async () => {
+    setConnectingStripe(true);
+    try {
+      const res = await paymentService.connectStripe();
+      if (res?.alreadyReady) {
+        setStripeReady(true);
+        return;
+      }
+      if (res?.onboardingUrl) window.open(res.onboardingUrl, '_blank', 'noopener');
+    } finally {
+      setConnectingStripe(false);
     }
   };
 
@@ -429,6 +454,46 @@ export function CreateBlueprintModal({
               </span>
             </div>
           )}
+
+          <div>
+            <label className={labelClass} htmlFor="bp-currency">
+              Listing currency
+            </label>
+            <select
+              id="bp-currency"
+              value={currency}
+              onChange={(e) => setCurrency(e.target.value)}
+              className={inputClass}
+            >
+              <option value="NGN">NGN — Naira (bank transfer / card)</option>
+              {['USD', 'EUR', 'GBP'].map((code) => (
+                <option key={code} value={code} disabled={!stripeReady}>
+                  {code}
+                  {stripeReady ? ' — card via Stripe' : ' — needs Stripe onboarding'}
+                </option>
+              ))}
+            </select>
+            {currency !== 'NGN' ? (
+              <span className="type-res-small mt-1 block font-normal text-res-ink-muted">
+                Guests pay in {currency} by card. Your payout converts to NGN inside
+                Stripe — the conversion rate on payout day applies.
+              </span>
+            ) : (
+              <span className="type-res-small mt-1 block font-normal text-res-ink-muted">
+                Naira listings settle through your bank sub-account.
+              </span>
+            )}
+            {!stripeReady && (
+              <button
+                type="button"
+                disabled={connectingStripe}
+                onClick={handleConnectStripe}
+                className="type-res-small mt-2 cursor-pointer font-semibold text-res-brand underline underline-offset-2 disabled:cursor-wait disabled:opacity-60"
+              >
+                {connectingStripe ? 'Opening Stripe…' : 'Connect with Stripe to list in USD, EUR or GBP'}
+              </button>
+            )}
+          </div>
 
           <div>
             <label className={labelClass} htmlFor="bp-description">

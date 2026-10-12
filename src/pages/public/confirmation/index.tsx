@@ -8,6 +8,7 @@ import { paymentService } from '@/services/payment.service';
 import { unitReservationService } from '@/services/unitReservation.service';
 import { useOrderByReservation } from '@/features/orders';
 import type { UnitReservationDto } from '@/types';
+import { getReturnedReference } from '@/lib/paymentReturn';
 
 const PAYMENT_LABEL: Record<string, string> = {
   paid: 'Paid',
@@ -38,7 +39,7 @@ const ConfirmationPage = () => {
   const orderQuery = useOrderByReservation(id);
 
   useEffect(() => {
-    const reference = searchParams.get('reference') || searchParams.get('trxref');
+    const reference = getReturnedReference(searchParams);
     if (!reference) return;
 
     let active = true;

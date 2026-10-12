@@ -12,6 +12,8 @@ import {
 
 import { Button } from '@/components/ui/button';
 import { formatDate } from '@/utils/formatDate';
+import BillingModelBadge from '@/components/billing/BillingModelBadge';
+import { paymentBillingModel } from '@/components/billing/billingModel';
 
 interface PaymentDetails {
   _id?: string;
@@ -145,7 +147,15 @@ const PaymentDetailsDialog = ({
           {/* Revenue Breakdown */}
 
           <div>
-            <h3 className="font-semibold text-base mb-4">Revenue Breakdown</h3>
+            <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
+              <h3 className="font-semibold text-base">Revenue Breakdown</h3>
+              <BillingModelBadge payment={payment} />
+            </div>
+            {paymentBillingModel(payment) === 'subscription' && (
+              <p className="text-xs text-muted-foreground -mt-2 mb-4">
+                Taken under your subscription: no platform share, and the processing fee is deducted from your share.
+              </p>
+            )}
 
             <div className="grid md:grid-cols-2 gap-4">
               <div className="border rounded-xl p-4">

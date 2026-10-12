@@ -9,6 +9,7 @@ import {
 
 import { Button } from '@/components/ui/button';
 import { toast } from 'react-toastify';
+import BillingModelBadge from '@/components/billing/BillingModelBadge';
 
 interface AdminPayment {
   _id?: string;
@@ -134,6 +135,16 @@ const AdminPaymentDetailsDialog = ({
             </label>
 
             <p>{money(payment.platformShare)}</p>
+          </div>
+
+          <div>
+            <label className="text-sm text-muted-foreground">
+              Revenue model
+            </label>
+
+            <p className="mt-1">
+              <BillingModelBadge payment={payment} />
+            </p>
           </div>
 
           <div>

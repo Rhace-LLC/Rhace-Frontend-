@@ -47,6 +47,7 @@ import {
 } from '@/components/ui/table';
 
 import PaymentDetailsDialog from './PaymentDetailDialog';
+import BillingModelBadge from '@/components/billing/BillingModelBadge';
 
 interface Payment {
   _id: string;
@@ -174,9 +175,10 @@ const PaymentTransactionHistory = () => {
       accessorKey: 'amountPaid',
       header: 'Amount',
       cell: ({ row }) => (
-        <span>
-          ₦{(row.original.amountPaid || 0).toLocaleString()}
-        </span>
+        <div className="flex flex-col items-start gap-1">
+          <span>₦{(row.original.amountPaid || 0).toLocaleString()}</span>
+          <BillingModelBadge payment={row.original} />
+        </div>
       ),
     },
 

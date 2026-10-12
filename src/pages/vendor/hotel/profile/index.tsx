@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
-import axios from 'axios';
 import { authService } from '@/services/auth.service';
 import type { RootState, AppDispatch } from '@/redux/store';
 
 import { BusinessLogo } from '@/pages/vendor/shared/components/BusinessInfo';
+import { GalleryEditor } from '@/pages/vendor/shared/components/GalleryEditor';
 import DashboardPageHeader from '@/components/dashboard/DashboardPageHeader';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -16,8 +16,6 @@ import {
   RotateCcw,
   Sparkles,
   Image,
-  Trash2,
-  Upload,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -25,45 +23,10 @@ const HotelProfile = () => {
   const { vendor, setVendor } = useAuth();
   const [formData, setFormData] = useState<any>(vendor);
   const [isLoading, setIsLoading] = useState(false);
-  const [uploadingIndex, setUploadingIndex] = useState(null);
   const dispatch = useDispatch<AppDispatch>();
-
-  const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
-  const UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
 
   const updateField = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
-  };
-
-  const handleImageUpload = async (files) => {
-    const file = files[0];
-    if (!file) return;
-
-    setUploadingIndex('new');
-    try {
-      const form = new FormData();
-      form.append('file', file);
-      form.append('upload_preset', UPLOAD_PRESET);
-      const response = await axios.post(
-        `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
-        form
-      );
-      const imageUrl = response.data.secure_url;
-      const currentImages = formData.profileImages || [];
-      updateField('profileImages', [...currentImages, imageUrl]);
-      toast.success('Image uploaded successfully');
-    } catch (error) {
-      console.error('Upload failed:', error);
-      toast.error('Failed to upload image');
-    } finally {
-      setUploadingIndex(null);
-    }
-  };
-
-  const removeImage = (index) => {
-    const currentImages = formData.profileImages || [];
-    const updated = currentImages.filter((_, i) => i !== index);
-    updateField('profileImages', updated);
   };
 
   const handleSubmit = async () => {
@@ -91,8 +54,8 @@ const HotelProfile = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/30">
-        <div className="max-w-5xl mx-auto px-4 py-8 md:px-6 lg:px-8">
+    <div className="min-h-screen">
+        <div className="px-4 py-8 md:px-6 lg:px-8">
           {/* Header Section */}
           <DashboardPageHeader
             title="Hotel Profile"
@@ -100,10 +63,10 @@ const HotelProfile = () => {
           />
 
           {/* Logo Section */}
-          <div className="mb-8 p-6 bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow duration-300">
+          <div className="mt-6 mb-6 rounded-res-lg border border-res-line bg-res-card shadow-res-low p-6">
             <div className="flex items-center gap-2 mb-4">
-              <Sparkles className="w-5 h-5 text-blue-600" />
-              <h3 className="text-sm font-semibold text-slate-700 uppercase tracking-wide">
+              <Sparkles className="w-5 h-5 text-res-brand" />
+              <h3 className="type-res-small font-semibold text-res-ink uppercase tracking-wide">
                 Brand Identity
               </h3>
             </div>
@@ -112,75 +75,37 @@ const HotelProfile = () => {
 
           <div className="grid gap-6">
             {/* Profile Images / Gallery Card */}
-            <Card className="group border-0 shadow-lg shadow-slate-200/50 rounded-2xl overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-blue-100/30">
+            <Card className="rounded-res-lg border border-res-line bg-res-card shadow-res-low overflow-hidden">
               <div className="p-6 md:p-8 space-y-6">
-                <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-                  <h2 className="text-xl font-semibold text-slate-800 flex items-center gap-2">
-                    <div className="p-1.5 bg-blue-100 rounded-lg">
-                      <Image className="w-5 h-5 text-blue-700" />
-                    </div>
+                <div className="flex items-center justify-between border-b border-res-line pb-4">
+                  <h2 className="type-res-h2 text-res-ink flex items-center gap-2">
+                    <span className="p-1.5 bg-res-surface rounded-res-sm">
+                      <Image className="w-5 h-5 text-res-brand" />
+                    </span>
                     Gallery Images
                   </h2>
-                  <div className="text-xs text-slate-400 font-mono">Customer-facing photos</div>
+                  <div className="type-res-small text-res-ink-muted font-mono">Customer-facing photos</div>
                 </div>
 
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                  {(formData.profileImages || []).map((url, index) => (
-                    <div
-                      key={index}
-                      className="relative group/image aspect-[4/3] rounded-xl overflow-hidden border border-slate-200 bg-slate-50"
-                    >
-                      <img
-                        src={url}
-                        alt={`Gallery ${index + 1}`}
-                        className="w-full h-full object-cover"
-                      />
-                      <button
-                        onClick={() => removeImage(index)}
-                        className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-lg opacity-0 group-hover/image:opacity-100 transition-opacity duration-200 hover:bg-red-600"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  ))}
-
-                  {/* Upload new image */}
-                  <label className="aspect-[4/3] rounded-xl border-2 border-dashed border-slate-300 bg-slate-50/50 flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-blue-400 hover:bg-blue-50/30 transition-all duration-200">
-                    {uploadingIndex === 'new' ? (
-                      <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
-                    ) : (
-                      <>
-                        <Upload className="w-6 h-6 text-slate-400" />
-                        <span className="text-xs text-slate-500 font-medium">Add Photo</span>
-                      </>
-                    )}
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      disabled={uploadingIndex !== null}
-                      onChange={(e) => e.target.files && handleImageUpload(e.target.files)}
-                    />
-                  </label>
-                </div>
-                <p className="text-xs text-slate-400">
-                  Upload high-quality photos of your hotel to showcase to customers. Recommended:
-                  1200×800px.
-                </p>
+                <GalleryEditor
+                  value={formData.profileImages}
+                  onChange={(urls) => updateField('profileImages', urls)}
+                  hint="Upload high-quality photos of your hotel to showcase to customers. Recommended: 1200×800px."
+                />
               </div>
             </Card>
 
             {/* Business Information Card */}
-            <Card className="group border-0 shadow-lg shadow-slate-200/50 rounded-2xl overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-blue-100/30">
+            <Card className="rounded-res-lg border border-res-line bg-res-card shadow-res-low overflow-hidden">
               <div className="p-6 md:p-8 space-y-6">
-                <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-                  <h2 className="text-xl font-semibold text-slate-800 flex items-center gap-2">
-                    <div className="p-1.5 bg-blue-100 rounded-lg">
-                      <Building2 className="w-5 h-5 text-blue-700" />
-                    </div>
+                <div className="flex items-center justify-between border-b border-res-line pb-4">
+                  <h2 className="type-res-h2 text-res-ink flex items-center gap-2">
+                    <span className="p-1.5 bg-res-surface rounded-res-sm">
+                      <Building2 className="w-5 h-5 text-res-brand" />
+                    </span>
                     Public Information
                   </h2>
-                  <div className="text-xs text-slate-400 font-mono">Shown on your listing</div>
+                  <div className="type-res-small text-res-ink-muted font-mono">Shown on your listing</div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -188,13 +113,13 @@ const HotelProfile = () => {
                     placeholder="Hotel Name"
                     value={formData.businessName}
                     onChange={(e) => updateField('businessName', e.target.value)}
-                    className="focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                    className="focus:ring-2 focus:ring-res-brand focus:border-res-brand transition-all"
                   />
                   <Input
                     placeholder="Phone Number"
                     value={formData.phone}
                     onChange={(e) => updateField('phone', e.target.value)}
-                    className="focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                    className="focus:ring-2 focus:ring-res-brand focus:border-res-brand transition-all"
                   />
                 </div>
 
@@ -202,7 +127,7 @@ const HotelProfile = () => {
                   placeholder="https://yourhotel.com"
                   value={formData.website}
                   onChange={(e) => updateField('website', e.target.value)}
-                  className="focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                  className="focus:ring-2 focus:ring-res-brand focus:border-res-brand transition-all"
                 />
 
                 <div className="space-y-6">
@@ -210,33 +135,35 @@ const HotelProfile = () => {
                     placeholder="Describe your hotel's unique features, ambiance, and what makes it special..."
                     value={formData.businessDescription}
                     onChange={(e) => updateField('businessDescription', e.target.value)}
-                    className="focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all min-h-[100px]"
+                    className="focus:ring-2 focus:ring-res-brand focus:border-res-brand transition-all min-h-[100px]"
                   />
                   <Textarea
                     placeholder="Enter your hotel's complete address..."
                     value={formData.address}
                     onChange={(e) => updateField('address', e.target.value)}
-                    className="focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                    className="focus:ring-2 focus:ring-res-brand focus:border-res-brand transition-all"
                   />
                 </div>
               </div>
             </Card>
           </div>
 
-          {/* Action Buttons */}
-          <div className="flex justify-end gap-4 mt-6 pb-8">
-            <button
-              onClick={handleReset}
-              className="group px-6 py-2.5 rounded-xl border-2 border-slate-200 text-slate-600 font-medium bg-white hover:bg-slate-50 hover:border-slate-300 transition-all duration-200 flex items-center gap-2 shadow-sm"
-            >
-              <RotateCcw className="w-4 h-4 transition-transform group-hover:rotate-[-180deg] duration-300" />
-              Reset
-            </button>
-            <button
-              disabled={isLoading}
-              onClick={handleSubmit}
-              className="group px-6 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-medium shadow-md shadow-blue-500/25 hover:shadow-lg hover:shadow-blue-500/30 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
-            >
+            {/* Action Buttons */}
+            <div className="flex justify-end gap-3 mt-6 pb-8">
+              <button
+                type="button"
+                onClick={handleReset}
+                className="type-res-small inline-flex cursor-pointer items-center gap-2 rounded-full bg-res-card px-6 py-2.5 font-semibold text-res-ink shadow-res-low transition-all outline-none hover:text-res-brand hover:shadow-res-medium focus-visible:ring-2 focus-visible:ring-res-brand"
+              >
+                <RotateCcw className="w-4 h-4" />
+                Reset
+              </button>
+              <button
+                type="button"
+                disabled={isLoading}
+                onClick={handleSubmit}
+                className="type-res-small inline-flex cursor-pointer items-center gap-2 rounded-full bg-res-brand px-6 py-2.5 font-semibold text-res-ink-inverted shadow-res-low transition-all outline-none hover:shadow-res-medium focus-visible:ring-2 focus-visible:ring-res-brand disabled:cursor-wait disabled:opacity-60"
+              >
               {isLoading ? (
                 <>
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />

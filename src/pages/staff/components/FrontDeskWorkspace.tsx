@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
+import { RefundTracker } from '@/features/refunds/RefundTracker';
 import {
   Building2,
   CalendarClock,
@@ -26,8 +27,11 @@ import { paymentLabel } from '@/features/reservations';
 import type { CreateOrderLineInput, OrderDto } from '@/features/orders/types';
 import { floorPlanService } from '@/services/floorPlan.service';
 import { unitReservationService } from '@/services/unitReservation.service';
+import { stayService, type StayDto } from '@/services/stay.service';
 import type { FloorPlanDto, FloorPlanLayoutDto, UnitReservationDto } from '@/types';
 import RoomGrid from './RoomGrid';
+import ServiceRequestsQueue from './ServiceRequestsQueue';
+import FolioPanel from './FolioPanel';
 
 const startOfToday = () => {
   const d = new Date();
@@ -139,7 +143,19 @@ export default function FrontDeskWorkspace() {
 
   // Room-charge console
   const [tabReservationId, setTabReservationId] = useState('');
-  const [tabOrder, setTabOrder] = useState<OrderDto | null>(null);
+  const [tabOrders, setTabOrders] = useState<OrderDto[]>([]);
+  const [tabSummary, setTabSummary] = useState<{
+    count: number;
+    total: number;
+    amountPaid: number;
+    balance: number;
+  } | null>(null);
+
+  // Phase 1 guest access: active stays keyed by reservation, plus PIN/credit-limit editing.
+  const [staysByReservation, setStaysByReservation] = useState<Map<string, StayDto>>(new Map());
+  const [guestPin, setGuestPin] = useState<{ stayId: string; pin: string } | null>(null);
+  const [creditLimitDraft, setCreditLimitDraft] = useState('');
+  const [guestBusy, setGuestBusy] = useState(false);
   const [tabLoading, setTabLoading] = useState(false);
   const [padOpen, setPadOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -147,12 +163,14 @@ export default function FrontDeskWorkspace() {
   const load = useCallback(async () => {
     try {
       setIsLoading(true);
-      const [plansRes, arrivalsRes, inHouseRes] = await Promise.all([
+      const [plansRes, arrivalsRes, inHouseRes, staysRes] = await Promise.all([
         floorPlanService.list(),
         // Arrivals = reservations whose stay starts today.
         unitReservationService.list({ from: startOfToday(), to: endOfToday(), limit: 100 }),
         // In-house = reservations the desk has already checked in.
         unitReservationService.list({ status: 'active', limit: 100 }),
+        // Phase 1: active guest stays (PIN resets, credit limits).
+        stayService.listStays('active').catch(() => [] as StayDto[]),
       ]);
       const docs = plansRes.data?.items ?? [];
       setPlans(docs);
@@ -161,6 +179,9 @@ export default function FrontDeskWorkspace() {
       );
       setArrivals(arrivalsRes.data?.items ?? []);
       setInHouse(inHouseRes.data?.items ?? []);
+      setStaysByReservation(
+        new Map((staysRes ?? []).map((s) => [String(s.reservation), s])),
+      );
     } catch (error) {
       console.error(error);
       toast.error('Failed to load the front desk board');
@@ -237,13 +258,20 @@ export default function FrontDeskWorkspace() {
   const changeReservation = async (kind: 'checkIn' | 'checkOut', r: UnitReservationDto) => {
     try {
       setBusyReservationId(r._id);
-      if (kind === 'checkIn') await unitReservationService.checkIn(r._id);
-      else await unitReservationService.checkOut(r._id);
-      toast.success(
-        kind === 'checkIn'
-          ? `${r.guestName} checked into Room ${unitLabel(r.unitId)}`
-          : `${r.guestName} checked out`,
-      );
+      if (kind === 'checkIn') {
+        const result = await unitReservationService.checkIn(r._id);
+        // Phase 1: the check-in response carries the one-time guest PIN.
+        const stayPin = (result as { data?: { stayPin?: string } })?.data?.stayPin;
+        toast.success(
+          stayPin
+            ? `${r.guestName} checked into Room ${unitLabel(r.unitId)} · guest PIN ${stayPin}`
+            : `${r.guestName} checked into Room ${unitLabel(r.unitId)}`,
+          { autoClose: stayPin ? 15000 : 5000 },
+        );
+      } else {
+        await unitReservationService.checkOut(r._id);
+        toast.success(`${r.guestName} checked out`);
+      }
       await refresh();
     } catch (error) {
       toast.error(apiMessage(error) || `Failed to ${kind === 'checkIn' ? 'check in' : 'check out'}`);
@@ -252,20 +280,67 @@ export default function FrontDeskWorkspace() {
     }
   };
 
-  // The room's running bill (order attached to its reservation / booking group).
+  /** Phase 1: reset the guest PIN for the selected room (desk shows it once). */
+  const handlePinReset = async () => {
+    if (!tabReservation) return;
+    try {
+      setGuestBusy(true);
+      const result = await stayService.resetPin(tabReservation._id);
+      setGuestPin(result);
+      toast.success(`New guest PIN for Room ${unitLabel(tabReservation.unitId)}: ${result.pin}`, {
+        autoClose: 15000,
+      });
+      await refresh();
+    } catch {
+      toast.error('Failed to reset the guest PIN');
+    } finally {
+      setGuestBusy(false);
+    }
+  };
+
+  /** Phase 1: update the stay credit limit (manager). */
+  const handleCreditLimit = async () => {
+    const stay = tabReservation ? staysByReservation.get(tabReservation._id) : undefined;
+    if (!stay) {
+      toast.error('No active stay for this room yet');
+      return;
+    }
+    const amount = Number(creditLimitDraft);
+    if (!Number.isFinite(amount) || amount < 0) {
+      toast.error('Enter a valid credit limit');
+      return;
+    }
+    try {
+      setGuestBusy(true);
+      await stayService.setCreditLimit(stay._id, amount);
+      toast.success('Credit limit updated');
+      setCreditLimitDraft('');
+      await refresh();
+    } catch {
+      toast.error('Failed to update the credit limit');
+    } finally {
+      setGuestBusy(false);
+    }
+  };
+
+  // The room's running bill: EVERY order on the stay plus summed totals
+  // (Phase 0 D5 — previously only the first order was shown).
   const loadTab = useCallback(async (reservationId: string) => {
     if (!reservationId) {
-      setTabOrder(null);
+      setTabOrders([]);
+      setTabSummary(null);
       return;
     }
     try {
       setTabLoading(true);
       const res = await ordersApi.getByReservation(reservationId);
-      setTabOrder(res.order ?? null);
+      setTabOrders(res.orders ?? []);
+      setTabSummary(res.tab ?? null);
     } catch (error) {
       console.error(error);
       toast.error('Failed to load the room bill');
-      setTabOrder(null);
+      setTabOrders([]);
+      setTabSummary(null);
     } finally {
       setTabLoading(false);
     }
@@ -444,7 +519,7 @@ export default function FrontDeskWorkspace() {
         <div className="mt-3">
           {tabLoading ? (
             <div className="h-32 animate-pulse rounded-res-md bg-res-surface" />
-          ) : tabReservation && tabOrder ? (
+          ) : tabReservation && tabOrders.length > 0 ? (
             <div className="rounded-res-md border border-res-line bg-res-card p-4 shadow-res-low">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div>
@@ -452,31 +527,44 @@ export default function FrontDeskWorkspace() {
                     Room {unitLabel(tabReservation.unitId)} · {tabReservation.guestName}
                   </p>
                   <p className="type-res-small font-normal text-res-ink-muted">
-                    {tabOrder.status} · {tabOrder.lines?.length ?? 0} item(s)
+                    {tabSummary?.count ?? tabOrders.length} order(s) on this stay
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="type-res-h3 text-res-ink">{money(tabOrder.total)}</p>
+                  <p className="type-res-h3 text-res-ink">{money(tabSummary?.total ?? 0)}</p>
                   <p className="type-res-small font-normal text-res-ink-muted">
-                    Paid {money(tabOrder.amountPaid)} · still to pay {money(tabOrder.balance)}
+                    Paid {money(tabSummary?.amountPaid ?? 0)} · still to pay{' '}
+                    {money(tabSummary?.balance ?? 0)}
                   </p>
                 </div>
               </div>
-              {(tabOrder.lines?.length ?? 0) > 0 && (
-                <ul className="mt-3 space-y-1 rounded-res-md bg-res-surface p-3">
-                  {tabOrder.lines?.map((line) => (
-                    <li
-                      key={line._id}
-                      className="type-res-body flex justify-between gap-2 font-normal text-res-ink"
-                    >
+              <ul className="mt-3 space-y-2 rounded-res-md bg-res-surface p-3">
+                {tabOrders.map((o) => (
+                  <li key={o._id}>
+                    <div className="type-res-small flex justify-between gap-2 font-semibold text-res-ink">
                       <span>
-                        {line.quantity}× {line.name}
+                        {o.status} · {o.lines?.length ?? 0} item(s)
                       </span>
-                      <span className="font-semibold">{money(line.lineTotal)}</span>
-                    </li>
-                  ))}
-                </ul>
-              )}
+                      <span>{money(o.total)}</span>
+                    </div>
+                    {(o.lines?.length ?? 0) > 0 && (
+                      <ul className="mt-1 space-y-1">
+                        {o.lines?.map((line) => (
+                          <li
+                            key={line._id}
+                            className="type-res-body flex justify-between gap-2 font-normal text-res-ink-muted"
+                          >
+                            <span>
+                              {line.quantity}× {line.name}
+                            </span>
+                            <span className="font-semibold">{money(line.lineTotal)}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </li>
+                ))}
+              </ul>
               <button
                 type="button"
                 onClick={() => setPadOpen(true)}
@@ -504,6 +592,78 @@ export default function FrontDeskWorkspace() {
             </p>
           )}
         </div>
+
+        {/* Phase 1 guest access: PIN reset + credit limit for the selected stay. */}
+        {tabReservation &&
+          (() => {
+            const stay = staysByReservation.get(tabReservation._id);
+            return (
+              <div className="mt-3 rounded-res-md border border-res-line bg-res-surface p-4">
+                <p className="type-res-small font-semibold text-res-ink">
+                  Guest access · Room {unitLabel(tabReservation.unitId)}
+                </p>
+                {!stay ? (
+                  <p className="type-res-small mt-1 font-normal text-res-ink-muted">
+                    No active guest stay yet — check the room in to create one.
+                  </p>
+                ) : (
+                  <div className="mt-2 space-y-2">
+                    <p className="type-res-small font-normal text-res-ink-muted">
+                      Credit limit: {money(stay.creditLimit ?? 0)}
+                    </p>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <input
+                        value={creditLimitDraft}
+                        onChange={(e) => setCreditLimitDraft(e.target.value)}
+                        placeholder="New credit limit"
+                        inputMode="decimal"
+                        className="type-res-small w-40 rounded-full border border-res-line bg-res-card px-4 py-2 text-res-ink outline-none"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleCreditLimit}
+                        disabled={guestBusy}
+                        className="type-res-small cursor-pointer rounded-full bg-res-card px-4 py-2 font-semibold text-res-ink shadow-res-low outline-none disabled:opacity-50"
+                      >
+                        Save limit
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handlePinReset}
+                        disabled={guestBusy}
+                        className="type-res-small cursor-pointer rounded-full bg-res-card px-4 py-2 font-semibold text-res-ink shadow-res-low outline-none disabled:opacity-50"
+                      >
+                        Reset guest PIN
+                      </button>
+                    </div>
+                    {guestPin && guestPin.stayId === stay._id && (
+                      <p className="type-res-small font-semibold text-res-ink">
+                        Current PIN: {guestPin.pin} (share once, then forget it)
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+        {/* Phase 3 folio ledger for the selected stay. */}
+        {tabReservation && (
+          <FolioPanel
+            stayId={staysByReservation.get(tabReservation._id)?._id ?? null}
+            stayCreditLimit={staysByReservation.get(tabReservation._id)?.creditLimit ?? 0}
+            guestName={tabReservation.guestName}
+          />
+        )}
+      </section>
+
+      <section className="rounded-res-lg bg-res-card p-4 shadow-res-low md:p-5">
+        <h2 className="type-res-h3 mb-1 flex items-center gap-2 text-res-ink">
+          <Receipt className="h-4 w-4 text-res-brand" /> Service requests
+        </h2>
+        <p className="type-res-small mb-3 font-normal text-res-ink-muted">
+          Every open amenity and service request at this property — live.
+        </p>
+        <ServiceRequestsQueue />
       </section>
 
       <section className="rounded-res-lg bg-res-card p-4 shadow-res-low md:p-5">
@@ -533,6 +693,9 @@ export default function FrontDeskWorkspace() {
           </p>
         )}
       </section>
+
+      {/* Refund tickets: paid offline at the desk (cash / transfer) and recorded here. */}
+      <RefundTracker compact />
 
       <Dialog open={padOpen} onOpenChange={setPadOpen}>
         <DialogContent className="max-h-[85vh] max-w-3xl overflow-y-auto rounded-res-lg border-res-line bg-res-card shadow-res-high">

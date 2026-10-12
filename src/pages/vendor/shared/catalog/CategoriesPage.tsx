@@ -5,14 +5,15 @@ import { Modal } from '@/components/others/RhaceModal';
 import { menuCategoryService, type CategoryDto } from '@/services/menuCategory.service';
 import { drinkCategoryService } from '@/services/drinkCategory.service';
 
-type Kind = 'menu' | 'drink';
+type Kind = 'menu' | 'drink' | 'service';
 
 const serviceFor = (kind: Kind) =>
-  kind === 'menu' ? menuCategoryService : drinkCategoryService;
+  kind === 'drink' ? drinkCategoryService : menuCategoryService;
 
 const COPY: Record<Kind, { title: string; singular: string }> = {
   menu: { title: 'Menu categories', singular: 'category' },
   drink: { title: 'Drink categories', singular: 'category' },
+  service: { title: 'Service categories', singular: 'category' },
 };
 
 export function CategoriesPage({ kind }: { kind: Kind }) {
@@ -29,7 +30,12 @@ export function CategoriesPage({ kind }: { kind: Kind }) {
   const load = async () => {
     try {
       setLoading(true);
-      setItems(await service.list(true));
+      // Phase 2: service categories live in menu-categories with kind=service.
+      if (kind === 'service') {
+        setItems(await menuCategoryService.list(true, 'service'));
+      } else {
+        setItems(await service.list(true));
+      }
     } catch {
       toast.error('Could not load categories.');
     } finally {
@@ -84,6 +90,7 @@ export function CategoriesPage({ kind }: { kind: Kind }) {
           name: name.trim(),
           description: description.trim(),
           order: Number(order) || 0,
+          ...(kind === 'service' ? { kind: 'service' as const } : {}),
         });
         toast.success('Category created');
       }

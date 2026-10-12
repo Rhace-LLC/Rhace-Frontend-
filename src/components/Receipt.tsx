@@ -7,10 +7,16 @@ import type { ReservationData } from '@/types';
 
 interface ReceiptProps {
   reservation?: ReservationData | null;
-  payment?: { reference?: string } | null;
+  payment?: { reference?: string; provider?: string; currency?: string } | null;
   type?: 'hotel' | 'restaurant' | 'club';
   onClose?: () => void;
 }
+
+const PROVIDER_LABELS: Record<string, string> = {
+  paystack: 'Paystack',
+  monnify: 'Monnify',
+  stripe: 'Stripe',
+};
 
 const Receipt = ({
   reservation,
@@ -22,7 +28,13 @@ const Receipt = ({
   const room = reservation?.room;
   const isPayLater = reservation?.payLater;
 
-  const formatPrice = (price: number) => `₦${Number(price || 0).toLocaleString()}`;
+  const currency =
+    payment?.currency || (reservation?.currency as string | undefined) || 'NGN';
+  const formatPrice = (price: number) =>
+    currency === 'NGN'
+      ? `₦${Number(price || 0).toLocaleString()}`
+      : `${currency} ${Number(price || 0).toLocaleString()}`;
+  const providerLabel = payment?.provider ? PROVIDER_LABELS[payment.provider] : null;
   const formatDate = (dateStr: string | Date) =>
     new Date(dateStr).toLocaleDateString('en-NG', {
       year: 'numeric',
@@ -160,8 +172,9 @@ const Receipt = ({
                         </div>
                       )}
                       {!isPayLater && payment && (
-                        <div className="text-xs text-green-600 bg-green-50 p-2 rounded-lg">
-                          ✅ Paid via Paystack - Ref: {payment.reference?.slice(-8)}
+                        <div>
+                          ✅ Paid online - Ref: {payment.reference?.slice(-8)}
+                          {providerLabel && <> · via {providerLabel}</>}
                         </div>
                       )}
                     </div>

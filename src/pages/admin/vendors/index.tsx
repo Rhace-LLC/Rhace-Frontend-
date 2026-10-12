@@ -23,6 +23,7 @@ import {
   Shield,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import DashboardPageHeader from '@/components/dashboard/DashboardPageHeader';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -490,67 +491,64 @@ export default function Vendors() {
   };
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Header Section */}
-      <div className="flex flex-col space-y-4">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight text-gray-900">Vendor Management</h1>
-            <p className="text-gray-600 mt-2">
-              Manage and monitor all vendor accounts in your system
-            </p>
-          </div>
-          <div className="flex items-center gap-3">
-            <Button className="" variant="outline" size="sm" onClick={handleExport}>
-              <Upload className="w-4 h-4 mr-2" />
-              Export
-            </Button>
-          </div>
-        </div>
-      </div>
+    <div className="space-y-5 p-4 md:p-6">
+      <DashboardPageHeader
+        title="Vendor Management"
+        subtitle="Manage and monitor all vendor accounts in your system"
+        actions={
+          <button
+            type="button"
+            onClick={handleExport}
+            className="type-res-small inline-flex cursor-pointer items-center gap-2 rounded-full bg-res-card px-4 py-2.5 font-semibold text-res-ink shadow-res-low transition-all outline-none hover:text-res-brand hover:shadow-res-medium focus-visible:ring-2 focus-visible:ring-res-brand"
+          >
+            <Upload className="w-4 h-4" />
+            Export
+          </button>
+        }
+      />
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="border-0 shadow-sm bg-gradient-to-br from-blue-50 to-indigo-50">
+        <Card className="rounded-res-md border border-res-line bg-res-card shadow-res-low">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-blue-700">Total Vendors</p>
-                <p className="text-3xl font-bold text-gray-900">{totalVendors.toLocaleString()}</p>
+                <p className="type-res-small font-medium text-res-ink-muted">Total Vendors</p>
+                <p className="text-3xl font-bold text-res-ink">{totalVendors.toLocaleString()}</p>
               </div>
-              <div className="h-12 w-12 rounded-lg bg-white flex items-center justify-center shadow-sm">
-                <Building className="h-6 w-6 text-blue-600" />
+              <div className="h-12 w-12 rounded-res-sm bg-res-surface flex items-center justify-center">
+                <Building className="h-6 w-6 text-res-brand" />
               </div>
             </div>
             <Progress value={(totalVendors / (totalVendors || 1)) * 100} className="mt-4 h-1" />
           </CardContent>
         </Card>
 
-        <Card className="border-0 shadow-sm bg-gradient-to-br from-emerald-50 to-green-50">
+        <Card className="rounded-res-md border border-res-line bg-res-card shadow-res-low">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-emerald-700">Active Vendors</p>
-                <p className="text-3xl font-bold text-gray-900">{stats.active.toLocaleString()}</p>
+                <p className="type-res-small font-medium text-res-ink-muted">Active Vendors</p>
+                <p className="text-3xl font-bold text-res-ink">{stats.active.toLocaleString()}</p>
               </div>
-              <div className="h-12 w-12 rounded-lg bg-white flex items-center justify-center shadow-sm">
-                <CheckCircle className="h-6 w-6 text-emerald-600" />
+              <div className="h-12 w-12 rounded-res-sm bg-res-surface flex items-center justify-center">
+                <CheckCircle className="h-6 w-6 text-res-accent" />
               </div>
             </div>
             <Progress value={(stats.active / (stats.total || 1)) * 100} className="mt-4 h-1" />
           </CardContent>
         </Card>
 
-        <Card className="border-0 shadow-sm bg-gradient-to-br from-amber-50 to-orange-50">
+        <Card className="rounded-res-md border border-res-line bg-res-card shadow-res-low">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-amber-700">Inactive Vendors</p>
-                <p className="text-3xl font-bold text-gray-900">
+                <p className="type-res-small font-medium text-res-ink-muted">Inactive Vendors</p>
+                <p className="text-3xl font-bold text-res-ink">
                   {stats.inactive.toLocaleString()}
                 </p>
               </div>
-              <div className="h-12 w-12 rounded-lg bg-white flex items-center justify-center shadow-sm">
+              <div className="h-12 w-12 rounded-res-sm bg-res-surface flex items-center justify-center">
                 <XCircle className="h-6 w-6 text-amber-600" />
               </div>
             </div>
@@ -558,16 +556,16 @@ export default function Vendors() {
           </CardContent>
         </Card>
 
-        <Card className="border-0 shadow-sm bg-gradient-to-br from-rose-50 to-pink-50">
+        <Card className="rounded-res-md border border-res-line bg-res-card shadow-res-low">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-rose-700">Suspended Vendors</p>
-                <p className="text-3xl font-bold text-gray-900">
+                <p className="type-res-small font-medium text-res-ink-muted">Suspended Vendors</p>
+                <p className="text-3xl font-bold text-res-ink">
                   {stats.suspended.toLocaleString()}
                 </p>
               </div>
-              <div className="h-12 w-12 rounded-lg bg-white flex items-center justify-center shadow-sm">
+              <div className="h-12 w-12 rounded-res-sm bg-res-surface flex items-center justify-center">
                 <Shield className="h-6 w-6 text-rose-600" />
               </div>
             </div>
@@ -576,7 +574,7 @@ export default function Vendors() {
         </Card>
       </div>
 
-      <Card className="p-4">
+      <Card className="rounded-res-lg border border-res-line bg-res-card p-4 shadow-res-low">
         <div className="flex items-center justify-between mb-4">
           {!hideTabs && (
             <div className="flex gap-2" key={activeTab}>
@@ -584,8 +582,10 @@ export default function Vendors() {
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
-                  className={`px-4 py-2 text-sm rounded-md transition-colors ${
-                    activeTab === tab ? 'bg-accent text-accent-foreground' : 'hover:bg-accent/50'
+                  className={`type-res-small rounded-full px-4 py-2 font-semibold transition-colors outline-none focus-visible:ring-2 focus-visible:ring-res-brand ${
+                    activeTab === tab
+                      ? 'bg-res-ink text-res-ink-inverted'
+                      : 'bg-res-surface text-res-ink-muted hover:text-res-ink'
                   }`}
                 >
                   {tab}
@@ -597,7 +597,7 @@ export default function Vendors() {
           <div className="flex gap-2">
             <Input
               placeholder="Search by name or email"
-              className="w-64 border border-gray-200 rounded-md h-12"
+              className="w-64 border border-res-line rounded-res-sm bg-res-card h-12"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />

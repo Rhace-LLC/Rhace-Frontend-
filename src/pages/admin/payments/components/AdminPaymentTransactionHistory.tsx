@@ -17,6 +17,7 @@ import {
 import { toast } from 'react-toastify';
 
 import { paymentService } from '@/services/payment.service';
+import BillingModelBadge from '@/components/billing/BillingModelBadge';
 
 import AdminPaymentDetailsDialog from './AdminPaymentDetailsDialog';
 
@@ -76,7 +77,7 @@ const AdminPaymentTransactionHistory = () => {
 
   return (
     <>
-      <div className="bg-white rounded-2xl border">
+      <div className="rounded-res-lg border border-res-line bg-res-card shadow-res-low">
 
         <div className="p-6 border-b">
 
@@ -190,6 +191,7 @@ const AdminPaymentTransactionHistory = () => {
                       {money(
                         payment.amountPaid
                       )}
+                      <BillingModelBadge payment={payment} className="mt-1 flex w-fit" />
                     </td>
 
                     <td className="px-5 py-4 capitalize">

@@ -4,3 +4,5 @@ export * from './api/hooks';
 export { money } from './money';
 export { OrderBuilder } from './components/OrderBuilder';
 export { OrderPaymentChoiceModal } from './components/OrderPaymentChoiceModal';
+export { useOrderRealtime, type OrderRealtimeEvent } from './realtime';
+export { InRoomDiningLane } from './components/InRoomDiningLane';
