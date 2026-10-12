@@ -9,6 +9,7 @@ import { toast } from 'react-toastify';
 import { Edit3, Upload } from '@/components/icons/icons'; // Using requested icon path
 import { MailIcon, PhoneIcon } from 'lucide-react';
 import { BusinessLogo } from '@/pages/vendor/shared/components/BusinessInfo';
+import { GalleryEditor } from '@/pages/vendor/shared/components/GalleryEditor';
 import DashboardPageHeader from '@/components/dashboard/DashboardPageHeader';
 import type { RootState, AppDispatch } from '@/redux/store';
 import { useAuth } from '@/contexts/AuthContext';
@@ -91,6 +92,21 @@ const RestaurantSettings = () => {
                   updateField('logo', e);
                 }}
               />
+
+              {/* Photo Gallery */}
+              <Card className="p-6 rounded-res-lg border border-res-line bg-res-card shadow-res-low">
+                <div className="flex items-center gap-2 mb-1">
+                  <h2 className="type-res-h2 text-res-ink">Photo Gallery</h2>
+                </div>
+                <p className="type-res-small font-normal text-res-ink-muted mb-4">
+                  Photos customers see on your listing. Changes save with the page.
+                </p>
+                <GalleryEditor
+                  value={formData.profileImages}
+                  onChange={(urls) => updateField('profileImages', urls)}
+                  hint="Showcase your space, dishes and atmosphere. High-quality landscape photos work best."
+                />
+              </Card>
             </div>
 
             {/* Right Column: Contact Info */}

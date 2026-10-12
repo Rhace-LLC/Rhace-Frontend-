@@ -21,7 +21,9 @@ import {
   Shield,
   PartyPopper,
   Crown,
+  Image as ImageIcon,
 } from 'lucide-react';
+import { GalleryEditor } from '@/pages/vendor/shared/components/GalleryEditor';
 import { useAuth } from '@/contexts/AuthContext';
 import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -95,6 +97,24 @@ const ClubSettings = () => {
               </h3>
             </div>
             <BusinessLogo value={formData.logo} onChange={(value) => updateField('logo', value)} />
+          </div>
+
+          {/* Photo Gallery */}
+          <div className="rounded-res-lg border border-res-line bg-res-card shadow-res-low p-6 md:p-8">
+            <div className="flex items-center gap-2">
+              <span className="p-1.5 bg-res-surface rounded-res-sm">
+                <ImageIcon className="w-5 h-5 text-res-brand" />
+              </span>
+              <h2 className="type-res-h2 text-res-ink">Photo Gallery</h2>
+            </div>
+            <p className="type-res-small font-normal text-res-ink-muted mt-1 mb-4">
+              Photos customers see on your listing. Changes save with the page.
+            </p>
+            <GalleryEditor
+              value={formData.profileImages}
+              onChange={(urls) => updateField('profileImages', urls)}
+              hint="Showcase the room, the crowd and the nights that define you."
+            />
           </div>
 
           <div className="grid gap-6">
