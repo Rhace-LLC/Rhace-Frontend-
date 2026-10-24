@@ -61,39 +61,14 @@ type OnboardFormData = {
   openingTime: string;
   closingTime: string;
   cuisines: string[];
-  availableSlots: string[];
   categories: string[];
   dressCode: string[];
   ageLimit: string;
   slots: number;
+  operatingDays: string[];
 };
 
 type Bank = { name: string; code: string };
-
-const generateTimeSlots = (start: string, end: string, interval = 60) => {
-  if (!start || !end) return [];
-
-  const slots = [];
-  let current = new Date(`2026-01-01T${start}`);
-  const stop = new Date(`2026-01-01T${end}`);
-
-  // Handle overnight cases (e.g., 10 PM to 4 AM)
-  if (stop <= current) {
-    stop.setDate(stop.getDate() + 1);
-  }
-
-  while (current <= stop) {
-    slots.push(
-      current.toLocaleTimeString([], {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: true,
-      })
-    );
-    current.setMinutes(current.getMinutes() + interval);
-  }
-  return slots;
-};
 
 const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
 const UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
@@ -119,29 +94,38 @@ const STEPS = [
   },
 ];
 
-const NIGERIAN_BANKS = [
-  { name: 'Access Bank', code: '044' },
-  { name: 'Citibank Nigeria', code: '023' },
-  { name: 'Ecobank Nigeria', code: '050' },
-  { name: 'Fidelity Bank', code: '070' },
-  { name: 'First Bank of Nigeria', code: '011' },
-  { name: 'First City Monument Bank', code: '214' },
-  { name: 'Guaranty Trust Bank', code: '058' },
-  { name: 'Heritage Bank', code: '030' },
-  { name: 'Keystone Bank', code: '082' },
-  { name: 'Polaris Bank', code: '076' },
-  { name: 'Providus Bank', code: '101' },
-  { name: 'Stanbic IBTC Bank', code: '221' },
-  { name: 'Standard Chartered Bank', code: '068' },
-  { name: 'Sterling Bank', code: '232' },
-  { name: 'Union Bank of Nigeria', code: '032' },
-  { name: 'United Bank For Africa', code: '033' },
-  { name: 'Unity Bank', code: '215' },
-  { name: 'Wema Bank', code: '035' },
-  { name: 'Zenith Bank', code: '057' },
+const CUISINE_OPTIONS = [
+  { value: 'nigerian', label: 'Nigerian' },
+  { value: 'afro-fusion', label: 'Afro-Fusion' },
+  { value: 'continental', label: 'Continental' },
+  { value: 'chinese', label: 'Chinese' },
+  { value: 'pan-asian', label: 'Pan-Asian' },
+  { value: 'italian', label: 'Italian' },
+  { value: 'lebanese', label: 'Lebanese' },
+  { value: 'american', label: 'American' },
+  { value: 'seafood', label: 'Seafood' },
+  { value: 'grills-and-suya', label: 'Grills & Suya' },
+  { value: 'mediterranean', label: 'Mediterranean' },
+  { value: 'indian', label: 'Indian' },
+  { value: 'french', label: 'French' },
+  { value: 'mexican', label: 'Mexican' },
+  { value: 'caribbean', label: 'Caribbean' },
+  { value: 'japanese', label: 'Japanese' },
+  { value: 'thai', label: 'Thai' },
+  { value: 'brunch-and-cafe', label: 'Brunch & Cafe' },
+  { value: 'pastry-and-bakery', label: 'Pastry & Bakery' },
+  { value: 'vegetarian-vegan', label: 'Vegetarian & Vegan' },
 ];
 
-const CUISINE_OPTIONS = ['nigerian', 'italian', 'continental', 'chinese'];
+const DAYS_OF_WEEK = [
+  { value: 'monday', label: 'Monday' },
+  { value: 'tuesday', label: 'Tuesday' },
+  { value: 'wednesday', label: 'Wednesday' },
+  { value: 'thursday', label: 'Thursday' },
+  { value: 'friday', label: 'Friday' },
+  { value: 'saturday', label: 'Saturday' },
+  { value: 'sunday', label: 'Sunday' },
+];
 
 // --- Validation Helpers ---
 
@@ -208,11 +192,11 @@ const validateStep = (step: number, data: OnboardFormData) => {
         if (data.openingTime && data.closingTime && data.openingTime >= data.closingTime) {
           errors.closingTime = 'Closing time must be after opening time';
         }
-        if (data.vendorType === 'restaurant' && data.availableSlots.length === 0) {
-          errors.availableSlots = 'Select at least one available booking slot';
-        }
         if (data.vendorType === 'restaurant' && data.cuisines.length === 0) {
           errors.cuisines = 'Select at least one cuisine';
+        }
+        if (data.operatingDays.length === 0) {
+          errors.operatingDays = 'Select at least one day you are open';
         }
         if (data.vendorType === 'club') {
           if (data.categories.length === 0) {
@@ -259,11 +243,11 @@ export function Onboard() {
     openingTime: '',
     closingTime: '',
     cuisines: [],
-    availableSlots: [],
     categories: [],
     dressCode: [],
     ageLimit: '',
     slots: 0,
+    operatingDays: [],
   });
   const [errors, setErrors] = useState<Record<string, string>>({
     profileImages: '',
@@ -279,11 +263,11 @@ export function Onboard() {
     openingTime: '',
     closingTime: '',
     cuisines: '',
-    availableSlots: '',
     categories: '',
     dressCode: '',
     ageLimit: '',
     slots: '',
+    operatingDays: '',
   });
   const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({});
   const [uploadErrors, setUploadErrors] = useState<string[]>([]);
@@ -308,31 +292,20 @@ export function Onboard() {
   };
 
   // Inside your Onboard component
-  const availableTimeOptions = generateTimeSlots(formData.openingTime, formData.closingTime, 60);
 
-  // Helper to toggle a slot (add if not there, remove if it is)
-  const toggleSlot = (slot: string) => {
-    const currentSlots = formData.availableSlots;
-    if (currentSlots.includes(slot)) {
+  // Helper to toggle an operating day
+  const toggleDay = (day: string) => {
+    const currentDays = formData.operatingDays;
+    if (currentDays.includes(day)) {
       updateFormData({
-        availableSlots: currentSlots.filter((s) => s !== slot),
+        operatingDays: currentDays.filter((d) => d !== day),
       });
     } else {
-      updateFormData({ availableSlots: [...currentSlots, slot] });
+      updateFormData({ operatingDays: [...currentDays, day] });
     }
   };
 
-  useEffect(() => {
-    // Clear slots that are no longer within the new time range
-    const validSlots = generateTimeSlots(formData.openingTime, formData.closingTime, 60);
-    const filtered = formData.availableSlots.filter((slot) => validSlots.includes(slot));
-
-    if (filtered.length !== formData.availableSlots.length) {
-      updateFormData({ availableSlots: filtered });
-    }
-  }, [formData.openingTime, formData.closingTime]);
-
-const removeImage = (imageUrl: string) => {
+  const removeImage = (imageUrl: string) => {
   updateFormData({
     profileImages: formData.profileImages.filter((img) => img !== imageUrl),
   });
@@ -552,11 +525,11 @@ setUploadProgress({});
         openingTime: '',
         closingTime: '',
         cuisines: '',
-        availableSlots: '',
         categories: '',
         dressCode: '',
         ageLimit: '',
         slots: '',
+        operatingDays: '',
       });
     }
   };
@@ -578,11 +551,11 @@ setUploadProgress({});
         openingTime: '',
         closingTime: '',
         cuisines: '',
-        availableSlots: '',
         categories: '',
         dressCode: '',
         ageLimit: '',
         slots: '',
+        operatingDays: '',
       });
     }
   };
@@ -1173,100 +1146,98 @@ setUploadProgress({});
                         </div>
                       </div>
 
+                      {/* Operating Days Selection */}
+                      <div className="space-y-3">
+                        <Label className="text-base font-medium">
+                          Days Open
+                        </Label>
+                        <div className="grid grid-cols-4 sm:grid-cols-7 gap-2">
+                          {DAYS_OF_WEEK.map((day) => {
+                            const isSelected = formData.operatingDays.includes(day.value);
+                            return (
+                              <button
+                                key={day.value}
+                                type="button"
+                                onClick={() => {
+                                  toggleDay(day.value);
+                                  clearError('operatingDays');
+                                }}
+                                className={cn(
+                                  'py-2 px-1 text-xs rounded-md border transition-all',
+                                  isSelected
+                                    ? 'bg-[#0A6C6D] text-white border-[#0A6C6D]'
+                                    : 'bg-white text-gray-600 border-gray-200 hover:border-[#0A6C6D]'
+                                )}
+                              >
+                                {day.label}
+                              </button>
+                            );
+                          })}
+                        </div>
+                        {errors.operatingDays && (
+                          <p className="text-red-500 text-xs mt-1">{errors.operatingDays}</p>
+                        )}
+                        <p className="text-xs text-muted-foreground">
+                          {formData.operatingDays.length} days selected
+                        </p>
+                      </div>
+
                       {/* Cuisine Selection from List */}
                       <div className="space-y-3">
                         <Label className="text-base font-medium">Cuisines</Label>
-                        <Select
-                          onValueChange={(value) => addTag('cuisines', value)}
-                        >
-                          <SelectTrigger
-                            className={cn(
-                              'w-full h-10 sm:h-12 text-black placeholder:text-black',
-                              errors.cuisines && 'border-red-500 focus:border-red-500 focus:ring-red-500'
-                            )}
-                          >
-                            <SelectValue placeholder="Select a cuisine to add" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {CUISINE_OPTIONS.filter(
-                              (option) => !formData.cuisines.includes(option)
-                            ).map((option) => (
-                              <SelectItem key={option} value={option}>
-                                {option}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        <div className="flex flex-wrap gap-2">
+                          {CUISINE_OPTIONS.map(({ value, label }) => {
+                            const isSelected = formData.cuisines.includes(value);
+                            return (
+                              <button
+                                key={value}
+                                type="button"
+                                onClick={() => {
+                                  if (isSelected) {
+                                    removeTag('cuisines', value);
+                                  } else {
+                                    addTag('cuisines', value);
+                                  }
+                                  clearError('cuisines');
+                                }}
+                                className={cn(
+                                  'py-2 px-3 rounded-full text-xs border transition-all font-medium',
+                                  isSelected
+                                    ? 'bg-[#0A6C6D] text-white border-[#0A6C6D]'
+                                    : 'bg-white text-gray-600 border-gray-200 hover:border-[#0A6C6D]'
+                                )}
+                              >
+                                {label}
+                              </button>
+                            );
+                          })}
+                        </div>
                         {errors.cuisines && (
                           <p className="text-red-500 text-xs mt-1">{errors.cuisines}</p>
                         )}
 
                         {/* Display Selected Cuisines as Badges */}
                         <div className="flex flex-wrap gap-2 mt-2">
-                          {formData.cuisines.map((tag) => (
-                            <Badge
-                              key={tag}
-                              variant="secondary"
-                              className="flex items-center gap-1 bg-primary/10 text-primary border-none"
-                            >
-                              {tag}
-                              <button
-                                type="button"
-                                onClick={() => removeTag('cuisines', tag)}
-                                className="ml-1 hover:text-destructive"
+                          {formData.cuisines.map((tag) => {
+                            const option = CUISINE_OPTIONS.find((o) => o.value === tag);
+                            return (
+                              <Badge
+                                key={tag}
+                                variant="secondary"
+                                className="flex items-center gap-1 bg-primary/10 text-primary border-none"
                               >
-                                <X className="w-3 h-3" />
-                              </button>
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Replace your old TagInput for Available Slots with this: */}
-                      <div className="space-y-3">
-                        <Label className="text-base font-medium">
-                          Select Available Booking Slots
-                        </Label>
-                        {!formData.openingTime || !formData.closingTime ? (
-                          <p className="text-sm text-amber-600 italic">
-                            Please set opening and closing times first.
-                          </p>
-                        ) : (
-                          <div className={cn(
-                            'grid grid-cols-3 sm:grid-cols-4 gap-2',
-                            errors.availableSlots && 'p-2 border border-red-500 rounded-md'
-                          )}>
-                            {availableTimeOptions.map((slot) => {
-                              const isSelected = formData.availableSlots.includes(slot);
-                              return (
+                                {option?.label || tag}
                                 <button
-                                  key={slot}
                                   type="button"
-                                  onClick={() => {
-                                    toggleSlot(slot);
-                                    clearError('availableSlots');
-                                  }}
-                                  className={cn(
-                                    'py-2 px-1 text-xs rounded-md border transition-all',
-                                    isSelected
-                                      ? 'bg-[#0A6C6D] text-white border-[#0A6C6D]'
-                                      : 'bg-white text-gray-600 border-gray-200 hover:border-[#0A6C6D]'
-                                  )}
+                                  onClick={() => removeTag('cuisines', tag)}
+                                  className="ml-1 hover:text-destructive"
                                 >
-                                  {slot}
+                                  <X className="w-3 h-3" />
                                 </button>
-                              );
-                            })}
-                          </div>
-                        )}
-                        {errors.availableSlots && (
-                          <p className="text-red-500 text-xs mt-1">{errors.availableSlots}</p>
-                        )}
-
-                        {/* Show count of selected slots */}
-                        <p className="text-xs text-muted-foreground">
-                          {formData.availableSlots.length} slots selected
-                        </p>
+                              </Badge>
+                            );
+                          })}
+                        </div>
                       </div>
                     </div>
                   )}
@@ -1353,6 +1324,42 @@ setUploadProgress({});
                             <p className="text-red-500 text-xs mt-1">{errors.slots}</p>
                           )}
                         </div>
+                      </div>
+
+                      {/* Operating Days Selection */}
+                      <div className="space-y-3">
+                        <Label className="text-base font-medium">
+                          Days Open
+                        </Label>
+                        <div className="grid grid-cols-4 sm:grid-cols-7 gap-2">
+                          {DAYS_OF_WEEK.map((day) => {
+                            const isSelected = formData.operatingDays.includes(day.value);
+                            return (
+                              <button
+                                key={day.value}
+                                type="button"
+                                onClick={() => {
+                                  toggleDay(day.value);
+                                  clearError('operatingDays');
+                                }}
+                                className={cn(
+                                  'py-2 px-1 text-xs rounded-md border transition-all',
+                                  isSelected
+                                    ? 'bg-[#0A6C6D] text-white border-[#0A6C6D]'
+                                    : 'bg-white text-gray-600 border-gray-200 hover:border-[#0A6C6D]'
+                                )}
+                              >
+                                {day.label}
+                              </button>
+                            );
+                          })}
+                        </div>
+                        {errors.operatingDays && (
+                          <p className="text-red-500 text-xs mt-1">{errors.operatingDays}</p>
+                        )}
+                        <p className="text-xs text-muted-foreground">
+                          {formData.operatingDays.length} days selected
+                        </p>
                       </div>
 
                       <TagInput

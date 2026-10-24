@@ -3,6 +3,7 @@ import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
 import { authService } from '@/services/auth.service';
+import { parseRequestError } from '@/services/request_helpers';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 import { useDispatch } from 'react-redux';
@@ -60,7 +61,7 @@ const Login = () => {
         }
       }
     } catch (err) {
-      const message = err?.response?.data?.message || 'Invalid email or password';
+      const message = parseRequestError(err, 'Invalid email or password');
 
       toast.error(message);
       if (

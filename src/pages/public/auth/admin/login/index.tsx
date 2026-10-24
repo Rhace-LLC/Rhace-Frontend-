@@ -6,6 +6,7 @@ import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import HeroImage from '@/components/auth/HeroImage';
 import { authService } from '@/services/auth.service';
+import { parseRequestError } from '@/services/request_helpers';
 import { useDispatch } from 'react-redux';
 import { useNavigate, useSearchParams } from 'react-router';
 import { toast } from 'react-toastify';
@@ -45,7 +46,7 @@ const AdminLogin = () => {
       toast.success('Welcome back, Admin!');
       navigate(redirectTo);
     } catch (err) {
-      toast.error(err.response?.data.message);
+      toast.error(parseRequestError(err));
     } finally {
       setIsloading(false);
     }

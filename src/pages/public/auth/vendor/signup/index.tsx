@@ -7,6 +7,7 @@ import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router';
 import logo from '@/public/images/Rhace-11.png';
 import { authService } from '@/services/auth.service';
+import { parseRequestError } from '@/services/request_helpers';
 
 const getCurrentYear = () => new Date().getFullYear();
 
@@ -76,7 +77,10 @@ const Signup = () => {
       // Ensure the path starts with an absolute / so it navigates from the domain root
       navigate(`/auth/vendor/otp?email=${safeEmail}`);
     } catch (err) {
-      toast.error(err.response?.data.message);
+      const parsedError = parseRequestError(err);
+      console.log('err', parsedError);
+      toast.error(parsedError);
+
     } finally {
       setIsloading(false);
     }
@@ -250,10 +254,10 @@ const Signup = () => {
                 strength < 3
               }
               onClick={handleRegister}
-              className="w-full py-6 rounded-md bg-[#0A6C6D] text-white text-sm font-light transition-transform duration-200 hover:shadow-lg hover:bg-[#0A6C6D] disabled:opacity-60 disabled:cursor-not-allowed"
+              className="w-full py-6 rounded-md bg-[#0A6C6D] text-white text-sm font-light transition-transform duration-200 hover:shadow-lg hover:bg-[#0A6C6D] disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center"
             >
               {isLoading ? (
-                <span className="flex w-full items-center justify-center gap-2">
+                <span className="flex items-center gap-2">
                   <Loader2 className="h-4 w-4 animate-spin" />
                   <span>Loading...</span>
                 </span>

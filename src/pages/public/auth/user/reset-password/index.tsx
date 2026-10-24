@@ -6,6 +6,7 @@ import logo from '@/public/images/Rhace-11.png';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { toast } from 'react-toastify';
 import { authService } from '@/services/auth.service';
+import { parseRequestError } from '@/services/request_helpers';
 import { Eye, EyeOff, Loader2, Lock } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { Label } from '@/components/ui/label';
@@ -39,7 +40,7 @@ const ResetPassword = () => {
       toast.success('Password reset successful. Please login.');
       navigate('/auth/user/login');
     } catch (err) {
-      toast.error(err.response.data.message);
+      toast.error(parseRequestError(err));
     } finally {
       setIsloading(false);
     }

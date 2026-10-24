@@ -7,7 +7,12 @@ import type { ReservationData } from '@/types';
 
 interface ReceiptProps {
   reservation?: ReservationData | null;
-  payment?: { reference?: string; provider?: string; currency?: string } | null;
+  payment?: {
+    reference?: string;
+    provider?: string;
+    currency?: string;
+    paymentConfig?: { billingModel?: string };
+  } | null;
   type?: 'hotel' | 'restaurant' | 'club';
   onClose?: () => void;
 }
@@ -175,6 +180,9 @@ const Receipt = ({
                         <div>
                           ✅ Paid online - Ref: {payment.reference?.slice(-8)}
                           {providerLabel && <> · via {providerLabel}</>}
+                          {payment.paymentConfig?.billingModel === 'subscription' && (
+                            <> · <span className="font-semibold">Subscription rate (0% platform)</span></>
+                          )}
                         </div>
                       )}
                     </div>

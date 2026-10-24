@@ -2,6 +2,7 @@ import HeroImage from '@/components/auth/HeroImage';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { authService } from '@/services/auth.service';
+import { parseRequestError } from '@/services/request_helpers';
 import { Loader2 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'react-toastify';
@@ -18,7 +19,7 @@ const ForgotPassword = () => {
       await authService.forgotPassword(email);
       toast.success('A reset password link has been sent to your Email');
     } catch (err) {
-      const message = err?.response?.data?.message || 'User not found';
+      const message = parseRequestError(err, 'User not found');
 
       toast.error(message);
     } finally {

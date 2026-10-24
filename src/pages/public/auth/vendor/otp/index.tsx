@@ -4,6 +4,7 @@ import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
 import { Loader2 } from 'lucide-react';
 import HeroImage from '@/components/auth/HeroImage';
 import { authService } from '@/services/auth.service';
+import { parseRequestError } from '@/services/request_helpers';
 import { useNavigate, useSearchParams } from 'react-router';
 import { toast } from 'react-toastify';
 import {
@@ -43,7 +44,7 @@ const Otp = () => {
       setCountdown(60);
       toast.success(res.message);
     } catch (err) {
-      toast.error(err.response?.data.message);
+      toast.error(parseRequestError(err));
     } finally {
       setIsResending(false);
     }
@@ -62,8 +63,9 @@ const Otp = () => {
       toast.success(res.message);
       navigate(`/auth/vendor/login`);
     } catch (err) {
-      setError(err.response?.data.message || 'Invalid OTP.');
-      toast.error(err.response?.data.message);
+      const message = parseRequestError(err, 'Invalid OTP.');
+      setError(message);
+      toast.error(message);
     } finally {
       setIsloading(false);
     }
