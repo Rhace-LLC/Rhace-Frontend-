@@ -6,10 +6,11 @@ import {
   Link,
   Mail,
   MapPin,
-  Percent,
+  Search,
   Shield,
   Trash2,
   UserPlus,
+  X,
 } from 'lucide-react';
 import DashboardPageHeader from '@/components/dashboard/DashboardPageHeader';
 import { Button } from '@/components/ui/button';
@@ -50,8 +51,6 @@ const STATUS_CONFIG: Record<
 export default function HotelOutletsPage() {
   const [links, setLinks] = useState<VendorLinkDto[]>([]);
   const [loading, setLoading] = useState(true);
-  const [outletName, setOutletName] = useState('');
-  const [lastCode, setLastCode] = useState<{ code: string; expiresAt: string } | null>(null);
   const [busy, setBusy] = useState(false);
   const [editingCommission, setEditingCommission] = useState<Record<string, string>>({});
   const [editingEta, setEditingEta] = useState<Record<string, string>>({});
@@ -59,7 +58,10 @@ export default function HotelOutletsPage() {
   // Invite modal
   const [inviteOpen, setInviteOpen] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');
-  const [inviteOutletName, setInviteOutletName] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<Array<{ _id: string; businessName: string; email: string; vendorType: string }>>([]);
+  const [selectedVendor, setSelectedVendor] = useState<{ _id: string; businessName: string; email: string; vendorType: string } | null>(null);
+  const [searchLoading, setSearchLoading] = useState(false);
 
   const activeCount = useMemo(() => links.filter((l) => l.status === 'active').length, [links]);
   const pendingCount = useMemo(() => links.filter((l) => l.status === 'pending').length, [links]);
@@ -79,34 +81,15 @@ export default function HotelOutletsPage() {
     void load();
   }, [load]);
 
-  const generate = async () => {
-    setBusy(true);
-    try {
-      const res = await vendorLinkApi.pairingCode(outletName.trim() || undefined);
-      setLastCode({ code: res.code, expiresAt: res.expiresAt });
-      setOutletName('');
-      toast.success('Pairing code generated — valid 24 hours');
-      await load();
-    } catch {
-      toast.error('Could not generate a pairing code.');
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const copyCode = async () => {
-    if (!lastCode) return;
-    await navigator.clipboard?.writeText(lastCode.code);
-    toast.success('Pairing code copied');
-  };
-
   const invite = async () => {
     if (!inviteEmail.trim()) return;
     setBusy(true);
     try {
-      await vendorLinkApi.invite({ email: inviteEmail.trim(), outletName: inviteOutletName.trim() || undefined });
+      await vendorLinkApi.invite({ email: inviteEmail.trim(), partnerVendorId: selectedVendor?._id ?? undefined });
       setInviteEmail('');
-      setInviteOutletName('');
+      setSearchQuery('');
+      setSearchResults([]);
+      setSelectedVendor(null);
       setInviteOpen(false);
       toast.success('Invite sent by email');
       await load();
@@ -115,6 +98,37 @@ export default function HotelOutletsPage() {
     } finally {
       setBusy(false);
     }
+  };
+
+  const handleSearch = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.trim();
+    setSearchQuery(value);
+    if (!value) {
+      setSearchResults([]);
+      setSelectedVendor(null);
+      return;
+    }
+    setSearchLoading(true);
+    try {
+      const results = await vendorLinkApi.searchVendors(value, 'restaurant');
+      setSearchResults(results.slice(0, 10));
+    } catch {
+      setSearchResults([]);
+    } finally {
+      setSearchLoading(false);
+    }
+  };
+
+  const pickVendor = (vendor: { _id: string; businessName: string; email: string; vendorType: string }) => {
+    setSelectedVendor(vendor);
+    setSearchQuery(vendor.businessName);
+    setSearchResults([]);
+  };
+
+  const clearSelection = () => {
+    setSelectedVendor(null);
+    setSearchQuery('');
+    setSearchResults([]);
   };
 
   const saveCommission = async (link: VendorLinkDto) => {
@@ -175,6 +189,15 @@ export default function HotelOutletsPage() {
       <DashboardPageHeader
         title="Linked outlets"
         subtitle="Pair restaurants, bars and lounges to this hotel for in-room ordering."
+        actions={
+          <Button
+            onClick={() => setInviteOpen(true)}
+            className="flex items-center gap-2 rounded-res-md border border-res-line bg-res-card px-4 py-2.5 text-res-ink font-medium shadow-res-low hover:bg-res-surface"
+          >
+            <Mail className="size-4" />
+            Invite by email
+          </Button>
+        }
       />
 
       {/* Summary stats */}
@@ -184,62 +207,6 @@ export default function HotelOutletsPage() {
         <StatCard label="Pending" value={pendingCount} icon={<Clock className="size-5 text-amber-600" />} />
         <StatCard label="Suspended" value={suspendedCount} icon={<Shield className="size-5 text-slate-600" />} />
       </div>
-
-      {/* Generate pairing code card */}
-      <Card className="rounded-res-lg border border-res-line bg-res-card shadow-res-low">
-        <CardHeader className="pb-3">
-          <CardTitle className="type-res-body text-res-ink font-semibold">Generate pairing code</CardTitle>
-          <CardDescription>
-            Single-use code. Share it with the restaurant — expires in 24 hours.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="pt-0 space-y-3">
-          <div className="space-y-2">
-            <label className="type-res-small text-res-ink-muted uppercase tracking-wider">Outlet name</label>
-            <Input
-              value={outletName}
-              onChange={(e) => setOutletName(e.target.value)}
-              placeholder="e.g. Pool Bar"
-            />
-          </div>
-          <Button
-            onClick={generate}
-            disabled={busy}
-            className="w-full bg-res-brand text-res-ink-inverted hover:bg-res-brand-hover"
-          >
-            {busy ? 'Generating…' : 'Generate code'}
-          </Button>
-          {lastCode && (
-            <div className="rounded-res-md border border-res-line bg-res-surface p-3">
-              <div className="flex items-center justify-between mb-1">
-                <p className="type-res-small text-res-ink-muted">Pairing code</p>
-                <Button
-                  onClick={copyCode}
-                  variant="ghost"
-                  size="sm"
-                  className="h-7 p-1"
-                >
-                  <CopyIcon className="size-4" />
-                </Button>
-              </div>
-              <p className="font-mono text-2xl font-bold text-res-ink tracking-widest">{lastCode.code}</p>
-              <p className="type-res-small text-res-ink-muted">
-                Expires{' '}
-                <span className="font-medium">{new Date(lastCode.expiresAt).toLocaleString()}</span>
-              </p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Invite by email — opens a modal */}
-      <Button
-        onClick={() => setInviteOpen(true)}
-        className="w-full flex items-center justify-center gap-2 bg-res-surface text-res-ink hover:bg-res-line"
-      >
-        <Mail className="size-4" />
-        Invite by email
-      </Button>
 
       {/* Linked outlets list */}
       <Card className="rounded-res-lg border border-res-line bg-res-card shadow-res-low">
@@ -264,8 +231,7 @@ export default function HotelOutletsPage() {
               </div>
               <h3 className="type-res-h3 text-res-ink">No linked outlets yet</h3>
               <p className="mt-2 type-res-body text-res-ink-muted max-w-sm mx-auto">
-                Generate a pairing code or send an email invite to connect a restaurant,
-                bar or lounge to this hotel.
+                Send an email invite to connect a restaurant, bar or lounge to this hotel.
               </p>
             </div>
           ) : (
@@ -471,48 +437,88 @@ export default function HotelOutletsPage() {
 
       {/* Invite modal */}
       <Dialog open={inviteOpen} onOpenChange={setInviteOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="rounded-res-lg border border-res-line bg-res-card shadow-res-high sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Invite by email</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="type-res-body text-res-ink font-semibold">Invite by email</DialogTitle>
+            <DialogDescription className="type-res-small text-res-ink-muted">
               The restaurant receives the pairing code by email and can link their outlet
               to this hotel.
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4">
+          <div className="space-y-6">
             <div className="space-y-2">
-              <label className="type-res-small text-res-ink-muted uppercase tracking-wider">Email address</label>
+              <label className="type-res-small text-res-ink-muted uppercase tracking-wider block">Email address</label>
               <Input
                 value={inviteEmail}
                 onChange={(e) => setInviteEmail(e.target.value)}
                 type="email"
                 placeholder="restaurant@example.com"
+                className="w-full rounded-res-md border border-res-line bg-res-card px-3 py-2.5 text-res-ink placeholder:text-res-ink-muted focus:border-res-brand focus:ring-res-brand/20"
               />
             </div>
             <div className="space-y-2">
-              <label className="type-res-small text-res-ink-muted uppercase tracking-wider">Outlet name</label>
-              <Input
-                value={inviteOutletName}
-                onChange={(e) => setInviteOutletName(e.target.value)}
-                placeholder="e.g. Pool Bar"
-              />
+              <label className="type-res-small text-res-ink-muted uppercase tracking-wider block">Search restaurant</label>
+              <div className="relative">
+                <Input
+                  value={searchQuery}
+                  onChange={handleSearch}
+                  placeholder="Search by restaurant name or email"
+                  className="w-full rounded-res-md border border-res-line bg-res-card px-3 py-2.5 text-res-ink placeholder:text-res-ink-muted focus:border-res-brand focus:ring-res-brand/20 pr-10"
+                />
+                <Search className="absolute right-3 top-2.5 size-4 text-res-ink-muted" />
+                {searchLoading && <Search className="absolute right-3 top-2.5 size-4 animate-spin text-res-brand" />}
+              </div>
+              {selectedVendor && (
+                <div className="flex items-center gap-2 rounded-res-md border border-res-line bg-res-surface px-3 py-2">
+                  <span className="type-res-body text-res-ink font-medium">{selectedVendor.businessName}</span>
+                  <span className="type-res-small text-res-ink-muted">{selectedVendor.email}</span>
+                  <Button
+                    type="button"
+                    onClick={clearSelection}
+                    variant="outline"
+                    size="sm"
+                    className="h-7 w-7 p-0 text-res-ink-muted hover:text-res-brand"
+                  >
+                    <X className="size-3" />
+                  </Button>
+                </div>
+              )}
+              {searchResults.length > 0 && !selectedVendor && (
+                <div className="absolute z-20 w-full rounded-res-md border border-res-line bg-res-card shadow-res-high mt-1">
+                  {searchResults.map((v) => (
+                    <button
+                      key={v._id}
+                      type="button"
+                      onClick={() => pickVendor(v)}
+                      className="w-full flex items-center gap-3 px-3 py-2.5 text-res-ink text-sm hover:bg-res-surface"
+                    >
+                      <div className="flex-1 min-w-0">
+                        <p className="type-res-body text-res-ink font-medium truncate">{v.businessName}</p>
+                        <p className="type-res-small text-res-ink-muted truncate">{v.email}</p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-res-line">
             <Button
               type="button"
               onClick={() => setInviteOpen(false)}
               variant="outline"
               disabled={busy}
+              className="w-full sm:w-auto rounded-res-md border border-res-line bg-res-card px-4 py-2.5 font-medium text-res-ink shadow-res-low hover:bg-res-surface disabled:opacity-60"
             >
               Cancel
             </Button>
             <Button
+              type="button"
               onClick={invite}
               disabled={busy || !inviteEmail.trim()}
-              className="bg-res-brand text-res-ink-inverted hover:bg-res-brand-hover"
+              className="w-full sm:w-auto rounded-res-md bg-res-brand px-4 py-2.5 font-medium text-res-ink-inverted shadow-res-low hover:bg-res-brand-hover disabled:opacity-60"
             >
               {busy ? 'Sending…' : 'Send invite'}
             </Button>
@@ -544,25 +550,5 @@ function StatCard({
         </div>
       </div>
     </Card>
-  );
-}
-
-function CopyIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width={18}
-      height={18}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-    >
-      <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
-      <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
-    </svg>
   );
 }

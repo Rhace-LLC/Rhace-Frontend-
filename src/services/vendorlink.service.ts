@@ -66,6 +66,12 @@ class VendorLinkApi {
     const res = await api.post('/vendor-links/invite', input);
     return unwrap<{ link: VendorLinkDto }>(res);
   }
+  async searchVendors(search: string, vendorType?: string) {
+    const res = await api.get('/vendors/public', {
+      params: { search, vendorType, page: 1, limit: 10 },
+    });
+    return res.data as Array<{ _id: string; businessName: string; email: string; vendorType: string }>;
+  }
   async hotelLinks(): Promise<VendorLinkDto[]> {
     const res = await api.get('/vendor-links');
     return unwrap<VendorLinkDto[]>(res);

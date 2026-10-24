@@ -12,7 +12,6 @@ import {
   Percent,
   Shield,
   User,
-  X,
 } from 'lucide-react';
 import DashboardPageHeader from '@/components/dashboard/DashboardPageHeader';
 import { Button } from '@/components/ui/button';
@@ -35,15 +34,15 @@ import {
 
 const SCOPE_CONFIG: Record<string, { label: string; description: string }> = {
   'read:menu': {
-    label: 'Menu Access',
+    label: 'Menu access',
     description: 'Hotel guests can view your active kitchen menu.',
   },
   'write:orders': {
-    label: 'Room Ordering',
+    label: 'Room ordering',
     description: 'Front desk can route direct kitchen tickets.',
   },
   'read:delivery_locations': {
-    label: 'Delivery Routing',
+    label: 'Delivery routing',
     description: 'Share dispatch locations for accurate ETAs.',
   },
 };
@@ -169,7 +168,7 @@ export default function LinkedHotelsPage() {
         actions={
           <Button
             onClick={() => setRedeemOpen(true)}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 rounded-res-md border border-res-line bg-res-card px-4 py-2.5 text-res-ink font-medium shadow-res-low hover:bg-res-surface"
           >
             <Link className="size-4" />
             Link hotel
@@ -179,18 +178,9 @@ export default function LinkedHotelsPage() {
 
       {/* Summary stats */}
       <div className="grid gap-3 md:grid-cols-3">
-        <div className="rounded-res-lg border border-res-line bg-res-card p-4 shadow-res-low">
-          <p className="type-res-caption text-res-ink-muted">Linked hotels</p>
-          <p className="mt-1 type-res-h3 text-res-ink font-semibold">{links.length}</p>
-        </div>
-        <div className="rounded-res-lg border border-res-line bg-res-card p-4 shadow-res-low">
-          <p className="type-res-caption text-res-ink-muted">Active</p>
-          <p className="mt-1 type-res-h3 text-res-ink font-semibold">{activeCount}</p>
-        </div>
-        <div className="rounded-res-lg border border-res-line bg-res-card p-4 shadow-res-low">
-          <p className="type-res-caption text-res-ink-muted">Pending approval</p>
-          <p className="mt-1 type-res-h3 text-res-ink font-semibold">{pendingCount}</p>
-        </div>
+        <StatCard label="Linked hotels" value={links.length} icon={<Link className="size-5 text-res-ink-muted" />} />
+        <StatCard label="Active" value={activeCount} icon={<CheckCircle2 className="size-5 text-emerald-600" />} />
+        <StatCard label="Pending approval" value={pendingCount} icon={<Clock className="size-5 text-amber-600" />} />
       </div>
 
       {/* Content */}
@@ -210,7 +200,7 @@ export default function LinkedHotelsPage() {
           </p>
           <Button
             onClick={() => setRedeemOpen(true)}
-            className="mt-6"
+            className="mt-6 flex items-center justify-center gap-2 rounded-res-md border border-res-line bg-res-card px-4 py-2.5 text-res-ink font-medium shadow-res-low hover:bg-res-surface"
           >
             <Link className="size-4 mr-2" />
             Enter pairing code
@@ -255,27 +245,29 @@ export default function LinkedHotelsPage() {
                 </CardHeader>
 
                 <CardContent className="pt-0">
-                  <div className="space-y-3">
+                  <div className="space-y-4">
                     {/* Scopes */}
-                    <div>
-                      <p className="type-res-caption text-res-ink-muted mb-2 uppercase tracking-wider">
+                    <div className="rounded-res-md border border-res-line bg-res-surface p-4">
+                      <p className="type-res-caption text-res-ink-muted mb-3 uppercase tracking-wider">
                         Permissions granted
                       </p>
-                      <div className="flex flex-wrap gap-2">
+                      <div className="space-y-2">
                         {ALL_SCOPES.map((s) => {
                           const cfg = SCOPE_CONFIG[s];
                           const enabled = link.scopes.includes(s);
                           return (
-                            <span
+                            <div
                               key={s}
-                              className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium border ${
+                              className="flex items-center gap-3 rounded-full px-3 py-2 cursor-pointer transition-colors border ${
                                 enabled
                                   ? 'bg-emerald-50 text-emerald-700 border-emerald-100'
-                                  : 'bg-res-surface text-res-ink-muted border-res-line'
-                              }`}
+                                  : 'bg-res-card border-res-line text-res-ink-muted hover:bg-res-surface'
+                              }"
                             >
-                              {cfg.label}
-                            </span>
+                              <span className={`text-res-ink font-medium ${enabled ? 'text-emerald-700' : ''}`}>
+                                {cfg.label}
+                              </span>
+                            </div>
                           );
                         })}
                       </div>
@@ -283,46 +275,55 @@ export default function LinkedHotelsPage() {
 
                     {/* Commission */}
                     {commission && (
-                      <div className="flex items-center justify-between">
-                        <span className="type-res-caption text-res-ink-muted uppercase tracking-wider">
-                          Hotel commission
-                        </span>
-                        <span className="type-res-body text-res-ink font-semibold">{commission}</span>
+                      <div className="rounded-res-md border border-res-line bg-res-surface p-4">
+                        <div className="flex items-center justify-between">
+                          <span className="type-res-caption text-res-ink-muted uppercase tracking-wider">
+                            Hotel commission
+                          </span>
+                          <span className="type-res-body text-res-ink font-semibold">{commission}</span>
+                        </div>
                       </div>
                     )}
 
                     {/* Zone preview */}
                     {link.status === 'active' && (
                       <div
-                        className="flex items-center gap-2 cursor-pointer"
+                        className="rounded-res-md border border-res-line bg-res-surface p-4 cursor-pointer"
                         onClick={() => showZones(link._id)}
                       >
-                        <MapPin className="size-4 text-res-ink-muted" />
-                        <span className="type-res-body text-res-ink font-medium">
-                          {zones ? `${zones.length} delivery zone${zones.length === 1 ? '' : 's'}` : 'View delivery zones'}
-                        </span>
-                        {zones === undefined && (
-                          <ChevronDown className="size-3 text-res-ink-muted" />
-                        )}
-                        {zones && !isExpanded && (
-                          <ChevronDown className="size-3 text-res-ink-muted" />
-                        )}
-                        {zones && isExpanded && (
-                          <ChevronUp className="size-3 text-res-ink-muted" />
-                        )}
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-res-card border border-res-line">
+                            <MapPin className="size-4 text-res-ink-muted" />
+                          </div>
+                          <div>
+                            <p className="type-res-body text-res-ink font-medium">
+                              {zones ? `${zones.length} delivery zone${zones.length === 1 ? '' : 's'}` : 'View delivery zones'}
+                            </p>
+                            <p className="type-res-small text-res-ink-muted">
+                              Tap to see dispatch points and ETAs
+                            </p>
+                          </div>
+                          {zones === undefined ? (
+                            <ChevronDown className="size-3 text-res-ink-muted" />
+                          ) : zones && !isExpanded ? (
+                            <ChevronDown className="size-3 text-res-ink-muted" />
+                          ) : (
+                            <ChevronUp className="size-3 text-res-ink-muted" />
+                          )}
+                        </div>
                       </div>
                     )}
                   </div>
                 </CardContent>
 
-                <CardFooter className="pt-3">
-                  <div className="flex items-center justify-between">
+                <CardFooter className="pt-4">
+                  <div className="flex flex-col sm:flex-row gap-3">
                     {link.status === 'pending' ? (
-                      <div className="flex gap-2">
+                      <>
                         <Button
                           onClick={() => approve(link._id)}
                           disabled={busy}
-                          className="flex-1 bg-emerald-600 text-res-ink-inverted hover:bg-emerald-700 size-sm"
+                          className="flex-1 bg-emerald-600 text-res-ink-inverted rounded-res-md px-4 py-2.5 font-medium shadow-res-low hover:bg-emerald-700 disabled:opacity-60"
                         >
                           {busy ? null : <Check className="size-3 mr-2" />}
                           Approve
@@ -330,18 +331,16 @@ export default function LinkedHotelsPage() {
                         <Button
                           onClick={() => decline(link._id)}
                           disabled={busy}
-                          variant="outline"
-                          className="flex-1 size-sm"
+                          className="flex-1 rounded-res-md border border-res-line bg-res-card px-4 py-2.5 font-medium text-res-ink shadow-res-low hover:bg-res-surface disabled:opacity-60"
                         >
                           Decline
                         </Button>
-                      </div>
+                      </>
                     ) : (
                       <Button
                         onClick={() => showZones(link._id)}
                         disabled={busy}
-                        variant="outline"
-                        className="w-full size-sm"
+                        className="w-full rounded-res-md border border-res-line bg-res-card px-4 py-2.5 font-medium text-res-ink shadow-res-low hover:bg-res-surface disabled:opacity-60"
                       >
                         {zones === undefined || isExpanded ? 'Hide zones' : 'View zones'}
                       </Button>
@@ -353,7 +352,7 @@ export default function LinkedHotelsPage() {
                 {isExpanded && zones && (
                   <CardContent className="pt-0 border-t border-res-line">
                     <div className="space-y-3">
-                      <p className="type-res-caption text-res-ink-muted uppercase tracking-wider mb-1">
+                      <p className="type-res-caption text-res-ink-muted mb-3 uppercase tracking-wider">
                         Delivery zones
                       </p>
                       <div className="grid gap-2">
@@ -362,7 +361,7 @@ export default function LinkedHotelsPage() {
                           return (
                             <div
                               key={z._id}
-                              className="rounded-res-md border border-res-line bg-res-surface p-3"
+                              className="rounded-res-md border border-res-line bg-res-card p-4 shadow-res-low"
                             >
                               <div className="flex items-center justify-between">
                                 <div>
@@ -398,29 +397,29 @@ export default function LinkedHotelsPage() {
 
       {/* Redeem code modal */}
       <Dialog open={redeemOpen} onOpenChange={setRedeemOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="rounded-res-lg border border-res-line bg-res-card shadow-res-high sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Link a hotel</DialogTitle>
-            <DialogDescription>
-              Enter the 8-character pairing code provided by your hotel partner and choose the
-              permissions you want to grant.
+            <DialogTitle className="type-res-body text-res-ink font-semibold">Link a hotel</DialogTitle>
+            <DialogDescription className="type-res-small text-res-ink-muted">
+              Enter the 8-character pairing code from your hotel partner and choose the
+              permissions to grant.
             </DialogDescription>
           </DialogHeader>
 
-          <form onSubmit={(e) => { e.preventDefault(); redeem(); }} className="space-y-4">
+          <div className="space-y-6">
             <div className="space-y-2">
-              <label className="type-res-body text-res-ink font-semibold">Pairing code</label>
+              <label className="type-res-small text-res-ink-muted uppercase tracking-wider block">Pairing code</label>
               <Input
                 value={code}
                 onChange={(e) => setCode(e.target.value.toUpperCase())}
                 placeholder="ABCD1234"
                 maxLength={8}
-                className="font-mono text-sm tracking-widest uppercase"
+                className="w-full rounded-res-md border border-res-line bg-res-card px-3 py-2.5 font-mono text-sm tracking-widest uppercase text-res-ink placeholder:text-res-ink-muted focus:border-res-brand focus:ring-res-brand/20"
               />
             </div>
 
             <div className="space-y-2">
-              <label className="type-res-body text-res-ink font-semibold">Permissions to grant</label>
+              <label className="type-res-small text-res-ink-muted uppercase tracking-wider block">Permissions to grant</label>
               <div className="space-y-2">
                 {ALL_SCOPES.map((s) => {
                   const cfg = SCOPE_CONFIG[s];
@@ -428,10 +427,10 @@ export default function LinkedHotelsPage() {
                   return (
                     <div
                       key={s}
-                      className="flex items-center gap-3 rounded-res-md border border-res-line bg-res-card p-3"
+                      className="flex items-center gap-3 rounded-res-md border p-3 cursor-pointer transition-colors border-res-line hover:bg-res-surface"
                     >
                       <Switch checked={enabled} onCheckedChange={() => toggleScope(s)} />
-                      <div>
+                      <div className="flex-1 min-w-0">
                         <p className="type-res-body text-res-ink font-medium">{cfg.label}</p>
                         <p className="type-res-small text-res-ink-muted">{cfg.description}</p>
                       </div>
@@ -440,14 +439,15 @@ export default function LinkedHotelsPage() {
                 })}
               </div>
             </div>
-          </form>
+          </div>
 
-          <DialogFooter>
+          <DialogFooter className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-res-line">
             <Button
               type="button"
               onClick={() => setRedeemOpen(false)}
               variant="outline"
               disabled={workingId === 'redeem'}
+              className="w-full sm:w-auto rounded-res-md border border-res-line bg-res-card px-4 py-2.5 font-medium text-res-ink shadow-res-low hover:bg-res-surface disabled:opacity-60"
             >
               Cancel
             </Button>
@@ -455,7 +455,7 @@ export default function LinkedHotelsPage() {
               type="button"
               onClick={redeem}
               disabled={workingId === 'redeem' || !code.trim()}
-              className="bg-res-brand text-res-ink-inverted hover:bg-res-brand-hover"
+              className="w-full sm:w-auto rounded-res-md bg-res-brand px-4 py-2.5 font-medium text-res-ink-inverted shadow-res-low hover:bg-res-brand-hover disabled:opacity-60"
             >
               {workingId === 'redeem' ? 'Linking…' : 'Link hotel'}
             </Button>
@@ -463,5 +463,29 @@ export default function LinkedHotelsPage() {
         </DialogContent>
       </Dialog>
     </div>
+  );
+}
+
+function StatCard({
+  label,
+  value,
+  icon,
+}: {
+  label: string;
+  value: number | string;
+  icon: React.ReactNode;
+}) {
+  return (
+    <Card className="rounded-res-lg border border-res-line bg-res-card shadow-res-low p-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="type-res-caption text-res-ink-muted uppercase tracking-wider">{label}</p>
+          <p className="mt-1 type-res-h3 text-res-ink font-semibold">{value}</p>
+        </div>
+        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-res-surface">
+          {icon}
+        </div>
+      </div>
+    </Card>
   );
 }

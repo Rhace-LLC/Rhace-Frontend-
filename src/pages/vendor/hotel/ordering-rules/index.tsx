@@ -381,28 +381,29 @@ export default function HotelOrderingRulesPage() {
 
       {/* Add window modal */}
       <Dialog open={windowOpen} onOpenChange={setWindowOpen}>
-        <DialogContent className="sm:max-w-lg">
+        <DialogContent className="rounded-res-lg border border-res-line bg-res-card shadow-res-high sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>Add ordering window</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="type-res-body text-res-ink font-semibold">Add ordering window</DialogTitle>
+            <DialogDescription className="type-res-small text-res-ink-muted">
               Define when ordering is open or blocked for a scope.
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-5">
+          <div className="space-y-6">
             <div className="grid gap-3 md:grid-cols-5">
               <div className="flex flex-col gap-1">
-                <label className="type-res-small text-res-ink-muted uppercase tracking-wider">Name</label>
+                <label className="type-res-small text-res-ink-muted uppercase tracking-wider block">Name</label>
                 <Input
                   value={wName}
                   onChange={(e) => setWName(e.target.value)}
                   placeholder="e.g. Night Room Service"
+                  className="w-full rounded-res-md border border-res-line bg-res-card px-3 py-2.5 text-res-ink placeholder:text-res-ink-muted focus:border-res-brand focus:ring-res-brand/20"
                 />
               </div>
               <div className="flex flex-col gap-1">
-                <label className="type-res-small text-res-ink-muted uppercase tracking-wider">Mode</label>
+                <label className="type-res-small text-res-ink-muted uppercase tracking-wider block">Mode</label>
                 <Select value={wMode} onValueChange={(v) => setWMode(v as 'allow' | 'block')}>
-                  <SelectTrigger className="w-full">
+                  <SelectTrigger className="w-full rounded-res-md border border-res-line bg-res-card px-3 py-2.5 text-res-ink focus:border-res-brand focus:ring-res-brand/20">
                     <SelectValue placeholder={wMode} />
                   </SelectTrigger>
                   <SelectContent>
@@ -412,17 +413,17 @@ export default function HotelOrderingRulesPage() {
                 </Select>
               </div>
               <div className="flex flex-col gap-1">
-                <label className="type-res-small text-res-ink-muted uppercase tracking-wider">From</label>
-                <Input type="time" value={wStart} onChange={(e) => setWStart(e.target.value)} className="w-full text-sm" />
+                <label className="type-res-small text-res-ink-muted uppercase tracking-wider block">From</label>
+                <Input type="time" value={wStart} onChange={(e) => setWStart(e.target.value)} className="w-full rounded-res-md border border-res-line bg-res-card px-3 py-2.5 text-res-ink focus:border-res-brand focus:ring-res-brand/20" />
               </div>
               <div className="flex flex-col gap-1">
-                <label className="type-res-small text-res-ink-muted uppercase tracking-wider">To</label>
-                <Input type="time" value={wEnd} onChange={(e) => setWEnd(e.target.value)} className="w-full text-sm" />
+                <label className="type-res-small text-res-ink-muted uppercase tracking-wider block">To</label>
+                <Input type="time" value={wEnd} onChange={(e) => setWEnd(e.target.value)} className="w-full rounded-res-md border border-res-line bg-res-card px-3 py-2.5 text-res-ink focus:border-res-brand focus:ring-res-brand/20" />
               </div>
               <div className="flex flex-col gap-1">
-                <label className="type-res-small text-res-ink-muted uppercase tracking-wider">Outlet scope</label>
+                <label className="type-res-small text-res-ink-muted uppercase tracking-wider block">Outlet scope</label>
                 <Select value={wLinkFilter} onValueChange={(v) => setWLinkFilter(v as string)}>
-                  <SelectTrigger className="w-full">
+                  <SelectTrigger className="w-full rounded-res-md border border-res-line bg-res-card px-3 py-2.5 text-res-ink focus:border-res-brand focus:ring-res-brand/20">
                     <SelectValue placeholder="All outlets" />
                   </SelectTrigger>
                   <SelectContent>
@@ -437,36 +438,40 @@ export default function HotelOrderingRulesPage() {
               </div>
             </div>
 
-            <div className="flex flex-wrap gap-1.5">
-              {DAYS.map((d) => (
-                <button
-                  key={d.key}
-                  type="button"
-                  onClick={() => toggleDay(d.key)}
-                  className={`rounded-full px-2.5 py-1 text-xs font-medium capitalize transition-colors ${
-                    wDays.has(d.key)
-                      ? 'bg-res-brand text-res-ink-inverted'
-                      : 'bg-res-card text-res-ink border border-res-line'
-                  }`}
-                >
-                  {d.label}
-                </button>
-              ))}
+            <div className="rounded-res-md border border-res-line bg-res-surface p-4">
+              <div className="flex flex-wrap gap-1.5">
+                {DAYS.map((d) => (
+                  <button
+                    key={d.key}
+                    type="button"
+                    onClick={() => toggleDay(d.key)}
+                    className={`rounded-full px-2.5 py-1 text-xs font-medium capitalize transition-colors border ${
+                      wDays.has(d.key)
+                        ? 'bg-res-brand text-res-ink-inverted border-res-brand'
+                        : 'bg-res-card text-res-ink border-res-line hover:bg-res-surface'
+                    }`}
+                  >
+                    {d.label}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-res-line">
             <Button
               type="button"
               onClick={() => setWindowOpen(false)}
               variant="outline"
+              className="w-full sm:w-auto rounded-res-md border border-res-line bg-res-card px-4 py-2.5 font-medium text-res-ink shadow-res-low hover:bg-res-surface"
             >
               Cancel
             </Button>
             <Button
+              type="button"
               onClick={createWindow}
               disabled={!wName.trim()}
-              className="bg-res-brand text-res-ink-inverted hover:bg-res-brand-hover"
+              className="w-full sm:w-auto rounded-res-md bg-res-brand px-4 py-2.5 font-medium text-res-ink-inverted shadow-res-low hover:bg-res-brand-hover disabled:opacity-60"
             >
               Add window
             </Button>
@@ -476,29 +481,30 @@ export default function HotelOrderingRulesPage() {
 
       {/* Add fee rule modal */}
       <Dialog open={feeOpen} onOpenChange={setFeeOpen}>
-        <DialogContent className="sm:max-w-lg">
+        <DialogContent className="rounded-res-lg border border-res-line bg-res-card shadow-res-high sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>Add fee rule</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="type-res-body text-res-ink font-semibold">Add fee rule</DialogTitle>
+            <DialogDescription className="type-res-small text-res-ink-muted">
               Create a flat or percentage surcharge scoped to sources,
               fulfillment mode and specific outlets.
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-5">
+          <div className="space-y-6">
             <div className="grid gap-3 md:grid-cols-6">
               <div className="flex flex-col gap-1">
-                <label className="type-res-small text-res-ink-muted uppercase tracking-wider">Label</label>
+                <label className="type-res-small text-res-ink-muted uppercase tracking-wider block">Label</label>
                 <Input
                   value={fLabel}
                   onChange={(e) => setFLabel(e.target.value)}
                   placeholder="e.g. Tray Charge"
+                  className="w-full rounded-res-md border border-res-line bg-res-card px-3 py-2.5 text-res-ink placeholder:text-res-ink-muted focus:border-res-brand focus:ring-res-brand/20"
                 />
               </div>
               <div className="flex flex-col gap-1">
-                <label className="type-res-small text-res-ink-muted uppercase tracking-wider">Kind</label>
+                <label className="type-res-small text-res-ink-muted uppercase tracking-wider block">Kind</label>
                 <Select value={fKind} onValueChange={(v) => setFKind(v as 'flat' | 'percent')}>
-                  <SelectTrigger className="w-full">
+                  <SelectTrigger className="w-full rounded-res-md border border-res-line bg-res-card px-3 py-2.5 text-res-ink focus:border-res-brand focus:ring-res-brand/20">
                     <SelectValue placeholder={fKind} />
                   </SelectTrigger>
                   <SelectContent>
@@ -508,20 +514,20 @@ export default function HotelOrderingRulesPage() {
                 </Select>
               </div>
               <div className="flex flex-col gap-1">
-                <label className="type-res-small text-res-ink-muted uppercase tracking-wider">Value</label>
+                <label className="type-res-small text-res-ink-muted uppercase tracking-wider block">Value</label>
                 <Input
                   value={fValue}
                   onChange={(e) => setFValue(e.target.value)}
                   type="number"
                   min={0}
                   placeholder={fKind === 'flat' ? '₦500' : '15'}
-                  className="w-full text-sm"
+                  className="w-full rounded-res-md border border-res-line bg-res-card px-3 py-2.5 text-res-ink placeholder:text-res-ink-muted focus:border-res-brand focus:ring-res-brand/20"
                 />
               </div>
               <div className="flex flex-col gap-1">
-                <label className="type-res-small text-res-ink-muted uppercase tracking-wider">Source</label>
+                <label className="type-res-small text-res-ink-muted uppercase tracking-wider block">Source</label>
                 <Select value={fSource} onValueChange={(v) => setFSource(v as 'hotel' | 'linked' | '')}>
-                  <SelectTrigger className="w-full">
+                  <SelectTrigger className="w-full rounded-res-md border border-res-line bg-res-card px-3 py-2.5 text-res-ink focus:border-res-brand focus:ring-res-brand/20">
                     <SelectValue placeholder="All sources" />
                   </SelectTrigger>
                   <SelectContent>
@@ -532,9 +538,9 @@ export default function HotelOrderingRulesPage() {
                 </Select>
               </div>
               <div className="flex flex-col gap-1">
-                <label className="type-res-small text-res-ink-muted uppercase tracking-wider">Fulfillment</label>
+                <label className="type-res-small text-res-ink-muted uppercase tracking-wider block">Fulfillment</label>
                 <Select value={fFulfillment} onValueChange={(v) => setFFulfillment(v as 'room' | 'location' | '')}>
-                  <SelectTrigger className="w-full">
+                  <SelectTrigger className="w-full rounded-res-md border border-res-line bg-res-card px-3 py-2.5 text-res-ink focus:border-res-brand focus:ring-res-brand/20">
                     <SelectValue placeholder="Any fulfillment" />
                   </SelectTrigger>
                   <SelectContent>
@@ -545,9 +551,9 @@ export default function HotelOrderingRulesPage() {
                 </Select>
               </div>
               <div className="flex flex-col gap-1">
-                <label className="type-res-small text-res-ink-muted uppercase tracking-wider">Outlet scope</label>
+                <label className="type-res-small text-res-ink-muted uppercase tracking-wider block">Outlet scope</label>
                 <Select value={fLinkFilter} onValueChange={(v) => setFLinkFilter(v as string)}>
-                  <SelectTrigger className="w-full">
+                  <SelectTrigger className="w-full rounded-res-md border border-res-line bg-res-card px-3 py-2.5 text-res-ink focus:border-res-brand focus:ring-res-brand/20">
                     <SelectValue placeholder="All outlets" />
                   </SelectTrigger>
                   <SelectContent>
@@ -563,18 +569,20 @@ export default function HotelOrderingRulesPage() {
             </div>
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-res-line">
             <Button
               type="button"
               onClick={() => setFeeOpen(false)}
               variant="outline"
+              className="w-full sm:w-auto rounded-res-md border border-res-line bg-res-card px-4 py-2.5 font-medium text-res-ink shadow-res-low hover:bg-res-surface"
             >
               Cancel
             </Button>
             <Button
+              type="button"
               onClick={createFee}
               disabled={!fLabel.trim() || !fValue}
-              className="bg-res-brand text-res-ink-inverted hover:bg-res-brand-hover"
+              className="w-full sm:w-auto rounded-res-md bg-res-brand px-4 py-2.5 font-medium text-res-ink-inverted shadow-res-low hover:bg-res-brand-hover disabled:opacity-60"
             >
               Add fee rule
             </Button>

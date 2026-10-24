@@ -390,28 +390,29 @@ export default function HotelZonesPage() {
 
       {/* Create zone modal */}
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-        <DialogContent className="sm:max-w-lg">
+        <DialogContent className="rounded-res-lg border border-res-line bg-res-card shadow-res-high sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>Create zone</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="type-res-body text-res-ink font-semibold">Create zone</DialogTitle>
+            <DialogDescription className="type-res-small text-res-ink-muted">
               Select rooms or a label range, then assign the outlets that serve them.
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-5">
+          <div className="space-y-6">
             <div className="grid gap-3 md:grid-cols-4">
               <div className="flex flex-col gap-1">
-                <label className="type-res-small text-res-ink-muted uppercase tracking-wider">Zone name</label>
+                <label className="type-res-small text-res-ink-muted uppercase tracking-wider block">Zone name</label>
                 <Input
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder={kind === 'rooms' ? 'e.g. Tower A 1xx' : 'e.g. Pool deck'}
+                  className="w-full rounded-res-md border border-res-line bg-res-card px-3 py-2.5 text-res-ink placeholder:text-res-ink-muted focus:border-res-brand focus:ring-res-brand/20"
                 />
               </div>
               <div className="flex flex-col gap-1">
-                <label className="type-res-small text-res-ink-muted uppercase tracking-wider">Type</label>
+                <label className="type-res-small text-res-ink-muted uppercase tracking-wider block">Type</label>
                 <Select value={kind} onValueChange={(v) => setKind(v as 'rooms' | 'common_area')}>
-                  <SelectTrigger className="w-full">
+                  <SelectTrigger className="w-full rounded-res-md border border-res-line bg-res-card px-3 py-2.5 text-res-ink focus:border-res-brand focus:ring-res-brand/20">
                     <SelectValue placeholder="Select type" />
                   </SelectTrigger>
                   <SelectContent>
@@ -421,9 +422,9 @@ export default function HotelZonesPage() {
                 </Select>
               </div>
               <div className="flex flex-col gap-1">
-                <label className="type-res-small text-res-ink-muted uppercase tracking-wider">Floor plan</label>
+                <label className="type-res-small text-res-ink-muted uppercase tracking-wider block">Floor plan</label>
                 <Select value={planId} onValueChange={setPlanId}>
-                  <SelectTrigger className="w-full">
+                  <SelectTrigger className="w-full rounded-res-md border border-res-line bg-res-card px-3 py-2.5 text-res-ink focus:border-res-brand focus:ring-res-brand/20">
                     <SelectValue placeholder="Select plan" />
                   </SelectTrigger>
                   <SelectContent>
@@ -442,70 +443,78 @@ export default function HotelZonesPage() {
                   }}
                   variant="outline"
                   size="sm"
-                  className="w-full"
+                  className="w-full rounded-res-md border border-res-line bg-res-card px-3 py-2.5 font-medium text-res-ink shadow-res-low hover:bg-res-surface"
                 >
                   Clear
                 </Button>
               </div>
             </div>
 
-            <div className="flex flex-col gap-1">
-              <label className="type-res-small text-res-ink-muted uppercase tracking-wider">Rooms / units</label>
-              <div className="mt-1 flex max-h-44 flex-wrap gap-1.5 overflow-y-auto rounded-xl bg-res-surface p-2">
-                {units.map((u) => (
-                  <button
-                    key={u._id}
-                    type="button"
-                    onClick={() => toggleUnit(u._id)}
-                    className={`rounded-full px-2.5 py-1 text-xs font-medium transition-colors ${
-                      selected.has(u._id) ? 'bg-res-brand text-res-ink-inverted' : 'bg-res-card text-res-ink border border-res-line'
-                    }`}
-                  >
-                    {u.label}
-                  </button>
-                ))}
-                {units.length === 0 && <p className="type-res-small text-res-ink-muted">No units on this plan.</p>}
+            <div className="rounded-res-md border border-res-line bg-res-surface p-4">
+              <div className="flex flex-col gap-1">
+                <label className="type-res-small text-res-ink-muted uppercase tracking-wider block">Rooms / units</label>
+                <div className="mt-1 flex max-h-44 flex-wrap gap-1.5 overflow-y-auto rounded-res-md bg-res-card p-2">
+                  {units.map((u) => (
+                    <button
+                      key={u._id}
+                      type="button"
+                      onClick={() => toggleUnit(u._id)}
+                      className={`rounded-full px-2.5 py-1 text-xs font-medium transition-colors border ${
+                        selected.has(u._id)
+                          ? 'bg-res-brand text-res-ink-inverted border-res-brand'
+                          : 'bg-res-card text-res-ink border-res-line hover:bg-res-surface'
+                      }`}
+                    >
+                      {u.label}
+                    </button>
+                  ))}
+                  {units.length === 0 && <p className="type-res-small text-res-ink-muted">No units on this plan.</p>}
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-1 mt-4">
+                <label className="type-res-small text-res-ink-muted uppercase tracking-wider block">Or label range</label>
+                <div className="mt-1 flex gap-2">
+                  <Input
+                    value={rangeFrom}
+                    onChange={(e) => setRangeFrom(e.target.value)}
+                    placeholder="100"
+                    className="flex-1 rounded-res-md border border-res-line bg-res-card px-3 py-2.5 text-res-ink focus:border-res-brand focus:ring-res-brand/20"
+                  />
+                  <span className="type-res-small text-res-ink-muted self-center">→</span>
+                  <Input
+                    value={rangeTo}
+                    onChange={(e) => setRangeTo(e.target.value)}
+                    placeholder="199"
+                    className="flex-1 rounded-res-md border border-res-line bg-res-card px-3 py-2.5 text-res-ink focus:border-res-brand focus:ring-res-brand/20"
+                  />
+                </div>
               </div>
             </div>
 
-            <div className="flex flex-col gap-1">
-              <label className="type-res-small text-res-ink-muted uppercase tracking-wider">Or label range</label>
-              <div className="mt-1 flex gap-2">
-                <Input
-                  value={rangeFrom}
-                  onChange={(e) => setRangeFrom(e.target.value)}
-                  placeholder="100"
-                  className="w-20 text-sm"
-                />
-                <span className="type-res-small text-res-ink-muted self-center">→</span>
-                <Input
-                  value={rangeTo}
-                  onChange={(e) => setRangeTo(e.target.value)}
-                  placeholder="199"
-                  className="w-20 text-sm"
-                />
+            <div className="rounded-res-md border border-res-line bg-res-surface p-4">
+              <div className="flex flex-col gap-1">
+                <label className="type-res-small text-res-ink-muted uppercase tracking-wider block">Outlets serving this zone</label>
+                <OutletPicker links={links} value={outlets} onChange={setOutlets} />
               </div>
-            </div>
-
-            <div className="flex flex-col gap-1">
-              <label className="type-res-small text-res-ink-muted uppercase tracking-wider">Outlets serving this zone</label>
-              <OutletPicker links={links} value={outlets} onChange={setOutlets} />
             </div>
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-res-line">
             <Button
               type="button"
               onClick={() => setCreateOpen(false)}
               variant="outline"
               disabled={saving}
+              className="w-full sm:w-auto rounded-res-md border border-res-line bg-res-card px-4 py-2.5 font-medium text-res-ink shadow-res-low hover:bg-res-surface disabled:opacity-60"
             >
               Cancel
             </Button>
             <Button
+              type="button"
               onClick={createZone}
               disabled={saving || !name.trim() || (selected.size === 0 && (!rangeFrom || !rangeTo))}
-              className="bg-res-brand text-res-ink-inverted hover:bg-res-brand-hover"
+              className="w-full sm:w-auto rounded-res-md bg-res-brand px-4 py-2.5 font-medium text-res-ink-inverted shadow-res-low hover:bg-res-brand-hover disabled:opacity-60"
             >
               {saving ? 'Creating…' : 'Create zone'}
             </Button>
