@@ -17,6 +17,17 @@ export interface VendorLinkDto {
   counterpartName?: string | null;
 }
 
+/** Public (unauthenticated) shape returned by GET /vendors/public. */
+export interface PublicVendorSummary {
+  _id: string;
+  businessName: string;
+  email?: string | null;
+  vendorType?: string;
+  address?: string | null;
+  vendorTypeCategory?: string | null;
+  rating?: number;
+}
+
 export interface DeliveryZoneDto {
   _id: string;
   name: string;
@@ -66,11 +77,27 @@ class VendorLinkApi {
     const res = await api.post('/vendor-links/invite', input);
     return unwrap<{ link: VendorLinkDto }>(res);
   }
-  async searchVendors(search: string, vendorType?: string) {
+  /**
+   * Substring search over public restaurant records (name, email, area).
+   * The abort signal lets a newer keystroke cancel an in-flight request, so a
+   * slow earlier response can never overwrite fresher results with an empty list.
+   */
+  async searchVendors(
+    search: string,
+    vendorType?: string,
+    options?: { signal?: AbortSignal; limit?: number }
+  ): Promise<PublicVendorSummary[]> {
     const res = await api.get('/vendors/public', {
-      params: { search, vendorType, page: 1, limit: 10 },
+      params: { search, vendorType, page: 1, limit: options?.limit ?? 10 },
+      signal: options?.signal,
     });
-    return res.data as Array<{ _id: string; businessName: string; email: string; vendorType: string }>;
+    const body = res.data as unknown;
+    const list = Array.isArray(body)
+      ? body
+      : Array.isArray((body as { data?: unknown } | null)?.data)
+        ? (body as { data: unknown[] }).data
+        : [];
+    return list as PublicVendorSummary[];
   }
   async hotelLinks(): Promise<VendorLinkDto[]> {
     const res = await api.get('/vendor-links');

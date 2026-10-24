@@ -12,6 +12,24 @@ const unwrap = <T>(response: { data: unknown }): T => {
   return (body?.data ?? body) as T;
 };
 
+/**
+ * ISO bounds for the local calendar day.
+ *
+ * Passed to the API as `serviceFrom`/`serviceTo`: a pre-order counts on the day
+ * its reservation starts, not the day the guest placed it, so these bounds are
+ * what "for today" means on every ticket and orders screen.
+ */
+export function todayServiceWindow(now: Date = new Date()): {
+  serviceFrom: string;
+  serviceTo: string;
+} {
+  const start = new Date(now);
+  start.setHours(0, 0, 0, 0);
+  const end = new Date(now);
+  end.setHours(23, 59, 59, 999);
+  return { serviceFrom: start.toISOString(), serviceTo: end.toISOString() };
+}
+
 /** Whole room tab for a stay (Phase 0 D5): every order plus summed totals. */
 export interface ReservationTabSummary {
   count: number;
@@ -61,6 +79,12 @@ class OrdersApi {
     /** ISO date bounds on `createdAt` (backend `from`/`to`). */
     from?: string;
     to?: string;
+    /**
+     * ISO bounds on the order's service day — reservation start for pre-orders,
+     * `createdAt` for everything else. Use `todayServiceWindow()` for "today".
+     */
+    serviceFrom?: string;
+    serviceTo?: string;
     /** Restrict to orders on one table/room, or any of several. */
     unitId?: string;
     unitIds?: string[];

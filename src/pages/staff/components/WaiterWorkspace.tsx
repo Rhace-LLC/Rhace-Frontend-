@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCreateOrder } from '@/features/orders/api/hooks';
-import { ordersApi } from '@/features/orders/api/service';
+import { ordersApi, todayServiceWindow } from '@/features/orders/api/service';
 import { useOrderRealtime } from '@/features/orders/realtime';
 import type { CreateOrderLineInput, OrderDto } from '@/features/orders/types';
 import { OrderBuilder } from '@/features/orders';
@@ -150,7 +150,7 @@ export default function WaiterWorkspace() {
       const [plansRes, assigns, mine] = await Promise.all([
         floorPlanService.list(),
         staffService.getAssignments({ date: todayKey() }),
-        ordersApi.list({ limit: 50, withLines: true, mine: true }),
+        ordersApi.list({ limit: 50, withLines: true, mine: true, ...todayServiceWindow() }),
       ]);
       const docs = plansRes.data?.items ?? [];
       setPlans(docs);
@@ -171,7 +171,12 @@ export default function WaiterWorkspace() {
   // reflected in the tableOrders merge instead of pinning a stale status.
   const refreshMineOrders = useCallback(async () => {
     try {
-      const res = await ordersApi.list({ limit: 50, withLines: true, mine: true });
+      const res = await ordersApi.list({
+        limit: 50,
+        withLines: true,
+        mine: true,
+        ...todayServiceWindow(),
+      });
       setOrders(res.items ?? []);
     } catch {
       // Silent: venueOrders polling keeps the board eventually consistent.
@@ -229,6 +234,8 @@ export default function WaiterWorkspace() {
           limit: 60,
           withLines: true,
           unitIds: assignedKey.split(','),
+          // A pre-order for next week is not on today's floor.
+          ...todayServiceWindow(),
         });
         if (!cancelled) setVenueOrders(res.items ?? []);
       } catch {

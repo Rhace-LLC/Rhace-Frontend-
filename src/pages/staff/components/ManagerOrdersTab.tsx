@@ -1,7 +1,14 @@
 import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
-import { GlassWater, Package, Receipt, RefreshCw, UtensilsCrossed } from 'lucide-react';
-import { ordersApi } from '@/features/orders/api/service';
+import {
+  CalendarClock,
+  GlassWater,
+  Package,
+  Receipt,
+  RefreshCw,
+  UtensilsCrossed,
+} from 'lucide-react';
+import { ordersApi, todayServiceWindow } from '@/features/orders/api/service';
 import { money } from '@/features/orders/money';
 import { useVendorBottleSets, useVendorDishes, useVendorDrinks } from '@/features/orders';
 import { useOrderRealtime } from '@/features/orders/realtime';
@@ -72,6 +79,18 @@ const SOURCE_OPTIONS = [
 
 const PAGE_SIZE = 20;
 
+/**
+ * `today` and `reservations` both scope by the order's service day — a pre-order
+ * belongs to the day its reservation starts, not the day it was placed.
+ */
+type OrdersView = 'today' | 'reservations' | 'range';
+
+const VIEW_OPTIONS: Array<{ key: OrdersView; label: string }> = [
+  { key: 'today', label: 'For today' },
+  { key: 'reservations', label: 'Reservation orders for today' },
+  { key: 'range', label: 'Date range' },
+];
+
 const selectClass =
   'rounded-res-sm border border-res-line bg-res-card px-3 py-2.5 type-res-body font-normal text-res-ink shadow-res-low outline-none focus:border-res-brand';
 
@@ -83,6 +102,35 @@ function formatPlacedAt(iso?: string): string {
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) return '—';
   return `${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} · ${date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}`;
+}
+
+/** “7:30 PM” — the reservation start, shown large on pre-order cards. */
+function formatStartTime(iso?: string | null): string {
+  if (!iso) return '—';
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return '—';
+  return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+}
+
+/** “Fri, Oct 24” — the day the reservation starts. */
+function formatStartDay(iso?: string | null): string {
+  if (!iso) return '';
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return '';
+  return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+}
+
+/** “in 3h 20m” / “started 25m ago”, so staff can see how close service is. */
+function untilStart(iso?: string | null): string {
+  if (!iso) return '';
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return '';
+  const minutes = Math.round((date.getTime() - Date.now()) / 60000);
+  const amount = Math.abs(minutes);
+  const label =
+    amount >= 60 ? `${Math.floor(amount / 60)}h ${amount % 60}m` : `${amount}m`;
+  if (amount < 1) return 'starting now';
+  return minutes > 0 ? `in ${label}` : `started ${label} ago`;
 }
 
 function isToday(iso?: string): boolean {
@@ -109,6 +157,15 @@ function endOfDayIso(day: string): string | undefined {
   if (!day) return undefined;
   const date = new Date(`${day}T23:59:59.999`);
   return Number.isNaN(date.getTime()) ? undefined : date.toISOString();
+}
+
+/** Empty-state copy per view — a title plus one helpful line, never a bare "no results". */
+function emptyCopy(view: OrdersView, hasFilters: boolean, hasDateRange: boolean): string {
+  if (hasFilters) return 'Nothing matches these filters.';
+  if (view === 'reservations') return 'No pre-orders for a booking that starts today.';
+  if (view === 'today') return 'Nothing is booked or ordered for today yet.';
+  if (hasDateRange) return 'No orders in this date range.';
+  return 'Pre-orders and table orders will show up here.';
 }
 
 const ITEM_TYPE_LABEL: Record<OrderItemType, string> = {
@@ -159,6 +216,88 @@ function LineVisual({
 }
 
 /**
+ * One pre-order, led by the moment the reservation actually starts. Pre-orders
+ * are placed days early, so the seating time — not the placed time — is the
+ * thing staff need to see first.
+ */
+function ReservationOrderCard({
+  order,
+  table,
+  onView,
+}: {
+  order: OrderDto;
+  table: string | null;
+  onView: () => void;
+}) {
+  const lines = order.lines ?? [];
+  const itemCount = lines.reduce((sum, line) => sum + (line.quantity ?? 0), 0);
+  const preview = lines
+    .slice(0, 3)
+    .map((line) => `${line.quantity}× ${line.name}`)
+    .join(' · ');
+
+  return (
+    <article className="overflow-hidden rounded-res-lg bg-res-card shadow-res-low">
+      <div className="flex flex-col md:flex-row">
+        {/* The giant sign: when this booking starts. */}
+        <div className="flex shrink-0 flex-col justify-center gap-1 bg-res-brand px-6 py-5 text-res-ink-inverted md:w-64">
+          <span className="type-res-caption flex items-center gap-1.5 font-semibold tracking-[0.2em] text-res-ink-inverted/75 uppercase">
+            <CalendarClock className="h-3.5 w-3.5" /> Reservation starts
+          </span>
+          <span className="text-4xl leading-none font-bold tabular-nums">
+            {formatStartTime(order.reservationStart)}
+          </span>
+          <span className="type-res-small font-semibold text-res-ink-inverted/90">
+            {formatStartDay(order.reservationStart)}
+          </span>
+          <span className="type-res-caption mt-1 self-start rounded-full bg-res-ink-inverted/15 px-2.5 py-1 font-semibold text-res-ink-inverted">
+            {untilStart(order.reservationStart)}
+          </span>
+        </div>
+
+        <div className="min-w-0 flex-1 p-4 md:p-5">
+          <div className="flex flex-wrap items-start justify-between gap-2">
+            <div className="min-w-0">
+              <p className="type-res-h3 truncate text-res-ink">
+                {order.guestName || `Order …${order._id.slice(-6)}`}
+              </p>
+              <p className="type-res-small mt-0.5 font-normal text-res-ink-muted">
+                {table ?? 'No table yet'} · Pre-order · #{order._id.slice(-6).toUpperCase()}
+              </p>
+            </div>
+            <span
+              className={`type-res-small inline-flex items-center rounded-full px-2.5 py-1 font-semibold whitespace-nowrap ${ORDER_STATUS_STYLE[order.status] ?? 'bg-res-surface text-res-ink-muted'}`}
+            >
+              {ORDER_STATUS_LABEL[order.status] ?? order.status}
+            </span>
+          </div>
+
+          <p className="type-res-body mt-3 font-normal text-res-ink">
+            {itemCount} item{itemCount === 1 ? '' : 's'}
+            {preview ? ` · ${preview}` : ''}
+            {lines.length > 3 ? ` +${lines.length - 3} more` : ''}
+          </p>
+
+          <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-res-line pt-3">
+            <div className="flex items-baseline gap-2">
+              <span className="type-res-h3 text-res-ink">{money(order.total)}</span>
+              {order.balance > 0 && (
+                <span className="type-res-small rounded-full bg-res-secondary px-2.5 py-1 font-semibold text-res-brand">
+                  {money(order.balance)} still to pay
+                </span>
+              )}
+            </div>
+            <button type="button" className={actionClass} onClick={onView}>
+              View order
+            </button>
+          </div>
+        </div>
+      </div>
+    </article>
+  );
+}
+
+/**
  * Manager orders oversight: every order on this vendor, read-only.
  * Lists through the staff-scoped vendor lens (backend `orderScope`).
  */
@@ -166,7 +305,7 @@ export function ManagerOrdersTab() {
   const [page, setPage] = useState(1);
   const [status, setStatus] = useState('');
   const [source, setSource] = useState('');
-  const [todayOnly, setTodayOnly] = useState(true);
+  const [view, setView] = useState<OrdersView>('today');
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
   const [refreshKey, setRefreshKey] = useState(0);
@@ -296,23 +435,20 @@ export function ManagerOrdersTab() {
   useEffect(() => {
     let cancelled = false;
     setIsLoading(true);
-    const from = todayOnly
-      ? (() => {
-          const start = new Date();
-          start.setHours(0, 0, 0, 0);
-          return start.toISOString();
-        })()
-      : startOfDayIso(fromDate);
-    const to = todayOnly ? new Date().toISOString() : endOfDayIso(toDate);
+    // Today's views scope by service day; the date-range view keeps filtering on
+    // when the order was placed.
+    const dayScope =
+      view === 'range'
+        ? { from: startOfDayIso(fromDate), to: endOfDayIso(toDate) }
+        : todayServiceWindow();
     ordersApi
       .list({
         page,
         limit: PAGE_SIZE,
         withLines: true,
         status: status || undefined,
-        source: source || undefined,
-        from,
-        to,
+        source: view === 'reservations' ? 'reservation' : source || undefined,
+        ...dayScope,
       })
       .then((res) => {
         if (cancelled) return;
@@ -329,12 +465,12 @@ export function ManagerOrdersTab() {
     return () => {
       cancelled = true;
     };
-  }, [page, status, source, todayOnly, fromDate, toDate, refreshKey]);
+  }, [page, status, source, view, fromDate, toDate, refreshKey]);
 
   const stats = useMemo(() => {
     const revenue = orders.reduce((sum, o) => sum + (o.total ?? 0), 0);
     const outstanding = orders.reduce((sum, o) => sum + (o.balance ?? 0), 0);
-    const today = orders.filter((o) => isToday(o.createdAt)).length;
+    const today = orders.filter((o) => isToday(o.reservationStart ?? o.createdAt)).length;
     const active = orders.filter((o) =>
       ['open', 'awaiting_confirmation', 'placed', 'preparing', 'ready', 'served', 'out_for_delivery'].includes(
         o.status,
@@ -344,12 +480,12 @@ export function ManagerOrdersTab() {
       { label: 'Total orders', value: String(total) },
       { label: `Revenue · page ${page}`, value: money(revenue) },
       { label: 'Outstanding · page', value: money(outstanding) },
-      { label: 'Active · page', value: `${active} active · ${today} today` },
+      { label: 'Active · page', value: `${active} active · ${today} for today` },
     ];
   }, [orders, total, page]);
 
   const hasDateRange = Boolean(fromDate || toDate);
-  const hasFilters = Boolean(status || source || todayOnly || hasDateRange);
+  const hasFilters = Boolean(status || source || hasDateRange || view !== 'today');
 
   return (
     <div className="space-y-4">
@@ -378,21 +514,29 @@ export function ManagerOrdersTab() {
 
       <section className="rounded-res-lg bg-res-card p-4 shadow-res-low md:p-5">
         <div className="flex flex-wrap items-center gap-2.5">
-          <button
-            type="button"
-            aria-pressed={todayOnly}
-            onClick={() => {
-              setTodayOnly((v) => !v);
-              setPage(1);
-            }}
-            className={`type-res-small cursor-pointer rounded-full px-4 py-2.5 font-semibold transition-all outline-none focus-visible:ring-2 focus-visible:ring-res-brand ${
-              todayOnly
-                ? 'bg-res-brand text-res-ink-inverted shadow-res-low hover:bg-res-brand-hover'
-                : 'bg-res-surface text-res-ink-muted hover:text-res-ink'
-            }`}
-          >
-            For Today
-          </button>
+          <div className="inline-flex flex-wrap items-center gap-1 rounded-full bg-res-surface p-1">
+            {VIEW_OPTIONS.map((option) => {
+              const active = view === option.key;
+              return (
+                <button
+                  key={option.key}
+                  type="button"
+                  aria-pressed={active}
+                  onClick={() => {
+                    setView(option.key);
+                    setPage(1);
+                  }}
+                  className={`type-res-small cursor-pointer rounded-full px-4 py-2 font-semibold transition-all outline-none focus-visible:ring-2 focus-visible:ring-res-brand ${
+                    active
+                      ? 'bg-res-brand text-res-ink-inverted shadow-res-low hover:bg-res-brand-hover'
+                      : 'text-res-ink-muted hover:text-res-ink'
+                  }`}
+                >
+                  {option.label}
+                </button>
+              );
+            })}
+          </div>
           <select
             aria-label="Filter by status"
             value={status}
@@ -408,22 +552,24 @@ export function ManagerOrdersTab() {
               </option>
             ))}
           </select>
-          <select
-            aria-label="Filter by source"
-            value={source}
-            onChange={(e) => {
-              setSource(e.target.value);
-              setPage(1);
-            }}
-            className={selectClass}
-          >
-            {SOURCE_OPTIONS.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-          {!todayOnly && (
+          {view !== 'reservations' && (
+            <select
+              aria-label="Filter by source"
+              value={source}
+              onChange={(e) => {
+                setSource(e.target.value);
+                setPage(1);
+              }}
+              className={selectClass}
+            >
+              {SOURCE_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          )}
+          {view === 'range' && (
             <>
               <input
                 type="date"
@@ -475,16 +621,23 @@ export function ManagerOrdersTab() {
               <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-res-card shadow-res-low">
                 <Receipt className="h-5 w-5 text-res-brand" />
               </div>
-              <p className="type-res-h3 text-res-ink">No orders yet</p>
-              <p className="type-res-small mx-auto mt-1 max-w-sm font-normal text-res-ink-muted">
-                {hasFilters
-                  ? todayOnly && !status && !source
-                    ? 'No orders placed today yet.'
-                    : !todayOnly && hasDateRange && !status && !source
-                      ? 'No orders in this date range.'
-                      : 'Nothing matches these filters.'
-                  : 'Pre-orders and table orders will show up here.'}
+              <p className="type-res-h3 text-res-ink">
+                {view === 'reservations' ? 'No reservation orders today' : 'No orders yet'}
               </p>
+              <p className="type-res-small mx-auto mt-1 max-w-sm font-normal text-res-ink-muted">
+                {emptyCopy(view, hasFilters, hasDateRange)}
+              </p>
+            </div>
+          ) : view === 'reservations' ? (
+            <div className="space-y-3">
+              {orders.map((order) => (
+                <ReservationOrderCard
+                  key={order._id}
+                  order={order}
+                  table={tableLabel(order.unitId)}
+                  onView={() => setSelected(order)}
+                />
+              ))}
             </div>
           ) : (
             <div className="hide-scrollbar -mx-1 overflow-x-auto px-1 py-1">
@@ -538,6 +691,12 @@ export function ManagerOrdersTab() {
                             {SOURCE_LABEL[order.source] ?? order.source} · #
                             {order._id.slice(-6).toUpperCase()}
                           </span>
+                          {order.reservationStart && (
+                            <span className="type-res-caption mt-1 inline-flex items-center gap-1 rounded-full bg-res-brand px-2.5 py-1 font-semibold text-res-ink-inverted">
+                              <CalendarClock className="h-3 w-3" />
+                              Reservation starts {formatStartTime(order.reservationStart)}
+                            </span>
+                          )}
                         </td>
                         <td className="px-4 py-3">
                           {(() => {
@@ -651,6 +810,26 @@ export function ManagerOrdersTab() {
               subtitle={`${SOURCE_LABEL[selected.source] ?? selected.source} · ${formatPlacedAt(selected.createdAt)}`}
             >
               <div className="space-y-4">
+                {selected.reservationStart && (
+                  <div className="flex flex-wrap items-center justify-between gap-3 rounded-res-md bg-res-brand px-4 py-3 text-res-ink-inverted">
+                    <div>
+                      <p className="type-res-caption font-semibold tracking-[0.2em] text-res-ink-inverted/75 uppercase">
+                        Reservation starts
+                      </p>
+                      <p className="text-3xl leading-tight font-bold tabular-nums">
+                        {formatStartTime(selected.reservationStart)}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="type-res-small font-semibold">
+                        {formatStartDay(selected.reservationStart)}
+                      </p>
+                      <p className="type-res-caption text-res-ink-inverted/80">
+                        {untilStart(selected.reservationStart)}
+                      </p>
+                    </div>
+                  </div>
+                )}
                 <div className="flex flex-wrap items-center gap-1.5">
                   <span
                     className={`type-res-small inline-flex items-center rounded-full px-2.5 py-1 font-semibold whitespace-nowrap ${ORDER_STATUS_STYLE[selected.status] ?? 'bg-res-surface text-res-ink-muted'}`}

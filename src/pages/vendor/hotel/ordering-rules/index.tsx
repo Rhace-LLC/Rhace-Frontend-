@@ -1,21 +1,36 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
-import {
-  Clock,
-  Percent,
-  Shield,
-  Trash2,
-  Play,
-  Pause,
-  Building2,
-} from 'lucide-react';
+import { Clock, Pause, Percent, Play, Trash2 } from 'lucide-react';
 import DashboardPageHeader from '@/components/dashboard/DashboardPageHeader';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  FIELD_CLASS,
+  Field,
+  InsetBlock,
+  MODAL_CONTENT_CLASS,
+  PAGE_BODY,
+  PAGE_SHELL,
+  PILL_DANGER,
+  PILL_PRIMARY,
+  PILL_QUIET,
+  StatTile,
+  SurfaceCard,
+} from '@/components/dashboard/res-ui';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { money } from '@/features/orders/money';
 import {
   vendorLinkApi,
@@ -34,20 +49,36 @@ const DAYS = [
   { key: 'sunday', label: 'Sun' },
 ];
 
-const MODE_CONFIG: Record<string, { label: string; color: string }> = {
-  allow: { label: 'Allow', color: 'text-emerald-700 bg-emerald-50 border-emerald-100' },
-  block: { label: 'Block', color: 'text-red-700 bg-red-50 border-red-100' },
+const DAY_LABEL = Object.fromEntries(DAYS.map((day) => [day.key, day.label]));
+
+/** Radix Select cannot use "" as an item value, so "no filter" gets a token. */
+const ANY = '__any__';
+const fromAny = (value: string) => (value === ANY ? '' : value);
+
+const MODE_STYLE: Record<string, { label: string; className: string }> = {
+  allow: { label: 'Allows orders', className: 'bg-res-secondary text-res-brand' },
+  block: { label: 'Blocks orders', className: 'bg-red-50 text-red-600' },
 };
 
-const SOURCE_CONFIG: Record<string, string> = {
+const SOURCE_LABEL: Record<string, string> = {
   hotel: 'Hotel services',
   linked: 'Linked outlets',
 };
 
-const FULFILLMENT_CONFIG: Record<string, string> = {
-  room: 'To room',
-  location: 'To location',
+const DELIVERY_LABEL: Record<string, string> = {
+  room: 'To a room',
+  location: 'To a location',
 };
+
+/** Who keeps the fee — the code value must never reach the screen. */
+const BENEFICIARY_LABEL: Record<string, string> = {
+  hotel: 'You',
+  partner: 'The outlet',
+};
+
+/** Row action inside a tinted inset: quiet, legible, no solid fills. */
+const ROW_ACTION =
+  'type-res-small inline-flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-1.5 font-semibold text-res-ink-muted transition-colors outline-none hover:bg-res-card hover:text-res-ink focus-visible:ring-2 focus-visible:ring-res-brand disabled:pointer-events-none disabled:opacity-50';
 
 export default function HotelOrderingRulesPage() {
   const [links, setLinks] = useState<VendorLinkDto[]>([]);
@@ -55,12 +86,13 @@ export default function HotelOrderingRulesPage() {
   const [fees, setFees] = useState<FeeRuleDto[]>([]);
   const [linkFilter, setLinkFilter] = useState<string>('');
   const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState(false);
 
   // Modal states
   const [windowOpen, setWindowOpen] = useState(false);
   const [feeOpen, setFeeOpen] = useState(false);
 
-  // Window form (modal)
+  // Window form
   const [wName, setWName] = useState('');
   const [wMode, setWMode] = useState<'allow' | 'block'>('allow');
   const [wStart, setWStart] = useState('23:00');
@@ -68,7 +100,7 @@ export default function HotelOrderingRulesPage() {
   const [wDays, setWDays] = useState<Set<string>>(new Set(DAYS.map((d) => d.key)));
   const [wLinkFilter, setWLinkFilter] = useState<string>('');
 
-  // Fee form (modal)
+  // Fee form
   const [fLabel, setFLabel] = useState('');
   const [fKind, setFKind] = useState<'flat' | 'percent'>('flat');
   const [fValue, setFValue] = useState('');
@@ -80,14 +112,14 @@ export default function HotelOrderingRulesPage() {
 
   const load = useCallback(async () => {
     try {
-      const [l, w, f] = await Promise.all([
+      const [loadedLinks, loadedWindows, loadedFees] = await Promise.all([
         vendorLinkApi.hotelLinks(),
         vendorLinkApi.windows(),
         vendorLinkApi.fees(),
       ]);
-      setLinks(l.filter((x) => x.status === 'active'));
-      setWindows(w);
-      setFees(f);
+      setLinks(loadedLinks.filter((x) => x.status === 'active'));
+      setWindows(loadedWindows);
+      setFees(loadedFees);
     } catch {
       toast.error('Could not load ordering rules.');
     } finally {
@@ -106,11 +138,34 @@ export default function HotelOrderingRulesPage() {
     setWDays(next);
   };
 
+  const resetWindowForm = () => {
+    setWName('');
+    setWMode('allow');
+    setWStart('23:00');
+    setWEnd('06:00');
+    setWDays(new Set(DAYS.map((d) => d.key)));
+    setWLinkFilter('');
+  };
+
+  const resetFeeForm = () => {
+    setFLabel('');
+    setFKind('flat');
+    setFValue('');
+    setFSource('');
+    setFFulfillment('');
+    setFLinkFilter('');
+  };
+
   const createWindow = async () => {
     if (!wName.trim()) {
       toast.error('Give the window a name.');
       return;
     }
+    if (wDays.size === 0) {
+      toast.error('Pick at least one day.');
+      return;
+    }
+    setBusy(true);
     try {
       await vendorLinkApi.createWindow({
         name: wName.trim(),
@@ -120,25 +175,23 @@ export default function HotelOrderingRulesPage() {
         days: [...wDays],
         ...(wLinkFilter ? { vendorLink: wLinkFilter } : {}),
       });
-      toast.success('Ordering window saved');
-      setWName('');
-      setWMode('allow');
-      setWStart('23:00');
-      setWEnd('06:00');
-      setWDays(new Set(DAYS.map((d) => d.key)));
-      setWLinkFilter('');
+      toast.success('Window added.');
+      resetWindowForm();
       setWindowOpen(false);
       await load();
     } catch {
       toast.error('Could not save the window.');
+    } finally {
+      setBusy(false);
     }
   };
 
   const createFee = async () => {
     if (!fLabel.trim() || !fValue) {
-      toast.error('Enter a label and value.');
+      toast.error('Enter a name and an amount.');
       return;
     }
+    setBusy(true);
     try {
       await vendorLinkApi.createFee({
         label: fLabel.trim(),
@@ -150,42 +203,72 @@ export default function HotelOrderingRulesPage() {
           ...(fLinkFilter ? { vendorLinks: [fLinkFilter] } : {}),
         },
       });
-      toast.success('Fee rule saved');
-      setFLabel('');
-      setFValue('');
-      setFSource('');
-      setFFulfillment('');
-      setFLinkFilter('');
+      toast.success('Fee added.');
+      resetFeeForm();
       setFeeOpen(false);
       await load();
     } catch {
-      toast.error('Could not save the fee rule.');
+      toast.error('Could not save the fee.');
+    } finally {
+      setBusy(false);
     }
   };
 
-  const toggleWindow = (w: OrderingWindowDto) =>
-    vendorLinkApi
-      .updateWindow(w._id, { active: !w.active })
-      .then(() => {
-        toast.success(w.active ? 'Window paused' : 'Window resumed');
-        void load();
-      })
-      .catch(() => toast.error('Update failed.'));
+  const toggleWindow = async (window: OrderingWindowDto) => {
+    setBusy(true);
+    try {
+      await vendorLinkApi.updateWindow(window._id, { active: !window.active });
+      toast.success(window.active ? 'Window paused.' : 'Window resumed.');
+      await load();
+    } catch {
+      toast.error('Could not update the window.');
+    } finally {
+      setBusy(false);
+    }
+  };
 
-  const toggleFee = (f: FeeRuleDto) =>
-    vendorLinkApi
-      .updateFee(f._id, { active: !f.active })
-      .then(() => {
-        toast.success(f.active ? 'Fee paused' : 'Fee resumed');
-        void load();
-      })
-      .catch(() => toast.error('Update failed.'));
+  const toggleFee = async (fee: FeeRuleDto) => {
+    setBusy(true);
+    try {
+      await vendorLinkApi.updateFee(fee._id, { active: !fee.active });
+      toast.success(fee.active ? 'Fee paused.' : 'Fee resumed.');
+      await load();
+    } catch {
+      toast.error('Could not update the fee.');
+    } finally {
+      setBusy(false);
+    }
+  };
 
-  const deleteWindow = (id: string) =>
-    vendorLinkApi.deleteWindow(id).then(load).catch(() => toast.error('Delete failed.'));
+  const deleteWindow = async (orderingWindow: OrderingWindowDto) => {
+    if (!window.confirm(`Delete “${orderingWindow.name}”? Ordering goes back to normal for its hours.`)) {
+      return;
+    }
+    setBusy(true);
+    try {
+      await vendorLinkApi.deleteWindow(orderingWindow._id);
+      toast.success('Window deleted.');
+      await load();
+    } catch {
+      toast.error('Could not delete the window.');
+    } finally {
+      setBusy(false);
+    }
+  };
 
-  const deleteFee = (id: string) =>
-    vendorLinkApi.deleteFee(id).then(load).catch(() => toast.error('Delete failed.'));
+  const deleteFee = async (fee: FeeRuleDto) => {
+    if (!window.confirm(`Delete “${fee.label}”? Guests stop paying this fee immediately.`)) return;
+    setBusy(true);
+    try {
+      await vendorLinkApi.deleteFee(fee._id);
+      toast.success('Fee deleted.');
+      await load();
+    } catch {
+      toast.error('Could not delete the fee.');
+    } finally {
+      setBusy(false);
+    }
+  };
 
   const shownWindows = useMemo(
     () =>
@@ -196,423 +279,516 @@ export default function HotelOrderingRulesPage() {
   );
 
   const linkName = (id: string) => {
-    const l = links.find((x) => x._id === id);
-    return l?.outletName || l?.counterpartName || 'Outlet';
+    const link = links.find((x) => x._id === id);
+    return link?.outletName || link?.counterpartName || 'Outlet';
   };
 
-  const feeScope = (f: FeeRuleDto) =>
+  const feeScope = (fee: FeeRuleDto) =>
     [
-      f.scope?.sources?.length
-        ? f.scope.sources.map((x) => SOURCE_CONFIG[x] ?? x).join('/')
-        : 'All sources',
-      f.scope?.fulfillment?.length
-        ? f.scope.fulfillment.map((x) => FULFILLMENT_CONFIG[x] ?? x).join('/')
-        : 'Any delivery',
-      f.scope?.vendorLinks?.length ? f.scope.vendorLinks.map(linkName).join(', ') : null,
+      fee.scope?.sources?.length
+        ? fee.scope.sources.map((x) => SOURCE_LABEL[x] ?? x).join(' or ')
+        : 'All orders',
+      fee.scope?.fulfillment?.length
+        ? fee.scope.fulfillment.map((x) => DELIVERY_LABEL[x] ?? x).join(' or ')
+        : 'Anywhere',
+      fee.scope?.vendorLinks?.length
+        ? fee.scope.vendorLinks.map(linkName).join(', ')
+        : null,
     ]
       .filter(Boolean)
       .join(' · ');
 
-  return (
-    <div className="space-y-6 p-4 md:p-6">
-      <DashboardPageHeader
-        title="Ordering windows & fees"
-        subtitle="Control when guests can order and what surcharges apply."
-        actions={
-          <>
-            <Button
-              onClick={() => setWindowOpen(true)}
-              className="flex items-center gap-2 bg-res-brand text-res-ink-inverted hover:bg-res-brand-hover"
-            >
-              <Clock className="size-4 mr-1" />
-              Add window
-            </Button>
-            <Button
-              onClick={() => setFeeOpen(true)}
-              className="flex items-center gap-2 bg-res-brand text-res-ink-inverted hover:bg-res-brand-hover"
-            >
-              <Percent className="size-4 mr-1" />
-              Add fee rule
-            </Button>
-            <Select value={linkFilter} onValueChange={(v) => setLinkFilter(v as string)}>
-              <SelectTrigger className="w-48">
-                <SelectValue placeholder={linkFilter ? linkName(linkFilter) : 'Hotel services'} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="">Hotel services</SelectItem>
-                {links.map((l) => (
-                  <SelectItem key={l._id} value={l._id}>
-                    {l.outletName || 'Outlet'}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </>
-        }
-      />
+  const daysText = (days: string[]) =>
+    days.length === 0 || days.length === DAYS.length
+      ? 'Every day'
+      : days.map((day) => DAY_LABEL[day] ?? day).join(', ');
 
-      {/* Summary stats */}
-      <div className="grid gap-3 md:grid-cols-3">
-        <StatCard label="Ordering windows" value={windows.length} icon={<Clock className="size-5 text-res-ink-muted" />} />
-        <StatCard label="Active windows" value={activeWindowCount} icon={<Play className="size-5 text-emerald-600" />} />
-        <StatCard label="Fee rules" value={fees.length} icon={<Percent className="size-5 text-res-ink-muted" />} />
+  return (
+    <div className={PAGE_SHELL}>
+      <div className={PAGE_BODY}>
+        <DashboardPageHeader
+          title="Windows & fees"
+          subtitle="Say when each outlet can take orders, and what extra charges apply."
+          actions={
+            <>
+              <button type="button" onClick={() => setWindowOpen(true)} className={PILL_QUIET}>
+                <Clock className="size-4" strokeWidth={1.75} />
+                Add window
+              </button>
+              <button type="button" onClick={() => setFeeOpen(true)} className={PILL_PRIMARY}>
+                <Percent className="size-4" strokeWidth={1.75} />
+                Add fee
+              </button>
+            </>
+          }
+        />
+
+        <div className="grid gap-4 sm:grid-cols-3">
+          <StatTile
+            label="Windows"
+            value={windows.length}
+            icon={<Clock className="size-[18px]" strokeWidth={1.75} />}
+          />
+          <StatTile
+            label="Active windows"
+            value={activeWindowCount}
+            tone="positive"
+            icon={<Play className="size-[18px]" strokeWidth={1.75} />}
+          />
+          <StatTile
+            label="Fees"
+            value={fees.length}
+            icon={<Percent className="size-[18px]" strokeWidth={1.75} />}
+          />
+        </div>
+
+        {loading ? (
+          <SurfaceCard className="px-5 py-5">
+            <div className="h-4 w-1/4 animate-pulse rounded-full bg-res-surface" />
+            <div className="mt-4 h-14 w-full animate-pulse rounded-res-md bg-res-surface" />
+          </SurfaceCard>
+        ) : (
+          <>
+            <SurfaceCard className="px-5 pt-5 pb-4">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <h2 className="type-res-h3 text-res-ink">Ordering windows</h2>
+                  <p className="type-res-small mt-1 max-w-xl font-normal text-res-ink-muted">
+                    An open window allows ordering in its hours; a block window closes it. When two
+                    overlap, the one higher in the list wins.
+                  </p>
+                </div>
+                <div className="w-full sm:w-52">
+                  <Select
+                    value={linkFilter || ANY}
+                    onValueChange={(value) => setLinkFilter(fromAny(value))}
+                  >
+                    <SelectTrigger className={FIELD_CLASS} aria-label="Which orders these windows apply to">
+                      <SelectValue placeholder="Hotel services" />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-res-md">
+                      <SelectItem value={ANY}>Hotel services</SelectItem>
+                      {links.map((link) => (
+                        <SelectItem key={link._id} value={link._id}>
+                          {link.outletName || link.counterpartName || 'Outlet'}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="mt-4 space-y-2">
+                {shownWindows.length === 0 ? (
+                  <div className="rounded-res-md bg-res-surface px-4 py-8 text-center">
+                    <p className="type-res-body text-res-ink">No windows here yet</p>
+                    <p className="type-res-small mx-auto mt-1 max-w-xs font-normal text-res-ink-muted">
+                      Until you add one, orders follow the venue's normal opening hours.
+                    </p>
+                  </div>
+                ) : (
+                  shownWindows.map((orderingWindow) => {
+                    const mode = MODE_STYLE[orderingWindow.mode] ?? MODE_STYLE.allow;
+                    return (
+                      <div
+                        key={orderingWindow._id}
+                        className="flex flex-wrap items-center justify-between gap-3 rounded-res-md bg-res-surface px-4 py-3"
+                      >
+                        <div className="min-w-0">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <p className="type-res-body font-semibold text-res-ink">
+                              {orderingWindow.name}
+                            </p>
+                            <span
+                              className={`type-res-caption rounded-full px-2.5 py-0.5 font-semibold ${mode.className}`}
+                            >
+                              {mode.label}
+                            </span>
+                            {!orderingWindow.active && (
+                              <span className="type-res-caption rounded-full bg-res-card px-2.5 py-0.5 font-semibold text-res-ink-muted">
+                                Paused
+                              </span>
+                            )}
+                          </div>
+                          <p className="type-res-small mt-1 font-normal text-res-ink-muted">
+                            {orderingWindow.start}–{orderingWindow.end} ·{' '}
+                            {daysText(orderingWindow.days)} ·{' '}
+                            {orderingWindow.vendorLink
+                              ? linkName(String(orderingWindow.vendorLink))
+                              : 'Hotel services'}
+                          </p>
+                        </div>
+                        <div className="flex shrink-0 items-center gap-1">
+                          <button
+                            type="button"
+                            onClick={() => void toggleWindow(orderingWindow)}
+                            disabled={busy}
+                            className={ROW_ACTION}
+                          >
+                            {orderingWindow.active ? (
+                              <Pause className="size-3.5" strokeWidth={1.75} />
+                            ) : (
+                              <Play className="size-3.5" strokeWidth={1.75} />
+                            )}
+                            {orderingWindow.active ? 'Pause' : 'Resume'}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => void deleteWindow(orderingWindow)}
+                            disabled={busy}
+                            aria-label={`Delete ${orderingWindow.name}`}
+                            className={PILL_DANGER}
+                          >
+                            <Trash2 className="size-4" strokeWidth={1.75} />
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </SurfaceCard>
+
+            <SurfaceCard className="px-5 pt-5 pb-4">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <h2 className="type-res-h3 text-res-ink">Fees</h2>
+                  <p className="type-res-small mt-1 max-w-xl font-normal text-res-ink-muted">
+                    Flat or percentage charges added to an order, scoped to where it came from and
+                    how it is delivered.
+                  </p>
+                </div>
+                <button type="button" onClick={() => setFeeOpen(true)} className={PILL_QUIET}>
+                  <Percent className="size-4" strokeWidth={1.75} />
+                  Add fee
+                </button>
+              </div>
+
+              <div className="mt-4 space-y-2">
+                {fees.length === 0 ? (
+                  <div className="rounded-res-md bg-res-surface px-4 py-8 text-center">
+                    <p className="type-res-body text-res-ink">No fees yet</p>
+                    <p className="type-res-small mx-auto mt-1 max-w-xs font-normal text-res-ink-muted">
+                      Guests only pay the order total until you add one.
+                    </p>
+                  </div>
+                ) : (
+                  fees.map((fee) => (
+                    <div
+                      key={fee._id}
+                      className="flex flex-wrap items-center justify-between gap-3 rounded-res-md bg-res-surface px-4 py-3"
+                    >
+                      <div className="min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <p className="type-res-body font-semibold text-res-ink">{fee.label}</p>
+                          <span className="type-res-caption rounded-full bg-res-card px-2.5 py-0.5 font-semibold text-res-ink">
+                            {fee.kind === 'flat' ? money(fee.value) : `${fee.value}%`}
+                          </span>
+                          {!fee.active && (
+                            <span className="type-res-caption rounded-full bg-res-card px-2.5 py-0.5 font-semibold text-res-ink-muted">
+                              Paused
+                            </span>
+                          )}
+                        </div>
+                        <p className="type-res-small mt-1 font-normal text-res-ink-muted">
+                          {BENEFICIARY_LABEL[fee.beneficiary] ?? fee.beneficiary} keeps it ·{' '}
+                          {feeScope(fee)}
+                        </p>
+                      </div>
+                      <div className="flex shrink-0 items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={() => void toggleFee(fee)}
+                          disabled={busy}
+                          className={ROW_ACTION}
+                        >
+                          {fee.active ? (
+                            <Pause className="size-3.5" strokeWidth={1.75} />
+                          ) : (
+                            <Play className="size-3.5" strokeWidth={1.75} />
+                          )}
+                          {fee.active ? 'Pause' : 'Resume'}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => void deleteFee(fee)}
+                          disabled={busy}
+                          aria-label={`Delete ${fee.label}`}
+                          className={PILL_DANGER}
+                        >
+                          <Trash2 className="size-4" strokeWidth={1.75} />
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </SurfaceCard>
+          </>
+        )}
       </div>
 
-      {loading ? (
-        <div className="p-8">
-          <div className="h-16 w-48 animate-pulse rounded-res-md bg-res-surface" />
-        </div>
-      ) : (
-        <>
-          {/* Ordering windows section */}
-          <Card className="rounded-res-lg border border-res-line bg-res-card shadow-res-low">
-            <CardHeader className="pb-3">
-              <CardTitle className="type-res-body text-res-ink font-semibold">Ordering windows</CardTitle>
-              <CardDescription>
-                Allow windows open ordering in set hours. Block windows close it;
-                the highest-priority match wins. Overnight windows belong to the day they start.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <div className="space-y-3">
-                {shownWindows.length > 0 ? (
-                  <div className="space-y-2">
-                    {shownWindows.map((w) => {
-                      const mode = MODE_CONFIG[w.mode];
-                      return (
-                        <Card key={w._id} className="rounded-res-md border border-res-line bg-res-card p-3 shadow-res-low">
-                          <div className="flex items-center justify-between">
-                            <div className="flex-1 min-w-0">
-                              <p className="type-res-body text-res-ink font-medium">{w.name}</p>
-                              <p className="type-res-small text-res-ink-muted">
-                                {mode.label} · {w.start}–{w.end} ·
-                                {w.days.length ? w.days.map((d) => d.slice(0, 3)).join(', ') : 'every day'}
-                                {linkFilter ? ` · ${linkName(String(w.vendorLink))}` : ' · Hotel services'}
-                              </p>
-                            </div>
-                            <div className="flex gap-2">
-                              <Button
-                                onClick={() => toggleWindow(w)}
-                                variant="outline"
-                                size="sm"
-                              >
-                                {w.active ? 'Pause' : 'Resume'}
-                              </Button>
-                              <Button
-                                onClick={() => deleteWindow(w._id)}
-                                variant="destructive"
-                                size="sm"
-                                className="text-red-600 border-red-100 hover:bg-red-50"
-                              >
-                                <Trash2 className="size-4 mr-1" />
-                              </Button>
-                            </div>
-                          </div>
-                        </Card>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <div className="rounded-res-md border border-dashed border-res-line bg-res-surface p-4 text-center">
-                    <p className="type-res-small text-res-ink-muted">No ordering windows yet.</p>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Fee rules section */}
-          <Card className="rounded-res-lg border border-res-line bg-res-card shadow-res-low">
-            <CardHeader className="pb-3">
-              <CardTitle className="type-res-body text-res-ink font-semibold">Fee rules</CardTitle>
-              <CardDescription>
-                Flat or percentage surcharges scoped to sources, fulfillment
-                mode and specific outlets.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <div className="space-y-3">
-                {fees.length > 0 ? (
-                  <div className="space-y-2">
-                    {fees.map((f) => {
-                      const amount = f.kind === 'flat' ? money(f.value) : `${f.value}%`;
-                      return (
-                        <Card key={f._id} className="rounded-res-md border border-res-line bg-res-card p-3 shadow-res-low">
-                          <div className="flex items-center justify-between">
-                            <div className="flex-1 min-w-0">
-                              <p className="type-res-body text-res-ink font-medium">{f.label}</p>
-                              <p className="type-res-small text-res-ink-muted">
-                                {amount} · to {f.beneficiary}
-                                <span className="block mt-0.5">{feeScope(f)}</span>
-                              </p>
-                            </div>
-                            <div className="flex gap-2">
-                              <Button
-                                onClick={() => toggleFee(f)}
-                                variant="outline"
-                                size="sm"
-                              >
-                                {f.active ? 'Pause' : 'Resume'}
-                              </Button>
-                              <Button
-                                onClick={() => deleteFee(f._id)}
-                                variant="destructive"
-                                size="sm"
-                                className="text-red-600 border-red-100 hover:bg-red-50"
-                              >
-                                <Trash2 className="size-4 mr-1" />
-                              </Button>
-                            </div>
-                          </div>
-                        </Card>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <div className="rounded-res-md border border-dashed border-res-line bg-res-surface p-4 text-center">
-                    <p className="type-res-small text-res-ink-muted">No fee rules yet.</p>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        </>
-      )}
-
-      {/* Add window modal */}
+      {/* Add window */}
       <Dialog open={windowOpen} onOpenChange={setWindowOpen}>
-        <DialogContent className="rounded-res-lg border border-res-line bg-res-card shadow-res-high sm:max-w-lg">
-          <DialogHeader>
-            <DialogTitle className="type-res-body text-res-ink font-semibold">Add ordering window</DialogTitle>
-            <DialogDescription className="type-res-small text-res-ink-muted">
-              Define when ordering is open or blocked for a scope.
+        <DialogContent className={MODAL_CONTENT_CLASS}>
+          <DialogHeader className="gap-1.5">
+            <DialogTitle className="type-res-h3 text-res-ink">Add ordering window</DialogTitle>
+            <DialogDescription className="type-res-small font-normal text-res-ink-muted">
+              Choose the hours, then whether they open or close ordering.
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-6">
-            <div className="grid gap-3 md:grid-cols-5">
-              <div className="flex flex-col gap-1">
-                <label className="type-res-small text-res-ink-muted uppercase tracking-wider block">Name</label>
-                <Input
-                  value={wName}
-                  onChange={(e) => setWName(e.target.value)}
-                  placeholder="e.g. Night Room Service"
-                  className="w-full rounded-res-md border border-res-line bg-res-card px-3 py-2.5 text-res-ink placeholder:text-res-ink-muted focus:border-res-brand focus:ring-res-brand/20"
-                />
-              </div>
-              <div className="flex flex-col gap-1">
-                <label className="type-res-small text-res-ink-muted uppercase tracking-wider block">Mode</label>
-                <Select value={wMode} onValueChange={(v) => setWMode(v as 'allow' | 'block')}>
-                  <SelectTrigger className="w-full rounded-res-md border border-res-line bg-res-card px-3 py-2.5 text-res-ink focus:border-res-brand focus:ring-res-brand/20">
-                    <SelectValue placeholder={wMode} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="allow">Allow</SelectItem>
-                    <SelectItem value="block">Block</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="flex flex-col gap-1">
-                <label className="type-res-small text-res-ink-muted uppercase tracking-wider block">From</label>
-                <Input type="time" value={wStart} onChange={(e) => setWStart(e.target.value)} className="w-full rounded-res-md border border-res-line bg-res-card px-3 py-2.5 text-res-ink focus:border-res-brand focus:ring-res-brand/20" />
-              </div>
-              <div className="flex flex-col gap-1">
-                <label className="type-res-small text-res-ink-muted uppercase tracking-wider block">To</label>
-                <Input type="time" value={wEnd} onChange={(e) => setWEnd(e.target.value)} className="w-full rounded-res-md border border-res-line bg-res-card px-3 py-2.5 text-res-ink focus:border-res-brand focus:ring-res-brand/20" />
-              </div>
-              <div className="flex flex-col gap-1">
-                <label className="type-res-small text-res-ink-muted uppercase tracking-wider block">Outlet scope</label>
-                <Select value={wLinkFilter} onValueChange={(v) => setWLinkFilter(v as string)}>
-                  <SelectTrigger className="w-full rounded-res-md border border-res-line bg-res-card px-3 py-2.5 text-res-ink focus:border-res-brand focus:ring-res-brand/20">
-                    <SelectValue placeholder="All outlets" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="">All outlets</SelectItem>
-                    {links.map((l) => (
-                      <SelectItem key={l._id} value={l._id}>
-                        {l.outletName || 'Outlet'}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
+          <div className="space-y-4">
+            <InsetBlock>
+              <div className="space-y-3">
+                <Field label="Window name" htmlFor="window-name">
+                  <Input
+                    id="window-name"
+                    value={wName}
+                    onChange={(event) => setWName(event.target.value)}
+                    placeholder="e.g. Night room service"
+                    className={FIELD_CLASS}
+                  />
+                </Field>
 
-            <div className="rounded-res-md border border-res-line bg-res-surface p-4">
-              <div className="flex flex-wrap gap-1.5">
-                {DAYS.map((d) => (
-                  <button
-                    key={d.key}
-                    type="button"
-                    onClick={() => toggleDay(d.key)}
-                    className={`rounded-full px-2.5 py-1 text-xs font-medium capitalize transition-colors border ${
-                      wDays.has(d.key)
-                        ? 'bg-res-brand text-res-ink-inverted border-res-brand'
-                        : 'bg-res-card text-res-ink border-res-line hover:bg-res-surface'
-                    }`}
+                <Field label="What it does" htmlFor="window-mode">
+                  <Select value={wMode} onValueChange={(value) => setWMode(value as 'allow' | 'block')}>
+                    <SelectTrigger id="window-mode" className={FIELD_CLASS}>
+                      <SelectValue placeholder="Allow orders" />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-res-md">
+                      <SelectItem value="allow">Allows orders in these hours</SelectItem>
+                      <SelectItem value="block">Blocks orders in these hours</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </Field>
+
+                <div className="grid w-full gap-3 sm:grid-cols-2">
+                  <Field label="From" htmlFor="window-start">
+                    <Input
+                      id="window-start"
+                      type="time"
+                      value={wStart}
+                      onChange={(event) => setWStart(event.target.value)}
+                      className={FIELD_CLASS}
+                    />
+                  </Field>
+                  <Field label="To" htmlFor="window-end">
+                    <Input
+                      id="window-end"
+                      type="time"
+                      value={wEnd}
+                      onChange={(event) => setWEnd(event.target.value)}
+                      className={FIELD_CLASS}
+                    />
+                  </Field>
+                </div>
+
+                <Field
+                  label="Applies to"
+                  htmlFor="window-scope"
+                  hint="Leave as hotel services for orders guests place with the hotel itself."
+                >
+                  <Select
+                    value={wLinkFilter || ANY}
+                    onValueChange={(value) => setWLinkFilter(fromAny(value))}
                   >
-                    {d.label}
-                  </button>
-                ))}
+                    <SelectTrigger id="window-scope" className={FIELD_CLASS}>
+                      <SelectValue placeholder="Hotel services" />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-res-md">
+                      <SelectItem value={ANY}>Hotel services</SelectItem>
+                      {links.map((link) => (
+                        <SelectItem key={link._id} value={link._id}>
+                          {link.outletName || link.counterpartName || 'Outlet'}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </Field>
               </div>
-            </div>
+            </InsetBlock>
+
+            <InsetBlock title="Days">
+              <div className="flex flex-wrap gap-1.5">
+                {DAYS.map((day) => {
+                  const on = wDays.has(day.key);
+                  return (
+                    <button
+                      key={day.key}
+                      type="button"
+                      onClick={() => toggleDay(day.key)}
+                      aria-pressed={on}
+                      className={`type-res-small cursor-pointer rounded-full px-4 py-2 font-semibold transition-colors outline-none focus-visible:ring-2 focus-visible:ring-res-brand ${
+                        on
+                          ? 'bg-res-brand text-res-ink-inverted'
+                          : 'bg-res-card text-res-ink hover:text-res-brand'
+                      }`}
+                    >
+                      {day.label}
+                    </button>
+                  );
+                })}
+              </div>
+              {wDays.size === 0 && (
+                <p className="type-res-caption mt-2 font-normal text-red-600">
+                  Pick at least one day.
+                </p>
+              )}
+            </InsetBlock>
           </div>
 
-          <DialogFooter className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-res-line">
-            <Button
+          <DialogFooter className="gap-2 border-t border-res-line pt-4 sm:flex-row">
+            <button
               type="button"
               onClick={() => setWindowOpen(false)}
-              variant="outline"
-              className="w-full sm:w-auto rounded-res-md border border-res-line bg-res-card px-4 py-2.5 font-medium text-res-ink shadow-res-low hover:bg-res-surface"
+              disabled={busy}
+              className={PILL_QUIET}
             >
               Cancel
-            </Button>
-            <Button
+            </button>
+            <button
               type="button"
-              onClick={createWindow}
-              disabled={!wName.trim()}
-              className="w-full sm:w-auto rounded-res-md bg-res-brand px-4 py-2.5 font-medium text-res-ink-inverted shadow-res-low hover:bg-res-brand-hover disabled:opacity-60"
+              onClick={() => void createWindow()}
+              disabled={busy || !wName.trim() || wDays.size === 0}
+              className={PILL_PRIMARY}
             >
-              Add window
-            </Button>
+              {busy ? 'Saving…' : 'Add window'}
+            </button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* Add fee rule modal */}
+      {/* Add fee */}
       <Dialog open={feeOpen} onOpenChange={setFeeOpen}>
-        <DialogContent className="rounded-res-lg border border-res-line bg-res-card shadow-res-high sm:max-w-lg">
-          <DialogHeader>
-            <DialogTitle className="type-res-body text-res-ink font-semibold">Add fee rule</DialogTitle>
-            <DialogDescription className="type-res-small text-res-ink-muted">
-              Create a flat or percentage surcharge scoped to sources,
-              fulfillment mode and specific outlets.
+        <DialogContent className={MODAL_CONTENT_CLASS}>
+          <DialogHeader className="gap-1.5">
+            <DialogTitle className="type-res-h3 text-res-ink">Add fee</DialogTitle>
+            <DialogDescription className="type-res-small font-normal text-res-ink-muted">
+              An extra charge on an order, and who it goes to.
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-6">
-            <div className="grid gap-3 md:grid-cols-6">
-              <div className="flex flex-col gap-1">
-                <label className="type-res-small text-res-ink-muted uppercase tracking-wider block">Label</label>
-                <Input
-                  value={fLabel}
-                  onChange={(e) => setFLabel(e.target.value)}
-                  placeholder="e.g. Tray Charge"
-                  className="w-full rounded-res-md border border-res-line bg-res-card px-3 py-2.5 text-res-ink placeholder:text-res-ink-muted focus:border-res-brand focus:ring-res-brand/20"
-                />
+          <div className="space-y-4">
+            <InsetBlock>
+              <div className="space-y-3">
+                <Field label="Fee name" htmlFor="fee-label">
+                  <Input
+                    id="fee-label"
+                    value={fLabel}
+                    onChange={(event) => setFLabel(event.target.value)}
+                    placeholder="e.g. Tray charge"
+                    className={FIELD_CLASS}
+                  />
+                </Field>
+
+                <div className="grid w-full gap-3 sm:grid-cols-2">
+                  <Field label="Charge type" htmlFor="fee-kind">
+                    <Select value={fKind} onValueChange={(value) => setFKind(value as 'flat' | 'percent')}>
+                      <SelectTrigger id="fee-kind" className={FIELD_CLASS}>
+                        <SelectValue placeholder="Flat amount" />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-res-md">
+                        <SelectItem value="flat">A flat amount</SelectItem>
+                        <SelectItem value="percent">A percentage</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </Field>
+                  <Field label={fKind === 'flat' ? 'Amount (₦)' : 'Percentage (%)'} htmlFor="fee-value">
+                    <Input
+                      id="fee-value"
+                      value={fValue}
+                      onChange={(event) => setFValue(event.target.value)}
+                      type="number"
+                      min={0}
+                      placeholder={fKind === 'flat' ? '500' : '15'}
+                      className={FIELD_CLASS}
+                    />
+                  </Field>
+                </div>
               </div>
-              <div className="flex flex-col gap-1">
-                <label className="type-res-small text-res-ink-muted uppercase tracking-wider block">Kind</label>
-                <Select value={fKind} onValueChange={(v) => setFKind(v as 'flat' | 'percent')}>
-                  <SelectTrigger className="w-full rounded-res-md border border-res-line bg-res-card px-3 py-2.5 text-res-ink focus:border-res-brand focus:ring-res-brand/20">
-                    <SelectValue placeholder={fKind} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="flat">Flat</SelectItem>
-                    <SelectItem value="percent">Percent</SelectItem>
-                  </SelectContent>
-                </Select>
+            </InsetBlock>
+
+            <InsetBlock title="When it applies">
+              <div className="space-y-3">
+                <Field label="Order comes from" htmlFor="fee-source">
+                  <Select
+                    value={fSource || ANY}
+                    onValueChange={(value) => setFSource(fromAny(value) as 'hotel' | 'linked' | '')}
+                  >
+                    <SelectTrigger id="fee-source" className={FIELD_CLASS}>
+                      <SelectValue placeholder="All orders" />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-res-md">
+                      <SelectItem value={ANY}>All orders</SelectItem>
+                      <SelectItem value="hotel">Hotel services</SelectItem>
+                      <SelectItem value="linked">Linked outlets</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </Field>
+
+                <Field label="Delivered to" htmlFor="fee-delivery">
+                  <Select
+                    value={fFulfillment || ANY}
+                    onValueChange={(value) =>
+                      setFFulfillment(fromAny(value) as 'room' | 'location' | '')
+                    }
+                  >
+                    <SelectTrigger id="fee-delivery" className={FIELD_CLASS}>
+                      <SelectValue placeholder="Anywhere" />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-res-md">
+                      <SelectItem value={ANY}>Anywhere</SelectItem>
+                      <SelectItem value="room">To a room</SelectItem>
+                      <SelectItem value="location">To a location</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </Field>
+
+                <Field label="For which outlet" htmlFor="fee-scope">
+                  <Select
+                    value={fLinkFilter || ANY}
+                    onValueChange={(value) => setFLinkFilter(fromAny(value))}
+                  >
+                    <SelectTrigger id="fee-scope" className={FIELD_CLASS}>
+                      <SelectValue placeholder="All outlets" />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-res-md">
+                      <SelectItem value={ANY}>All outlets</SelectItem>
+                      {links.map((link) => (
+                        <SelectItem key={link._id} value={link._id}>
+                          {link.outletName || link.counterpartName || 'Outlet'}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </Field>
               </div>
-              <div className="flex flex-col gap-1">
-                <label className="type-res-small text-res-ink-muted uppercase tracking-wider block">Value</label>
-                <Input
-                  value={fValue}
-                  onChange={(e) => setFValue(e.target.value)}
-                  type="number"
-                  min={0}
-                  placeholder={fKind === 'flat' ? '₦500' : '15'}
-                  className="w-full rounded-res-md border border-res-line bg-res-card px-3 py-2.5 text-res-ink placeholder:text-res-ink-muted focus:border-res-brand focus:ring-res-brand/20"
-                />
-              </div>
-              <div className="flex flex-col gap-1">
-                <label className="type-res-small text-res-ink-muted uppercase tracking-wider block">Source</label>
-                <Select value={fSource} onValueChange={(v) => setFSource(v as 'hotel' | 'linked' | '')}>
-                  <SelectTrigger className="w-full rounded-res-md border border-res-line bg-res-card px-3 py-2.5 text-res-ink focus:border-res-brand focus:ring-res-brand/20">
-                    <SelectValue placeholder="All sources" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="">All sources</SelectItem>
-                    <SelectItem value="hotel">Hotel services</SelectItem>
-                    <SelectItem value="linked">Linked outlets</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="flex flex-col gap-1">
-                <label className="type-res-small text-res-ink-muted uppercase tracking-wider block">Fulfillment</label>
-                <Select value={fFulfillment} onValueChange={(v) => setFFulfillment(v as 'room' | 'location' | '')}>
-                  <SelectTrigger className="w-full rounded-res-md border border-res-line bg-res-card px-3 py-2.5 text-res-ink focus:border-res-brand focus:ring-res-brand/20">
-                    <SelectValue placeholder="Any fulfillment" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="">Any fulfillment</SelectItem>
-                    <SelectItem value="room">To room</SelectItem>
-                    <SelectItem value="location">To location</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="flex flex-col gap-1">
-                <label className="type-res-small text-res-ink-muted uppercase tracking-wider block">Outlet scope</label>
-                <Select value={fLinkFilter} onValueChange={(v) => setFLinkFilter(v as string)}>
-                  <SelectTrigger className="w-full rounded-res-md border border-res-line bg-res-card px-3 py-2.5 text-res-ink focus:border-res-brand focus:ring-res-brand/20">
-                    <SelectValue placeholder="All outlets" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="">All outlets</SelectItem>
-                    {links.map((l) => (
-                      <SelectItem key={l._id} value={l._id}>
-                        {l.outletName || 'Outlet'}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
+            </InsetBlock>
           </div>
 
-          <DialogFooter className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-res-line">
-            <Button
+          <DialogFooter className="gap-2 border-t border-res-line pt-4 sm:flex-row">
+            <button
               type="button"
               onClick={() => setFeeOpen(false)}
-              variant="outline"
-              className="w-full sm:w-auto rounded-res-md border border-res-line bg-res-card px-4 py-2.5 font-medium text-res-ink shadow-res-low hover:bg-res-surface"
+              disabled={busy}
+              className={PILL_QUIET}
             >
               Cancel
-            </Button>
-            <Button
+            </button>
+            <button
               type="button"
-              onClick={createFee}
-              disabled={!fLabel.trim() || !fValue}
-              className="w-full sm:w-auto rounded-res-md bg-res-brand px-4 py-2.5 font-medium text-res-ink-inverted shadow-res-low hover:bg-res-brand-hover disabled:opacity-60"
+              onClick={() => void createFee()}
+              disabled={busy || !fLabel.trim() || !fValue}
+              className={PILL_PRIMARY}
             >
-              Add fee rule
-            </Button>
+              {busy ? 'Saving…' : 'Add fee'}
+            </button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
-  );
-}
-
-function StatCard({
-  label,
-  value,
-  icon,
-}: {
-  label: string;
-  value: number | string;
-  icon: React.ReactNode;
-}) {
-  return (
-    <Card className="rounded-res-lg border border-res-line bg-res-card shadow-res-low p-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="type-res-caption text-res-ink-muted uppercase tracking-wider">{label}</p>
-          <p className="mt-1 type-res-h3 text-res-ink font-semibold">{value}</p>
-        </div>
-        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-res-surface">
-          {icon}
-        </div>
-      </div>
-    </Card>
   );
 }

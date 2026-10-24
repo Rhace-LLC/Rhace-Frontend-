@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/contexts/AuthContext';
-import { ordersApi } from '@/features/orders/api/service';
+import { ordersApi, todayServiceWindow } from '@/features/orders/api/service';
 import type { OrderDto, OrderItemType } from '@/features/orders/types';
 import {
   staffService,
@@ -100,7 +100,9 @@ export default function StaffWorkspace() {
       setIsLoading(true);
       const [orderRes, assignmentRes] = await Promise.all([
         // Lines come back inline so the tracker can show what is on each order.
-        ordersApi.list({ limit: 50, withLines: true }),
+        // Today's service only, so a pre-order for a later booking never lands
+        // in a live queue.
+        ordersApi.list({ limit: 50, withLines: true, ...todayServiceWindow() }),
         staffService.getAssignments(),
       ]);
       setOrders(orderRes.items || []);
