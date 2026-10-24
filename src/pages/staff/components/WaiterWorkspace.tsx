@@ -123,7 +123,10 @@ export default function WaiterWorkspace() {
   const [tableRefreshKey, setTableRefreshKey] = useState(0);
   // Phase 5: order events refresh the table orders (coalesced bursts).
   const [liveTick, setLiveTick] = useState(0);
-  const { connected: ordersLive } = useOrderRealtime(true, () => setLiveTick((t) => t + 1));
+  const { connected: ordersLive } = useOrderRealtime(true, () => {
+    setLiveTick((t) => t + 1);
+    refreshMineOrders();
+  });
   useEffect(() => {
     if (liveTick === 0) return;
     const timer = setTimeout(() => setTableRefreshKey((k) => k + 1), 250);
@@ -161,6 +164,17 @@ export default function WaiterWorkspace() {
       toast.error('Failed to load your tables');
     } finally {
       setIsLoading(false);
+    }
+  }, []);
+
+  // Refetch the waiter's own orders (mine:) so live kitchen bumps are
+  // reflected in the tableOrders merge instead of pinning a stale status.
+  const refreshMineOrders = useCallback(async () => {
+    try {
+      const res = await ordersApi.list({ limit: 50, withLines: true, mine: true });
+      setOrders(res.items ?? []);
+    } catch {
+      // Silent: venueOrders polling keeps the board eventually consistent.
     }
   }, []);
 

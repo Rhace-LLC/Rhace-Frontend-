@@ -1,12 +1,26 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
+import {
+  Clock,
+  MapPin,
+  Play,
+  Pause,
+  Trash2,
+  Building2,
+} from 'lucide-react';
 import DashboardPageHeader from '@/components/dashboard/DashboardPageHeader';
-import { floorPlanService } from '@/services/floorPlan.service';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 import {
   vendorLinkApi,
   type DeliveryZoneDto,
   type VendorLinkDto,
 } from '@/services/vendorlink.service';
+import { floorPlanService } from '@/services/floorPlan.service';
 import type { FloorPlanDto } from '@/types';
 
 interface UnitRef {
@@ -14,10 +28,7 @@ interface UnitRef {
   label: string;
 }
 
-/** Outlet serving a zone: dispatch point + ETA, keyed by vendor link id. */
 type OutletDraft = Record<string, { dispatchPoint: string; etaMins: string }>;
-
-const inputClass = 'rounded-lg border border-slate-200 px-2 py-1 text-sm';
 
 function outletsFromZone(zone: DeliveryZoneDto): OutletDraft {
   const draft: OutletDraft = {};
@@ -38,7 +49,6 @@ function outletsPayload(draft: OutletDraft) {
   }));
 }
 
-/** Pick outlets for a zone and set each one's dispatch point + ETA. */
 function OutletPicker({
   links,
   value,
@@ -48,51 +58,61 @@ function OutletPicker({
   value: OutletDraft;
   onChange: (next: OutletDraft) => void;
 }) {
-  if (links.length === 0) return <p className="text-xs text-gray-400">Link an outlet first.</p>;
+  if (links.length === 0) return (
+    <p className="type-res-small text-res-ink-muted">Link an active outlet first.</p>
+  );
   return (
-    <div className="space-y-1.5">
+    <div className="space-y-2">
       {links.map((l) => {
         const on = Boolean(value[l._id]);
         return (
-          <div key={l._id} className="flex flex-wrap items-center gap-2">
-            <button
-              type="button"
-              onClick={() => {
-                const next = { ...value };
-                if (on) delete next[l._id];
-                else next[l._id] = { dispatchPoint: '', etaMins: String(l.defaultPrepEtaMins ?? '') };
-                onChange(next);
+          <div key={l._id} className="flex items-start gap-3">
+            <Switch
+              checked={on}
+              onCheckedChange={(next) => {
+                const nxt = { ...value };
+                if (next) {
+                  nxt[l._id] = {
+                    dispatchPoint: '',
+                    etaMins: String(l.defaultPrepEtaMins ?? ''),
+                  };
+                } else {
+                  delete nxt[l._id];
+                }
+                onChange(nxt);
               }}
-              className={`rounded-full px-3 py-1.5 text-xs font-semibold ${
-                on ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-600'
-              }`}
-            >
-              {l.outletName || l.counterpartName || 'Outlet'}
-            </button>
+            />
+            <div className="flex-1 min-w-0">
+              <p className="type-res-body text-res-ink font-medium">
+                {l.outletName || l.counterpartName || 'Outlet'}
+              </p>
+              <p className="type-res-small text-res-ink-muted">
+                {l.counterpartName ?? ''}
+              </p>
+            </div>
             {on && (
-              <>
-                <input
+              <div className="flex gap-2 min-w-0">
+                <Input
                   value={value[l._id].dispatchPoint}
                   onChange={(e) =>
                     onChange({ ...value, [l._id]: { ...value[l._id], dispatchPoint: e.target.value } })
                   }
                   placeholder="Dispatch point (e.g. Kitchen pass 2)"
-                  className={`${inputClass} w-56`}
+                  className="flex-1 text-sm"
                 />
-                <label className="flex items-center gap-1 text-xs text-gray-600">
-                  ETA
-                  <input
+                <div className="flex items-end gap-1">
+                  <Input
                     type="number"
                     min={1}
                     value={value[l._id].etaMins}
                     onChange={(e) =>
                       onChange({ ...value, [l._id]: { ...value[l._id], etaMins: e.target.value } })
                     }
-                    className={`${inputClass} w-16`}
+                    className="w-16 text-sm"
                   />
-                  min
-                </label>
-              </>
+                  <span className="type-res-small text-res-ink-muted">min</span>
+                </div>
+              </div>
             )}
           </div>
         );
@@ -101,7 +121,6 @@ function OutletPicker({
   );
 }
 
-/** Phase 4 hotel page: delivery zones (rooms/areas → outlet dispatch). */
 export default function HotelZonesPage() {
   const [zones, setZones] = useState<DeliveryZoneDto[]>([]);
   const [links, setLinks] = useState<VendorLinkDto[]>([]);
@@ -110,6 +129,8 @@ export default function HotelZonesPage() {
   const [units, setUnits] = useState<UnitRef[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Create zone modal state
+  const [createOpen, setCreateOpen] = useState(false);
   const [name, setName] = useState('');
   const [kind, setKind] = useState<'rooms' | 'common_area'>('rooms');
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -118,8 +139,12 @@ export default function HotelZonesPage() {
   const [outlets, setOutlets] = useState<OutletDraft>({});
   const [saving, setSaving] = useState(false);
 
+  // Edit zone state
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editOutlets, setEditOutlets] = useState<OutletDraft>({});
+
+  const activeZoneCount = useMemo(() => zones.filter((z) => z.active).length, [zones]);
+  const pausedZoneCount = useMemo(() => zones.filter((z) => !z.active).length, [zones]);
 
   const reloadZones = async () => setZones(await vendorLinkApi.zones());
 
@@ -154,7 +179,7 @@ export default function HotelZonesPage() {
     setSelected(next);
   };
 
-  const create = async () => {
+  const createZone = async () => {
     if (!name.trim() || (selected.size === 0 && (!rangeFrom || !rangeTo))) {
       toast.error('Name the zone and pick rooms or a label range.');
       return;
@@ -174,6 +199,9 @@ export default function HotelZonesPage() {
       setOutlets({});
       setRangeFrom('');
       setRangeTo('');
+      setPlanId('');
+      setUnits([]);
+      setCreateOpen(false);
       await reloadZones();
     } catch {
       toast.error('Could not create the zone.');
@@ -185,7 +213,7 @@ export default function HotelZonesPage() {
   const saveOutlets = async (zone: DeliveryZoneDto) => {
     try {
       await vendorLinkApi.updateZone(zone._id, { outlets: outletsPayload(editOutlets) });
-      toast.success('Zone updated');
+      toast.success('Zone outlets updated');
       setEditingId(null);
       await reloadZones();
     } catch {
@@ -196,6 +224,7 @@ export default function HotelZonesPage() {
   const toggleActive = async (zone: DeliveryZoneDto) => {
     try {
       await vendorLinkApi.updateZone(zone._id, { active: !zone.active });
+      toast.success(zone.active ? 'Zone paused' : 'Zone resumed');
       await reloadZones();
     } catch {
       toast.error('Could not update the zone.');
@@ -203,9 +232,10 @@ export default function HotelZonesPage() {
   };
 
   const remove = async (id: string) => {
-    if (!window.confirm('Delete this zone?')) return;
+    if (!window.confirm('Delete this zone? Orders routed here will stop.')) return;
     try {
       await vendorLinkApi.deleteZone(id);
+      toast.success('Zone deleted');
       await reloadZones();
     } catch {
       toast.error('Could not delete the zone.');
@@ -218,175 +248,294 @@ export default function HotelZonesPage() {
   };
 
   return (
-    <div className="space-y-5 p-4 md:p-6">
+    <div className="space-y-6 p-4 md:p-6">
       <DashboardPageHeader
         title="Delivery zones"
-        subtitle="Map room ranges and common areas (pool, cabanas, lobby) to outlet kitchens."
+        subtitle="Map rooms and common areas to outlet kitchens for order dispatch."
+        actions={
+          <Button
+            onClick={() => setCreateOpen(true)}
+            className="flex items-center gap-2 bg-res-brand text-res-ink-inverted hover:bg-res-brand-hover"
+          >
+            <Building2 className="size-4 mr-1" />
+            Create zone
+          </Button>
+        }
       />
 
-      <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
-        <p className="font-semibold">New zone</p>
-        <div className="mt-3 grid gap-3 md:grid-cols-3">
-          <input
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder={kind === 'rooms' ? 'Zone name (e.g. Tower A 1xx)' : 'Location name (e.g. Pool deck)'}
-            className="rounded-xl border border-slate-200 px-3 py-2 text-sm"
-          />
-          <select
-            value={kind}
-            onChange={(e) => setKind(e.target.value as 'rooms' | 'common_area')}
-            className="rounded-xl border border-slate-200 px-3 py-2 text-sm"
-          >
-            <option value="rooms">Rooms</option>
-            <option value="common_area">Common area (guests can pick it at checkout)</option>
-          </select>
-          <select
-            value={planId}
-            onChange={(e) => setPlanId(e.target.value)}
-            className="rounded-xl border border-slate-200 px-3 py-2 text-sm"
-          >
-            {plans.map((p) => (
-              <option key={p._id} value={p._id}>
-                {p.name}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <p className="mt-3 text-xs font-semibold text-gray-500">Rooms / units</p>
-        <div className="mt-1 flex max-h-44 flex-wrap gap-1.5 overflow-y-auto rounded-xl bg-slate-50 p-2">
-          {units.map((u) => (
-            <button
-              key={u._id}
-              type="button"
-              onClick={() => toggleUnit(u._id)}
-              className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
-                selected.has(u._id) ? 'bg-slate-900 text-white' : 'bg-white text-slate-600'
-              }`}
-            >
-              {u.label}
-            </button>
-          ))}
-          {units.length === 0 && <p className="text-xs text-gray-400">No units on this plan.</p>}
-        </div>
-
-        <div className="mt-2 flex items-center gap-2 text-xs text-gray-600">
-          or label range
-          <input
-            value={rangeFrom}
-            onChange={(e) => setRangeFrom(e.target.value)}
-            placeholder="100"
-            className={`${inputClass} w-20`}
-          />
-          →
-          <input
-            value={rangeTo}
-            onChange={(e) => setRangeTo(e.target.value)}
-            placeholder="199"
-            className={`${inputClass} w-20`}
-          />
-        </div>
-
-        <p className="mt-3 text-xs font-semibold text-gray-500">Outlets serving this zone</p>
-        <div className="mt-1">
-          <OutletPicker links={links} value={outlets} onChange={setOutlets} />
-        </div>
-
-        <button
-          type="button"
-          onClick={create}
-          disabled={saving}
-          className="mt-3 w-full rounded-full bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50"
-        >
-          {saving ? 'Creating…' : 'Create zone'}
-        </button>
+      {/* Summary stats */}
+      <div className="grid gap-3 md:grid-cols-3">
+        <StatCard label="Total zones" value={zones.length} icon={<Building2 className="size-5 text-res-ink-muted" />} />
+        <StatCard label="Active" value={activeZoneCount} icon={<Play className="size-5 text-emerald-600" />} />
+        <StatCard label="Paused" value={pausedZoneCount} icon={<Pause className="size-5 text-amber-600" />} />
       </div>
 
-      {loading ? (
-        <p className="text-sm text-gray-400">Loading…</p>
-      ) : (
-        <ul className="space-y-2">
-          {zones.map((z) => (
-            <li
-              key={z._id}
-              className={`rounded-2xl border border-gray-200 bg-white p-4 shadow-sm ${z.active ? '' : 'opacity-60'}`}
-            >
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <div>
-                  <p className="font-semibold">
-                    {z.name}
-                    {!z.active && <span className="ml-2 text-xs font-normal text-gray-500">paused</span>}
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    {z.kind === 'rooms' ? 'Rooms' : 'Common area'} · {z.unitIds.length} unit(s)
-                    {z.labelRange?.from ? ` · range ${z.labelRange.from}–${z.labelRange.to}` : ''}
-                  </p>
-                  <p className="mt-0.5 text-xs text-gray-600">
-                    {z.outlets.length
-                      ? z.outlets
-                          .map(
-                            (o) =>
-                              `${outletName(String(o.vendorLink))}${o.etaMins ? ` · ${o.etaMins} min` : ''}${
-                                o.dispatchPoint ? ` · ${o.dispatchPoint}` : ''
-                              }`,
-                          )
-                          .join(' | ')
-                      : 'No outlets yet — guests here only see hotel services.'}
-                  </p>
-                </div>
-                <div className="flex gap-3">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (editingId === z._id) {
-                        setEditingId(null);
-                      } else {
-                        setEditingId(z._id);
-                        setEditOutlets(outletsFromZone(z));
-                      }
-                    }}
-                    className="text-xs font-semibold text-slate-700"
-                  >
-                    {editingId === z._id ? 'Close' : 'Edit outlets'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => toggleActive(z)}
-                    className="text-xs font-semibold text-slate-700"
-                  >
-                    {z.active ? 'Pause' : 'Resume'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => remove(z._id)}
-                    className="text-xs font-semibold text-red-600"
-                  >
-                    Delete
-                  </button>
-                </div>
+      {/* Zone list */}
+      <Card className="rounded-res-lg border border-res-line bg-res-card shadow-res-low">
+        <CardHeader className="pb-3">
+          <CardTitle className="type-res-body text-res-ink font-semibold">Your zones</CardTitle>
+          <CardDescription>
+            Pause a zone to stop orders there; delete to remove it entirely.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="pt-0">
+          {loading ? (
+            <div className="p-8">
+              <div className="h-16 w-48 animate-pulse rounded-res-md bg-res-surface" />
+            </div>
+          ) : zones.length === 0 ? (
+            <div className="p-12 text-center">
+              <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-res-surface mb-4">
+                <MapPin className="h-8 w-8 text-res-ink-muted" />
               </div>
-              {editingId === z._id && (
-                <div className="mt-3 rounded-xl bg-slate-50 p-3">
-                  <OutletPicker links={links} value={editOutlets} onChange={setEditOutlets} />
-                  <button
-                    type="button"
-                    onClick={() => saveOutlets(z)}
-                    className="mt-2 rounded-full bg-slate-900 px-4 py-1.5 text-xs font-semibold text-white"
-                  >
-                    Save outlets
-                  </button>
-                </div>
-              )}
-            </li>
-          ))}
-          {zones.length === 0 && (
-            <p className="rounded-2xl border border-dashed border-gray-300 bg-white p-8 text-center text-sm text-gray-500">
-              No zones yet. Outlets only deliver to rooms and areas inside a zone.
-            </p>
+              <h3 className="type-res-h3 text-res-ink">No zones yet</h3>
+              <p className="mt-2 type-res-body text-res-ink-muted max-w-sm mx-auto">
+                Create a zone to map rooms or common areas to outlet kitchens.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {zones.map((z) => (
+                <Card key={z._id} className="rounded-res-lg border border-res-line bg-res-card shadow-res-low">
+                  <CardHeader className="grid grid-cols-3 items-start gap-3 pb-3">
+                    <div className="col-span-2 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p className="type-res-body text-res-ink font-semibold">{z.name}</p>
+                        {!z.active && (
+                          <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium border bg-slate-50 text-slate-700 border-slate-100">
+                            Paused
+                          </span>
+                        )}
+                      </div>
+                      <p className="type-res-small text-res-ink-muted mt-1">
+                        {z.kind === 'rooms' ? 'Rooms' : 'Common area'} · {z.unitIds.length} unit{z.unitIds.length === 1 ? '' : 's'}
+                        {z.labelRange?.from ? ` · range ${z.labelRange.from}–${z.labelRange.to}` : ''}
+                      </p>
+                      {z.outlets.length > 0 && (
+                        <p className="type-res-small text-res-ink-muted mt-1">
+                          {z.outlets
+                            .map(
+                              (o) =>
+                                `${outletName(String(o.vendorLink))}${o.etaMins ? ` · ${o.etaMins} min` : ''}${
+                                  o.dispatchPoint ? ` · ${o.dispatchPoint}` : ''
+                                }`,
+                            )
+                            .join(' | ')}
+                        </p>
+                      )}
+                      {z.outlets.length === 0 && (
+                        <p className="type-res-small text-res-ink-muted mt-1">
+                          No outlets yet — guests here only see hotel services.
+                        </p>
+                      )}
+                    </div>
+                    <div className="col-start-3 self-start flex gap-2">
+                      <Button
+                        onClick={() => {
+                          if (editingId === z._id) setEditingId(null);
+                          else {
+                            setEditingId(z._id);
+                            setEditOutlets(outletsFromZone(z));
+                          }
+                        }}
+                        variant="outline"
+                        size="sm"
+                      >
+                        {editingId === z._id ? 'Close' : 'Edit outlets'}
+                      </Button>
+                      <Button
+                        onClick={() => toggleActive(z)}
+                        variant="outline"
+                        size="sm"
+                      >
+                        {z.active ? 'Pause' : 'Resume'}
+                      </Button>
+                      <Button
+                        onClick={() => remove(z._id)}
+                        variant="destructive"
+                        size="sm"
+                        className="text-red-600 border-red-100 hover:bg-red-50"
+                      >
+                        <Trash2 className="size-4 mr-1" />
+                        Delete
+                      </Button>
+                    </div>
+                  </CardHeader>
+
+                  {editingId === z._id && (
+                    <CardContent className="pt-0 border-t border-res-line">
+                      <div className="space-y-3">
+                        <p className="type-res-caption text-res-ink-muted uppercase tracking-wider mb-2">
+                          Outlets serving {z.name}
+                        </p>
+                        <OutletPicker links={links} value={editOutlets} onChange={setEditOutlets} />
+                        <div className="flex justify-end">
+                          <Button
+                            onClick={() => saveOutlets(z)}
+                            disabled={saving}
+                            className="bg-res-brand text-res-ink-inverted hover:bg-res-brand-hover"
+                          >
+                            Save outlets
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  )}
+                </Card>
+              ))}
+            </div>
           )}
-        </ul>
-      )}
+        </CardContent>
+      </Card>
+
+      {/* Create zone modal */}
+      <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Create zone</DialogTitle>
+            <DialogDescription>
+              Select rooms or a label range, then assign the outlets that serve them.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-5">
+            <div className="grid gap-3 md:grid-cols-4">
+              <div className="flex flex-col gap-1">
+                <label className="type-res-small text-res-ink-muted uppercase tracking-wider">Zone name</label>
+                <Input
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder={kind === 'rooms' ? 'e.g. Tower A 1xx' : 'e.g. Pool deck'}
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="type-res-small text-res-ink-muted uppercase tracking-wider">Type</label>
+                <Select value={kind} onValueChange={(v) => setKind(v as 'rooms' | 'common_area')}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="rooms">Rooms</SelectItem>
+                    <SelectItem value="common_area">Common area</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="type-res-small text-res-ink-muted uppercase tracking-wider">Floor plan</label>
+                <Select value={planId} onValueChange={setPlanId}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select plan" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {plans.map((p) => (
+                      <SelectItem key={p._id} value={p._id}>{p.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex items-end">
+                <Button
+                  onClick={() => {
+                    setSelected(new Set());
+                    setRangeFrom('');
+                    setRangeTo('');
+                  }}
+                  variant="outline"
+                  size="sm"
+                  className="w-full"
+                >
+                  Clear
+                </Button>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-1">
+              <label className="type-res-small text-res-ink-muted uppercase tracking-wider">Rooms / units</label>
+              <div className="mt-1 flex max-h-44 flex-wrap gap-1.5 overflow-y-auto rounded-xl bg-res-surface p-2">
+                {units.map((u) => (
+                  <button
+                    key={u._id}
+                    type="button"
+                    onClick={() => toggleUnit(u._id)}
+                    className={`rounded-full px-2.5 py-1 text-xs font-medium transition-colors ${
+                      selected.has(u._id) ? 'bg-res-brand text-res-ink-inverted' : 'bg-res-card text-res-ink border border-res-line'
+                    }`}
+                  >
+                    {u.label}
+                  </button>
+                ))}
+                {units.length === 0 && <p className="type-res-small text-res-ink-muted">No units on this plan.</p>}
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-1">
+              <label className="type-res-small text-res-ink-muted uppercase tracking-wider">Or label range</label>
+              <div className="mt-1 flex gap-2">
+                <Input
+                  value={rangeFrom}
+                  onChange={(e) => setRangeFrom(e.target.value)}
+                  placeholder="100"
+                  className="w-20 text-sm"
+                />
+                <span className="type-res-small text-res-ink-muted self-center">→</span>
+                <Input
+                  value={rangeTo}
+                  onChange={(e) => setRangeTo(e.target.value)}
+                  placeholder="199"
+                  className="w-20 text-sm"
+                />
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-1">
+              <label className="type-res-small text-res-ink-muted uppercase tracking-wider">Outlets serving this zone</label>
+              <OutletPicker links={links} value={outlets} onChange={setOutlets} />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              type="button"
+              onClick={() => setCreateOpen(false)}
+              variant="outline"
+              disabled={saving}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={createZone}
+              disabled={saving || !name.trim() || (selected.size === 0 && (!rangeFrom || !rangeTo))}
+              className="bg-res-brand text-res-ink-inverted hover:bg-res-brand-hover"
+            >
+              {saving ? 'Creating…' : 'Create zone'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
+  );
+}
+
+function StatCard({
+  label,
+  value,
+  icon,
+}: {
+  label: string;
+  value: number | string;
+  icon: React.ReactNode;
+}) {
+  return (
+    <Card className="rounded-res-lg border border-res-line bg-res-card shadow-res-low p-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="type-res-caption text-res-ink-muted uppercase tracking-wider">{label}</p>
+          <p className="mt-1 type-res-h3 text-res-ink font-semibold">{value}</p>
+        </div>
+        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-res-surface">
+          {icon}
+        </div>
+      </div>
+    </Card>
   );
 }

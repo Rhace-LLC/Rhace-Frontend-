@@ -167,6 +167,11 @@ class BillingService {
     return res.data as { success: boolean; data: { invoiceId: string; checkoutUrl: string } };
   }
 
+  async confirmInvoice(invoiceId: string) {
+    const res = await api.post(`/billing/invoices/${invoiceId}/confirm`);
+    return res.data as { success: boolean; data: { invoiceId: string; paid: boolean; status: InvoiceStatus } };
+  }
+
   // ─── Admin ────────────────────────────────────────────────────────────
   async adminListPlans() {
     const res = await api.get('/billing/admin/plans');
