@@ -7,6 +7,7 @@ import GoogleIcon from '@/public/auth/google.svg';
 import { toast } from 'react-toastify';
 import { useNavigate, useSearchParams } from 'react-router';
 import { authService } from '@/services/auth.service';
+import { parseRequestError } from '@/services/request_helpers';
 import logo from '@/public/images/Rhace-11.png';
 import { useGoogleLogin } from '@react-oauth/google';
 import { useDispatch } from 'react-redux';
@@ -52,7 +53,7 @@ const Signup = () => {
       // Ensure the path starts with an absolute / so it navigates from the domain root
       navigate(`/auth/user/otp?email=${safeEmail}`);
     } catch (err) {
-      toast.error(err.response?.data.message);
+      toast.error(parseRequestError(err));
     } finally {
       setIsloading(false);
     }
@@ -270,7 +271,7 @@ const Signup = () => {
               strength < 3
             }
             onClick={handleRegister}
-            className="w-full py-6 rounded-md bg-[#0A6C6D] text-white text-sm font-light transition-transform duration-200 hover:shadow-lg hover:bg-[#0A6C6D]"
+            className="w-full py-6 rounded-md bg-[#0A6C6D] text-white text-sm font-light transition-transform duration-200 hover:shadow-lg hover:bg-[#0A6C6D] flex items-center justify-center"
           >
             {isLoading ? (
               <span className="flex items-center gap-1">

@@ -4,6 +4,7 @@ import { Label } from '@/components/ui/label';
 import GoogleIcon from '@/public/auth/google.svg';
 import { useAuth } from '@/contexts/AuthContext';
 import { authService } from '@/services/auth.service';
+import { parseRequestError } from '@/services/request_helpers';
 import type { AppDispatch } from '@/redux/store';
 import { useGoogleLogin } from '@react-oauth/google';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
@@ -67,7 +68,7 @@ const Login = () => {
     } catch (err) {
       console.log(err, 'LOGIN ERROR');
 
-      const message = err?.response?.data?.message || 'Invalid email or password';
+      const message = parseRequestError(err, 'Invalid email or password');
 
       toast.error(message);
 
