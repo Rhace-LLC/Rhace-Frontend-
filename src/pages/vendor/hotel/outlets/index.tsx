@@ -67,6 +67,14 @@ export default function HotelOutletsPage() {
   const pendingCount = useMemo(() => links.filter((l) => l.status === 'pending').length, [links]);
   const suspendedCount = useMemo(() => links.filter((l) => l.status === 'suspended').length, [links]);
 
+  const [outletTab, setOutletTab] = useState<'active' | 'inactive' | 'all'>('active');
+
+  const filteredLinks = useMemo(() => {
+    if (outletTab === 'active') return links.filter((l) => l.status === 'active');
+    if (outletTab === 'inactive') return links.filter((l) => l.status === 'suspended' || l.status === 'revoked');
+    return links;
+  }, [links, outletTab]);
+
   const load = useCallback(async () => {
     try {
       setLinks(await vendorLinkApi.hotelLinks());
@@ -122,6 +130,7 @@ export default function HotelOutletsPage() {
   const pickVendor = (vendor: { _id: string; businessName: string; email: string; vendorType: string }) => {
     setSelectedVendor(vendor);
     setSearchQuery(vendor.businessName);
+    setInviteEmail(vendor.email);
     setSearchResults([]);
   };
 
@@ -208,7 +217,7 @@ export default function HotelOutletsPage() {
         <StatCard label="Suspended" value={suspendedCount} icon={<Shield className="size-5 text-slate-600" />} />
       </div>
 
-      {/* Linked outlets list */}
+      {/* Linked outlets */}
       <Card className="rounded-res-lg border border-res-line bg-res-card shadow-res-low">
         <CardHeader className="pb-3 flex items-center justify-between">
           <div>
@@ -217,6 +226,26 @@ export default function HotelOutletsPage() {
               Manage commission, prep ETA and status for each connected outlet.
             </CardDescription>
           </div>
+          <div className="flex gap-2">
+            <Button
+              onClick={() => setOutletTab('active')}
+              className={`rounded-res-md px-4 py-2 font-medium ${outletTab === 'active' ? 'bg-res-brand text-res-ink-inverted shadow-res-low' : 'border border-res-line bg-res-card text-res-ink hover:bg-res-surface'}`}
+            >
+              Active
+            </Button>
+            <Button
+              onClick={() => setOutletTab('inactive')}
+              className={`rounded-res-md px-4 py-2 font-medium ${outletTab === 'inactive' ? 'bg-res-brand text-res-ink-inverted shadow-res-low' : 'border border-res-line bg-res-card text-res-ink hover:bg-res-surface'}`}
+            >
+              Inactive
+            </Button>
+            <Button
+              onClick={() => setOutletTab('all')}
+              className={`rounded-res-md px-4 py-2 font-medium ${outletTab === 'all' ? 'bg-res-brand text-res-ink-inverted shadow-res-low' : 'border border-res-line bg-res-card text-res-ink hover:bg-res-surface'}`}
+            >
+              All
+            </Button>
+          </div>
         </CardHeader>
         <CardContent className="pt-0">
           {loading ? (
@@ -224,19 +253,32 @@ export default function HotelOutletsPage() {
               <div className="h-16 w-48 animate-pulse rounded-res-md bg-res-surface" />
               <div className="mt-4 h-16 w-64 animate-pulse rounded-res-md bg-res-surface" />
             </div>
-          ) : links.length === 0 ? (
+          ) : filteredLinks.length === 0 ? (
             <div className="p-12 text-center">
               <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-res-surface mb-4">
                 <UserPlus className="h-8 w-8 text-res-ink-muted" />
               </div>
-              <h3 className="type-res-h3 text-res-ink">No linked outlets yet</h3>
+              <h3 className="type-res-h3 text-res-ink">{outletTab === 'active' ? 'No active outlets yet' : outletTab === 'inactive' ? 'No inactive outlets yet' : 'No linked outlets yet'}</h3>
               <p className="mt-2 type-res-body text-res-ink-muted max-w-sm mx-auto">
-                Send an email invite to connect a restaurant, bar or lounge to this hotel.
+                {outletTab === 'active'
+                  ? 'All outlets are inactive or none are linked yet.'
+                  : outletTab === 'inactive'
+                    ? 'All linked outlets are active.'
+                    : 'Send an email invite to connect a restaurant, bar or lounge to this hotel.'}
               </p>
+              {outletTab === 'all' && (
+                <Button
+                  onClick={() => setInviteOpen(true)}
+                  className="mt-6 flex items-center justify-center gap-2 rounded-res-md border border-res-line bg-res-card px-4 py-2.5 text-res-ink font-medium shadow-res-low hover:bg-res-surface"
+                >
+                  <Mail className="size-4 mr-2" />
+                  Invite by email
+                </Button>
+              )}
             </div>
           ) : (
-            <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-              {links.map((link) => {
+            <div className="space-y-3">
+              {filteredLinks.map((link) => {
                 const status = STATUS_CONFIG[link.status] ?? STATUS_CONFIG.pending;
                 const commission = link.commission?.value != null
                   ? (link.commission.kind === 'flat' ? `₦${link.commission.value}/order` : `${link.commission.value}% commission`)
@@ -419,7 +461,7 @@ export default function HotelOutletsPage() {
                       )}
                       <Button
                         onClick={() => revoke(link)}
-                        variant="destructive"
+                        variant="outline"
                         size="sm"
                         className="text-red-600 border-red-100 hover:bg-red-50"
                       >
@@ -448,17 +490,10 @@ export default function HotelOutletsPage() {
 
           <div className="space-y-6">
             <div className="space-y-2">
-              <label className="type-res-small text-res-ink-muted uppercase tracking-wider block">Email address</label>
-              <Input
-                value={inviteEmail}
-                onChange={(e) => setInviteEmail(e.target.value)}
-                type="email"
-                placeholder="restaurant@example.com"
-                className="w-full rounded-res-md border border-res-line bg-res-card px-3 py-2.5 text-res-ink placeholder:text-res-ink-muted focus:border-res-brand focus:ring-res-brand/20"
-              />
-            </div>
-            <div className="space-y-2">
               <label className="type-res-small text-res-ink-muted uppercase tracking-wider block">Search restaurant</label>
+              <p className="type-res-small text-res-ink-muted">
+                Search by restaurant name or email to pre-fill the invite. Leave empty to invite any restaurant by email only.
+              </p>
               <div className="relative">
                 <Input
                   value={searchQuery}
@@ -501,6 +536,19 @@ export default function HotelOutletsPage() {
                   ))}
                 </div>
               )}
+            </div>
+            <div className="space-y-2">
+              <label className="type-res-small text-res-ink-muted uppercase tracking-wider block">Email address</label>
+              <p className="type-res-small text-res-ink-muted">
+                The pairing code is sent to this email. The restaurant can link their outlet using the code.
+              </p>
+              <Input
+                value={inviteEmail}
+                onChange={(e) => setInviteEmail(e.target.value)}
+                type="email"
+                placeholder="restaurant@example.com"
+                className="w-full rounded-res-md border border-res-line bg-res-card px-3 py-2.5 text-res-ink placeholder:text-res-ink-muted focus:border-res-brand focus:ring-res-brand/20"
+              />
             </div>
           </div>
 
