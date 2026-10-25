@@ -1,23 +1,78 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
+import {
+  Building2,
+  Check,
+  CheckCircle2,
+  ChevronDown,
+  ChevronUp,
+  Clock,
+  Link,
+  MapPin,
+  Percent,
+  Shield,
+  User,
+} from 'lucide-react';
 import DashboardPageHeader from '@/components/dashboard/DashboardPageHeader';
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Switch } from '@/components/ui/switch';
 import {
   vendorLinkApi,
   type DeliveryZoneDto,
   type VendorLinkDto,
 } from '@/services/vendorlink.service';
 
-const ALL_SCOPES = ['read:menu', 'write:orders', 'read:delivery_locations'];
+const SCOPE_CONFIG: Record<string, { label: string; description: string }> = {
+  'read:menu': {
+    label: 'Menu access',
+    description: 'Hotel guests can view your active kitchen menu.',
+  },
+  'write:orders': {
+    label: 'Room ordering',
+    description: 'Front desk can route direct kitchen tickets.',
+  },
+  'read:delivery_locations': {
+    label: 'Delivery routing',
+    description: 'Share dispatch locations for accurate ETAs.',
+  },
+};
 
-/** Phase 4 restaurant page: redeem pairing codes, consent scopes, view zones. */
+const ALL_SCOPES = ['read:menu', 'write:orders', 'read:delivery_locations'] as const;
+
+const STATUS_CONFIG: Record<
+  string,
+  { label: string; bg: string; text: string; border: string }
+> = {
+  active: { label: 'Active', bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-100' },
+  pending: { label: 'Pending', bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-100' },
+  suspended: { label: 'Suspended', bg: 'bg-slate-50', text: 'text-slate-700', border: 'border-slate-100' },
+  revoked: { label: 'Revoked', bg: 'bg-red-50', text: 'text-red-700', border: 'border-red-100' },
+};
+
 export default function LinkedHotelsPage() {
   const [links, setLinks] = useState<VendorLinkDto[]>([]);
   const [loading, setLoading] = useState(true);
+  const [redeemOpen, setRedeemOpen] = useState(false);
   const [code, setCode] = useState('');
   const [scopes, setScopes] = useState<Set<string>>(new Set(ALL_SCOPES));
   const [zonesByLink, setZonesByLink] = useState<Record<string, DeliveryZoneDto[]>>({});
+  const [expandedLink, setExpandedLink] = useState<string | null>(null);
+  const [workingId, setWorkingId] = useState<string | null>(null);
 
-  const load = async () => {
+  const activeCount = useMemo(() => links.filter((l) => l.status === 'active').length, [links]);
+  const pendingCount = useMemo(() => links.filter((l) => l.status === 'pending').length, [links]);
+
+  const load = useCallback(async () => {
     try {
       setLinks(await vendorLinkApi.partnerLinks());
     } catch {
@@ -25,11 +80,11 @@ export default function LinkedHotelsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     void load();
-  }, []);
+  }, [load]);
 
   const toggleScope = (s: string) => {
     const next = new Set(scopes);
@@ -40,172 +95,397 @@ export default function LinkedHotelsPage() {
 
   const redeem = async () => {
     if (!code.trim()) return;
+    setWorkingId('redeem');
     try {
       await vendorLinkApi.redeem(code.trim().toUpperCase(), [...scopes]);
       toast.success('Hotel linked');
       setCode('');
+      setScopes(new Set(ALL_SCOPES));
+      setRedeemOpen(false);
       await load();
     } catch {
-      toast.error('Invalid or expired code.');
+      toast.error('Invalid or expired pairing code.');
+    } finally {
+      setWorkingId(null);
     }
   };
 
   const approve = async (id: string) => {
+    setWorkingId(id);
     try {
       await vendorLinkApi.approveLink(id);
       toast.success('Link approved');
       await load();
     } catch {
       toast.error('Could not approve the link.');
+    } finally {
+      setWorkingId(null);
     }
   };
 
   const decline = async (id: string) => {
+    setWorkingId(id);
     try {
       await vendorLinkApi.declineLink(id);
+      toast.success('Link declined');
       await load();
     } catch {
       toast.error('Could not decline the link.');
+    } finally {
+      setWorkingId(null);
     }
   };
 
   const showZones = async (id: string) => {
-    if (zonesByLink[id]) {
-      setZonesByLink((m) => {
-        const next = { ...m };
-        delete next[id];
-        return next;
-      });
+    if (expandedLink === id) {
+      setExpandedLink(null);
       return;
     }
-    try {
-      const zones = await vendorLinkApi.linkZones(id);
-      setZonesByLink((m) => ({ ...m, [id]: zones }));
-    } catch {
-      toast.error('Could not load delivery zones.');
+    if (!(id in zonesByLink)) {
+      try {
+        const zones = await vendorLinkApi.linkZones(id);
+        setZonesByLink((m) => ({ ...m, [id]: zones }));
+        setExpandedLink(id);
+      } catch {
+        toast.error('Could not load delivery zones.');
+      }
+    } else {
+      setExpandedLink(id);
     }
   };
 
+  const formatCommission = (link: VendorLinkDto) => {
+    if (!link.commission?.value) return null;
+    const { kind, value } = link.commission;
+    return kind === 'flat' ? `₦${value}/order` : `${value}% commission`;
+  };
+
   return (
-    <div className="space-y-5 p-4 md:p-6">
+    <div className="space-y-6 p-4 md:p-6">
       <DashboardPageHeader
         title="Linked hotels"
-        subtitle="Hotels that can route room orders to your kitchen."
+        subtitle="Manage hotel partnerships that route room orders to your kitchen."
+        actions={
+          <Button
+            onClick={() => setRedeemOpen(true)}
+            className="flex items-center gap-2 rounded-res-md border border-res-line bg-res-card px-4 py-2.5 text-res-ink font-medium shadow-res-low hover:bg-res-surface"
+          >
+            <Link className="size-4" />
+            Link hotel
+          </Button>
+        }
       />
 
-      <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
-        <p className="font-semibold">Redeem a pairing code</p>
-        <input
-          value={code}
-          onChange={(e) => setCode(e.target.value.toUpperCase())}
-          placeholder="8-character code"
-          maxLength={8}
-          className="mt-2 w-full rounded-xl border border-slate-200 px-3 py-2 font-mono text-sm tracking-widest"
-        />
-        <p className="mt-2 text-xs font-semibold text-gray-500">Scopes you grant</p>
-        <div className="mt-1 flex flex-wrap gap-1.5">
-          {ALL_SCOPES.map((s) => (
-            <button
-              key={s}
-              type="button"
-              onClick={() => toggleScope(s)}
-              className={`rounded-full px-3 py-1.5 font-mono text-xs ${
-                scopes.has(s) ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-500'
-              }`}
-            >
-              {s}
-            </button>
-          ))}
-        </div>
-        <button
-          type="button"
-          onClick={redeem}
-          disabled={!code.trim()}
-          className="mt-3 w-full rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
-        >
-          Link hotel
-        </button>
+      {/* Summary stats */}
+      <div className="grid gap-3 md:grid-cols-3">
+        <StatCard label="Linked hotels" value={links.length} icon={<Link className="size-5 text-res-ink-muted" />} />
+        <StatCard label="Active" value={activeCount} icon={<CheckCircle2 className="size-5 text-emerald-600" />} />
+        <StatCard label="Pending approval" value={pendingCount} icon={<Clock className="size-5 text-amber-600" />} />
       </div>
 
+      {/* Content */}
       {loading ? (
-        <p className="text-sm text-gray-400">Loading…</p>
+        <div className="rounded-res-lg border border-res-line bg-res-card p-8 shadow-res-low">
+          <div className="h-16 w-48 animate-pulse rounded-res-md bg-res-surface" />
+          <div className="mt-4 h-16 w-64 animate-pulse rounded-res-md bg-res-surface" />
+        </div>
       ) : links.length === 0 ? (
-        <p className="rounded-2xl border border-dashed border-gray-300 bg-white p-8 text-center text-sm text-gray-500">
-          No linked hotels yet.
-        </p>
+        <div className="rounded-res-lg border border-res-line border-dashed bg-res-card p-12 text-center shadow-res-low">
+          <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-res-surface mb-4">
+            <Building2 className="h-8 w-8 text-res-ink-muted" />
+          </div>
+          <h3 className="type-res-h3 text-res-ink">No linked hotels yet</h3>
+          <p className="mt-2 type-res-body text-res-ink-muted max-w-sm mx-auto">
+            Get a pairing code from your hotel partner to start receiving room orders in your kitchen.
+          </p>
+          <Button
+            onClick={() => setRedeemOpen(true)}
+            className="mt-6 flex items-center justify-center gap-2 rounded-res-md border border-res-line bg-res-card px-4 py-2.5 text-res-ink font-medium shadow-res-low hover:bg-res-surface"
+          >
+            <Link className="size-4 mr-2" />
+            Enter pairing code
+          </Button>
+        </div>
       ) : (
-        <ul className="space-y-2">
-          {links.map((link) => (
-            <li key={link._id} className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <div>
-                  <p className="font-semibold">{link.counterpartName || 'Hotel'}</p>
-                  <p className="text-xs text-gray-500">
-                    {link.outletName ? `Listed as “${link.outletName}” · ` : ''}
-                    {link.status} · scopes: {link.scopes.join(', ') || '—'}
-                    {link.status === 'active' && link.commission?.value
-                      ? ` · hotel commission ${
-                          link.commission.kind === 'flat'
-                            ? `${link.commission.value} per order`
-                            : `${link.commission.value}%`
-                        }`
-                      : ''}
-                  </p>
-                </div>
-                <div className="flex gap-2">
-                  {link.status === 'pending' && (
-                    <>
-                      <button
-                        type="button"
-                        onClick={() => approve(link._id)}
-                        className="rounded-full bg-green-600 px-3 py-1.5 text-xs font-semibold text-white"
-                      >
-                        Approve
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => decline(link._id)}
-                        className="rounded-full border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-600"
-                      >
-                        Decline
-                      </button>
-                    </>
-                  )}
-                  {link.status === 'active' && (
-                    <button
-                      type="button"
-                      onClick={() => showZones(link._id)}
-                      className="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold"
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {links.map((link) => {
+            const status = STATUS_CONFIG[link.status] ?? STATUS_CONFIG.pending;
+            const commission = formatCommission(link);
+            const zones = zonesByLink[link._id];
+            const isExpanded = expandedLink === link._id;
+            const busy = workingId === link._id;
+
+            return (
+              <Card key={link._id} className="rounded-res-lg border border-res-line bg-res-card shadow-res-low">
+                <CardHeader className="grid grid-cols-3 items-start gap-3 pb-3">
+                  <div className="col-span-2">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-res-surface">
+                        <User className="h-5 w-5 text-res-ink-muted" />
+                      </div>
+                      <div>
+                        <p className="type-res-body text-res-ink font-semibold">
+                          {link.counterpartName || 'Hotel'}
+                        </p>
+                        {link.outletName && (
+                          <p className="type-res-small text-res-ink-muted">
+                            Listed as <span className="font-medium">{link.outletName}</span>
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="col-start-3 self-start">
+                    <span
+                      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium border ${status.bg} ${status.text} ${status.border}`}
                     >
-                      {zonesByLink[link._id] ? 'Hide zones' : 'Delivery zones'}
-                    </button>
-                  )}
-                </div>
-              </div>
-              {zonesByLink[link._id] && (
-                <ul className="mt-2 space-y-1 rounded-xl bg-slate-50 p-2 text-sm">
-                  {zonesByLink[link._id].map((z) => (
-                    <li key={z._id} className="flex justify-between gap-2 px-1">
-                      <span>
-                        {z.name} · {z.unitIds.length} unit(s)
-                      </span>
-                      <span className="text-xs text-gray-500">
-                        {z.outlets.find((o) => String(o.vendorLink) === link._id)?.dispatchPoint ||
-                          'dispatch'}
-                        {' · '}
-                        {z.outlets.find((o) => String(o.vendorLink) === link._id)?.etaMins ?? '—'} min
-                      </span>
-                    </li>
-                  ))}
-                  {zonesByLink[link._id].length === 0 && (
-                    <li className="px-1 text-xs text-gray-400">No zones assigned yet.</li>
-                  )}
-                </ul>
-              )}
-            </li>
-          ))}
-        </ul>
+                      {status.label}
+                    </span>
+                  </div>
+                </CardHeader>
+
+                <CardContent className="pt-0">
+                  <div className="space-y-4">
+                    {/* Scopes */}
+                    <div className="rounded-res-md border border-res-line bg-res-surface p-4">
+                      <p className="type-res-caption text-res-ink-muted mb-3 uppercase tracking-wider">
+                        Permissions granted
+                      </p>
+                      <div className="space-y-2">
+                        {ALL_SCOPES.map((s) => {
+                          const cfg = SCOPE_CONFIG[s];
+                          const enabled = link.scopes.includes(s);
+                          return (
+                            <div
+                              key={s}
+                              className="flex items-center gap-3 rounded-full px-3 py-2 cursor-pointer transition-colors border ${
+                                enabled
+                                  ? 'bg-emerald-50 text-emerald-700 border-emerald-100'
+                                  : 'bg-res-card border-res-line text-res-ink-muted hover:bg-res-surface'
+                              }"
+                            >
+                              <span className={`text-res-ink font-medium ${enabled ? 'text-emerald-700' : ''}`}>
+                                {cfg.label}
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Commission */}
+                    {commission && (
+                      <div className="rounded-res-md border border-res-line bg-res-surface p-4">
+                        <div className="flex items-center justify-between">
+                          <span className="type-res-caption text-res-ink-muted uppercase tracking-wider">
+                            Hotel commission
+                          </span>
+                          <span className="type-res-body text-res-ink font-semibold">{commission}</span>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Zone preview */}
+                    {link.status === 'active' && (
+                      <div
+                        className="rounded-res-md border border-res-line bg-res-surface p-4 cursor-pointer"
+                        onClick={() => showZones(link._id)}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-res-card border border-res-line">
+                            <MapPin className="size-4 text-res-ink-muted" />
+                          </div>
+                          <div>
+                            <p className="type-res-body text-res-ink font-medium">
+                              {zones ? `${zones.length} delivery zone${zones.length === 1 ? '' : 's'}` : 'View delivery zones'}
+                            </p>
+                            <p className="type-res-small text-res-ink-muted">
+                              Tap to see dispatch points and ETAs
+                            </p>
+                          </div>
+                          {zones === undefined ? (
+                            <ChevronDown className="size-3 text-res-ink-muted" />
+                          ) : zones && !isExpanded ? (
+                            <ChevronDown className="size-3 text-res-ink-muted" />
+                          ) : (
+                            <ChevronUp className="size-3 text-res-ink-muted" />
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+
+                <CardFooter className="pt-4">
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    {link.status === 'pending' ? (
+                      <>
+                        <Button
+                          onClick={() => approve(link._id)}
+                          disabled={busy}
+                          className="flex-1 bg-emerald-600 text-res-ink-inverted rounded-res-md px-4 py-2.5 font-medium shadow-res-low hover:bg-emerald-700 disabled:opacity-60"
+                        >
+                          {busy ? null : <Check className="size-3 mr-2" />}
+                          Approve
+                        </Button>
+                        <Button
+                          onClick={() => decline(link._id)}
+                          disabled={busy}
+                          className="flex-1 rounded-res-md border border-res-line bg-res-card px-4 py-2.5 font-medium text-res-ink shadow-res-low hover:bg-res-surface disabled:opacity-60"
+                        >
+                          Decline
+                        </Button>
+                      </>
+                    ) : (
+                      <Button
+                        onClick={() => showZones(link._id)}
+                        disabled={busy}
+                        className="w-full rounded-res-md border border-res-line bg-res-card px-4 py-2.5 font-medium text-res-ink shadow-res-low hover:bg-res-surface disabled:opacity-60"
+                      >
+                        {zones === undefined || isExpanded ? 'Hide zones' : 'View zones'}
+                      </Button>
+                    )}
+                  </div>
+                </CardFooter>
+
+                {/* Expanded zones */}
+                {isExpanded && zones && (
+                  <CardContent className="pt-0 border-t border-res-line">
+                    <div className="space-y-3">
+                      <p className="type-res-caption text-res-ink-muted mb-3 uppercase tracking-wider">
+                        Delivery zones
+                      </p>
+                      <div className="grid gap-2">
+                        {zones.map((z) => {
+                          const outlet = z.outlets.find((o) => String(o.vendorLink) === link._id);
+                          return (
+                            <div
+                              key={z._id}
+                              className="rounded-res-md border border-res-line bg-res-card p-4 shadow-res-low"
+                            >
+                              <div className="flex items-center justify-between">
+                                <div>
+                                  <p className="type-res-body text-res-ink font-semibold">{z.name}</p>
+                                  <p className="type-res-small text-res-ink-muted">
+                                    {z.unitIds.length} unit{z.unitIds.length === 1 ? '' : 's'}
+                                  </p>
+                                </div>
+                                <div className="text-right">
+                                  <p className="type-res-body text-res-ink font-semibold">
+                                    {outlet?.etaMins ?? '—'} min
+                                  </p>
+                                  <p className="type-res-small text-res-ink-muted">
+                                    {outlet?.dispatchPoint ?? 'dispatch'}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                        {zones.length === 0 && (
+                          <p className="type-res-small text-res-ink-muted">No zones assigned yet.</p>
+                        )}
+                      </div>
+                    </div>
+                  </CardContent>
+                )}
+              </Card>
+            );
+          })}
+        </div>
       )}
+
+      {/* Redeem code modal */}
+      <Dialog open={redeemOpen} onOpenChange={setRedeemOpen}>
+        <DialogContent className="rounded-res-lg border border-res-line bg-res-card shadow-res-high sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="type-res-body text-res-ink font-semibold">Link a hotel</DialogTitle>
+            <DialogDescription className="type-res-small text-res-ink-muted">
+              Enter the 8-character pairing code from your hotel partner and choose the
+              permissions to grant.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-6">
+            <div className="space-y-2">
+              <label className="type-res-small text-res-ink-muted uppercase tracking-wider block">Pairing code</label>
+              <Input
+                value={code}
+                onChange={(e) => setCode(e.target.value.toUpperCase())}
+                placeholder="ABCD1234"
+                maxLength={8}
+                className="w-full rounded-res-md border border-res-line bg-res-card px-3 py-2.5 font-mono text-sm tracking-widest uppercase text-res-ink placeholder:text-res-ink-muted focus:border-res-brand focus:ring-res-brand/20"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="type-res-small text-res-ink-muted uppercase tracking-wider block">Permissions to grant</label>
+              <div className="space-y-2">
+                {ALL_SCOPES.map((s) => {
+                  const cfg = SCOPE_CONFIG[s];
+                  const enabled = scopes.has(s);
+                  return (
+                    <div
+                      key={s}
+                      className="flex items-center gap-3 rounded-res-md border p-3 cursor-pointer transition-colors border-res-line hover:bg-res-surface"
+                    >
+                      <Switch checked={enabled} onCheckedChange={() => toggleScope(s)} />
+                      <div className="flex-1 min-w-0">
+                        <p className="type-res-body text-res-ink font-medium">{cfg.label}</p>
+                        <p className="type-res-small text-res-ink-muted">{cfg.description}</p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-res-line">
+            <Button
+              type="button"
+              onClick={() => setRedeemOpen(false)}
+              variant="outline"
+              disabled={workingId === 'redeem'}
+              className="w-full sm:w-auto rounded-res-md border border-res-line bg-res-card px-4 py-2.5 font-medium text-res-ink shadow-res-low hover:bg-res-surface disabled:opacity-60"
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              onClick={redeem}
+              disabled={workingId === 'redeem' || !code.trim()}
+              className="w-full sm:w-auto rounded-res-md bg-res-brand px-4 py-2.5 font-medium text-res-ink-inverted shadow-res-low hover:bg-res-brand-hover disabled:opacity-60"
+            >
+              {workingId === 'redeem' ? 'Linking…' : 'Link hotel'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
+  );
+}
+
+function StatCard({
+  label,
+  value,
+  icon,
+}: {
+  label: string;
+  value: number | string;
+  icon: React.ReactNode;
+}) {
+  return (
+    <Card className="rounded-res-lg border border-res-line bg-res-card shadow-res-low p-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="type-res-caption text-res-ink-muted uppercase tracking-wider">{label}</p>
+          <p className="mt-1 type-res-h3 text-res-ink font-semibold">{value}</p>
+        </div>
+        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-res-surface">
+          {icon}
+        </div>
+      </div>
+    </Card>
   );
 }

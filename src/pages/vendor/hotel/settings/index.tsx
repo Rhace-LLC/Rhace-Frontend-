@@ -26,7 +26,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import { authService } from '@/services/auth.service';
 import type { RootState, AppDispatch } from '@/redux/store';
-import GuestOrderingSection from './GuestOrderingSection';
+import PaymentSettings from '@/pages/vendor/shared/payments/PaymentSettings';
 
 const HotelSettings = () => {
   const { vendor, setVendor } = useAuth();
@@ -67,9 +67,6 @@ const HotelSettings = () => {
           />
 
           <div className="grid gap-6 mt-6">
-            {/* Phase 1: guest ordering (room QR, challenge, credit limit). */}
-            <GuestOrderingSection />
-
             {/* Business Information Card */}
             <Card className="rounded-res-lg border border-res-line bg-res-card shadow-res-low overflow-hidden">
               <div className="p-6 md:p-8 space-y-6">
@@ -265,6 +262,11 @@ const HotelSettings = () => {
                   </label>
                 </div>
               </div>
+            </Card>
+
+            {/* Payment Settings */}
+            <Card className="rounded-res-lg border border-res-line bg-res-card shadow-res-low">
+              <PaymentSettings />
             </Card>
 
             {/* Action Buttons */}

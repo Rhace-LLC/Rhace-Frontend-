@@ -85,6 +85,8 @@ export interface RoomQr {
   label: string;
   token: string;
   path: string;
+  qrVersion?: number;
+  generatedAt?: string;
 }
 
 export interface StayCheckoutInput {
@@ -280,6 +282,14 @@ class StayService {
   async rotateRoomQr(unitId: string): Promise<RoomQr & { qrVersion: number }> {
     const res = await api.post(`/stay/qr/rotate/${unitId}`);
     return unwrap<RoomQr & { qrVersion: number }>(res);
+  }
+  async listRoomQrs(floorPlanId: string): Promise<RoomQr[]> {
+    const res = await api.get('/stay/qr/list', { params: { floorPlanId } });
+    return unwrap<RoomQr[]>(res);
+  }
+  async bulkRotateRoomQrs(unitIds: string[]): Promise<RoomQr[]> {
+    const res = await api.post('/stay/qr/bulk-rotate', { unitIds });
+    return unwrap<RoomQr[]>(res);
   }
   /** Staff: folio detail for a stay (front-desk panel). */
   async folioForStay(stayId: string): Promise<StayFolio> {

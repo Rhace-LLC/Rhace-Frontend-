@@ -40,6 +40,11 @@ const PreOrderPage = () => {
         idempotencyKey: crypto.randomUUID(),
         lines,
       });
+      if (order.balance <= 0) {
+        toast.success('Pre-order placed. Your deposit covers it.');
+        navigate('/bookings');
+        return;
+      }
       setPayOrder(order);
     } catch (error) {
       const message =
@@ -85,6 +90,19 @@ const PreOrderPage = () => {
             <p className="type-res-small mt-1 text-res-ink-muted">
               This booking may have been removed.
             </p>
+          </div>
+        ) : reservation.status === 'cancelled' || reservation.status === 'no_show' ? (
+          <div className="rounded-res-lg bg-res-card px-6 py-14 text-center shadow-res-low">
+            <p className="type-res-h3 text-res-ink">This booking was cancelled</p>
+            <p className="type-res-small mx-auto mt-1 max-w-sm font-normal text-res-ink-muted">
+              Any food ordered with it was cancelled too, so there is nothing to pre-order here.
+            </p>
+            <Link
+              to="/bookings"
+              className="type-res-small mt-5 inline-flex rounded-full bg-res-brand px-5 py-2.5 font-semibold text-res-ink-inverted shadow-res-low transition-colors hover:bg-res-brand-hover"
+            >
+              Back to my bookings
+            </Link>
           </div>
         ) : existingOrder ? (
           <section className="rounded-res-lg bg-res-card p-5 shadow-res-low md:p-6">
@@ -141,7 +159,7 @@ const PreOrderPage = () => {
             <OrderBuilder
               vendorId={reservation.vendor}
               vertical={reservation.vertical}
-              depositCredit={reservation.group?.minimumDeposit ?? reservation.amount ?? 0}
+              depositCredit={reservation.depositCredit?.available ?? reservation.group?.minimumDeposit ?? reservation.amount ?? 0}
               submitLabel="Place pre-order"
               submitting={createOrder.isPending}
               onSubmit={handleSubmit}

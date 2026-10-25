@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { toast } from 'react-toastify';
-import { CheckCircle2, Clock, Info, Lock, ReceiptText } from 'lucide-react';
+import { CheckCircle2, Clock, Info, Lock, RefreshCcw, ReceiptText } from 'lucide-react';
 import DashboardPageHeader from '@/components/dashboard/DashboardPageHeader';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
@@ -226,6 +226,23 @@ const BillingPage = () => {
     }
   };
 
+  const confirmInvoice = async (invoice: BillingInvoiceDto) => {
+    setWorking(invoice.id);
+    try {
+      const res = await billingService.confirmInvoice(invoice.id);
+      if (res.data.paid) {
+        toast.success('Payment confirmed — your subscription is active.');
+        await fetchAll();
+      } else {
+        toast.info('Payment not yet confirmed by Paystack. You can pay now or check again later.');
+      }
+    } catch (err) {
+      toast.error(errorMessage(err, 'Could not check the payment status. Please try again.'));
+    } finally {
+      setWorking(null);
+    }
+  };
+
   const cancel = async () => {
     setWorking('cancel');
     try {
@@ -395,14 +412,24 @@ const BillingPage = () => {
                     )}
                   </div>
                   {canManage ? (
-                    <button
-                      type="button"
-                      disabled={working === inv.id}
-                      onClick={() => void payPending(inv)}
-                      className="rounded-full bg-res-brand px-6 py-2.5 text-sm font-semibold text-white disabled:opacity-60"
-                    >
-                      {working === inv.id ? 'Opening checkout…' : `Pay ${naira(stillToPay)} now`}
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        disabled={working === inv.id}
+                        onClick={() => void payPending(inv)}
+                        className="rounded-full bg-res-brand px-6 py-2.5 text-sm font-semibold text-white disabled:opacity-60"
+                      >
+                        {working === inv.id ? 'Opening checkout…' : `Pay ${naira(stillToPay)} now`}
+                      </button>
+                      <button
+                        type="button"
+                        disabled={working === inv.id}
+                        onClick={() => void confirmInvoice(inv)}
+                        className="rounded-full border border-res-line px-4 py-2.5 text-sm font-semibold text-res-ink disabled:opacity-60 hover:bg-res-surface"
+                      >
+                        {working === inv.id ? 'Checking…' : 'Check status'}
+                      </button>
+                    </div>
                   ) : (
                     <span className="text-sm text-res-ink-muted">Still to pay {naira(stillToPay)}</span>
                   )}

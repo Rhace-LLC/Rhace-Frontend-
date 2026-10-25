@@ -467,8 +467,24 @@ export function OrderBuilder({
           <span className="type-res-h3 text-res-ink">{money(subtotal)}</span>
         </div>
         {depositCredit > 0 && (
-          <p className="type-res-small mt-1.5 rounded-res-sm bg-res-secondary px-3 py-2 font-medium text-res-brand">
-            Your {money(depositCredit)} deposit comes off this bill.
+          <div className="mt-2 flex items-center justify-between">
+            <span className="type-res-small text-res-ink-muted uppercase tracking-wider">Deposit credit</span>
+            <span className="type-res-body text-res-brand font-semibold">−{money(depositCredit)}</span>
+          </div>
+        )}
+        <div className="mt-1 flex items-center justify-between">
+          <span className="type-res-small font-medium text-res-ink-muted">To pay</span>
+          <span className="type-res-body text-res-ink font-bold">{money(Math.max(subtotal - depositCredit, 0))}</span>
+        </div>
+        {depositCredit > 0 && subtotal > depositCredit && depositCredit > subtotal / 2 && (
+          <p className="mt-2 type-res-small text-res-ink-muted">
+            {money(depositCredit - subtotal)} of your minimum spend is left. Order more now or at the
+            venue to use it. Unspent deposit isn&apos;t refunded.
+          </p>
+        )}
+        {depositCredit > 0 && subtotal > 0 && depositCredit < subtotal && subtotal - depositCredit > 0 && (
+          <p className="mt-1 type-res-small text-res-ink-muted">
+            {money(subtotal - depositCredit)} to pay after your deposit credit.
           </p>
         )}
 

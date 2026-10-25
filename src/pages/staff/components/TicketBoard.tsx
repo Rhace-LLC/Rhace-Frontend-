@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'react-toastify';
 import {
   Bell,
+  CalendarClock,
   Check,
   ChefHat,
   Loader2,
@@ -10,7 +11,7 @@ import {
   RefreshCw,
   StickyNote,
 } from 'lucide-react';
-import { ordersApi } from '@/features/orders/api/service';
+import { ordersApi, todayServiceWindow } from '@/features/orders/api/service';
 import { useOrderRealtime } from '@/features/orders/realtime';
 import { InRoomDiningLane } from '@/features/orders/components/InRoomDiningLane';
 import type { OrderDto, OrderItemType, OrderLineDto } from '@/features/orders/types';
@@ -38,6 +39,14 @@ const ORDER_STATUS_STYLE: Record<string, string> = {
 
 const ageMinutes = (createdAt?: string) =>
   createdAt ? Math.floor((Date.now() - new Date(createdAt).getTime()) / 60000) : 0;
+
+/** “7:30 PM” — when the booking behind a pre-order starts. */
+function formatStartTime(iso?: string | null): string {
+  if (!iso) return '—';
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return '—';
+  return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+}
 
 function formatPlacedAt(iso?: string): string {
   if (!iso) return '—';
@@ -95,7 +104,9 @@ export default function TicketBoard({ title, itemTypes, addOnAlert = false }: Ti
     async (silent = false) => {
       try {
         if (!silent) setIsRefreshing(true);
-        const res = await ordersApi.list({ limit: 60, withLines: true });
+        // Today's service only: a meal booked for next Friday is not a ticket
+        // the kitchen or bar can cook now.
+        const res = await ordersApi.list({ limit: 60, withLines: true, ...todayServiceWindow() });
         setOrders(res.items ?? []);
       } catch {
         if (!silent) toast.error('Failed to load the ticket queue');
@@ -330,6 +341,12 @@ export default function TicketBoard({ title, itemTypes, addOnAlert = false }: Ti
                           {SOURCE_LABEL[order.source] ?? order.source} · #
                           {order._id.slice(-6).toUpperCase()}
                         </span>
+                        {order.reservationStart && (
+                          <span className="type-res-caption mt-1.5 inline-flex items-center gap-1 rounded-full bg-res-brand px-2 py-0.5 font-semibold text-res-ink-inverted">
+                            <CalendarClock className="h-3 w-3" />
+                            Booking starts {formatStartTime(order.reservationStart)}
+                          </span>
+                        )}
                         {order.notes && (
                           <span className="type-res-small mt-1 block font-normal text-res-ink-muted italic">
                             {order.notes}

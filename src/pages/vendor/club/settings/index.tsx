@@ -3,6 +3,7 @@
 import TagInput from '@/components/TagInput';
 import DashboardPageHeader from '@/components/dashboard/DashboardPageHeader';
 import { Card } from '@/components/ui/card';
+import PaymentSettings from '@/pages/vendor/shared/payments/PaymentSettings';
 import { Input as UiInput } from '@/components/ui/input';
 import { Select as UiSelect } from '@/components/ui/select';
 import { Textarea as UiTextarea } from '@/components/ui/textarea';
@@ -307,8 +308,13 @@ const ClubSettings = () => {
               </div>
             </Card>
 
-            {/* Action Buttons */}
-            <div className="flex justify-end gap-3 mt-6 pb-8">
+              {/* Payment Settings */}
+              <Card className="rounded-res-lg border border-res-line bg-res-card shadow-res-low">
+                <PaymentSettings />
+              </Card>
+
+              {/* Action Buttons */}
+              <div className="flex justify-end gap-3 mt-6 pb-8">
               <button
                 type="button"
                 onClick={handleReset}

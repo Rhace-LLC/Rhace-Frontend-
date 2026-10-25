@@ -1,12 +1,45 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
+import { Building2, Clock, MapPin, Pause, Play, Trash2 } from 'lucide-react';
 import DashboardPageHeader from '@/components/dashboard/DashboardPageHeader';
-import { floorPlanService } from '@/services/floorPlan.service';
+import {
+  EmptyState,
+  FIELD_CLASS,
+  Field,
+  InsetBlock,
+  MODAL_CONTENT_CLASS,
+  PAGE_BODY,
+  PAGE_SHELL,
+  PILL_DANGER,
+  PILL_PRIMARY,
+  PILL_QUIET,
+  StatTile,
+  SurfaceCard,
+  TEXT_ACTION,
+} from '@/components/dashboard/res-ui';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 import {
   vendorLinkApi,
   type DeliveryZoneDto,
   type VendorLinkDto,
 } from '@/services/vendorlink.service';
+import { floorPlanService } from '@/services/floorPlan.service';
 import type { FloorPlanDto } from '@/types';
 
 interface UnitRef {
@@ -14,10 +47,7 @@ interface UnitRef {
   label: string;
 }
 
-/** Outlet serving a zone: dispatch point + ETA, keyed by vendor link id. */
 type OutletDraft = Record<string, { dispatchPoint: string; etaMins: string }>;
-
-const inputClass = 'rounded-lg border border-slate-200 px-2 py-1 text-sm';
 
 function outletsFromZone(zone: DeliveryZoneDto): OutletDraft {
   const draft: OutletDraft = {};
@@ -38,7 +68,7 @@ function outletsPayload(draft: OutletDraft) {
   }));
 }
 
-/** Pick outlets for a zone and set each one's dispatch point + ETA. */
+/** Outlets that serve a zone, with the dispatch point and prep time each needs. */
 function OutletPicker({
   links,
   value,
@@ -48,51 +78,84 @@ function OutletPicker({
   value: OutletDraft;
   onChange: (next: OutletDraft) => void;
 }) {
-  if (links.length === 0) return <p className="text-xs text-gray-400">Link an outlet first.</p>;
+  if (links.length === 0) {
+    return (
+      <p className="type-res-small font-normal text-res-ink-muted">
+        Link an outlet from Linked outlets first.
+      </p>
+    );
+  }
+
   return (
-    <div className="space-y-1.5">
-      {links.map((l) => {
-        const on = Boolean(value[l._id]);
+    <div className="space-y-2">
+      {links.map((link) => {
+        const on = Boolean(value[link._id]);
+        const name = link.outletName || link.counterpartName || 'Outlet';
         return (
-          <div key={l._id} className="flex flex-wrap items-center gap-2">
-            <button
-              type="button"
-              onClick={() => {
-                const next = { ...value };
-                if (on) delete next[l._id];
-                else next[l._id] = { dispatchPoint: '', etaMins: String(l.defaultPrepEtaMins ?? '') };
-                onChange(next);
-              }}
-              className={`rounded-full px-3 py-1.5 text-xs font-semibold ${
-                on ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-600'
-              }`}
-            >
-              {l.outletName || l.counterpartName || 'Outlet'}
-            </button>
-            {on && (
-              <>
-                <input
-                  value={value[l._id].dispatchPoint}
-                  onChange={(e) =>
-                    onChange({ ...value, [l._id]: { ...value[l._id], dispatchPoint: e.target.value } })
+          <div key={link._id} className="w-full rounded-res-md bg-res-card p-3.5">
+            <div className="flex items-start gap-3">
+              <Switch
+                checked={on}
+                onCheckedChange={(next) => {
+                  const draft = { ...value };
+                  if (next) {
+                    draft[link._id] = {
+                      dispatchPoint: '',
+                      etaMins: String(link.defaultPrepEtaMins ?? ''),
+                    };
+                  } else {
+                    delete draft[link._id];
                   }
-                  placeholder="Dispatch point (e.g. Kitchen pass 2)"
-                  className={`${inputClass} w-56`}
-                />
-                <label className="flex items-center gap-1 text-xs text-gray-600">
-                  ETA
-                  <input
-                    type="number"
-                    min={1}
-                    value={value[l._id].etaMins}
-                    onChange={(e) =>
-                      onChange({ ...value, [l._id]: { ...value[l._id], etaMins: e.target.value } })
+                  onChange(draft);
+                }}
+              />
+              <div className="min-w-0 flex-1">
+                <p className="type-res-body font-semibold text-res-ink">{name}</p>
+                {link.counterpartName && (
+                  <p className="type-res-small font-normal text-res-ink-muted">
+                    {link.counterpartName}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {on && (
+              <div className="mt-3 grid w-full gap-3 sm:grid-cols-2">
+                <Field label="Dispatch point" htmlFor={`dispatch-${link._id}`}>
+                  <Input
+                    id={`dispatch-${link._id}`}
+                    value={value[link._id].dispatchPoint}
+                    onChange={(event) =>
+                      onChange({
+                        ...value,
+                        [link._id]: { ...value[link._id], dispatchPoint: event.target.value },
+                      })
                     }
-                    className={`${inputClass} w-16`}
+                    placeholder="e.g. Kitchen pass 2"
+                    className={FIELD_CLASS}
                   />
-                  min
-                </label>
-              </>
+                </Field>
+                <Field label="Prep time" htmlFor={`eta-${link._id}`} hint="Minutes, in this zone.">
+                  <div className="relative w-full">
+                    <Input
+                      id={`eta-${link._id}`}
+                      type="number"
+                      min={1}
+                      value={value[link._id].etaMins}
+                      onChange={(event) =>
+                        onChange({
+                          ...value,
+                          [link._id]: { ...value[link._id], etaMins: event.target.value },
+                        })
+                      }
+                      className={`${FIELD_CLASS} pr-12`}
+                    />
+                    <span className="type-res-small pointer-events-none absolute top-1/2 right-4 -translate-y-1/2 font-normal text-res-ink-muted">
+                      min
+                    </span>
+                  </div>
+                </Field>
+              </div>
             )}
           </div>
         );
@@ -101,7 +164,17 @@ function OutletPicker({
   );
 }
 
-/** Phase 4 hotel page: delivery zones (rooms/areas → outlet dispatch). */
+const roomCountText = (zone: DeliveryZoneDto) => {
+  const picked = zone.unitIds.length;
+  const range = zone.labelRange?.from ? `rooms ${zone.labelRange.from}–${zone.labelRange.to}` : null;
+  const parts = [
+    zone.kind === 'rooms' ? 'Rooms' : 'Common area',
+    picked > 0 ? `${picked} ${picked === 1 ? 'room' : 'rooms'} selected` : null,
+    range,
+  ].filter(Boolean);
+  return parts.join(' · ');
+};
+
 export default function HotelZonesPage() {
   const [zones, setZones] = useState<DeliveryZoneDto[]>([]);
   const [links, setLinks] = useState<VendorLinkDto[]>([]);
@@ -110,6 +183,8 @@ export default function HotelZonesPage() {
   const [units, setUnits] = useState<UnitRef[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Create zone modal
+  const [createOpen, setCreateOpen] = useState(false);
   const [name, setName] = useState('');
   const [kind, setKind] = useState<'rooms' | 'common_area'>('rooms');
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -118,21 +193,25 @@ export default function HotelZonesPage() {
   const [outlets, setOutlets] = useState<OutletDraft>({});
   const [saving, setSaving] = useState(false);
 
+  // Edit zone state
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editOutlets, setEditOutlets] = useState<OutletDraft>({});
+
+  const activeZoneCount = useMemo(() => zones.filter((z) => z.active).length, [zones]);
+  const pausedZoneCount = useMemo(() => zones.filter((z) => !z.active).length, [zones]);
 
   const reloadZones = async () => setZones(await vendorLinkApi.zones());
 
   useEffect(() => {
     Promise.all([vendorLinkApi.zones(), vendorLinkApi.hotelLinks(), floorPlanService.list()])
-      .then(([z, l, p]) => {
-        setZones(z);
-        setLinks(l.filter((x) => x.status === 'active' || x.status === 'suspended'));
-        const docs = p.data?.items ?? [];
+      .then(([loadedZones, loadedLinks, loadedPlans]) => {
+        setZones(loadedZones);
+        setLinks(loadedLinks.filter((x) => x.status === 'active' || x.status === 'suspended'));
+        const docs = loadedPlans.data?.items ?? [];
         setPlans(docs);
         if (docs[0]) setPlanId(docs[0]._id);
       })
-      .catch(() => toast.error('Could not load zones.'))
+      .catch(() => toast.error('Could not load your zones.'))
       .finally(() => setLoading(false));
   }, []);
 
@@ -154,9 +233,18 @@ export default function HotelZonesPage() {
     setSelected(next);
   };
 
-  const create = async () => {
+  const resetCreateForm = () => {
+    setName('');
+    setKind('rooms');
+    setSelected(new Set());
+    setOutlets({});
+    setRangeFrom('');
+    setRangeTo('');
+  };
+
+  const createZone = async () => {
     if (!name.trim() || (selected.size === 0 && (!rangeFrom || !rangeTo))) {
-      toast.error('Name the zone and pick rooms or a label range.');
+      toast.error('Name the zone, then pick its rooms or a room-number range.');
       return;
     }
     setSaving(true);
@@ -168,12 +256,9 @@ export default function HotelZonesPage() {
         ...(rangeFrom && rangeTo ? { labelRange: { from: rangeFrom, to: rangeTo } } : {}),
         outlets: outletsPayload(outlets),
       });
-      toast.success('Zone created');
-      setName('');
-      setSelected(new Set());
-      setOutlets({});
-      setRangeFrom('');
-      setRangeTo('');
+      toast.success('Zone created.');
+      resetCreateForm();
+      setCreateOpen(false);
       await reloadZones();
     } catch {
       toast.error('Could not create the zone.');
@@ -183,19 +268,23 @@ export default function HotelZonesPage() {
   };
 
   const saveOutlets = async (zone: DeliveryZoneDto) => {
+    setSaving(true);
     try {
       await vendorLinkApi.updateZone(zone._id, { outlets: outletsPayload(editOutlets) });
-      toast.success('Zone updated');
+      toast.success('Zone outlets saved.');
       setEditingId(null);
       await reloadZones();
     } catch {
-      toast.error('Could not update the zone.');
+      toast.error('Could not save the outlets.');
+    } finally {
+      setSaving(false);
     }
   };
 
   const toggleActive = async (zone: DeliveryZoneDto) => {
     try {
       await vendorLinkApi.updateZone(zone._id, { active: !zone.active });
+      toast.success(zone.active ? 'Zone paused.' : 'Zone resumed.');
       await reloadZones();
     } catch {
       toast.error('Could not update the zone.');
@@ -203,9 +292,10 @@ export default function HotelZonesPage() {
   };
 
   const remove = async (id: string) => {
-    if (!window.confirm('Delete this zone?')) return;
+    if (!window.confirm('Delete this zone? Orders routed here stop immediately.')) return;
     try {
       await vendorLinkApi.deleteZone(id);
+      toast.success('Zone deleted.');
       await reloadZones();
     } catch {
       toast.error('Could not delete the zone.');
@@ -213,180 +303,328 @@ export default function HotelZonesPage() {
   };
 
   const outletName = (id: string) => {
-    const l = links.find((x) => x._id === id);
-    return l?.outletName || l?.counterpartName || 'Outlet';
+    const link = links.find((x) => x._id === id);
+    return link?.outletName || link?.counterpartName || 'Outlet';
   };
 
+  const canCreate = Boolean(name.trim()) && (selected.size > 0 || Boolean(rangeFrom && rangeTo));
+
   return (
-    <div className="space-y-5 p-4 md:p-6">
-      <DashboardPageHeader
-        title="Delivery zones"
-        subtitle="Map room ranges and common areas (pool, cabanas, lobby) to outlet kitchens."
-      />
-
-      <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
-        <p className="font-semibold">New zone</p>
-        <div className="mt-3 grid gap-3 md:grid-cols-3">
-          <input
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder={kind === 'rooms' ? 'Zone name (e.g. Tower A 1xx)' : 'Location name (e.g. Pool deck)'}
-            className="rounded-xl border border-slate-200 px-3 py-2 text-sm"
-          />
-          <select
-            value={kind}
-            onChange={(e) => setKind(e.target.value as 'rooms' | 'common_area')}
-            className="rounded-xl border border-slate-200 px-3 py-2 text-sm"
-          >
-            <option value="rooms">Rooms</option>
-            <option value="common_area">Common area (guests can pick it at checkout)</option>
-          </select>
-          <select
-            value={planId}
-            onChange={(e) => setPlanId(e.target.value)}
-            className="rounded-xl border border-slate-200 px-3 py-2 text-sm"
-          >
-            {plans.map((p) => (
-              <option key={p._id} value={p._id}>
-                {p.name}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <p className="mt-3 text-xs font-semibold text-gray-500">Rooms / units</p>
-        <div className="mt-1 flex max-h-44 flex-wrap gap-1.5 overflow-y-auto rounded-xl bg-slate-50 p-2">
-          {units.map((u) => (
-            <button
-              key={u._id}
-              type="button"
-              onClick={() => toggleUnit(u._id)}
-              className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
-                selected.has(u._id) ? 'bg-slate-900 text-white' : 'bg-white text-slate-600'
-              }`}
-            >
-              {u.label}
+    <div className={PAGE_SHELL}>
+      <div className={PAGE_BODY}>
+        <DashboardPageHeader
+          title="Delivery zones"
+          subtitle="Group rooms and shared spaces so each one knows which kitchens can serve it."
+          actions={
+            <button type="button" onClick={() => setCreateOpen(true)} className={PILL_PRIMARY}>
+              <Building2 className="size-4" strokeWidth={1.75} />
+              Create zone
             </button>
-          ))}
-          {units.length === 0 && <p className="text-xs text-gray-400">No units on this plan.</p>}
-        </div>
+          }
+        />
 
-        <div className="mt-2 flex items-center gap-2 text-xs text-gray-600">
-          or label range
-          <input
-            value={rangeFrom}
-            onChange={(e) => setRangeFrom(e.target.value)}
-            placeholder="100"
-            className={`${inputClass} w-20`}
+        <div className="grid gap-4 sm:grid-cols-3">
+          <StatTile
+            label="Zones"
+            value={zones.length}
+            icon={<Building2 className="size-[18px]" strokeWidth={1.75} />}
           />
-          →
-          <input
-            value={rangeTo}
-            onChange={(e) => setRangeTo(e.target.value)}
-            placeholder="199"
-            className={`${inputClass} w-20`}
+          <StatTile
+            label="Active"
+            value={activeZoneCount}
+            tone="positive"
+            icon={<Play className="size-[18px]" strokeWidth={1.75} />}
+          />
+          <StatTile
+            label="Paused"
+            value={pausedZoneCount}
+            tone="attention"
+            icon={<Pause className="size-[18px]" strokeWidth={1.75} />}
           />
         </div>
 
-        <p className="mt-3 text-xs font-semibold text-gray-500">Outlets serving this zone</p>
-        <div className="mt-1">
-          <OutletPicker links={links} value={outlets} onChange={setOutlets} />
-        </div>
+        {loading ? (
+          <div className="space-y-3">
+            {[0, 1].map((key) => (
+              <SurfaceCard key={key} className="px-5 py-5">
+                <div className="h-4 w-1/3 animate-pulse rounded-full bg-res-surface" />
+                <div className="mt-3 h-3 w-1/2 animate-pulse rounded-full bg-res-surface" />
+                <div className="mt-4 h-10 w-full animate-pulse rounded-res-md bg-res-surface" />
+              </SurfaceCard>
+            ))}
+          </div>
+        ) : zones.length === 0 ? (
+          <EmptyState
+            icon={<MapPin className="size-6" strokeWidth={1.75} />}
+            title="No zones yet"
+            description="Create a zone to tell each room which kitchens can deliver to it."
+            action={
+              <button type="button" onClick={() => setCreateOpen(true)} className={PILL_PRIMARY}>
+                <Building2 className="size-4" strokeWidth={1.75} />
+                Create zone
+              </button>
+            }
+          />
+        ) : (
+          <div className="space-y-4">
+            {zones.map((zone) => {
+              const isEditing = editingId === zone._id;
+              return (
+                <SurfaceCard key={zone._id} as="article" className="px-5 pt-5 pb-4">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <h3 className="type-res-h3 truncate text-res-ink">{zone.name}</h3>
+                        <span
+                          className={`type-res-small shrink-0 rounded-full px-3 py-1 font-semibold ${
+                            zone.active
+                              ? 'bg-res-secondary text-res-brand'
+                              : 'bg-res-surface text-res-ink-muted'
+                          }`}
+                        >
+                          {zone.active ? 'Active' : 'Paused'}
+                        </span>
+                      </div>
+                      <p className="type-res-small mt-1 font-normal text-res-ink-muted">
+                        {roomCountText(zone)}
+                      </p>
+                    </div>
 
-        <button
-          type="button"
-          onClick={create}
-          disabled={saving}
-          className="mt-3 w-full rounded-full bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50"
-        >
-          {saving ? 'Creating…' : 'Create zone'}
-        </button>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (isEditing) {
+                            setEditingId(null);
+                          } else {
+                            setEditingId(zone._id);
+                            setEditOutlets(outletsFromZone(zone));
+                          }
+                        }}
+                        className={PILL_QUIET}
+                      >
+                        {isEditing ? 'Close' : 'Outlets'}
+                      </button>
+                      <button type="button" onClick={() => void toggleActive(zone)} className={PILL_QUIET}>
+                        {zone.active ? <Pause className="size-4" strokeWidth={1.75} /> : <Play className="size-4" strokeWidth={1.75} />}
+                        {zone.active ? 'Pause' : 'Resume'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => void remove(zone._id)}
+                        aria-label={`Delete ${zone.name}`}
+                        className={PILL_DANGER}
+                      >
+                        <Trash2 className="size-4" strokeWidth={1.75} />
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="mt-4">
+                    {zone.outlets.length > 0 ? (
+                      <div className="flex flex-wrap gap-1.5">
+                        {zone.outlets.map((outlet) => (
+                          <span
+                            key={String(outlet.vendorLink)}
+                            className="type-res-small inline-flex items-center gap-1.5 rounded-full bg-res-surface px-3 py-1.5 font-medium text-res-ink"
+                          >
+                            {outletName(String(outlet.vendorLink))}
+                            {outlet.etaMins ? (
+                              <span className="inline-flex items-center gap-1 text-res-ink-muted">
+                                <Clock className="size-3" strokeWidth={1.75} />
+                                {outlet.etaMins} min
+                              </span>
+                            ) : null}
+                            {outlet.dispatchPoint ? (
+                              <span className="text-res-ink-muted">· {outlet.dispatchPoint}</span>
+                            ) : null}
+                          </span>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="type-res-small font-normal text-res-ink-muted">
+                        No outlets yet — guests here only see hotel services.
+                      </p>
+                    )}
+                  </div>
+
+                  {isEditing && (
+                    <div className="mt-4 border-t border-res-line pt-4">
+                      <InsetBlock title={`Outlets serving ${zone.name}`}>
+                        <OutletPicker links={links} value={editOutlets} onChange={setEditOutlets} />
+                        <div className="mt-4 flex items-center justify-end gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setEditingId(null)}
+                            disabled={saving}
+                            className={PILL_QUIET}
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => void saveOutlets(zone)}
+                            disabled={saving}
+                            className={PILL_PRIMARY}
+                          >
+                            {saving ? 'Saving…' : 'Save outlets'}
+                          </button>
+                        </div>
+                      </InsetBlock>
+                    </div>
+                  )}
+                </SurfaceCard>
+              );
+            })}
+          </div>
+        )}
       </div>
 
-      {loading ? (
-        <p className="text-sm text-gray-400">Loading…</p>
-      ) : (
-        <ul className="space-y-2">
-          {zones.map((z) => (
-            <li
-              key={z._id}
-              className={`rounded-2xl border border-gray-200 bg-white p-4 shadow-sm ${z.active ? '' : 'opacity-60'}`}
-            >
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <div>
-                  <p className="font-semibold">
-                    {z.name}
-                    {!z.active && <span className="ml-2 text-xs font-normal text-gray-500">paused</span>}
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    {z.kind === 'rooms' ? 'Rooms' : 'Common area'} · {z.unitIds.length} unit(s)
-                    {z.labelRange?.from ? ` · range ${z.labelRange.from}–${z.labelRange.to}` : ''}
-                  </p>
-                  <p className="mt-0.5 text-xs text-gray-600">
-                    {z.outlets.length
-                      ? z.outlets
-                          .map(
-                            (o) =>
-                              `${outletName(String(o.vendorLink))}${o.etaMins ? ` · ${o.etaMins} min` : ''}${
-                                o.dispatchPoint ? ` · ${o.dispatchPoint}` : ''
-                              }`,
-                          )
-                          .join(' | ')
-                      : 'No outlets yet — guests here only see hotel services.'}
-                  </p>
+      {/* Create zone */}
+      <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+        <DialogContent className={MODAL_CONTENT_CLASS}>
+          <DialogHeader className="gap-1.5">
+            <DialogTitle className="type-res-h3 text-res-ink">Create zone</DialogTitle>
+            <DialogDescription className="type-res-small font-normal text-res-ink-muted">
+              Pick the rooms or shared space, then say which outlets can serve them.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <InsetBlock>
+              <div className="space-y-3">
+                <Field label="Zone name" htmlFor="zone-name">
+                  <Input
+                    id="zone-name"
+                    value={name}
+                    onChange={(event) => setName(event.target.value)}
+                    placeholder={kind === 'rooms' ? 'e.g. Tower A 1xx' : 'e.g. Pool deck'}
+                    className={FIELD_CLASS}
+                  />
+                </Field>
+
+                <Field label="What it covers" htmlFor="zone-kind">
+                  <Select value={kind} onValueChange={(v) => setKind(v as 'rooms' | 'common_area')}>
+                    <SelectTrigger id="zone-kind" className={FIELD_CLASS}>
+                      <SelectValue placeholder="Select what it covers" />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-res-md">
+                      <SelectItem value="rooms">Rooms</SelectItem>
+                      <SelectItem value="common_area">Common area</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </Field>
+
+                <Field label="Floor map" htmlFor="zone-plan" hint="Rooms are read from this floor map.">
+                  <Select value={planId} onValueChange={setPlanId}>
+                    <SelectTrigger id="zone-plan" className={FIELD_CLASS}>
+                      <SelectValue placeholder="Select a floor map" />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-res-md">
+                      {plans.map((plan) => (
+                        <SelectItem key={plan._id} value={plan._id}>
+                          {plan.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </Field>
+              </div>
+            </InsetBlock>
+
+            <InsetBlock title="Rooms in this zone">
+              <div className="max-h-44 overflow-y-auto rounded-res-md bg-res-card p-2">
+                <div className="flex flex-wrap gap-1.5">
+                  {units.map((unit) => {
+                    const on = selected.has(unit._id);
+                    return (
+                      <button
+                        key={unit._id}
+                        type="button"
+                        onClick={() => toggleUnit(unit._id)}
+                        aria-pressed={on}
+                        className={`type-res-small cursor-pointer rounded-full px-3 py-1.5 font-semibold transition-colors outline-none focus-visible:ring-2 focus-visible:ring-res-brand ${
+                          on
+                            ? 'bg-res-brand text-res-ink-inverted'
+                            : 'bg-res-surface text-res-ink hover:text-res-brand'
+                        }`}
+                      >
+                        {unit.label}
+                      </button>
+                    );
+                  })}
+                  {units.length === 0 && (
+                    <p className="type-res-small p-2 font-normal text-res-ink-muted">
+                      No rooms on this floor map yet.
+                    </p>
+                  )}
                 </div>
-                <div className="flex gap-3">
+              </div>
+
+              <div className="mt-3 grid w-full gap-3 sm:grid-cols-2">
+                <Field label="Room numbers from" htmlFor="zone-from">
+                  <Input
+                    id="zone-from"
+                    value={rangeFrom}
+                    onChange={(event) => setRangeFrom(event.target.value)}
+                    placeholder="100"
+                    className={FIELD_CLASS}
+                  />
+                </Field>
+                <Field label="Room numbers to" htmlFor="zone-to">
+                  <Input
+                    id="zone-to"
+                    value={rangeTo}
+                    onChange={(event) => setRangeTo(event.target.value)}
+                    placeholder="199"
+                    className={FIELD_CLASS}
+                  />
+                </Field>
+              </div>
+
+              {(selected.size > 0 || rangeFrom || rangeTo) && (
+                <div className="mt-2 flex justify-end">
                   <button
                     type="button"
                     onClick={() => {
-                      if (editingId === z._id) {
-                        setEditingId(null);
-                      } else {
-                        setEditingId(z._id);
-                        setEditOutlets(outletsFromZone(z));
-                      }
+                      setSelected(new Set());
+                      setRangeFrom('');
+                      setRangeTo('');
                     }}
-                    className="text-xs font-semibold text-slate-700"
+                    className={TEXT_ACTION}
                   >
-                    {editingId === z._id ? 'Close' : 'Edit outlets'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => toggleActive(z)}
-                    className="text-xs font-semibold text-slate-700"
-                  >
-                    {z.active ? 'Pause' : 'Resume'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => remove(z._id)}
-                    className="text-xs font-semibold text-red-600"
-                  >
-                    Delete
-                  </button>
-                </div>
-              </div>
-              {editingId === z._id && (
-                <div className="mt-3 rounded-xl bg-slate-50 p-3">
-                  <OutletPicker links={links} value={editOutlets} onChange={setEditOutlets} />
-                  <button
-                    type="button"
-                    onClick={() => saveOutlets(z)}
-                    className="mt-2 rounded-full bg-slate-900 px-4 py-1.5 text-xs font-semibold text-white"
-                  >
-                    Save outlets
+                    Clear selection
                   </button>
                 </div>
               )}
-            </li>
-          ))}
-          {zones.length === 0 && (
-            <p className="rounded-2xl border border-dashed border-gray-300 bg-white p-8 text-center text-sm text-gray-500">
-              No zones yet. Outlets only deliver to rooms and areas inside a zone.
-            </p>
-          )}
-        </ul>
-      )}
+            </InsetBlock>
+
+            <InsetBlock title="Outlets serving this zone">
+              <OutletPicker links={links} value={outlets} onChange={setOutlets} />
+            </InsetBlock>
+          </div>
+
+          <DialogFooter className="gap-2 border-t border-res-line pt-4 sm:flex-row">
+            <button
+              type="button"
+              onClick={() => setCreateOpen(false)}
+              disabled={saving}
+              className={PILL_QUIET}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={() => void createZone()}
+              disabled={saving || !canCreate}
+              className={PILL_PRIMARY}
+            >
+              {saving ? 'Creating…' : 'Create zone'}
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

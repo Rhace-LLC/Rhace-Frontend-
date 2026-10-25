@@ -60,6 +60,10 @@ export interface OrderDto {
   guestEmail?: string;
   reservation?: string | null;
   bookingGroup?: string | null;
+  /** When the booking this order belongs to actually starts (server-attached). */
+  reservationStart?: string | null;
+  reservationEnd?: string | null;
+  reservationStatus?: string | null;
   unitId?: string | null;
   currency: string;
   subtotal: number;
@@ -129,6 +133,7 @@ export interface CreateOrderInput {
   vendorId?: string;
   reservation?: string;
   bookingGroup?: string;
+  bookingCode?: string;
   unitId?: string;
   guestName?: string;
   guestPhone?: string;

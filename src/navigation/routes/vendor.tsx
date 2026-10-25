@@ -8,6 +8,7 @@ import Onboard from '@/pages/vendor/onboarding';
 // Vendor Dashboard
 import VendorDashboard from '@/pages/vendor/restaurant/dashboard';
 import PaymentDashboard from '@/pages/vendor/shared/payments';
+import PaymentTransactionsPage from '@/pages/vendor/shared/payments/transactions';
 import CreateMenuItem from '@/pages/vendor/restaurant/menu/items/create';
 import MenuDashboard from '@/pages/vendor/restaurant/menu';
 import RestaurantSettings from '@/pages/vendor/restaurant/settings';
@@ -99,6 +100,7 @@ function withSuspense(node: ReactNode) {
 const dashboardRestaurantRoutes: RouteObject[] = [
   { path: 'restaurant', element: <VendorDashboard /> },
   { path: 'restaurant/payments', element: <PaymentDashboard /> },
+  { path: 'restaurant/payments/transactions', element: <PaymentTransactionsPage /> },
   { path: 'restaurant/refunds', element: <RefundsPage /> },
   { path: 'restaurant/settlements', element: <SettlementsPage /> },
   { path: 'restaurant/billing', element: <BillingPage /> },
@@ -161,6 +163,7 @@ const hotelVendorRoutes: RouteObject[] = [
   },
   { path: 'hotel/timeline/prototype', element: withSuspense(<PrototypeTimelineHotel />) },
   { path: 'hotel/payments', element: <PaymentDashboard /> },
+  { path: 'hotel/payments/transactions', element: <PaymentTransactionsPage /> },
   { path: 'hotel/refunds', element: <RefundsPage /> },
   { path: 'hotel/settlements', element: <SettlementsPage /> },
   { path: 'hotel/billing', element: <BillingPage /> },
@@ -202,6 +205,7 @@ const clubVendorRoutes: RouteObject[] = [
   { path: 'club/reservations', element: <VendorReservationsPage vertical="club" /> },
   { path: 'club/orders', element: <VendorOrdersPage /> },
   { path: 'club/payments', element: <PaymentDashboard /> },
+  { path: 'club/payments/transactions', element: <PaymentTransactionsPage /> },
   { path: 'club/refunds', element: <RefundsPage /> },
   { path: 'club/settlements', element: <SettlementsPage /> },
   { path: 'club/billing', element: <BillingPage /> },

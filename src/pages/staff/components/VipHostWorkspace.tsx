@@ -27,7 +27,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCreateOrder } from '@/features/orders/api/hooks';
-import { ordersApi } from '@/features/orders/api/service';
+import { ordersApi, todayServiceWindow } from '@/features/orders/api/service';
 import { OrderBuilder } from '@/features/orders';
 import { money } from '@/features/orders/money';
 import type { CreateOrderLineInput, OrderDto } from '@/features/orders/types';
@@ -136,7 +136,7 @@ export default function VipHostWorkspace() {
         staffService.getAssignments({ date: todayKey() }),
         // Every booth's running total, not just mine: a guest's bill is the
         // booth's spend no matter which host or waiter rang it up.
-        ordersApi.list({ limit: 100, withLines: true }),
+        ordersApi.list({ limit: 100, withLines: true, ...todayServiceWindow() }),
         // `minimumSpend` lives on the blueprint, not on the unit.
         inventoryBlueprintService.list({ vertical: 'club', includeSystem: true, limit: 100 }),
       ]);

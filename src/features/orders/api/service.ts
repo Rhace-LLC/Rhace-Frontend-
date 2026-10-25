@@ -12,6 +12,24 @@ const unwrap = <T>(response: { data: unknown }): T => {
   return (body?.data ?? body) as T;
 };
 
+/**
+ * ISO bounds for the local calendar day.
+ *
+ * Passed to the API as `serviceFrom`/`serviceTo`: a pre-order counts on the day
+ * its reservation starts, not the day the guest placed it, so these bounds are
+ * what "for today" means on every ticket and orders screen.
+ */
+export function todayServiceWindow(now: Date = new Date()): {
+  serviceFrom: string;
+  serviceTo: string;
+} {
+  const start = new Date(now);
+  start.setHours(0, 0, 0, 0);
+  const end = new Date(now);
+  end.setHours(23, 59, 59, 999);
+  return { serviceFrom: start.toISOString(), serviceTo: end.toISOString() };
+}
+
 /** Whole room tab for a stay (Phase 0 D5): every order plus summed totals. */
 export interface ReservationTabSummary {
   count: number;
@@ -61,6 +79,12 @@ class OrdersApi {
     /** ISO date bounds on `createdAt` (backend `from`/`to`). */
     from?: string;
     to?: string;
+    /**
+     * ISO bounds on the order's service day — reservation start for pre-orders,
+     * `createdAt` for everything else. Use `todayServiceWindow()` for "today".
+     */
+    serviceFrom?: string;
+    serviceTo?: string;
     /** Restrict to orders on one table/room, or any of several. */
     unitId?: string;
     unitIds?: string[];
@@ -141,6 +165,21 @@ class OrdersApi {
   async intent(orderId: string): Promise<OrderIntentResult> {
     const res = await api.post(`/payments/order/${orderId}/intent`);
     return unwrap<OrderIntentResult>(res);
+  }
+
+  /** Lookup a booking group by customer-facing booking code (staff). */
+  async bookingLookup(code: string): Promise<{
+    bookingGroup: { _id: string; businessName: string };
+    reservation: string;
+    guestName: string;
+    partySize: number;
+    start: string;
+    unit: { _id: string; label: string } | null;
+    depositCredit: { paid: number; applied: number; available: number };
+    orders: { _id: string; total: number; balance: number; status: string }[];
+  }> {
+    const res = await api.get(`/orders/booking-lookup`, { params: { code } });
+    return res.data;
   }
 
   /** Public: resolve a scanned QR token to its vendor/unit. */

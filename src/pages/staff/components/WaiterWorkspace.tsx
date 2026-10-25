@@ -2,23 +2,27 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
 import {
   Check,
+  Clock,
   Flag,
   MapPinned,
   MoreVertical,
   Plus,
   RefreshCw,
+  Search,
   ShoppingBag,
   Trash2,
   Wallet,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCreateOrder } from '@/features/orders/api/hooks';
-import { ordersApi } from '@/features/orders/api/service';
+import { ordersApi, todayServiceWindow } from '@/features/orders/api/service';
 import { useOrderRealtime } from '@/features/orders/realtime';
 import type { CreateOrderLineInput, OrderDto } from '@/features/orders/types';
 import { OrderBuilder } from '@/features/orders';
 import { money } from '@/features/orders/money';
+import { Button } from '@/components/ui/button';
 import { Modal } from '@/components/others/RhaceModal';
+import { Input } from '@/components/ui/input';
 import RecordOfflinePaymentModal from '@/pages/vendor/shared/payments/RecordOfflinePayment';
 import { floorPlanService } from '@/services/floorPlan.service';
 import {
@@ -123,7 +127,10 @@ export default function WaiterWorkspace() {
   const [tableRefreshKey, setTableRefreshKey] = useState(0);
   // Phase 5: order events refresh the table orders (coalesced bursts).
   const [liveTick, setLiveTick] = useState(0);
-  const { connected: ordersLive } = useOrderRealtime(true, () => setLiveTick((t) => t + 1));
+  const { connected: ordersLive } = useOrderRealtime(true, () => {
+    setLiveTick((t) => t + 1);
+    refreshMineOrders();
+  });
   useEffect(() => {
     if (liveTick === 0) return;
     const timer = setTimeout(() => setTableRefreshKey((k) => k + 1), 250);
@@ -134,6 +141,21 @@ export default function WaiterWorkspace() {
   const [confirmTarget, setConfirmTarget] = useState<OrderDto | null>(null);
   const [addTarget, setAddTarget] = useState<OrderDto | null>(null);
   const [addingBusy, setAddingBusy] = useState(false);
+
+  // Booking code lookup (waiter orders for a booked guest via code)
+  const [bookingLookupOpen, setBookingLookupOpen] = useState(false);
+  const [bookingCode, setBookingCode] = useState('');
+  const [bookingLookupLoading, setBookingLookupLoading] = useState(false);
+  const [bookingLookupResult, setBookingLookupResult] = useState<{
+    bookingGroup: { _id: string; businessName: string };
+    reservation: string;
+    guestName: string;
+    partySize: number;
+    start: string;
+    unit: { _id: string; label: string } | null;
+    depositCredit: { paid: number; applied: number; available: number };
+    orders: { _id: string; total: number; balance: number; status: string }[];
+  } | null>(null);
 
   // Order pad
   const [padOpen, setPadOpen] = useState(false);
@@ -147,7 +169,7 @@ export default function WaiterWorkspace() {
       const [plansRes, assigns, mine] = await Promise.all([
         floorPlanService.list(),
         staffService.getAssignments({ date: todayKey() }),
-        ordersApi.list({ limit: 50, withLines: true, mine: true }),
+        ordersApi.list({ limit: 50, withLines: true, mine: true, ...todayServiceWindow() }),
       ]);
       const docs = plansRes.data?.items ?? [];
       setPlans(docs);
@@ -161,6 +183,22 @@ export default function WaiterWorkspace() {
       toast.error('Failed to load your tables');
     } finally {
       setIsLoading(false);
+    }
+  }, []);
+
+  // Refetch the waiter's own orders (mine:) so live kitchen bumps are
+  // reflected in the tableOrders merge instead of pinning a stale status.
+  const refreshMineOrders = useCallback(async () => {
+    try {
+      const res = await ordersApi.list({
+        limit: 50,
+        withLines: true,
+        mine: true,
+        ...todayServiceWindow(),
+      });
+      setOrders(res.items ?? []);
+    } catch {
+      // Silent: venueOrders polling keeps the board eventually consistent.
     }
   }, []);
 
@@ -215,6 +253,8 @@ export default function WaiterWorkspace() {
           limit: 60,
           withLines: true,
           unitIds: assignedKey.split(','),
+          // A pre-order for next week is not on today's floor.
+          ...todayServiceWindow(),
         });
         if (!cancelled) setVenueOrders(res.items ?? []);
       } catch {
@@ -400,6 +440,24 @@ export default function WaiterWorkspace() {
       toast.error(message || 'Failed to add items');
     } finally {
       setAddingBusy(false);
+    }
+  };
+
+  /** Booking code lookup: find a booking by its 6-character code. */
+  const handleBookingLookup = async () => {
+    if (!bookingCode.trim()) return;
+    setBookingLookupLoading(true);
+    setBookingLookupResult(null);
+    try {
+      const result = await ordersApi.bookingLookup(bookingCode.trim());
+      setBookingLookupResult(result);
+    } catch (error: any) {
+      const message =
+        error?.response?.data?.message || 'Booking not found. Check the code and try again.';
+      toast.error(message);
+      setBookingLookupResult(null);
+    } finally {
+      setBookingLookupLoading(false);
     }
   };
 
@@ -783,6 +841,21 @@ export default function WaiterWorkspace() {
         </div>
       )}
 
+      {/* Order for a booking (waiter takes order for a booked guest via code) */}
+      <button
+        type="button"
+        onClick={() => setBookingLookupOpen(true)}
+        className="flex items-center justify-between gap-3 rounded-res-lg border border-res-line bg-res-card px-4 py-4 shadow-res-low hover:bg-res-surface transition-colors"
+      >
+        <div>
+          <h2 className="type-res-body text-res-ink font-semibold">Order for a booking</h2>
+          <p className="type-res-small text-res-ink-muted">
+            Look up a booking by code and take the order at the table. Deposit credit applies automatically.
+          </p>
+        </div>
+        <Search className="h-5 w-5 text-res-ink" />
+      </button>
+
       <section className="rounded-res-lg bg-res-card p-4 shadow-res-low md:p-5">
         <div className="flex items-center gap-2">
           <MapPinned className="h-4 w-4 text-res-brand" />
@@ -979,6 +1052,97 @@ export default function WaiterWorkspace() {
           />
         </Modal>
       )}
+
+      {/* Booking lookup modal */}
+      <Modal
+        isOpen={bookingLookupOpen}
+        onClose={() => setBookingLookupOpen(false)}
+        title="Order for a booking"
+        subtitle="Look up a booking by code and take the order at the table."
+      >
+        <div className="space-y-5">
+          <div className="space-y-2">
+            <label className="type-res-small text-res-ink-muted uppercase tracking-wider block">
+              Booking code
+            </label>
+            <Input
+              value={bookingCode}
+              onChange={(e) => setBookingCode(e.target.value.toUpperCase())}
+              placeholder="K7QM2X"
+              maxLength={6}
+              className="w-full font-mono text-sm tracking-widest uppercase rounded-res-md border border-res-line bg-res-card px-3 py-2.5 text-res-ink focus:border-res-brand focus:ring-res-brand/20"
+            />
+          </div>
+          <button
+            type="button"
+            onClick={handleBookingLookup}
+            disabled={bookingLookupLoading || !bookingCode.trim()}
+            className="w-full rounded-res-md bg-res-brand px-4 py-2.5 font-semibold text-res-ink-inverted shadow-res-low hover:bg-res-brand-hover disabled:opacity-60"
+          >
+            {bookingLookupLoading ? 'Looking up…' : 'Find booking'}
+          </button>
+        </div>
+
+        {bookingLookupResult && (
+          <div className="rounded-res-md border border-res-line bg-res-card p-4 shadow-res-low">
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex flex-col gap-1">
+                <p className="type-res-body text-res-ink font-medium">
+                  {bookingLookupResult.guestName}
+                </p>
+                <p className="type-res-small text-res-ink-muted">
+                  {bookingLookupResult.partySize} guest{bookingLookupResult.partySize !== 1 ? 's' : ''}
+                  · {bookingLookupResult.unit?.label || 'Table not assigned'}
+                </p>
+              </div>
+              <span className="type-res-small font-semibold text-res-ink">
+                {bookingLookupResult.depositCredit.available > 0 ? money(bookingLookupResult.depositCredit.available) + ' deposit credit' : 'No deposit credit'}
+              </span>
+            </div>
+            {bookingLookupResult.orders.length > 0 && (
+              <div className="mt-3 border-t border-res-line pt-3">
+                <p className="type-res-small text-res-ink-muted uppercase tracking-wider mb-2">
+                  Existing orders on this booking
+                </p>
+                <ul className="space-y-2">
+                  {bookingLookupResult.orders.map((o) => (
+                    <li
+                      key={o._id}
+                      className="flex items-center justify-between gap-2 px-3 py-2 rounded-res-md bg-res-surface"
+                    >
+                      <span className="type-res-body text-res-ink font-medium">
+                        {o.total > 0 ? money(o.total) : 'Free order'}
+                      </span>
+                      <span className="type-res-small text-res-ink-muted">
+                        {o.balance > 0 ? money(o.balance) + ' balance' : 'Fully paid'}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+              <div className="flex items-end gap-2">
+                <Button
+                  type="button"
+                  onClick={() => setBookingLookupOpen(false)}
+                  variant="outline"
+                  className="rounded-res-md border border-res-line bg-res-card px-4 py-2.5 font-medium text-res-ink shadow-res-low hover:bg-res-surface"
+                >
+                  Cancel
+                </Button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setBookingLookupOpen(false);
+                  }}
+                  className="rounded-res-md bg-res-brand px-4 py-2.5 font-semibold text-res-ink-inverted shadow-res-low hover:bg-res-brand-hover"
+                >
+                  Start order
+                </button>
+              </div>
+          </div>
+        )}
+      </Modal>
     </div>
   );
 }

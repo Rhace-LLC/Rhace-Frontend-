@@ -40,13 +40,13 @@ export interface ReservationView {
   floorPlan?: string | null;
   unitId?: string | null;
   unitLabel?: string;
-  unitState?: string;
   blueprintId?: string | null;
   blueprintName?: string;
   vertical?: 'hotel' | 'club' | 'restaurant' | string;
   category?: string;
   bookingGroup?: string | null;
   group?: ReservationGroupSummary;
+  depositCredit?: { paid: number; applied: number; available: number };
   guestName: string;
   guestEmail?: string;
   guestPhone?: string;
