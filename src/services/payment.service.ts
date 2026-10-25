@@ -5,6 +5,29 @@ export interface EarningsTrendParams {
   range?: string;
 }
 
+// ─── Vendor payment accounts (/vendors/me/payment-accounts) ──────────────
+
+export interface ProviderAccountStatus {
+  /** The platform routes payments through this provider. */
+  enabled: boolean;
+  ready: boolean;
+  lastError?: string;
+  /** Stripe only: an account exists (onboarding may be incomplete). */
+  started?: boolean;
+  requirementsDue?: string[];
+}
+
+export interface PaymentAccountDto {
+  bank: { bankName?: string; accountName?: string; accountNumberLast4?: string; onFile?: boolean };
+  activeProvider: 'paystack' | 'monnify';
+  providers: {
+    paystack: ProviderAccountStatus;
+    monnify: ProviderAccountStatus;
+    stripe: ProviderAccountStatus;
+  };
+  feeBearer: 'customer' | 'vendor' | 'platform' | 'split';
+}
+
 // ─── Payments report (/payments/report/*, /payments/transactions*) ────────
 
 export type ReportPreset =
@@ -263,34 +286,23 @@ class PaymentService {
   }
 
   /** Get the calling vendor's payment-provider account status. */
-  async getMyPaymentAccounts() {
-    const res = await api.get('/vendors/me/payment-accounts');
-    return res.data as {
-      success: boolean;
-      account: {
-        bank: { bankName?: string; accountName?: string; accountNumberLast4?: string };
-        activeProvider: 'paystack' | 'monnify';
-        providers: {
-          paystack: { enabled: boolean; ready: boolean; lastError?: string };
-          monnify: { enabled: boolean; ready: boolean; lastError?: string };
-          stripe: { enabled: boolean; ready: boolean; lastError?: string; started: boolean; requirementsDue: string[] };
-        };
-        feeBearer: 'customer' | 'vendor' | 'platform' | 'split';
-      };
-    };
+  /**
+   * The calling vendor's payment-provider account status. `syncStripe`
+   * re-reads a started Stripe account from Stripe first ("Check status").
+   */
+  async getMyPaymentAccounts({ syncStripe = false }: { syncStripe?: boolean } = {}) {
+    const res = await api.get('/vendors/me/payment-accounts', {
+      params: syncStripe ? { sync: 'stripe' } : undefined,
+    });
+    return res.data as { success: boolean; account: PaymentAccountDto };
   }
 
-  /** Retry/create a Paystack or Monnify sub-account using stored bank details. */
+  /** Create/retry a Paystack or Monnify sub-account using stored bank details. */
   async retryProviderAccount(provider: 'paystack' | 'monnify') {
     const res = await api.post('/vendors/me/payment-accounts/subaccount', { provider });
     return res.data as {
       success: boolean;
-      account: {
-        bank: { bankName?: string; accountName?: string; accountNumberLast4?: string };
-        activeProvider: 'paystack' | 'monnify';
-        providers: Record<string, { enabled: boolean; ready: boolean; lastError?: string }>;
-        feeBearer: 'customer' | 'vendor' | 'platform' | 'split';
-      };
+      account: PaymentAccountDto;
       failed: { gateway: string; message: string }[];
     };
   }
