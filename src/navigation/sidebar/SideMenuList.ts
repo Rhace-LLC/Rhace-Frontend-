@@ -18,6 +18,7 @@ import {
   Tags,
   Users,
   UtensilsCrossed,
+  Wallet,
 } from 'lucide-react';
 import { RhaceIcon } from '@/components/icons/icons';
 
@@ -226,6 +227,11 @@ export const ClubList: SideMenuListConfig = {
           icon: Settings,
         },
         {
+          label: 'Payment settings',
+          path: '/dashboard/club/settings/payments',
+          icon: Wallet,
+        },
+        {
           label: 'Integrations',
           path: '/dashboard/club/integrations',
           icon: Plug,
@@ -400,6 +406,11 @@ export const HotelList: SideMenuListConfig = {
           icon: Settings,
         },
         {
+          label: 'Payment settings',
+          path: '/dashboard/hotel/settings/payments',
+          icon: Wallet,
+        },
+        {
           label: 'Integrations',
           path: '/dashboard/hotel/integrations',
           icon: Plug,
@@ -567,6 +578,11 @@ export const RestaurantList: SideMenuListConfig = {
           label: 'General',
           path: '/dashboard/restaurant/settings',
           icon: Settings,
+        },
+        {
+          label: 'Payment settings',
+          path: '/dashboard/restaurant/settings/payments',
+          icon: Wallet,
         },
         {
           label: 'Integrations',

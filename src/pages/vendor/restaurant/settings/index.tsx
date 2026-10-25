@@ -10,7 +10,7 @@ import { Edit3, Upload } from '@/components/icons/icons'; // Using requested ico
 import { MailIcon, PhoneIcon } from 'lucide-react';
 import { BusinessLogo } from '@/pages/vendor/shared/components/BusinessInfo';
 import { GalleryEditor } from '@/pages/vendor/shared/components/GalleryEditor';
-import PaymentSettings from '@/pages/vendor/shared/payments/PaymentSettings';
+import { PaymentSettingsLink } from '@/pages/vendor/shared/payments/components/PaymentSettingsLink';
 import DashboardPageHeader from '@/components/dashboard/DashboardPageHeader';
 import type { RootState, AppDispatch } from '@/redux/store';
 import { useAuth } from '@/contexts/AuthContext';
@@ -151,10 +151,9 @@ const RestaurantSettings = () => {
             </div>
           </div>
 
-              {/* Payment Settings */}
-              <Card className="rounded-res-lg border border-res-line bg-res-card shadow-res-low">
-                <PaymentSettings />
-              </Card>
+              {/* Payment settings live on their own page */}
+
+              <PaymentSettingsLink />
 
               {/* Footer Actions */}
               <div className="flex justify-end gap-3 pt-6 border-t border-res-line">

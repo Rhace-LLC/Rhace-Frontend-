@@ -66,8 +66,8 @@ const VendorPaymentOverview = () => {
 
       <p className="type-res-small text-res-ink-muted">
         Payout account and payment providers are in{' '}
-        <Link to={`${base}/settings`} className="font-semibold text-res-brand hover:text-res-brand-hover">
-          Settings
+        <Link to={`${base}/settings/payments`} className="font-semibold text-res-brand hover:text-res-brand-hover">
+          Payment settings
         </Link>
         .
       </p>

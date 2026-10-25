@@ -9,6 +9,7 @@ import Onboard from '@/pages/vendor/onboarding';
 import VendorDashboard from '@/pages/vendor/restaurant/dashboard';
 import PaymentDashboard from '@/pages/vendor/shared/payments';
 import PaymentTransactionsPage from '@/pages/vendor/shared/payments/transactions';
+import PaymentSettingsPage from '@/pages/vendor/shared/payments/PaymentSettings';
 import CreateMenuItem from '@/pages/vendor/restaurant/menu/items/create';
 import MenuDashboard from '@/pages/vendor/restaurant/menu';
 import RestaurantSettings from '@/pages/vendor/restaurant/settings';
@@ -142,6 +143,7 @@ const dashboardRestaurantRoutes: RouteObject[] = [
     element: withSuspense(<PrototypeTimelineRestaurant />),
   },
   { path: 'restaurant/settings', element: <RestaurantSettings /> },
+  { path: 'restaurant/settings/payments', element: <PaymentSettingsPage /> },
   { path: 'restaurant/linked-hotels', element: <LinkedHotelsPage /> },
 ];
 
@@ -175,6 +177,7 @@ const hotelVendorRoutes: RouteObject[] = [
   { path: 'hotel/staffs/activity', element: <ActivityPage /> },
   { path: 'hotel/profile', element: <HotelProfile /> },
   { path: 'hotel/settings', element: <HotelSettings /> },
+  { path: 'hotel/settings/payments', element: <PaymentSettingsPage /> },
   { path: 'hotel/services', element: <HotelServicesPage /> },
   { path: 'hotel/services/categories', element: <CategoriesPage kind="service" /> },
   { path: 'hotel/services/bookings', element: <ServiceBookingsPage /> },
@@ -217,6 +220,7 @@ const clubVendorRoutes: RouteObject[] = [
   { path: 'club/staffs/activity', element: <ActivityPage /> },
   { path: 'club/add-drinks', element: <BottleServiceManager /> },
   { path: 'club/settings', element: <RestaurantSettings /> },
+  { path: 'club/settings/payments', element: <PaymentSettingsPage /> },
   { path: 'club/linked-hotels', element: <LinkedHotelsPage /> },
 ];
 

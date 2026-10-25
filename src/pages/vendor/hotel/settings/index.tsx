@@ -26,7 +26,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import { authService } from '@/services/auth.service';
 import type { RootState, AppDispatch } from '@/redux/store';
-import PaymentSettings from '@/pages/vendor/shared/payments/PaymentSettings';
+import { PaymentSettingsLink } from '@/pages/vendor/shared/payments/components/PaymentSettingsLink';
 
 const HotelSettings = () => {
   const { vendor, setVendor } = useAuth();
@@ -264,10 +264,9 @@ const HotelSettings = () => {
               </div>
             </Card>
 
-            {/* Payment Settings */}
-            <Card className="rounded-res-lg border border-res-line bg-res-card shadow-res-low">
-              <PaymentSettings />
-            </Card>
+            {/* Payment settings live on their own page */}
+
+            <PaymentSettingsLink />
 
             {/* Action Buttons */}
             <div className="flex justify-end gap-3 mt-6 pb-8">
