@@ -4,9 +4,8 @@ import TagInput from '@/components/TagInput';
 import DashboardPageHeader from '@/components/dashboard/DashboardPageHeader';
 import { Card } from '@/components/ui/card';
 import { PaymentSettingsLink } from '@/pages/vendor/shared/payments/components/PaymentSettingsLink';
-import { Input as UiInput } from '@/components/ui/input';
-import { Select as UiSelect } from '@/components/ui/select';
-import { Textarea as UiTextarea } from '@/components/ui/textarea';
+import { cn } from '@/lib/utils';
+import type { ComponentProps, ComponentType, ReactNode } from 'react';
 import {
   Building2,
   Clock,
@@ -27,21 +26,68 @@ import {
 import { GalleryEditor } from '@/pages/vendor/shared/components/GalleryEditor';
 import { useAuth } from '@/contexts/AuthContext';
 import { useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 import { BusinessLogo } from '@/pages/vendor/shared/components/BusinessInfo';
 import { authService } from '@/services/auth.service';
 import { toast } from 'react-toastify';
 
-const Input = (props: any) => <UiInput {...props} />;
-const Select = (props: any) => <UiSelect {...props} />;
-const Textarea = (props: any) => <UiTextarea {...props} />;
-const TagInputField = (props: any) => <TagInput {...props} />;
+// Labelled fields in the same style as the restaurant and hotel settings.
+// (The shared ui/input, ui/textarea and ui/select are bare elements: they
+// don't render a `label`, and ui/select is only a Radix root.)
+type FieldProps = { label?: string; icon?: ComponentType<{ className?: string }> };
+
+const fieldClass =
+  'w-full rounded-res-sm border border-res-line bg-res-surface px-4 type-res-body text-res-ink outline-none placeholder:text-res-ink-muted focus-visible:ring-2 focus-visible:ring-res-brand';
+
+const Field = ({ label, icon: Icon, children }: FieldProps & { children: ReactNode }) => (
+  <label className="block">
+    {label && (
+      <span className="type-res-small mb-1.5 flex items-center gap-1.5 font-medium tracking-wider text-res-ink-muted uppercase">
+        {Icon && <Icon className="size-3.5" />}
+        {label}
+      </span>
+    )}
+    {children}
+  </label>
+);
+
+const Input = ({ label, icon, className, value, ...props }: FieldProps & ComponentProps<'input'>) => (
+  <Field label={label} icon={icon}>
+    <input className={cn(fieldClass, 'h-12', className)} value={value ?? ''} {...props} />
+  </Field>
+);
+
+const Textarea = ({ label, icon, className, value, ...props }: FieldProps & ComponentProps<'textarea'>) => (
+  <Field label={label} icon={icon}>
+    <textarea className={cn(fieldClass, 'min-h-24 py-3', className)} value={value ?? ''} {...props} />
+  </Field>
+);
+
+const Select = ({
+  options,
+  className,
+  value,
+  ...props
+}: ComponentProps<'select'> & { options: { value: string; label: string }[] }) => (
+  <select className={cn(fieldClass, 'h-12 cursor-pointer', className)} value={value ?? ''} {...props}>
+    <option value="" disabled>
+      Choose…
+    </option>
+    {options.map((o) => (
+      <option key={o.value} value={o.value}>
+        {o.label}
+      </option>
+    ))}
+  </select>
+);
+
+const TagInputField = ({ tags, ...props }: Omit<ComponentProps<typeof TagInput>, 'tags'> & { tags?: string[]; className?: string }) => (
+  <TagInput tags={tags ?? []} {...props} />
+);
 
 const ClubSettings = () => {
   const { vendor, setVendor } = useAuth();
-  const [formData, setFormData] = useState<any>(vendor);
+  const [formData, setFormData] = useState<any>(vendor ?? {});
   const [isLoading, setIsLoading] = useState(false);
-  const dispatch = useDispatch();
 
   const updateField = (field: string, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -62,21 +108,22 @@ const ClubSettings = () => {
   };
 
   const handleReset = () => {
-    setFormData(vendor);
+    setFormData(vendor ?? {});
     toast.info('Changes have been reset');
   };
 
+  // Clubs that never set categories or dress codes have no array yet.
   const addTag = (field: string, value: string) => {
-    setFormData((prev) => ({
+    setFormData((prev: any) => ({
       ...prev,
-      [field]: [...prev[field], value],
+      [field]: [...(prev[field] ?? []), value],
     }));
   };
 
   const removeTag = (field: string, value: string) => {
-    setFormData((prev) => ({
+    setFormData((prev: any) => ({
       ...prev,
-      [field]: prev[field].filter((item: string) => item !== value),
+      [field]: (prev[field] ?? []).filter((item: string) => item !== value),
     }));
   };
 
@@ -163,7 +210,7 @@ const ClubSettings = () => {
                     placeholder="Describe your club's atmosphere, music genres, entertainment, and what makes the nightlife experience special..."
                     value={formData.businessDescription}
                     onChange={(e) => updateField('businessDescription', e.target.value)}
-                    className="focus:ring-2 focus:ring-res-brand focus:border-res-brand transition-all min-h-[100px]"
+                    className="focus:ring-2 focus:ring-res-brand focus:border-res-brand transition-all min-h-25"
                   />
                   <Textarea
                     label="Address"
@@ -257,7 +304,7 @@ const ClubSettings = () => {
                     />
                   </div>
                   <div>
-                    <label className="block type-res-small font-medium text-res-ink mb-2 flex items-center gap-2">
+                    <label className="type-res-small mb-2 flex items-center gap-2 font-medium text-res-ink">
                       <Shield className="w-4 h-4 text-res-brand" />
                       Age Limit
                     </label>
