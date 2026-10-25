@@ -102,7 +102,7 @@ const AdminPaymentStats = () => {
 />
 
 <PaymentStatCard
-  title="Paystack Fees"
+  title="Transaction Fees"
   icon={CreditCard}
   value={stats.paystackFees.thisWeek}
   comparison={`Last Week: ₦${stats.paystackFees.lastWeek.toLocaleString()}`}

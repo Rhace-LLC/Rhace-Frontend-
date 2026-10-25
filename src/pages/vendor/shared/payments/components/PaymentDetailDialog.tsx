@@ -1,258 +1,171 @@
-import React from 'react';
+import type { ReactNode } from 'react';
 import { toast } from 'react-toastify';
-
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-
-import { Button } from '@/components/ui/button';
-import { formatDate } from '@/utils/formatDate';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import BillingModelBadge from '@/components/billing/BillingModelBadge';
 import { paymentBillingModel } from '@/components/billing/billingModel';
+import { formatMoney } from '@/utils/money';
+import { errorMessage, useTransaction } from '../report/queries';
+import { CardSkeleton, ErrorState, ProviderBadge, StatusPill } from '../report/ui';
+import { SOURCE_LABEL, methodLabel, titleCase } from '../report/labels';
 
-interface PaymentDetails {
-  _id?: string;
-  customerName?: string;
-  email?: string;
-  amountPaid?: number;
-  paymentMethod?: string;
-  paymentMode?: string;
-  metadata?: {
-    reservationType?: string;
-  };
-  status?: string;
-  createdAt?: string | Date;
-  vendorShare?: number;
-  platformShare?: number;
-  paystackFee?: number;
-  netToVendor?: number;
-  netToPlatform?: number;
-  booking?: string;
-  paystackReference?: string;
-  [key: string]: unknown;
+const FEE_BEARER_COPY: Record<string, string> = {
+  vendor: 'You pay the full transaction fee.',
+  split: 'You and the customer share the transaction fee.',
+  customer: 'The customer pays the transaction fee.',
+  platform: 'Rhace pays the transaction fee.',
+};
+
+const when = (iso: string | null | undefined) =>
+  iso
+    ? new Date(iso).toLocaleString('en-NG', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Africa/Lagos' })
+    : '—';
+
+function Field({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div>
+      <dt className="type-res-caption text-res-ink-muted">{label}</dt>
+      <dd className="type-res-small mt-0.5 break-words text-res-ink">{children}</dd>
+    </div>
+  );
 }
 
-interface PaymentDetailsDialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  payment: PaymentDetails | null;
-}
-
-const PaymentDetailsDialog = ({
-  open,
+/** Full detail for one payment, fetched when opened (the ledger only carries a summary row). */
+export default function PaymentDetailsDialog({
+  paymentId,
   onOpenChange,
-  payment,
-}: PaymentDetailsDialogProps) => {
-  if (!payment) return null;
-
-  const formatMoney = (value = 0) =>
-    `₦${Number(value || 0).toLocaleString('en-NG', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    })}`;
-
-  const paymentMode = payment.paymentMode
-    ?.replaceAll('_', ' ')
-    ?.replace(/\b\w/g, (c) => c.toUpperCase());
-
-  const reservationType = payment.metadata?.reservationType
-    ?.replace(/\b\w/g, (c) => c.toUpperCase());
-
-  const status = (payment.status || 'pending').toLowerCase();
+}: {
+  paymentId: string | null;
+  onOpenChange: (open: boolean) => void;
+}) {
+  const query = useTransaction(paymentId);
+  const p = query.data;
+  const money = (v: number) => formatMoney(v, p?.currency ?? 'NGN');
+  const billing = p
+    ? { paymentConfig: p.paymentConfig, platformPercentage: p.platformPercentage ?? undefined }
+    : null;
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+    <Dialog open={Boolean(paymentId)} onOpenChange={onOpenChange}>
+      <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto max-sm:h-dvh max-sm:max-h-dvh max-sm:max-w-full max-sm:rounded-none">
         <DialogHeader>
-          <DialogTitle>Payment Details</DialogTitle>
-
-          <DialogDescription>
-            Transaction #{payment._id?.slice(0, 8).toUpperCase()}
-          </DialogDescription>
+          <DialogTitle>Payment {p ? `#${p.shortId}` : ''}</DialogTitle>
+          <DialogDescription>{p ? when(p.at) : 'Loading payment…'}</DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6">
-          {/* Customer Information */}
-
-          <div>
-            <h3 className="font-semibold text-base mb-4">Customer Information</h3>
-
-            <div className="grid md:grid-cols-2 gap-4">
+        {query.isError ? (
+          <ErrorState message={errorMessage(query.error, "Couldn't load this payment.")} onRetry={() => query.refetch()} />
+        ) : !p ? (
+          <CardSkeleton rows={6} />
+        ) : (
+          <div className="space-y-6">
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-res-md bg-res-surface p-4">
               <div>
-                <label className="text-sm text-muted-foreground">Customer</label>
-                <p className="font-semibold">{payment.customerName}</p>
+                <p className="type-res-caption text-res-ink-muted">Amount</p>
+                <p className="type-res-h2 text-res-ink tabular-nums">{money(p.amount)}</p>
               </div>
-
-              <div>
-                <label className="text-sm text-muted-foreground">Email</label>
-                <p>{payment.email}</p>
-              </div>
-
-              <div>
-                <label className="text-sm text-muted-foreground">Reservation Type</label>
-                <p>{reservationType || 'N/A'}</p>
-              </div>
-
-              <div>
-                <label className="text-sm text-muted-foreground">Payment Mode</label>
-                <p>{paymentMode || 'N/A'}</p>
+              <div className="flex flex-wrap gap-2">
+                <StatusPill status={p.status} />
+                <ProviderBadge provider={p.provider} />
               </div>
             </div>
-          </div>
 
-          {/* Transaction Information */}
+            <section>
+              <h3 className="type-res-small mb-3 font-semibold text-res-ink">Customer</h3>
+              <dl className="grid gap-4 sm:grid-cols-2">
+                <Field label="Name">{p.customerName}</Field>
+                <Field label="Email">{p.email ?? '—'}</Field>
+                <Field label="Source">{SOURCE_LABEL[p.source] ?? titleCase(p.source)}</Field>
+                <Field label="Method">{methodLabel(p.method)}</Field>
+              </dl>
+            </section>
 
-          <div>
-            <h3 className="font-semibold text-base mb-4">Transaction</h3>
-
-            <div className="grid md:grid-cols-2 gap-4">
-              <div>
-                <label className="text-sm text-muted-foreground">Amount Paid</label>
-                <p className="font-semibold text-lg">{formatMoney(payment.amountPaid)}</p>
+            <section>
+              <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                <h3 className="type-res-small font-semibold text-res-ink">Breakdown</h3>
+                <BillingModelBadge payment={billing} />
               </div>
-
-              <div>
-                <label className="text-sm text-muted-foreground">Payment Method</label>
-                <p>{payment.paymentMethod?.replaceAll('_', ' ') || 'N/A'}</p>
-              </div>
-
-              <div>
-                <label className="text-sm text-muted-foreground">Date</label>
-                <p>{formatDate(payment.createdAt)}</p>
-              </div>
-
-              <div>
-                <label className="text-sm text-muted-foreground">Status</label>
-
-                <div
-                  className={`inline-flex mt-1 rounded-full px-3 py-1 text-sm font-medium ${
-                    status === 'success'
-                      ? 'bg-green-100 text-green-800'
-                      : status === 'pending'
-                        ? 'bg-yellow-100 text-yellow-800'
-                        : 'bg-red-100 text-red-800'
-                  }`}
-                >
-                  {status.charAt(0).toUpperCase() + status.slice(1)}
+              {paymentBillingModel(billing) === 'subscription' && (
+                <p className="type-res-caption -mt-1 mb-3 text-res-ink-muted">
+                  Taken under your subscription: no platform share, and the transaction fee is deducted from your share.
+                </p>
+              )}
+              <dl className="space-y-2">
+                {[
+                  ['Gross', money(p.amount)],
+                  ['Platform commission', `−${money(p.platformShare)}`],
+                  ['Transaction fee (your part)', `−${money(p.transactionFee)}`],
+                  ...(p.refundedAmount ? [['Refunded', `−${money(p.refundedAmount)}`]] : []),
+                ].map(([label, value]) => (
+                  <div key={label} className="flex justify-between gap-3">
+                    <dt className="type-res-small text-res-ink-muted">{label}</dt>
+                    <dd className="type-res-small text-res-ink tabular-nums">{value}</dd>
+                  </div>
+                ))}
+                <div className="flex justify-between gap-3 border-t border-res-line pt-2">
+                  <dt className="type-res-small font-semibold text-res-ink">Net to you</dt>
+                  <dd className="type-res-body font-semibold text-res-brand tabular-nums">
+                    {money(p.netToVendor - p.refundedAmount)}
+                  </dd>
                 </div>
-              </div>
-            </div>
-          </div>
+              </dl>
+              {p.provider !== 'offline' && (
+                <p className="type-res-caption mt-2 text-res-ink-muted">
+                  Provider fee {money(p.providerFee)}. {FEE_BEARER_COPY[p.feeBearer] ?? ''}
+                </p>
+              )}
+            </section>
 
-          {/* Revenue Breakdown */}
-
-          <div>
-            <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
-              <h3 className="font-semibold text-base">Revenue Breakdown</h3>
-              <BillingModelBadge payment={payment} />
-            </div>
-            {paymentBillingModel(payment) === 'subscription' && (
-              <p className="text-xs text-muted-foreground -mt-2 mb-4">
-                Taken under your subscription: no platform share, and the processing fee is deducted from your share.
-              </p>
+            {p.refunds.length > 0 && (
+              <section>
+                <h3 className="type-res-small mb-3 font-semibold text-res-ink">Refunds</h3>
+                <ul className="space-y-2">
+                  {p.refunds.map((r) => (
+                    <li key={r._id} className="flex justify-between gap-3 rounded-res-sm bg-res-surface px-3 py-2">
+                      <span className="type-res-small text-res-ink">
+                        {r.ticketNo ?? 'Refund'} · {titleCase(r.status)}
+                        {r.reason && <span className="text-res-ink-muted"> · {r.reason}</span>}
+                      </span>
+                      <span className="type-res-small text-res-ink tabular-nums">{formatMoney(r.amount, r.currency)}</span>
+                    </li>
+                  ))}
+                </ul>
+              </section>
             )}
 
-            <div className="grid md:grid-cols-2 gap-4">
-              <div className="border rounded-xl p-4">
-                <p className="text-xs text-gray-500 uppercase">Gross Sale</p>
-                <h3 className="text-xl font-bold mt-2">
-                  {formatMoney(payment.amountPaid)}
-                </h3>
-              </div>
+            <section>
+              <h3 className="type-res-small mb-3 font-semibold text-res-ink">References</h3>
+              <dl className="grid gap-4 sm:grid-cols-2">
+                <Field label="Payment ID">
+                  <span className="font-mono">{p._id}</span>
+                </Field>
+                <Field label="Provider reference">
+                  <span className="font-mono">{p.reference ?? '—'}</span>
+                </Field>
+                <Field label="Started">{when(p.createdAt)}</Field>
+                <Field label="Paid">{when(p.paidAt)}</Field>
+                {p.offline?.note && <Field label="Note">{p.offline.note}</Field>}
+              </dl>
+            </section>
 
-              <div className="border rounded-xl p-4">
-                <p className="text-xs text-gray-500 uppercase">Vendor Share</p>
-                <h3 className="text-xl font-bold mt-2">
-                  {formatMoney(payment.vendorShare)}
-                </h3>
-              </div>
-
-              <div className="border rounded-xl p-4">
-                <p className="text-xs text-gray-500 uppercase">Platform Share</p>
-                <h3 className="text-xl font-bold mt-2">
-                  {formatMoney(payment.platformShare)}
-                </h3>
-              </div>
-
-              <div className="border rounded-xl p-4">
-                <p className="text-xs text-gray-500 uppercase">Paystack Fee</p>
-                <h3 className="text-xl font-bold mt-2">
-                  {formatMoney(payment.paystackFee)}
-                </h3>
-              </div>
-
-              <div className="border rounded-xl p-4 border-green-200 bg-green-50">
-                <p className="text-xs text-green-700 uppercase">Net To Vendor</p>
-                <h3 className="text-2xl font-bold mt-2 text-green-700">
-                  {formatMoney(payment.netToVendor)}
-                </h3>
-              </div>
-
-              <div className="border rounded-xl p-4 border-blue-200 bg-blue-50">
-                <p className="text-xs text-blue-700 uppercase">Net To Platform</p>
-                <h3 className="text-2xl font-bold mt-2 text-blue-700">
-                  {formatMoney(payment.netToPlatform)}
-                </h3>
-              </div>
+            <div className="flex justify-end">
+              <button
+                type="button"
+                onClick={async () => {
+                  try {
+                    await navigator.clipboard.writeText(p.reference ?? p._id);
+                    toast.success('Reference copied');
+                  } catch {
+                    toast.error('Could not copy');
+                  }
+                }}
+                className="type-res-small cursor-pointer rounded-full bg-res-surface px-4 py-2 font-semibold text-res-ink hover:text-res-brand"
+              >
+                Copy reference
+              </button>
             </div>
           </div>
-
-          {/* IDs */}
-
-          <div>
-            <h3 className="font-semibold text-base mb-4">References</h3>
-
-            <div className="space-y-4">
-              <div>
-                <label className="text-sm text-muted-foreground">
-                  Transaction ID
-                </label>
-
-                <p className="font-mono break-all text-sm">{payment._id}</p>
-              </div>
-
-              <div>
-                <label className="text-sm text-muted-foreground">
-                  Booking ID
-                </label>
-
-                <p className="font-mono break-all text-sm">{payment.booking}</p>
-              </div>
-
-              {payment.paystackReference && (
-                <div>
-                  <label className="text-sm text-muted-foreground">
-                    Paystack Reference
-                  </label>
-
-                  <p className="font-mono break-all text-sm">
-                    {payment.paystackReference}
-                  </p>
-                </div>
-              )}
-            </div>
-          </div>
-
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => {
-                navigator.clipboard.writeText(JSON.stringify(payment, null, 2));
-                toast.success('Payment details copied');
-              }}
-            >
-              Copy Details
-            </Button>
-          </DialogFooter>
-        </div>
+        )}
       </DialogContent>
     </Dialog>
   );
-};
-
-export default PaymentDetailsDialog;
+}

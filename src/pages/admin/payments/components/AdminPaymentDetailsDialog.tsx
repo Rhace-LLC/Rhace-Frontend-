@@ -149,7 +149,7 @@ const AdminPaymentDetailsDialog = ({
 
           <div>
             <label className="text-sm text-muted-foreground">
-              Paystack Fee
+              Transaction Fee
             </label>
 
             <p>{money(payment.paystackFee)}</p>
