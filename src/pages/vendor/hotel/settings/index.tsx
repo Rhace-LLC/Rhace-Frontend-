@@ -26,6 +26,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import { authService } from '@/services/auth.service';
 import type { RootState, AppDispatch } from '@/redux/store';
+import PaymentSettings from '@/pages/vendor/shared/payments/PaymentSettings';
 
 const HotelSettings = () => {
   const { vendor, setVendor } = useAuth();
@@ -261,6 +262,11 @@ const HotelSettings = () => {
                   </label>
                 </div>
               </div>
+            </Card>
+
+            {/* Payment Settings */}
+            <Card className="rounded-res-lg border border-res-line bg-res-card shadow-res-low">
+              <PaymentSettings />
             </Card>
 
             {/* Action Buttons */}

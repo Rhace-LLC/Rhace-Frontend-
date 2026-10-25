@@ -52,6 +52,39 @@ class PaymentService {
     return res.data as { success: boolean; accountId?: string; onboardingUrl?: string; alreadyReady?: boolean };
   }
 
+  /** Get the calling vendor's payment-provider account status. */
+  async getMyPaymentAccounts() {
+    const res = await api.get('/vendors/me/payment-accounts');
+    return res.data as {
+      success: boolean;
+      account: {
+        bank: { bankName?: string; accountName?: string; accountNumberLast4?: string };
+        activeProvider: 'paystack' | 'monnify';
+        providers: {
+          paystack: { enabled: boolean; ready: boolean; lastError?: string };
+          monnify: { enabled: boolean; ready: boolean; lastError?: string };
+          stripe: { enabled: boolean; ready: boolean; lastError?: string; started: boolean; requirementsDue: string[] };
+        };
+        feeBearer: 'customer' | 'vendor' | 'platform' | 'split';
+      };
+    };
+  }
+
+  /** Retry/create a Paystack or Monnify sub-account using stored bank details. */
+  async retryProviderAccount(provider: 'paystack' | 'monnify') {
+    const res = await api.post('/vendors/me/payment-accounts/subaccount', { provider });
+    return res.data as {
+      success: boolean;
+      account: {
+        bank: { bankName?: string; accountName?: string; accountNumberLast4?: string };
+        activeProvider: 'paystack' | 'monnify';
+        providers: Record<string, { enabled: boolean; ready: boolean; lastError?: string }>;
+        feeBearer: 'customer' | 'vendor' | 'platform' | 'split';
+      };
+      failed: { gateway: string; message: string }[];
+    };
+  }
+
   async initializePayment(bookingData: Record<string, unknown>) {
     const response = await api.post('/payments/initialize', bookingData);
     return response.data;
