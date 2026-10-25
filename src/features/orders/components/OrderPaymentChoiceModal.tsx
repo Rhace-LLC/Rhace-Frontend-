@@ -34,6 +34,8 @@ export function OrderPaymentChoiceModal({
   const [error, setError] = useState<string | null>(null);
 
   if (!order) return null;
+  // Safety net: never offer payment when nothing is owed.
+  if (order.balance <= 0) return null;
   const lines = order.lines ?? [];
   const itemCount = lines.reduce((sum, l) => sum + (l.quantity ?? 0), 0);
   // Table/quick orders are placed from the seat — only pre-orders

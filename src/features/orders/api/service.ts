@@ -167,6 +167,21 @@ class OrdersApi {
     return unwrap<OrderIntentResult>(res);
   }
 
+  /** Lookup a booking group by customer-facing booking code (staff). */
+  async bookingLookup(code: string): Promise<{
+    bookingGroup: { _id: string; businessName: string };
+    reservation: string;
+    guestName: string;
+    partySize: number;
+    start: string;
+    unit: { _id: string; label: string } | null;
+    depositCredit: { paid: number; applied: number; available: number };
+    orders: { _id: string; total: number; balance: number; status: string }[];
+  }> {
+    const res = await api.get(`/orders/booking-lookup`, { params: { code } });
+    return res.data;
+  }
+
   /** Public: resolve a scanned QR token to its vendor/unit. */
   async resolveQrToken(token: string) {
     const res = await api.get(`/quick-order/resolve/${token}`);

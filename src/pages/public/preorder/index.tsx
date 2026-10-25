@@ -40,6 +40,11 @@ const PreOrderPage = () => {
         idempotencyKey: crypto.randomUUID(),
         lines,
       });
+      if (order.balance <= 0) {
+        toast.success('Pre-order placed. Your deposit covers it.');
+        navigate('/bookings');
+        return;
+      }
       setPayOrder(order);
     } catch (error) {
       const message =
@@ -154,7 +159,7 @@ const PreOrderPage = () => {
             <OrderBuilder
               vendorId={reservation.vendor}
               vertical={reservation.vertical}
-              depositCredit={reservation.group?.minimumDeposit ?? reservation.amount ?? 0}
+              depositCredit={reservation.depositCredit?.available ?? reservation.group?.minimumDeposit ?? reservation.amount ?? 0}
               submitLabel="Place pre-order"
               submitting={createOrder.isPending}
               onSubmit={handleSubmit}

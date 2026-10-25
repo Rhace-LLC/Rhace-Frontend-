@@ -133,6 +133,7 @@ export interface CreateOrderInput {
   vendorId?: string;
   reservation?: string;
   bookingGroup?: string;
+  bookingCode?: string;
   unitId?: string;
   guestName?: string;
   guestPhone?: string;
