@@ -485,7 +485,7 @@ export function ManagerOrdersTab() {
   }, [orders, total, page]);
 
   const hasDateRange = Boolean(fromDate || toDate);
-  const hasFilters = Boolean(status || source || hasDateRange || view !== 'today');
+  const hasFilters = Boolean(status || source || hasDateRange);
 
   return (
     <div className="space-y-4">
