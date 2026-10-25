@@ -38,6 +38,7 @@ import HotelProfile from '@/pages/vendor/hotel/profile';
 import RoomsManagement from '@/pages/vendor/hotel/rooms';
 import HotelRoomLayout from '@/pages/vendor/hotel/rooms/layout';
 import HotelSettings from '@/pages/vendor/hotel/settings';
+import ClubSettings from '@/pages/vendor/club/settings';
 import HotelServicesPage from '@/pages/vendor/hotel/services';
 import ServiceBookingsPage from '@/pages/vendor/hotel/services/bookings';
 import HotelOutletsPage from '@/pages/vendor/hotel/outlets';
@@ -219,7 +220,7 @@ const clubVendorRoutes: RouteObject[] = [
   { path: 'club/staffs/reports', element: <ReportsPage /> },
   { path: 'club/staffs/activity', element: <ActivityPage /> },
   { path: 'club/add-drinks', element: <BottleServiceManager /> },
-  { path: 'club/settings', element: <RestaurantSettings /> },
+  { path: 'club/settings', element: <ClubSettings /> },
   { path: 'club/settings/payments', element: <PaymentSettingsPage /> },
   { path: 'club/linked-hotels', element: <LinkedHotelsPage /> },
 ];
