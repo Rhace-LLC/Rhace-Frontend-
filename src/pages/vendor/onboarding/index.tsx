@@ -104,7 +104,7 @@ const CUISINE_OPTIONS = [
   { value: 'lebanese', label: 'Lebanese' },
   { value: 'american', label: 'American' },
   { value: 'seafood', label: 'Seafood' },
-  { value: 'grills-and-suya', label: 'Grills & Suya' },
+  { value: 'grills', label: 'Grills & Suya' },
   { value: 'mediterranean', label: 'Mediterranean' },
   { value: 'indian', label: 'Indian' },
   { value: 'french', label: 'French' },
