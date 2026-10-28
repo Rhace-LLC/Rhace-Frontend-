@@ -243,7 +243,7 @@ export default function FrontDeskWorkspace() {
   }, [arrivals, inHouse]);
 
   const dueIn = useMemo(
-    () => arrivals.filter((r) => r.status === 'upcoming'),
+    () => arrivals.filter((r) => r.status === 'upcoming' || r.status === 'no_show'),
     [arrivals],
   );
   const dueOut = useMemo(() => {
@@ -435,7 +435,7 @@ export default function FrontDeskWorkspace() {
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <Stat label="Arrivals due" value={dueIn.length} icon={LogIn} />
+        <Stat label="Arrivals today" value={dueIn.length} icon={LogIn} />
         <Stat label="In-house" value={inHouse.length} icon={Building2} />
         <Stat label="Due out" value={dueOut.length} icon={LogOut} />
         <Stat label="Not ready" value={dirty + outOfOrder} icon={CalendarClock} highlight />
@@ -471,6 +471,7 @@ export default function FrontDeskWorkspace() {
                   <p className="type-res-small font-normal text-res-ink-muted">
                     In {when(r.start)} → out {when(r.end)}
                     {r.paymentStatus ? ` · ${paymentLabel(r.paymentStatus)}` : ''}
+                    {r.status === 'no_show' ? ' · no-show' : ''}
                   </p>
                 </div>
                 <button
@@ -484,7 +485,7 @@ export default function FrontDeskWorkspace() {
                   ) : (
                     <LogIn className="h-3.5 w-3.5" />
                   )}
-                  Check in
+                  {r.status === 'no_show' ? 'Reinstate' : 'Check in'}
                 </button>
               </li>
             ))}
