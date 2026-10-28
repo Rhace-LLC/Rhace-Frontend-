@@ -198,7 +198,8 @@ export type ReservationStatus =
   | 'upcoming'
   | 'active'
   | 'completed'
-  | 'cancelled';
+  | 'cancelled'
+  | 'no_show';
 
 export interface ReservationLock {
   token: string;

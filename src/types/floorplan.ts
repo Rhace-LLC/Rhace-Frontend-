@@ -307,7 +307,8 @@ export type UnitReservationStatusDto =
   | 'upcoming'
   | 'active'
   | 'completed'
-  | 'cancelled';
+  | 'cancelled'
+  | 'no_show';
 
 export interface UnitReservationDto {
   _id: string;

@@ -78,7 +78,11 @@ export default function RoomGrid({
               const res = reservationsByUnit.get(unit._id);
               const guest = res?.guestName || unit.session?.guestName;
               const isBusy = Boolean(res && busyReservationId === res._id);
-              const canCheckIn = Boolean(res && res.status === 'upcoming' && onCheckIn);
+              const canCheckIn = Boolean(
+                res &&
+                  (res.status === 'upcoming' || res.status === 'no_show') &&
+                  onCheckIn,
+              );
               const canCheckOut = Boolean(res && res.status === 'active' && onCheckOut);
               return (
                 <div
@@ -126,7 +130,8 @@ export default function RoomGrid({
                         onClick={() => res && onCheckIn?.(res)}
                         className="type-res-small flex cursor-pointer items-center gap-1 rounded-full bg-res-brand px-3.5 py-1.5 font-semibold text-res-ink-inverted shadow-res-low transition-colors outline-none hover:bg-res-brand-hover focus-visible:ring-2 focus-visible:ring-res-brand disabled:cursor-not-allowed disabled:opacity-50"
                       >
-                        <LogIn className="h-3 w-3" /> Check in
+                        <LogIn className="h-3 w-3" />{' '}
+                        {res?.status === 'no_show' ? 'Reinstate' : 'Check in'}
                       </button>
                     )}
                     {canCheckOut && (
