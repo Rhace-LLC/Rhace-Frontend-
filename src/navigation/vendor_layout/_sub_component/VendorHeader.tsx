@@ -89,7 +89,7 @@ const Header = ({ onMenuClick }: HeaderProps) => {
 
       {/* Right side items */}
       <div className="ml-auto flex items-center gap-1.5">
-        <NotificationBell />
+        <NotificationBell allHref={`/dashboard/${vertical}/notifications`} />
 
         {/* User profile dropdown */}
         <div className="relative">

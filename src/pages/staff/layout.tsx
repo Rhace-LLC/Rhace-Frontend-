@@ -69,7 +69,7 @@ export default function StaffLayout() {
           </div>
 
           <div className="flex items-center gap-2">
-            <NotificationBell />
+            <NotificationBell allHref="/staff/notifications" />
             {shift && (
               <span className="hidden sm:flex items-center gap-1 text-xs text-muted-foreground">
                 <span className="w-2 h-2 rounded-full bg-green-500" />

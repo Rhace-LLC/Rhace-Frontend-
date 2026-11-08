@@ -1,16 +1,18 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Bell } from 'lucide-react';
+import { useVendorEvents } from '@/features/orders/realtime';
 import { notificationService, type AppNotification } from '@/services/notification.service';
 
 const POLL_MS = 45_000;
 
 /**
- * Shared live bell: vendors, staff and signed-in guests. Polls the
- * notification feed, shows a real unread dot, and opens a panel with
- * mark-read behaviour. Token-styled for light headers.
+ * Shared live bell: vendors, staff and signed-in guests. Refreshes on the
+ * `notification:new` socket event (polling as fallback), shows the total
+ * unread count, and opens a panel with mark-read behaviour. `allHref` is the
+ * full notifications page for the app it sits in (dashboard, staff, guest).
  */
-export function NotificationBell() {
+export function NotificationBell({ allHref }: { allHref: string }) {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [items, setItems] = useState<AppNotification[]>([]);
@@ -34,6 +36,11 @@ export function NotificationBell() {
     const timer = setInterval(load, POLL_MS);
     return () => clearInterval(timer);
   }, [load]);
+
+  // Live: the server pings the recipient's room (customer room, or the vendor
+  // room for vendors and staff) when a notification is written. Polling stays
+  // as the fallback when the socket is down.
+  useVendorEvents(['notification:new'], () => void load());
 
   useEffect(() => {
     if (!open) return;
@@ -162,6 +169,18 @@ export function NotificationBell() {
               ))
             )}
           </ul>
+          <div className="border-t border-res-line p-1.5">
+            <button
+              type="button"
+              onClick={() => {
+                setOpen(false);
+                navigate(allHref);
+              }}
+              className="type-res-small flex w-full cursor-pointer items-center justify-center rounded-res-sm px-3 py-2.5 font-semibold text-res-brand transition-colors outline-none hover:bg-res-surface focus-visible:ring-2 focus-visible:ring-res-brand"
+            >
+              View all notifications
+            </button>
+          </div>
         </div>
       )}
     </div>

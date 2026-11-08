@@ -39,6 +39,7 @@ import ClubFloorLayout from '@/pages/vendor/club/tables/layout';
 import AddRooms from '@/pages/vendor/hotel/rooms/add';
 import HotelDashboard from '@/pages/vendor/hotel/dashboard';
 import HotelProfile from '@/pages/vendor/hotel/profile';
+import NotificationsPage from '@/pages/notifications';
 import RoomsManagement from '@/pages/vendor/hotel/rooms';
 import HotelRoomLayout from '@/pages/vendor/hotel/rooms/layout';
 import HotelSettings from '@/pages/vendor/hotel/settings';
@@ -134,6 +135,7 @@ const dashboardRestaurantRoutes: RouteObject[] = [
     element: withSuspense(<PrototypeTimelineRestaurant />),
   },
   { path: 'restaurant/settings', element: <RestaurantSettings /> },
+  { path: 'restaurant/notifications', element: <NotificationsPage /> },
   // Restaurant settings hold the venue profile; keep old profile links working.
   { path: 'restaurant/profile', element: <Navigate replace to="/dashboard/restaurant/settings" /> },
   { path: 'restaurant/settings/payments', element: <PaymentSettingsPage /> },
@@ -170,6 +172,7 @@ const hotelVendorRoutes: RouteObject[] = [
   { path: 'hotel/staffs/activity', element: <ActivityPage /> },
   { path: 'hotel/profile', element: <HotelProfile /> },
   { path: 'hotel/settings', element: <HotelSettings /> },
+  { path: 'hotel/notifications', element: <NotificationsPage /> },
   { path: 'hotel/settings/payments', element: <PaymentSettingsPage /> },
   { path: 'hotel/services', element: <HotelServicesPage /> },
   { path: 'hotel/services/categories', element: <CategoriesPage kind="service" /> },
@@ -213,6 +216,7 @@ const clubVendorRoutes: RouteObject[] = [
   { path: 'club/staffs/activity', element: <ActivityPage /> },
   { path: 'club/add-drinks', element: <BottleServiceManager /> },
   { path: 'club/settings', element: <ClubSettings /> },
+  { path: 'club/notifications', element: <NotificationsPage /> },
   { path: 'club/profile', element: <Navigate replace to="/dashboard/club/settings" /> },
   { path: 'club/settings/payments', element: <PaymentSettingsPage /> },
   { path: 'club/linked-hotels', element: <LinkedHotelsPage /> },

@@ -331,7 +331,7 @@ const Header = ({ onClick = () => {}, activeTab = null }: HeaderProps) => {
             </div>
           )}
           <div className="md:ml-6 flex items-center space-x-4">
-            {user && <NotificationBell />}
+            {user && <NotificationBell allHref="/notifications" />}
             {renderAuthButtons()}
           </div>
         </div>

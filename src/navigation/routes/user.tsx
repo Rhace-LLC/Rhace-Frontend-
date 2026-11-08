@@ -14,6 +14,7 @@ import QuickOrderPage from '@/pages/public/quickorder';
 import PrivacyPolicy from '@/pages/public/privacy-policy';
 import ReservationHomePage from '@/pages/public/home';
 import Terms from '@/pages/public/terms';
+import NotificationsPage from '@/pages/notifications';
 
 const userGeneralRoutes: RouteObject[] = [
   { path: '/bookings', element: <BookingsPage /> },
@@ -23,6 +24,7 @@ const userGeneralRoutes: RouteObject[] = [
   { path: '/preorder/:reservationId', element: <PreOrderPage /> },
   { path: '/order/:vendorId', element: <QuickOrderPage /> },
   { path: '/payments', element: <PaymentsHistory /> },
+  { path: '/notifications', element: <NotificationsPage /> },
   { path: '/account-settings', element: <AccountSettings /> },
   { path: '/book-reservation', element: <ReservationHomePage /> },
   { path: '/terms', element: <Terms /> },
