@@ -42,7 +42,12 @@ const unwrap = <T>(response: { data: unknown }): T => {
 };
 
 class DishService {
-  async list(params?: { categoryId?: string; search?: string; page?: number; limit?: number }): Promise<{
+  async list(params?: {
+    categoryId?: string;
+    search?: string;
+    page?: number;
+    limit?: number;
+  }): Promise<{
     menuItems: DishDto[];
     total: number;
     page: number;

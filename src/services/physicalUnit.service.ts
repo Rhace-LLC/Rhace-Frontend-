@@ -6,7 +6,7 @@ import type {
   PaginatedData,
   PhysicalUnitDto,
   UnitActivityLogDto,
-  UnitStatusInput,        
+  UnitStatusInput,
   UpdateUnitInput,
 } from '@/types';
 

@@ -28,7 +28,11 @@ const DAY = /^\d{4}-\d{2}-\d{2}$/;
 const SHARED_KEYS = ['preset', 'from', 'to', 'currency'];
 
 const fmtDay = (iso: string) =>
-  new Date(`${iso}T12:00:00`).toLocaleDateString('en-NG', { day: 'numeric', month: 'short', year: 'numeric' });
+  new Date(`${iso}T12:00:00`).toLocaleDateString('en-NG', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  });
 
 /**
  * Report range + currency, stored in the URL so the two payments pages share
@@ -62,17 +66,23 @@ export function useReportFilters() {
           next.delete('page');
           return next;
         },
-        { replace: true },
+        { replace: true }
       );
     },
-    [setSearch],
+    [setSearch]
   );
 
-  const setPreset = useCallback((preset: ReportPreset) => update({ preset, from: null, to: null }), [update]);
-  const setCustom = useCallback((from: string, to: string) => update({ preset: null, from, to }), [update]);
+  const setPreset = useCallback(
+    (preset: ReportPreset) => update({ preset, from: null, to: null }),
+    [update]
+  );
+  const setCustom = useCallback(
+    (from: string, to: string) => update({ preset: null, from, to }),
+    [update]
+  );
   const setCurrency = useCallback(
     (currency: string) => update({ currency: currency === 'NGN' ? null : currency }),
-    [update],
+    [update]
   );
 
   const rangeLabel = params.from

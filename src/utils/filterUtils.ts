@@ -131,7 +131,9 @@ export const countActiveFilters = (filters: FilterState): number =>
     filters.entryFee !== '' ? 1 : null,
     filters.clubTime,
     filters.tableType,
-    ...ARRAY_KEYS.map((k) => ((filters as unknown as Record<string, string[]>)[k]?.length ? 1 : null)),
+    ...ARRAY_KEYS.map((k) =>
+      (filters as unknown as Record<string, string[]>)[k]?.length ? 1 : null
+    ),
     ...BOOL_KEYS.map((k) =>
       (filters as unknown as Record<string, string>)[k] === 'true' ? 1 : null
     ),
@@ -144,7 +146,10 @@ export interface Chip {
   clear: () => void;
 }
 
-export const buildChips = (f: FilterState, onChange: (key: string, value: unknown) => void): Chip[] => {
+export const buildChips = (
+  f: FilterState,
+  onChange: (key: string, value: unknown) => void
+): Chip[] => {
   const chips: Chip[] = [];
   if (f.type)
     chips.push({
@@ -246,7 +251,11 @@ export const buildChips = (f: FilterState, onChange: (key: string, value: unknow
       chips.push({
         key: `${k}-${v}`,
         label: CHIP_LABEL_MAPS[k]?.[v] || v,
-        clear: () => onChange(k, (f as unknown as Record<string, string[]>)[k].filter((x) => x !== v)),
+        clear: () =>
+          onChange(
+            k,
+            (f as unknown as Record<string, string[]>)[k].filter((x) => x !== v)
+          ),
       })
     );
   });

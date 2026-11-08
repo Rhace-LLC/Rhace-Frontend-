@@ -61,7 +61,11 @@ export function CanvasControls({ canvas, onFit }: CanvasControlsProps) {
       >
         <Maximize size={14} /> Fit
       </button>
-      <ToggleButton active={canvas.panTool} onClick={canvas.togglePanTool} title="Pan tool (or hold Space / Alt)">
+      <ToggleButton
+        active={canvas.panTool}
+        onClick={canvas.togglePanTool}
+        title="Pan tool (or hold Space / Alt)"
+      >
         <Hand size={14} /> Pan
       </ToggleButton>
       <ToggleButton active={canvas.snap} onClick={canvas.toggleSnap} title="Snap to grid">

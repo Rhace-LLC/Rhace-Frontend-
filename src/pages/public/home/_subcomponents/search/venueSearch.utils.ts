@@ -15,10 +15,10 @@ export const saveRecentSearch = (term?: string) => {
   localStorage.setItem(
     LS_RECENT,
     JSON.stringify(
-      [term.trim(), ...getRecentSearches().filter((s) => s.toLowerCase() !== term.toLowerCase())].slice(
-        0,
-        MAX_RECENT
-      )
+      [
+        term.trim(),
+        ...getRecentSearches().filter((s) => s.toLowerCase() !== term.toLowerCase()),
+      ].slice(0, MAX_RECENT)
     )
   );
 };

@@ -4,22 +4,12 @@
  */
 
 export type ReservationStatus =
-  | 'pending_payment'
-  | 'upcoming'
-  | 'active'
-  | 'completed'
-  | 'cancelled'
-  | 'no_show';
+  'pending_payment' | 'upcoming' | 'active' | 'completed' | 'cancelled' | 'no_show';
 
 export type PaymentStatus = 'unpaid' | 'partly_paid' | 'paid' | 'pay_later' | string;
 
 export type ReservationSource =
-  | 'vendor'
-  | 'storefront'
-  | 'seed'
-  | 'legacy'
-  | 'legacy_unmapped'
-  | string;
+  'vendor' | 'storefront' | 'seed' | 'legacy' | 'legacy_unmapped' | string;
 
 export interface ReservationGroupSummary {
   totalAmount?: number;

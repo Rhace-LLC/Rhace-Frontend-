@@ -254,7 +254,11 @@ export function CreateBlueprintModal({
   };
 
   const removeImage = (url: string) => {
-    setImages((prev) => lines(prev).filter((entry) => entry !== url).join('\n'));
+    setImages((prev) =>
+      lines(prev)
+        .filter((entry) => entry !== url)
+        .join('\n')
+    );
   };
 
   const buildPolicies = (): BookingPolicy[] =>
@@ -475,8 +479,8 @@ export function CreateBlueprintModal({
             </select>
             {currency !== 'NGN' ? (
               <span className="type-res-small mt-1 block font-normal text-res-ink-muted">
-                Guests pay in {currency} by card. Your payout converts to NGN inside
-                Stripe — the conversion rate on payout day applies.
+                Guests pay in {currency} by card. Your payout converts to NGN inside Stripe — the
+                conversion rate on payout day applies.
               </span>
             ) : (
               <span className="type-res-small mt-1 block font-normal text-res-ink-muted">
@@ -490,7 +494,9 @@ export function CreateBlueprintModal({
                 onClick={handleConnectStripe}
                 className="type-res-small mt-2 cursor-pointer font-semibold text-res-brand underline underline-offset-2 disabled:cursor-wait disabled:opacity-60"
               >
-                {connectingStripe ? 'Opening Stripe…' : 'Connect with Stripe to list in USD, EUR or GBP'}
+                {connectingStripe
+                  ? 'Opening Stripe…'
+                  : 'Connect with Stripe to list in USD, EUR or GBP'}
               </button>
             )}
           </div>
@@ -514,13 +520,27 @@ export function CreateBlueprintModal({
               <label className={labelClass} htmlFor="bp-capacity">
                 Seats
               </label>
-              <input id="bp-capacity" type="number" min={1} value={capacity} onChange={(e) => setCapacity(e.target.value)} className={inputClass} />
+              <input
+                id="bp-capacity"
+                type="number"
+                min={1}
+                value={capacity}
+                onChange={(e) => setCapacity(e.target.value)}
+                className={inputClass}
+              />
             </div>
             <div>
               <label className={labelClass} htmlFor="bp-max-capacity">
                 Max seats
               </label>
-              <input id="bp-max-capacity" type="number" min={1} value={maxCapacity} onChange={(e) => setMaxCapacity(e.target.value)} className={inputClass} />
+              <input
+                id="bp-max-capacity"
+                type="number"
+                min={1}
+                value={maxCapacity}
+                onChange={(e) => setMaxCapacity(e.target.value)}
+                className={inputClass}
+              />
             </div>
           </div>
         </div>
@@ -609,7 +629,10 @@ export function CreateBlueprintModal({
             <span className={labelClass}>Photos</span>
             <div className="mb-2.5 flex flex-wrap gap-2">
               {imageUrls.map((url) => (
-                <div key={url} className="relative h-16 w-16 overflow-hidden rounded-res-sm bg-res-surface">
+                <div
+                  key={url}
+                  className="relative h-16 w-16 overflow-hidden rounded-res-sm bg-res-surface"
+                >
                   <img src={url} alt="" className="h-full w-full object-cover" />
                   <button
                     type="button"
@@ -624,7 +647,9 @@ export function CreateBlueprintModal({
               ))}
               <label className="flex h-16 w-16 cursor-pointer flex-col items-center justify-center gap-0.5 rounded-res-sm border border-dashed border-res-line bg-res-surface text-res-ink-muted transition-colors hover:text-res-brand">
                 <Upload size={16} />
-                <span className="type-res-caption">{uploading ? `${uploadProgress}%` : 'Upload'}</span>
+                <span className="type-res-caption">
+                  {uploading ? `${uploadProgress}%` : 'Upload'}
+                </span>
                 <input
                   type="file"
                   accept="image/*"
@@ -669,7 +694,9 @@ export function CreateBlueprintModal({
               )}
               <div className="min-w-0 flex-1">
                 <h3 className="type-res-h3 line-clamp-1 text-res-ink">{name || 'Untitled'}</h3>
-                <p className="type-res-small line-clamp-1 font-normal text-res-ink-muted">{type || '—'}</p>
+                <p className="type-res-small line-clamp-1 font-normal text-res-ink-muted">
+                  {type || '—'}
+                </p>
               </div>
               <span className="type-res-small shrink-0 rounded-full bg-res-card px-3 py-1.5 font-semibold text-res-brand shadow-res-low">
                 {vertical === 'hotel'
@@ -701,7 +728,9 @@ export function CreateBlueprintModal({
             </dl>
 
             {description.trim() && (
-              <p className="type-res-small mt-3 font-normal text-res-ink-muted">{description.trim()}</p>
+              <p className="type-res-small mt-3 font-normal text-res-ink-muted">
+                {description.trim()}
+              </p>
             )}
           </div>
 
@@ -714,7 +743,10 @@ export function CreateBlueprintModal({
             ) : (
               <div className="flex flex-wrap gap-1.5">
                 {amenityList.map((label) => (
-                  <span key={label} className="type-res-small rounded-full bg-res-surface px-3 py-1.5 font-medium text-res-ink-muted">
+                  <span
+                    key={label}
+                    className="type-res-small rounded-full bg-res-surface px-3 py-1.5 font-medium text-res-ink-muted"
+                  >
                     {label}
                   </span>
                 ))}
@@ -747,7 +779,12 @@ export function CreateBlueprintModal({
               </p>
               <div className="flex flex-wrap gap-2">
                 {imageUrls.map((url) => (
-                  <img key={url} src={url} alt="" className="h-14 w-14 rounded-res-sm object-cover" />
+                  <img
+                    key={url}
+                    src={url}
+                    alt=""
+                    className="h-14 w-14 rounded-res-sm object-cover"
+                  />
                 ))}
               </div>
             </div>

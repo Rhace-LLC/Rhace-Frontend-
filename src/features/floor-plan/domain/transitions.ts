@@ -44,10 +44,6 @@ export function canTransition(vertical: Vertical, from: string, to: string): boo
  * Returns the target if the transition is legal, otherwise `null` so callers can
  * safely ignore illegal jumps.
  */
-export function resolveTransition(
-  vertical: Vertical,
-  from: string,
-  to: string
-): UnitState | null {
+export function resolveTransition(vertical: Vertical, from: string, to: string): UnitState | null {
   return canTransition(vertical, from, to) ? (to as UnitState) : null;
 }

@@ -35,10 +35,7 @@ export function PrototypeInventoryManager({ plugin }: PrototypeInventoryManagerP
   const { blueprintId } = useParams<{ blueprintId?: string }>();
   const query = useBlueprints(vertical);
 
-  const blueprints = useMemo(
-    () => (query.data?.items ?? []).map(toDomainBlueprint),
-    [query.data]
-  );
+  const blueprints = useMemo(() => (query.data?.items ?? []).map(toDomainBlueprint), [query.data]);
 
   const [modal, setModal] = useState<{ open: boolean; initial: InventoryBlueprint | null }>({
     open: false,
@@ -65,8 +62,8 @@ export function PrototypeInventoryManager({ plugin }: PrototypeInventoryManagerP
           <div>
             <h1 className="type-res-h2 text-res-ink">Inventory</h1>
             <p className="type-res-body mt-1 font-normal text-res-ink-muted">
-              {blueprints.length} {KIND_PLURAL[vertical]} set up. Edit details, pricing,
-              extras and house rules.
+              {blueprints.length} {KIND_PLURAL[vertical]} set up. Edit details, pricing, extras and
+              house rules.
             </p>
           </div>
           <button
@@ -204,7 +201,12 @@ function BlueprintCover({ blueprint }: { blueprint: InventoryBlueprint }) {
   const src = blueprint.images[0];
   if (src) {
     return (
-      <img src={src} alt={blueprint.name} loading="lazy" className="h-32 w-full rounded-res-sm object-cover" />
+      <img
+        src={src}
+        alt={blueprint.name}
+        loading="lazy"
+        className="h-32 w-full rounded-res-sm object-cover"
+      />
     );
   }
   const Icon = blueprint.vertical === 'hotel' ? BedDouble : Armchair;
@@ -219,7 +221,9 @@ function BlueprintCover({ blueprint }: { blueprint: InventoryBlueprint }) {
       <span className="rounded-full bg-res-card p-2 shadow-res-low">
         <Icon className="h-5 w-5 text-res-brand" />
       </span>
-      <span className="type-res-small font-semibold text-res-ink-muted">{initials || blueprint.type}</span>
+      <span className="type-res-small font-semibold text-res-ink-muted">
+        {initials || blueprint.type}
+      </span>
     </div>
   );
 }

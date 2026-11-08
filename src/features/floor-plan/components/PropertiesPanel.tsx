@@ -19,7 +19,17 @@ interface PropertiesPanelProps {
   onClose: () => void;
 }
 
-const SHAPES: SpatialData['shape'][] = ['rect', 'square', 'rectangle', 'round', 'oval', 'booth', 'cabana', 'room', 'bar-seat'];
+const SHAPES: SpatialData['shape'][] = [
+  'rect',
+  'square',
+  'rectangle',
+  'round',
+  'oval',
+  'booth',
+  'cabana',
+  'room',
+  'bar-seat',
+];
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -44,7 +54,8 @@ export function PropertiesPanel({
   onDelete,
   onClose,
 }: PropertiesPanelProps) {
-  const single = selection.length === 1 ? plan.entities.find((e) => e.entityId === selection[0]) : undefined;
+  const single =
+    selection.length === 1 ? plan.entities.find((e) => e.entityId === selection[0]) : undefined;
 
   if (selection.length === 0) return null;
 
@@ -131,7 +142,9 @@ export function PropertiesPanel({
         <Field label="Shape">
           <select
             value={s.shape}
-            onChange={(e) => set({ spatialData: { shape: e.target.value as SpatialData['shape'] } })}
+            onChange={(e) =>
+              set({ spatialData: { shape: e.target.value as SpatialData['shape'] } })
+            }
             className={inputClass}
           >
             {SHAPES.map((shape) => (
@@ -148,7 +161,9 @@ export function PropertiesPanel({
               type="number"
               min={1}
               value={Number(b.capacity ?? 0)}
-              onChange={(e) => set({ businessData: { capacity: Math.max(1, Number(e.target.value)) } })}
+              onChange={(e) =>
+                set({ businessData: { capacity: Math.max(1, Number(e.target.value)) } })
+              }
               className={inputClass}
             />
           </Field>
@@ -157,7 +172,9 @@ export function PropertiesPanel({
               type="number"
               min={1}
               value={Number(b.maxCapacity ?? b.capacity ?? 0)}
-              onChange={(e) => set({ businessData: { maxCapacity: Math.max(1, Number(e.target.value)) } })}
+              onChange={(e) =>
+                set({ businessData: { maxCapacity: Math.max(1, Number(e.target.value)) } })
+              }
               className={inputClass}
             />
           </Field>
@@ -188,16 +205,40 @@ export function PropertiesPanel({
 
         <div className="grid grid-cols-2 gap-3">
           <Field label="X">
-            <input type="number" value={Math.round(s.x)} onChange={(e) => set({ spatialData: { x: Number(e.target.value) } })} className={inputClass} />
+            <input
+              type="number"
+              value={Math.round(s.x)}
+              onChange={(e) => set({ spatialData: { x: Number(e.target.value) } })}
+              className={inputClass}
+            />
           </Field>
           <Field label="Y">
-            <input type="number" value={Math.round(s.y)} onChange={(e) => set({ spatialData: { y: Number(e.target.value) } })} className={inputClass} />
+            <input
+              type="number"
+              value={Math.round(s.y)}
+              onChange={(e) => set({ spatialData: { y: Number(e.target.value) } })}
+              className={inputClass}
+            />
           </Field>
           <Field label="Width">
-            <input type="number" value={Math.round(s.width)} onChange={(e) => set({ spatialData: { width: Math.max(40, Number(e.target.value)) } })} className={inputClass} />
+            <input
+              type="number"
+              value={Math.round(s.width)}
+              onChange={(e) =>
+                set({ spatialData: { width: Math.max(40, Number(e.target.value)) } })
+              }
+              className={inputClass}
+            />
           </Field>
           <Field label="Height">
-            <input type="number" value={Math.round(s.height)} onChange={(e) => set({ spatialData: { height: Math.max(40, Number(e.target.value)) } })} className={inputClass} />
+            <input
+              type="number"
+              value={Math.round(s.height)}
+              onChange={(e) =>
+                set({ spatialData: { height: Math.max(40, Number(e.target.value)) } })
+              }
+              className={inputClass}
+            />
           </Field>
         </div>
 

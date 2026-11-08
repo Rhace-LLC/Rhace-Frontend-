@@ -23,15 +23,7 @@ export type PolicyKindDto =
   | 'other';
 
 export type EntityShapeDto =
-  | 'rect'
-  | 'round'
-  | 'square'
-  | 'rectangle'
-  | 'oval'
-  | 'booth'
-  | 'cabana'
-  | 'room'
-  | 'bar-seat';
+  'rect' | 'round' | 'square' | 'rectangle' | 'oval' | 'booth' | 'cabana' | 'room' | 'bar-seat';
 
 export interface UnitSpatialDto {
   x: number;
@@ -303,12 +295,7 @@ export type UpdateStructureInput = Partial<CreateStructureInput>;
 // ─── Unit reservations (canonical engine) ─────────────────────────────────────
 
 export type UnitReservationStatusDto =
-  | 'pending_payment'
-  | 'upcoming'
-  | 'active'
-  | 'completed'
-  | 'cancelled'
-  | 'no_show';
+  'pending_payment' | 'upcoming' | 'active' | 'completed' | 'cancelled' | 'no_show';
 
 export interface UnitReservationDto {
   _id: string;

@@ -31,9 +31,7 @@ const PaymentStatCard = ({
           <p className="type-res-small text-res-ink-muted">{title}</p>
 
           <h2 className="mt-2 text-3xl font-bold text-res-ink">
-            {isCurrency
-              ? `₦${Number(value).toLocaleString()}`
-              : Number(value).toLocaleString()}
+            {isCurrency ? `₦${Number(value).toLocaleString()}` : Number(value).toLocaleString()}
           </h2>
         </div>
 
@@ -53,27 +51,16 @@ const PaymentStatCard = ({
       </div>
 
       <div className="mt-5 flex items-center justify-between">
-
-        <span className="type-res-small text-res-ink-muted">
-          {comparison}
-        </span>
+        <span className="type-res-small text-res-ink-muted">{comparison}</span>
 
         <div
           className={`flex items-center gap-1 text-sm font-semibold ${
-            change >= 0
-              ? 'text-green-600'
-              : 'text-red-600'
+            change >= 0 ? 'text-green-600' : 'text-red-600'
           }`}
         >
-          {change >= 0 ? (
-            <ArrowUpRight size={16} />
-          ) : (
-            <ArrowDownRight size={16} />
-          )}
-
+          {change >= 0 ? <ArrowUpRight size={16} /> : <ArrowDownRight size={16} />}
           {Math.abs(change).toFixed(1)}%
         </div>
-
       </div>
     </div>
   );

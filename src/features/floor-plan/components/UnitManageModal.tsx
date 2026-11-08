@@ -42,9 +42,7 @@ export function UnitManageModal({ unitId, vertical, blueprints, onClose }: UnitM
   const blueprint = unit ? blueprints.find((b) => b.id === unit.blueprint) : undefined;
   const reservations = useMemo<UnitReservationDto[]>(
     () =>
-      (reservationsQuery.data?.items ?? [])
-        .slice()
-        .sort((a, b) => a.start.localeCompare(b.start)),
+      (reservationsQuery.data?.items ?? []).slice().sort((a, b) => a.start.localeCompare(b.start)),
     [reservationsQuery.data]
   );
   const activeReservation =
@@ -114,9 +112,7 @@ export function UnitManageModal({ unitId, vertical, blueprints, onClose }: UnitM
                 <button
                   key={target}
                   disabled={transition.isPending}
-                  onClick={() =>
-                    transition.mutate({ unitId: unit._id, input: { to: target } })
-                  }
+                  onClick={() => transition.mutate({ unitId: unit._id, input: { to: target } })}
                   className="rounded-lg border border-teal-200 bg-teal-50 px-2.5 py-1 text-[11px] font-medium text-teal-700 hover:bg-teal-100 disabled:opacity-50"
                 >
                   {stateMetaFor(vertical, target).label}

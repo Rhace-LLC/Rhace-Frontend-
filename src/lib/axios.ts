@@ -26,8 +26,7 @@ api.interceptors.request.use(
 );
 
 /** Refresh calls must never trigger another refresh attempt (infinite loop). */
-const isRefreshCall = (url?: string): boolean =>
-  Boolean(url && url.includes('/auth/refresh'));
+const isRefreshCall = (url?: string): boolean => Boolean(url && url.includes('/auth/refresh'));
 
 // Response interceptor
 api.interceptors.response.use(

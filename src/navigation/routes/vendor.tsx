@@ -22,7 +22,11 @@ import CategoriesPage from '@/pages/vendor/shared/catalog/CategoriesPage';
 import AddOnsPage from '@/pages/vendor/shared/catalog/AddOnsPage';
 
 // Staff Pages (individual tabs as standalone pages)
-import AllStaffPage, { ShiftManagerPage, ReportsPage, ActivityPage } from '@/pages/vendor/shared/staff';
+import AllStaffPage, {
+  ShiftManagerPage,
+  ReportsPage,
+  ActivityPage,
+} from '@/pages/vendor/shared/staff';
 
 // Vendor - Club
 import BottleServiceManager from '@/pages/vendor/club/drinks/add';
@@ -65,33 +69,21 @@ const PrototypeFloorPlanClub = lazy(() => import('@/pages/vendor/prototype/club/
 const PrototypeManageRoomHotel = lazy(
   () => import('@/pages/vendor/prototype/hotel/ManageRoomHotel')
 );
-const PrototypeFloorPlanHotel = lazy(
-  () => import('@/pages/vendor/prototype/hotel/FloorPlanHotel')
-);
+const PrototypeFloorPlanHotel = lazy(() => import('@/pages/vendor/prototype/hotel/FloorPlanHotel'));
 const PrototypeInventoryRestaurant = lazy(
   () => import('@/pages/vendor/prototype/restaurant/InventoryRestaurant')
 );
-const PrototypeInventoryClub = lazy(
-  () => import('@/pages/vendor/prototype/club/InventoryClub')
-);
-const PrototypeInventoryHotel = lazy(
-  () => import('@/pages/vendor/prototype/hotel/InventoryHotel')
-);
+const PrototypeInventoryClub = lazy(() => import('@/pages/vendor/prototype/club/InventoryClub'));
+const PrototypeInventoryHotel = lazy(() => import('@/pages/vendor/prototype/hotel/InventoryHotel'));
 const PrototypeTimelineRestaurant = lazy(
   () => import('@/pages/vendor/prototype/restaurant/TimelineRestaurant')
 );
-const PrototypeTimelineClub = lazy(
-  () => import('@/pages/vendor/prototype/club/TimelineClub')
-);
-const PrototypeTimelineHotel = lazy(
-  () => import('@/pages/vendor/prototype/hotel/TimelineHotel')
-);
+const PrototypeTimelineClub = lazy(() => import('@/pages/vendor/prototype/club/TimelineClub'));
+const PrototypeTimelineHotel = lazy(() => import('@/pages/vendor/prototype/hotel/TimelineHotel'));
 
 function PrototypeFallback() {
   return (
-    <div className="flex h-[60vh] items-center justify-center text-sm text-gray-500">
-      Loading…
-    </div>
+    <div className="flex h-[60vh] items-center justify-center text-sm text-gray-500">Loading…</div>
   );
 }
 

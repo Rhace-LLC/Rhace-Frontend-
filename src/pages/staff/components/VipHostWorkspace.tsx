@@ -1,22 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
-import {
-  AlertTriangle,
-  Bell,
-  MapPinned,
-  RefreshCw,
-  ShoppingBag,
-  Target,
-} from 'lucide-react';
+import { AlertTriangle, Bell, MapPinned, RefreshCw, ShoppingBag, Target } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
   Select,
   SelectContent,
@@ -33,11 +21,7 @@ import { money } from '@/features/orders/money';
 import type { CreateOrderLineInput, OrderDto } from '@/features/orders/types';
 import { floorPlanService } from '@/services/floorPlan.service';
 import { inventoryBlueprintService } from '@/services/inventoryBlueprint.service';
-import {
-  staffService,
-  assignmentUnitId,
-  type StaffAssignmentDto,
-} from '@/services/staff.service';
+import { staffService, assignmentUnitId, type StaffAssignmentDto } from '@/services/staff.service';
 import type {
   FloorPlanDto,
   FloorPlanLayoutDto,
@@ -82,8 +66,7 @@ function Stat({
   icon: typeof Target;
   tone?: 'default' | 'warn' | 'good';
 }) {
-  const toneClass =
-    tone === 'warn' ? 'text-amber-600' : tone === 'good' ? 'text-emerald-600' : '';
+  const toneClass = tone === 'warn' ? 'text-amber-600' : tone === 'good' ? 'text-emerald-600' : '';
   return (
     <Card>
       <CardContent className="flex items-center justify-between py-4">
@@ -143,7 +126,7 @@ export default function VipHostWorkspace() {
       const docs = plansRes.data?.items ?? [];
       setPlans(docs);
       setPlanId((current) =>
-        current && docs.some((d) => d._id === current) ? current : defaultPlanId(docs),
+        current && docs.some((d) => d._id === current) ? current : defaultPlanId(docs)
       );
       setAssignments(assigns.docs ?? []);
       setOrders(orderRes.items ?? []);
@@ -188,7 +171,7 @@ export default function VipHostWorkspace() {
   const units = useMemo(() => layout?.units ?? [], [layout]);
   const assignedIds = useMemo(
     () => new Set(assignments.map((a) => assignmentUnitId(a.refId))),
-    [assignments],
+    [assignments]
   );
 
   const minimumSpendByBlueprint = useMemo(() => {
@@ -231,7 +214,13 @@ export default function VipHostWorkspace() {
       .map((unit) => {
         const minimum = minimumSpendFor(unit, minimumSpendByBlueprint);
         const spend = boothSpend(unit, spendByUnit);
-        return { unit, minimum, spend, remaining: minimum - spend, met: minimum > 0 && spend >= minimum };
+        return {
+          unit,
+          minimum,
+          spend,
+          remaining: minimum - spend,
+          met: minimum > 0 && spend >= minimum,
+        };
       })
       .filter((row) => row.minimum > 0 || assigned.length > 0)
       .sort((a, b) => {
@@ -242,26 +231,24 @@ export default function VipHostWorkspace() {
       });
   }, [units, assignedIds, minimumSpendByBlueprint, spendByUnit]);
 
-  const trailing = useMemo(
-    () => trackerRows.filter((r) => r.minimum > 0 && !r.met),
-    [trackerRows],
-  );
+  const trailing = useMemo(() => trackerRows.filter((r) => r.minimum > 0 && !r.met), [trackerRows]);
 
   const totals = useMemo(
     () =>
       trackerRows.reduce(
         (acc, row) => ({ minimum: acc.minimum + row.minimum, spend: acc.spend + row.spend }),
-        { minimum: 0, spend: 0 },
+        { minimum: 0, spend: 0 }
       ),
-    [trackerRows],
+    [trackerRows]
   );
 
   const liveOrders = useMemo(
     () =>
       orders.filter(
-        (order) => OPEN_STATUSES.has(order.status) && Boolean(order.unitId && assignedIds.has(order.unitId)),
+        (order) =>
+          OPEN_STATUSES.has(order.status) && Boolean(order.unitId && assignedIds.has(order.unitId))
       ),
-    [orders, assignedIds],
+    [orders, assignedIds]
   );
 
   const unitLabel = (unitId?: string | null) =>
@@ -347,24 +334,14 @@ export default function VipHostWorkspace() {
 
       <div className="grid gap-4 md:grid-cols-4">
         <Stat label="My booths" value={assignedIds.size} icon={MapPinned} />
-        <Stat
-          label="Running spend"
-          value={money(totals.spend)}
-          icon={ShoppingBag}
-          tone="good"
-        />
+        <Stat label="Running spend" value={money(totals.spend)} icon={ShoppingBag} tone="good" />
         <Stat
           label="Targets met"
           value={trackerRows.filter((r) => r.met).length}
           icon={Target}
           tone="good"
         />
-        <Stat
-          label="Under target"
-          value={trailing.length}
-          icon={AlertTriangle}
-          tone="warn"
-        />
+        <Stat label="Under target" value={trailing.length} icon={AlertTriangle} tone="warn" />
       </div>
 
       <Card>

@@ -76,10 +76,9 @@ export function useApiFloorPlanStore(vertical: FloorVertical, planId?: string): 
     // scope it was saved with.
     const usedFloors = [
       ...new Set(
-        [
-          ...units.map((u) => u.floorId).filter(Boolean),
-          core.floor,
-        ].filter((value): value is string => Boolean(value)),
+        [...units.map((u) => u.floorId).filter(Boolean), core.floor].filter(
+          (value): value is string => Boolean(value)
+        )
       ),
     ];
     core.floors = core.floors?.length
@@ -101,7 +100,10 @@ export function useApiFloorPlanStore(vertical: FloorVertical, planId?: string): 
   }, [queryClient]);
 
   const updateEntity = useCallback(
-    (id: string, patch: { businessData?: Record<string, unknown>; spatialData?: Partial<SpatialData> }) => {
+    (
+      id: string,
+      patch: { businessData?: Record<string, unknown>; spatialData?: Partial<SpatialData> }
+    ) => {
       if (!planId) return;
       const unit = units.find((entry) => entry.id === id);
       const structure = structures.find((entry) => entry.id === id);
@@ -264,10 +266,12 @@ export function useApiFloorPlanStore(vertical: FloorVertical, planId?: string): 
         if (planId) floorPlanService.deleteArea(planId, name).then(invalidate);
       },
       addFloor: (section, name) => {
-        if (planId) floorPlanService.addFloor(planId, { name, area: section || undefined }).then(invalidate);
+        if (planId)
+          floorPlanService.addFloor(planId, { name, area: section || undefined }).then(invalidate);
       },
       deleteFloor: (section, floor) => {
-        if (planId) floorPlanService.deleteFloor(planId, floor, section || undefined).then(invalidate);
+        if (planId)
+          floorPlanService.deleteFloor(planId, floor, section || undefined).then(invalidate);
       },
       save: invalidate,
       undo: noop,

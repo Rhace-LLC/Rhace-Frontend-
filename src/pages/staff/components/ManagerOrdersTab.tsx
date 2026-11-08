@@ -127,8 +127,7 @@ function untilStart(iso?: string | null): string {
   if (Number.isNaN(date.getTime())) return '';
   const minutes = Math.round((date.getTime() - Date.now()) / 60000);
   const amount = Math.abs(minutes);
-  const label =
-    amount >= 60 ? `${Math.floor(amount / 60)}h ${amount % 60}m` : `${amount}m`;
+  const label = amount >= 60 ? `${Math.floor(amount / 60)}h ${amount % 60}m` : `${amount}m`;
   if (amount < 1) return 'starting now';
   return minutes > 0 ? `in ${label}` : `started ${label} ago`;
 }
@@ -206,8 +205,7 @@ function LineVisual({
       />
     );
   }
-  const Icon =
-    itemType === 'dish' ? UtensilsCrossed : itemType === 'drink' ? GlassWater : Package;
+  const Icon = itemType === 'dish' ? UtensilsCrossed : itemType === 'drink' ? GlassWater : Package;
   return (
     <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-res-sm bg-res-surface">
       <Icon className="h-6 w-6 text-res-brand" />
@@ -372,7 +370,9 @@ export function ManagerOrdersTab() {
       .list()
       .then(async (res) => {
         const plans = res.data?.items ?? [];
-        const layouts = await Promise.all(plans.map((plan) => floorPlanService.getLayout(plan._id)));
+        const layouts = await Promise.all(
+          plans.map((plan) => floorPlanService.getLayout(plan._id))
+        );
         if (cancelled) return;
         const labels: Record<string, string> = {};
         for (const layout of layouts) {
@@ -472,9 +472,15 @@ export function ManagerOrdersTab() {
     const outstanding = orders.reduce((sum, o) => sum + (o.balance ?? 0), 0);
     const today = orders.filter((o) => isToday(o.reservationStart ?? o.createdAt)).length;
     const active = orders.filter((o) =>
-      ['open', 'awaiting_confirmation', 'placed', 'preparing', 'ready', 'served', 'out_for_delivery'].includes(
-        o.status,
-      ),
+      [
+        'open',
+        'awaiting_confirmation',
+        'placed',
+        'preparing',
+        'ready',
+        'served',
+        'out_for_delivery',
+      ].includes(o.status)
     ).length;
     return [
       { label: 'Total orders', value: String(total) },
@@ -868,8 +874,7 @@ export function ManagerOrdersTab() {
                           : 'Staff';
                     return (
                       <p className="type-res-small rounded-res-sm bg-res-surface px-3 py-2 font-normal text-res-ink-muted">
-                        {title}:{' '}
-                        <span className="font-semibold text-res-ink">{handler.name}</span>
+                        {title}: <span className="font-semibold text-res-ink">{handler.name}</span>
                       </p>
                     );
                   }
@@ -910,11 +915,7 @@ export function ManagerOrdersTab() {
                             className="rounded-res-md border border-res-line bg-res-card p-3 shadow-res-low"
                           >
                             <div className="flex items-start gap-3">
-                              <LineVisual
-                                itemType={line.itemType}
-                                image={image}
-                                name={line.name}
-                              />
+                              <LineVisual itemType={line.itemType} image={image} name={line.name} />
                               <div className="min-w-0 flex-1">
                                 <div className="flex flex-wrap items-center gap-1.5">
                                   <p className="type-res-caption font-medium tracking-[0.2px] text-res-ink-muted uppercase">
@@ -995,17 +996,13 @@ export function ManagerOrdersTab() {
                     {selected.discount > 0 && (
                       <div className="flex justify-between gap-2">
                         <dt>Discount</dt>
-                        <dd className="font-medium text-res-ink">
-                          −{money(selected.discount)}
-                        </dd>
+                        <dd className="font-medium text-res-ink">−{money(selected.discount)}</dd>
                       </div>
                     )}
                     {selected.serviceFee > 0 && (
                       <div className="flex justify-between gap-2">
                         <dt>Service fee</dt>
-                        <dd className="font-medium text-res-ink">
-                          {money(selected.serviceFee)}
-                        </dd>
+                        <dd className="font-medium text-res-ink">{money(selected.serviceFee)}</dd>
                       </div>
                     )}
                     <div className="flex justify-between gap-2 border-t border-res-line pt-2">
@@ -1017,9 +1014,7 @@ export function ManagerOrdersTab() {
                     {selected.amountPaid > 0 && (
                       <div className="flex justify-between gap-2">
                         <dt>Paid</dt>
-                        <dd className="font-medium text-res-ink">
-                          {money(selected.amountPaid)}
-                        </dd>
+                        <dd className="font-medium text-res-ink">{money(selected.amountPaid)}</dd>
                       </div>
                     )}
                     {selected.minimumDepositCredit > 0 && (

@@ -63,7 +63,8 @@ export function TimeSlotPicker({
   const [period, setPeriod] = useState<'all' | MealPeriodDto>('all');
 
   const groups = useMemo(() => groupSlotsByMealPeriod(data?.slots ?? []), [data?.slots]);
-  const visibleGroups = period === 'all' ? groups : groups.filter((group) => group.period === period);
+  const visibleGroups =
+    period === 'all' ? groups : groups.filter((group) => group.period === period);
 
   /** Arrow-key navigation within a meal-period grid (skips disabled cards). */
   const handleGridKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
@@ -71,9 +72,7 @@ export function TimeSlotPicker({
     if (!['ArrowRight', 'ArrowLeft', 'ArrowDown', 'ArrowUp'].includes(key)) return;
 
     const grid = event.currentTarget;
-    const buttons = Array.from(
-      grid.querySelectorAll<HTMLButtonElement>('button:not([disabled])')
-    );
+    const buttons = Array.from(grid.querySelectorAll<HTMLButtonElement>('button:not([disabled])'));
     const index = buttons.indexOf(document.activeElement as HTMLButtonElement);
     if (index === -1) return;
 

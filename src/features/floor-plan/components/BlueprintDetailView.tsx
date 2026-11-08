@@ -1,12 +1,7 @@
 import { useMemo, useState } from 'react';
 import { ChevronRight, Pencil, Plus, QrCode as QrCodeIcon, Settings2 } from 'lucide-react';
 import type { VerticalPlugin } from '../core/plugin';
-import {
-  useCreateFloorPlan,
-  useCreateUnit,
-  useFloorPlans,
-  usePhysicalUnits,
-} from '../api/hooks';
+import { useCreateFloorPlan, useCreateUnit, useFloorPlans, usePhysicalUnits } from '../api/hooks';
 import { DEFAULT_PLAN } from '../api/useResolvedFloorPlan';
 import { defaultStateFor, stateMetaFor } from '../domain/states';
 import { AddPhysicalUnitModal, type UnitPlacementInput } from './AddPhysicalUnitModal';
@@ -16,12 +11,7 @@ import type { InventoryBlueprint, Vertical } from '../domain/types';
 import { getBlueprintPricing } from '../domain/pricing';
 import { useQrToken } from '@/features/orders';
 import { QrCode } from '@/components/ui/qr-code';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import type { FloorPlanVertical, PhysicalUnitDto } from '@/types';
 
 interface BlueprintDetailViewProps {
@@ -333,9 +323,7 @@ export function BlueprintDetailView({ plugin, blueprint, onBack }: BlueprintDeta
                         </div>
 
                         <p className="type-res-small mt-3 font-normal text-res-ink-muted">
-                          {unit.isReservable === false
-                            ? 'Closed for booking'
-                            : 'Open for booking'}
+                          {unit.isReservable === false ? 'Closed for booking' : 'Open for booking'}
                         </p>
 
                         <button

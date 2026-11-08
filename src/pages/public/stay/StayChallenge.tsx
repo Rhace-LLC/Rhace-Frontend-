@@ -11,7 +11,7 @@ interface Props {
 /** Phase 1 identity challenge: last name and/or 4-digit guest PIN. */
 const StayChallenge = ({ room, roomToken, onVerified }: Props) => {
   const [mode, setMode] = useState<'lastName' | 'pin'>(() =>
-    room?.challenge.includes('lastName') ? 'lastName' : 'pin',
+    room?.challenge.includes('lastName') ? 'lastName' : 'pin'
   );
   const [lastName, setLastName] = useState('');
   const [pin, setPin] = useState('');
@@ -29,7 +29,8 @@ const StayChallenge = ({ room, roomToken, onVerified }: Props) => {
       const result = await guestStayApi.challenge({
         roomToken,
         ...(mode === 'lastName' ? { lastName: lastName.trim() } : { pin }),
-        deviceLabel: typeof navigator !== 'undefined' ? navigator.userAgent.slice(0, 120) : undefined,
+        deviceLabel:
+          typeof navigator !== 'undefined' ? navigator.userAgent.slice(0, 120) : undefined,
       });
       onVerified(result);
     } catch {
@@ -45,9 +46,7 @@ const StayChallenge = ({ room, roomToken, onVerified }: Props) => {
         <p className="text-xs font-semibold tracking-widest text-slate-400 uppercase">
           {room?.hotelName ?? 'Welcome'}
         </p>
-        <h1 className="mt-1 text-2xl font-bold">
-          {room ? `Room ${room.roomLabel}` : 'Your stay'}
-        </h1>
+        <h1 className="mt-1 text-2xl font-bold">{room ? `Room ${room.roomLabel}` : 'Your stay'}</h1>
         <p className="mt-1 text-sm text-slate-500">
           Verify it&apos;s you to unlock ordering and your bill.
         </p>

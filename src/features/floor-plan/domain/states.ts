@@ -44,7 +44,9 @@ export function stateMetaFor(vertical: Vertical, state: string): StateMeta {
   return STATE_META[vertical][state] ?? { label: state, color: '#6b7280' };
 }
 
-export function stateOptions(vertical: Vertical): Array<{ value: string; label: string; color: string }> {
+export function stateOptions(
+  vertical: Vertical
+): Array<{ value: string; label: string; color: string }> {
   return Object.entries(STATE_META[vertical]).map(([value, meta]) => ({
     value,
     label: meta.label,

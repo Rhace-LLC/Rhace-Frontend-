@@ -13,7 +13,13 @@ interface Tile {
 }
 
 const TILES: Tile[] = [
-  { key: 'gross', label: 'Gross', hint: 'Everything customers paid you in this period.', money: true, goodWhenUp: true },
+  {
+    key: 'gross',
+    label: 'Gross',
+    hint: 'Everything customers paid you in this period.',
+    money: true,
+    goodWhenUp: true,
+  },
   {
     key: 'net',
     label: 'Net to you',
@@ -28,8 +34,20 @@ const TILES: Tile[] = [
     money: true,
     goodWhenUp: false,
   },
-  { key: 'refunds', label: 'Refunds', hint: 'Refunds paid back to guests in this period.', money: true, goodWhenUp: false },
-  { key: 'count', label: 'Transactions', hint: 'Successful payments in this period.', money: false, goodWhenUp: true },
+  {
+    key: 'refunds',
+    label: 'Refunds',
+    hint: 'Refunds paid back to guests in this period.',
+    money: true,
+    goodWhenUp: false,
+  },
+  {
+    key: 'count',
+    label: 'Transactions',
+    hint: 'Successful payments in this period.',
+    money: false,
+    goodWhenUp: true,
+  },
 ];
 
 export function KpiTiles({
@@ -61,21 +79,33 @@ export function KpiTiles({
           const currency = summary?.currency ?? 'NGN';
           const exact = tile.money ? formatMoney(value as number, currency) : String(value);
           return (
-            <li key={tile.key} className="rounded-res-lg bg-res-card p-4 shadow-res-low" title={tile.hint}>
+            <li
+              key={tile.key}
+              className="rounded-res-lg bg-res-card p-4 shadow-res-low"
+              title={tile.hint}
+            >
               <p className="type-res-small text-res-ink-muted">{tile.label}</p>
               {loading && !summary ? (
                 <Skeleton className="mt-2 h-8 w-24 rounded-res-sm" />
               ) : (
                 <p className="type-res-h2 mt-1 text-res-ink tabular-nums" title={exact}>
-                  {tile.money ? formatMoney(value as number, currency, { compact: true }) : formatCount(value as number)}
+                  {tile.money
+                    ? formatMoney(value as number, currency, { compact: true })
+                    : formatCount(value as number)}
                 </p>
               )}
               <div className="mt-1 flex flex-wrap items-center gap-x-2">
                 {summary && (
-                  <ChangeChip value={summary.change[tile.key]} goodWhenUp={tile.goodWhenUp} suffix={compareLabel} />
+                  <ChangeChip
+                    value={summary.change[tile.key]}
+                    goodWhenUp={tile.goodWhenUp}
+                    suffix={compareLabel}
+                  />
                 )}
                 {tile.key === 'count' && summary?.current.successRate !== null && summary && (
-                  <span className="type-res-caption text-res-ink-muted">· {summary.current.successRate}% succeeded</span>
+                  <span className="type-res-caption text-res-ink-muted">
+                    · {summary.current.successRate}% succeeded
+                  </span>
                 )}
               </div>
             </li>

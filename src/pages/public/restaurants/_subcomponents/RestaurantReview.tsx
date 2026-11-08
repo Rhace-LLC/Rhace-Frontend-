@@ -87,7 +87,11 @@ const RestaurantReviews = ({ restaurantId }: RestaurantReviewsProps) => {
         className="space-y-3 p-4 rounded-res-sm bg-res-secondary shadow-res-low"
       >
         <h3 className="font-semibold text-lg">Leave a Review</h3>
-        <StarRating rating={newRating} size={20} onChange={(value: number) => setNewRating(value)} />
+        <StarRating
+          rating={newRating}
+          size={20}
+          onChange={(value: number) => setNewRating(value)}
+        />
         <Textarea
           className="resize-none h-[100px] font-normal bg-res-surface border border-res-line rounded-res-sm w-full"
           placeholder="Write your review..."

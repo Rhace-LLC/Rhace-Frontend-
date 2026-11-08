@@ -41,16 +41,16 @@ function VerticalMeta({ blueprint }: { blueprint: InventoryBlueprint }) {
   if (blueprint.vertical === 'club' && blueprint.minimumSpend > 0) {
     return (
       <span className="type-res-small flex items-center gap-1.5 font-normal text-res-ink-muted">
-        <MapPin className="h-3.5 w-3.5 shrink-0 text-res-brand" />
-        ₦{blueprint.minimumSpend.toLocaleString()} minimum spend
+        <MapPin className="h-3.5 w-3.5 shrink-0 text-res-brand" />₦
+        {blueprint.minimumSpend.toLocaleString()} minimum spend
       </span>
     );
   }
   if (blueprint.vertical === 'restaurant' && blueprint.turnTimeMinutes) {
     return (
       <span className="type-res-small flex items-center gap-1.5 font-normal text-res-ink-muted">
-        <Clock className="h-3.5 w-3.5 shrink-0 text-res-brand" />
-        ~{blueprint.turnTimeMinutes} min seating
+        <Clock className="h-3.5 w-3.5 shrink-0 text-res-brand" />~{blueprint.turnTimeMinutes} min
+        seating
       </span>
     );
   }

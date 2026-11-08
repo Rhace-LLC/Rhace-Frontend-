@@ -19,8 +19,8 @@ const PspEventsFeed = () => {
         <div>
           <h2 className="font-semibold text-lg">Recent webhook deliveries</h2>
           <p className="text-sm text-muted-foreground">
-            Stripe events (verified + de-duplicated). Paystack/Monnify volume is visible in the
-            “via webhook” row above.
+            Stripe events (verified + de-duplicated). Paystack/Monnify volume is visible in the “via
+            webhook” row above.
           </p>
         </div>
       </div>
@@ -47,7 +47,9 @@ const PspEventsFeed = () => {
                   <td className="px-5 py-3">
                     <span
                       className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
-                        e.livemode ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-600'
+                        e.livemode
+                          ? 'bg-emerald-50 text-emerald-700'
+                          : 'bg-slate-100 text-slate-600'
                       }`}
                     >
                       {e.livemode ? 'live' : 'test'}

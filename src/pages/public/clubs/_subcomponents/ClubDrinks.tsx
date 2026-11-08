@@ -25,9 +25,7 @@ function getDrinkCategory(drink: VendorDrinkDto): string {
 function DrinkCard({ drink }: { drink: VendorDrinkDto }) {
   const category = getDrinkCategory(drink);
   const image = drink.images?.[0] || '';
-  const hasDeal = Boolean(
-    drink.discountPrice && drink.discountPrice < drink.price
-  );
+  const hasDeal = Boolean(drink.discountPrice && drink.discountPrice < drink.price);
   const salePrice = hasDeal ? drink.discountPrice! : drink.price;
   const offPct = hasDeal
     ? Math.round(((drink.price - drink.discountPrice!) / drink.price) * 100)
@@ -88,7 +86,8 @@ function DrinkCard({ drink }: { drink: VendorDrinkDto }) {
           </span>
           {addonCount > 0 ? (
             <span className="type-res-small flex items-center gap-1 rounded-full bg-res-surface px-2.5 py-1 font-medium text-res-ink-muted">
-              <Plus className="h-3 w-3" />{addonCount} mixer{addonCount > 1 ? 's' : ''}
+              <Plus className="h-3 w-3" />
+              {addonCount} mixer{addonCount > 1 ? 's' : ''}
             </span>
           ) : null}
         </div>
@@ -192,22 +191,16 @@ export default function ClubDrinks({ id }: { id?: string }) {
   }, [id]);
 
   const categories = useMemo(() => {
-    const names = Array.from(
-      new Set(drinks.map(getDrinkCategory).filter(Boolean))
-    );
+    const names = Array.from(new Set(drinks.map(getDrinkCategory).filter(Boolean)));
     return ['All', ...names];
   }, [drinks]);
 
   const filteredDrinks = useMemo(() => {
     const q = query.trim().toLowerCase();
     return drinks.filter((d) => {
-      if (activeCategory !== 'All' && getDrinkCategory(d) !== activeCategory)
-        return false;
+      if (activeCategory !== 'All' && getDrinkCategory(d) !== activeCategory) return false;
       if (!q) return true;
-      return (
-        d.name.toLowerCase().includes(q) ||
-        (d.description ?? '').toLowerCase().includes(q)
-      );
+      return d.name.toLowerCase().includes(q) || (d.description ?? '').toLowerCase().includes(q);
     });
   }, [drinks, query, activeCategory]);
 

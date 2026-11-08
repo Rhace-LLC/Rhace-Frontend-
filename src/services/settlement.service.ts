@@ -38,7 +38,12 @@ export interface SettlementBatchDto {
   status: BatchStatus;
   approvedAt?: string | null;
   approvedByName?: string | null;
-  payout?: { method?: string | null; reference?: string | null; paidAt?: string | null; recordedByName?: string | null };
+  payout?: {
+    method?: string | null;
+    reference?: string | null;
+    paidAt?: string | null;
+    recordedByName?: string | null;
+  };
   comments: BatchCommentDto[];
   createdAt: string;
 }
@@ -89,7 +94,12 @@ export interface ReconciliationReportDto {
     accruedNet: number;
     onlineOrders: number;
   };
-  issues: Array<{ code: string; order?: string | null; folioEntry?: string | null; detail: string }>;
+  issues: Array<{
+    code: string;
+    order?: string | null;
+    folioEntry?: string | null;
+    detail: string;
+  }>;
   ranAt: string;
 }
 
@@ -109,11 +119,13 @@ class SettlementApi {
   }
   async batch(id: string) {
     return unwrap<{ batch: SettlementBatchDto; side: SettlementSide; rows: BatchRowDto[] }>(
-      await api.get(`/settlements/batches/${id}`),
+      await api.get(`/settlements/batches/${id}`)
     );
   }
   async generate(linkId?: string) {
-    return unwrap<SettlementBatchDto[]>(await api.post('/settlements/batches/generate', linkId ? { linkId } : {}));
+    return unwrap<SettlementBatchDto[]>(
+      await api.post('/settlements/batches/generate', linkId ? { linkId } : {})
+    );
   }
   async approve(id: string) {
     return unwrap<SettlementBatchDto>(await api.post(`/settlements/batches/${id}/approve`));
@@ -122,20 +134,28 @@ class SettlementApi {
     return unwrap<SettlementBatchDto>(await api.post(`/settlements/batches/${id}/paid`, input));
   }
   async dispute(id: string, comment: string) {
-    return unwrap<SettlementBatchDto>(await api.post(`/settlements/batches/${id}/dispute`, { comment }));
+    return unwrap<SettlementBatchDto>(
+      await api.post(`/settlements/batches/${id}/dispute`, { comment })
+    );
   }
   async resolve(id: string, comment: string) {
-    return unwrap<SettlementBatchDto>(await api.post(`/settlements/batches/${id}/resolve`, { comment }));
+    return unwrap<SettlementBatchDto>(
+      await api.post(`/settlements/batches/${id}/resolve`, { comment })
+    );
   }
   async comment(id: string, body: string) {
-    return unwrap<SettlementBatchDto>(await api.post(`/settlements/batches/${id}/comments`, { body }));
+    return unwrap<SettlementBatchDto>(
+      await api.post(`/settlements/batches/${id}/comments`, { body })
+    );
   }
   async adjustment(input: { linkId: string; amount: number; note: string }) {
     return unwrap<unknown>(await api.post('/settlements/adjustments', input));
   }
   /** Download a batch statement as CSV. */
   async downloadStatement(batch: Pick<SettlementBatchDto, '_id' | 'batchNo'>) {
-    const res = await api.get(`/settlements/batches/${batch._id}/statement.csv`, { responseType: 'blob' });
+    const res = await api.get(`/settlements/batches/${batch._id}/statement.csv`, {
+      responseType: 'blob',
+    });
     const url = URL.createObjectURL(res.data as Blob);
     const a = document.createElement('a');
     a.href = url;
@@ -147,21 +167,34 @@ class SettlementApi {
   }
   async outletRevenue(params: { from?: string; to?: string; linkId?: string }) {
     return unwrap<{ side: SettlementSide; from: string; to: string; rows: OutletRevenueRow[] }>(
-      await api.get('/settlements/reports/outlet-revenue', { params }),
+      await api.get('/settlements/reports/outlet-revenue', { params })
     );
   }
   async folioPostings(date?: string) {
     return unwrap<{
       date: string;
       groups: Array<{ revenueCode: string; count: number; amount: number }>;
-      entries: Array<{ _id: string; type: string; amount: number; revenueCode: string; description?: string; postedAt: string }>;
-    }>(await api.get('/settlements/reports/folio-postings', { params: date ? { date } : undefined }));
+      entries: Array<{
+        _id: string;
+        type: string;
+        amount: number;
+        revenueCode: string;
+        description?: string;
+        postedAt: string;
+      }>;
+    }>(
+      await api.get('/settlements/reports/folio-postings', { params: date ? { date } : undefined })
+    );
   }
   async reconciliation(params?: { from?: string; to?: string; status?: string }) {
-    return unwrap<ReconciliationReportDto[]>(await api.get('/settlements/reconciliation', { params }));
+    return unwrap<ReconciliationReportDto[]>(
+      await api.get('/settlements/reconciliation', { params })
+    );
   }
   async runReconciliation(date: string) {
-    return unwrap<ReconciliationReportDto[]>(await api.post('/settlements/reconciliation/run', { date }));
+    return unwrap<ReconciliationReportDto[]>(
+      await api.post('/settlements/reconciliation/run', { date })
+    );
   }
 }
 

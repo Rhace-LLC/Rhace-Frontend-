@@ -8,7 +8,9 @@ import {
 } from '@/services/admin.service';
 
 const moneyFor = (value: number, currency: string) =>
-  currency === 'NGN' ? `₦${Number(value || 0).toLocaleString()}` : `${currency} ${Number(value || 0).toLocaleString()}`;
+  currency === 'NGN'
+    ? `₦${Number(value || 0).toLocaleString()}`
+    : `${currency} ${Number(value || 0).toLocaleString()}`;
 
 const PspReviewQueue = () => {
   const [items, setItems] = useState<ReviewQueueItem[]>([]);
@@ -80,7 +82,9 @@ const PspReviewQueue = () => {
               <tr key={item.paymentId} className="border-t">
                 <td className="px-5 py-3 font-mono text-xs">…{item.paymentId.slice(-8)}</td>
                 <td className="px-5 py-3 capitalize">{item.provider ?? '—'}</td>
-                <td className="px-5 py-3 font-medium">{moneyFor(item.amountPaid, item.currency)}</td>
+                <td className="px-5 py-3 font-medium">
+                  {moneyFor(item.amountPaid, item.currency)}
+                </td>
                 <td className="px-5 py-3 max-w-xs truncate" title={item.reviewReason ?? ''}>
                   {item.reviewReason ?? '—'}
                 </td>

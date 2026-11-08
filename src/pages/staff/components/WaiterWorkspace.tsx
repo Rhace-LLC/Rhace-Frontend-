@@ -174,7 +174,7 @@ export default function WaiterWorkspace() {
       const docs = plansRes.data?.items ?? [];
       setPlans(docs);
       setPlanId((current) =>
-        current && docs.some((d) => d._id === current) ? current : (docs[0]?._id ?? ''),
+        current && docs.some((d) => d._id === current) ? current : (docs[0]?._id ?? '')
       );
       setAssignments(assigns.docs ?? []);
       setOrders(mine.items ?? []);
@@ -233,7 +233,7 @@ export default function WaiterWorkspace() {
 
   const assignedIds = useMemo(
     () => new Set(assignments.map((a) => assignmentUnitId(a.refId))),
-    [assignments],
+    [assignments]
   );
 
   const assignedKey = useMemo(() => [...assignedIds].sort().join(','), [assignedIds]);
@@ -295,18 +295,17 @@ export default function WaiterWorkspace() {
       if (onMyTable || isMine) merged.push(order);
     }
     return merged.sort(
-      (a, b) =>
-        new Date(a.createdAt ?? 0).getTime() - new Date(b.createdAt ?? 0).getTime(),
+      (a, b) => new Date(a.createdAt ?? 0).getTime() - new Date(b.createdAt ?? 0).getTime()
     );
   }, [orders, venueOrders, assignedIds, myStaffId]);
 
   const activeOrders = useMemo(
     () => tableOrders.filter((o) => ACTIVE_STATUSES.has(o.status)),
-    [tableOrders],
+    [tableOrders]
   );
   const completedOrders = useMemo(
     () => tableOrders.filter((o) => o.status === 'completed'),
-    [tableOrders],
+    [tableOrders]
   );
   const visibleOrders = orderTab === 'active' ? activeOrders : completedOrders;
 
@@ -327,7 +326,7 @@ export default function WaiterWorkspace() {
           ? 'Order confirmed — sent to the kitchen'
           : next === 'served'
             ? 'Order marked as served'
-            : 'Order completed',
+            : 'Order completed'
       );
     } catch {
       toast.error('Failed to update order');
@@ -560,8 +559,8 @@ export default function WaiterWorkspace() {
           </div>
         </div>
         <p className="type-res-small mt-1 font-normal text-res-ink-muted">
-          Orders on your tables — yours and your guests&apos;. Mark them served at the
-          table, completed when guests leave.
+          Orders on your tables — yours and your guests&apos;. Mark them served at the table,
+          completed when guests leave.
         </p>
 
         <div className="mt-4">
@@ -830,10 +829,17 @@ export default function WaiterWorkspace() {
                 onClick={() => unit && openPad(unit)}
                 disabled={!unit}
                 className="type-res-small flex cursor-pointer items-center gap-1.5 rounded-full bg-res-card px-3.5 py-2 font-semibold text-res-ink shadow-res-low transition-colors outline-none hover:text-res-brand focus-visible:ring-2 focus-visible:ring-res-brand disabled:cursor-not-allowed disabled:opacity-60"
-                title={unit ? 'Open order pad' : a.label || assignmentUnit(a.refId)?.label || assignmentUnitId(a.refId)}
+                title={
+                  unit
+                    ? 'Open order pad'
+                    : a.label || assignmentUnit(a.refId)?.label || assignmentUnitId(a.refId)
+                }
               >
                 <span className={`h-2 w-2 rounded-full ${stateChip(unit?.state ?? '')}`} />
-                {a.label || unit?.label || assignmentUnit(a.refId)?.label || assignmentUnitId(a.refId)}
+                {a.label ||
+                  unit?.label ||
+                  assignmentUnit(a.refId)?.label ||
+                  assignmentUnitId(a.refId)}
                 <span className="font-normal text-res-ink-muted">· order</span>
               </button>
             );
@@ -850,7 +856,8 @@ export default function WaiterWorkspace() {
         <div>
           <h2 className="type-res-body text-res-ink font-semibold">Order for a booking</h2>
           <p className="type-res-small text-res-ink-muted">
-            Look up a booking by code and take the order at the table. Deposit credit applies automatically.
+            Look up a booking by code and take the order at the table. Deposit credit applies
+            automatically.
           </p>
         </div>
         <Search className="h-5 w-5 text-res-ink" />
@@ -922,8 +929,8 @@ export default function WaiterWorkspace() {
             >
               <div className="space-y-3">
                 <p className="type-res-small font-normal text-res-ink-muted">
-                  Verify the table and items with the guest — confirming sends this
-                  order straight to the kitchen queue.
+                  Verify the table and items with the guest — confirming sends this order straight
+                  to the kitchen queue.
                 </p>
                 {lines.length > 0 && (
                   <ul className="rounded-res-md bg-res-surface p-3">
@@ -949,8 +956,8 @@ export default function WaiterWorkspace() {
                 </div>
                 {confirmTarget.balance > 0 && (
                   <p className="type-res-small font-medium text-res-brand">
-                    {money(confirmTarget.balance)} still to pay — collect it or record it
-                    after confirming.
+                    {money(confirmTarget.balance)} still to pay — collect it or record it after
+                    confirming.
                   </p>
                 )}
               </div>
@@ -986,8 +993,8 @@ export default function WaiterWorkspace() {
           }
         >
           <p className="type-res-small font-normal text-res-ink-muted">
-            This removes the order from your board. Use it for dead orders — no-shows,
-            duplicates or misfires. The linked booking, if any, is left untouched.
+            This removes the order from your board. Use it for dead orders — no-shows, duplicates or
+            misfires. The linked booking, if any, is left untouched.
           </p>
         </Modal>
       )}
@@ -996,18 +1003,18 @@ export default function WaiterWorkspace() {
         isOpen={!!payOrder}
         orderId={payOrder?._id}
         bookingLabel={
-          payOrder
-            ? `${payOrder.guestName || 'Order'} · ${unitLabel(payOrder.unitId)}`
-            : undefined
+          payOrder ? `${payOrder.guestName || 'Order'} · ${unitLabel(payOrder.unitId)}` : undefined
         }
         dueAmount={payOrder?.balance}
         onClose={() => setPayOrder(null)}
         onSuccess={(response) => {
           const updated = (response as { data?: { order?: OrderDto } })?.data?.order;
           if (updated) {
-            setOrders((prev) => prev.map((o) => (o._id === updated._id ? { ...o, ...updated } : o)));
+            setOrders((prev) =>
+              prev.map((o) => (o._id === updated._id ? { ...o, ...updated } : o))
+            );
             setVenueOrders((prev) =>
-              prev.map((o) => (o._id === updated._id ? { ...o, ...updated } : o)),
+              prev.map((o) => (o._id === updated._id ? { ...o, ...updated } : o))
             );
           }
           toast.success('Payment recorded');
@@ -1091,12 +1098,15 @@ export default function WaiterWorkspace() {
                   {bookingLookupResult.guestName}
                 </p>
                 <p className="type-res-small text-res-ink-muted">
-                  {bookingLookupResult.partySize} guest{bookingLookupResult.partySize !== 1 ? 's' : ''}
-                  · {bookingLookupResult.unit?.label || 'Table not assigned'}
+                  {bookingLookupResult.partySize} guest
+                  {bookingLookupResult.partySize !== 1 ? 's' : ''}·{' '}
+                  {bookingLookupResult.unit?.label || 'Table not assigned'}
                 </p>
               </div>
               <span className="type-res-small font-semibold text-res-ink">
-                {bookingLookupResult.depositCredit.available > 0 ? money(bookingLookupResult.depositCredit.available) + ' deposit credit' : 'No deposit credit'}
+                {bookingLookupResult.depositCredit.available > 0
+                  ? money(bookingLookupResult.depositCredit.available) + ' deposit credit'
+                  : 'No deposit credit'}
               </span>
             </div>
             {bookingLookupResult.orders.length > 0 && (
@@ -1121,25 +1131,25 @@ export default function WaiterWorkspace() {
                 </ul>
               </div>
             )}
-              <div className="flex items-end gap-2">
-                <Button
-                  type="button"
-                  onClick={() => setBookingLookupOpen(false)}
-                  variant="outline"
-                  className="rounded-res-md border border-res-line bg-res-card px-4 py-2.5 font-medium text-res-ink shadow-res-low hover:bg-res-surface"
-                >
-                  Cancel
-                </Button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setBookingLookupOpen(false);
-                  }}
-                  className="rounded-res-md bg-res-brand px-4 py-2.5 font-semibold text-res-ink-inverted shadow-res-low hover:bg-res-brand-hover"
-                >
-                  Start order
-                </button>
-              </div>
+            <div className="flex items-end gap-2">
+              <Button
+                type="button"
+                onClick={() => setBookingLookupOpen(false)}
+                variant="outline"
+                className="rounded-res-md border border-res-line bg-res-card px-4 py-2.5 font-medium text-res-ink shadow-res-low hover:bg-res-surface"
+              >
+                Cancel
+              </Button>
+              <button
+                type="button"
+                onClick={() => {
+                  setBookingLookupOpen(false);
+                }}
+                className="rounded-res-md bg-res-brand px-4 py-2.5 font-semibold text-res-ink-inverted shadow-res-low hover:bg-res-brand-hover"
+              >
+                Start order
+              </button>
+            </div>
           </div>
         )}
       </Modal>

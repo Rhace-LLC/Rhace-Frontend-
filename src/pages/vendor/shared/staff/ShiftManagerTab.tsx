@@ -13,12 +13,7 @@ import {
   Users,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
   Select,
   SelectContent,
@@ -99,7 +94,7 @@ export function ShiftManagerTab({
   // Staff currently clocked in — drives the board's clock-in dots (B5 visibility).
   const onShiftIds = useMemo(
     () => new Set(liveShifts.map((s) => staffIdOf(s.staff))),
-    [liveShifts],
+    [liveShifts]
   );
 
   const load = useCallback(async () => {
@@ -142,33 +137,33 @@ export function ShiftManagerTab({
     onRefresh?.();
   };
 
-  const staffOptions = useMemo(
-    () => staff.filter((s) => s.status !== 'suspended'),
-    [staff],
-  );
+  const staffOptions = useMemo(() => staff.filter((s) => s.status !== 'suspended'), [staff]);
 
-  const loadUnitsForBlueprint = useCallback(async (blueprintId: string) => {
-    if (!blueprintId || floorPlans.length === 0) {
-      setUnits([]);
-      return;
-    }
-    try {
-      setLoadingUnits(true);
-      // Find the first floor plan for this vertical and use it to fetch units
-      const planId = floorPlans[0]?._id;
-      if (!planId) {
+  const loadUnitsForBlueprint = useCallback(
+    async (blueprintId: string) => {
+      if (!blueprintId || floorPlans.length === 0) {
         setUnits([]);
         return;
       }
-      const unitsRes = await physicalUnitService.list(planId, { blueprintId, limit: 200 });
-      setUnits(unitsRes.data?.items || []);
-    } catch (error) {
-      console.error('Failed to load units:', error);
-      setUnits([]);
-    } finally {
-      setLoadingUnits(false);
-    }
-  }, [floorPlans]);
+      try {
+        setLoadingUnits(true);
+        // Find the first floor plan for this vertical and use it to fetch units
+        const planId = floorPlans[0]?._id;
+        if (!planId) {
+          setUnits([]);
+          return;
+        }
+        const unitsRes = await physicalUnitService.list(planId, { blueprintId, limit: 200 });
+        setUnits(unitsRes.data?.items || []);
+      } catch (error) {
+        console.error('Failed to load units:', error);
+        setUnits([]);
+      } finally {
+        setLoadingUnits(false);
+      }
+    },
+    [floorPlans]
+  );
 
   useEffect(() => {
     if (selectedBlueprintId) {
@@ -209,7 +204,7 @@ export function ShiftManagerTab({
     } catch (error) {
       toast.error(
         (error as { response?: { data?: { message?: string } } })?.response?.data?.message ||
-          'Failed to add assignment',
+          'Failed to add assignment'
       );
     } finally {
       setIsSaving(false);
@@ -241,7 +236,7 @@ export function ShiftManagerTab({
     } catch (error) {
       toast.error(
         (error as { response?: { data?: { message?: string } } })?.response?.data?.message ||
-          'Action failed',
+          'Action failed'
       );
     } finally {
       setDialogBusy(false);
@@ -256,7 +251,7 @@ export function ShiftManagerTab({
     } catch (error) {
       toast.error(
         (error as { response?: { data?: { message?: string } } })?.response?.data?.message ||
-          'Failed to release slot',
+          'Failed to release slot'
       );
     }
   };
@@ -288,12 +283,18 @@ export function ShiftManagerTab({
           </div>
           <div>
             <h1 className="text-[22px] font-bold text-[#111827] leading-tight">Roster Date</h1>
-            <p className="text-[11px] text-[#8C94A0]">Manage shifts and assignments for this period</p>
+            <p className="text-[11px] text-[#8C94A0]">
+              Manage shifts and assignments for this period
+            </p>
           </div>
         </div>
         <div className="flex items-center gap-3">
           <Button variant="outline" onClick={handleRefresh} disabled={isLoading}>
-            {isLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <RefreshCw className="w-4 h-4 mr-2" />}
+            {isLoading ? (
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            ) : (
+              <RefreshCw className="w-4 h-4 mr-2" />
+            )}
             Refresh
           </Button>
           <div className="relative">
@@ -398,9 +399,7 @@ export function ShiftManagerTab({
                     </span>
                     <span
                       className={`text-[10px] font-semibold px-3 py-1 rounded-full ${
-                        isOpen
-                          ? 'bg-[#00A86B]/15 text-[#00A86B]'
-                          : 'bg-[#8C94A0]/15 text-[#111827]'
+                        isOpen ? 'bg-[#00A86B]/15 text-[#00A86B]' : 'bg-[#8C94A0]/15 text-[#111827]'
                       }`}
                     >
                       {isOpen ? 'On shift' : `${shift.minutesWorked ?? 0} min`}
@@ -424,8 +423,8 @@ export function ShiftManagerTab({
           </div>
           <div className="flex items-center gap-2 text-[12px] font-medium text-[#8C94A0]">
             <Users className="h-4 w-4 text-[#0A6C6D]" />
-            {boardSummary.totalUnits} units · {boardSummary.assigned} assigned ·{' '}
-            {boardSummary.open} open
+            {boardSummary.totalUnits} units · {boardSummary.assigned} assigned · {boardSummary.open}{' '}
+            open
           </div>
         </div>
 
@@ -448,8 +447,8 @@ export function ShiftManagerTab({
                   key={group.refId}
                   className={`rounded-[20px] p-4 border transition-all duration-200 ${
                     unassigned
-                      // Distinct border so open units are spotted instantly (§6.1).
-                      ? 'border-dashed border-amber-400/70 bg-amber-50/50'
+                      ? // Distinct border so open units are spotted instantly (§6.1).
+                        'border-dashed border-amber-400/70 bg-amber-50/50'
                       : 'border-[#F0F2F5] bg-[#F6F7F9]'
                   }`}
                 >
@@ -495,7 +494,11 @@ export function ShiftManagerTab({
                                 ? 'bg-[#00A86B]'
                                 : 'bg-[#C4CBD4]'
                             }`}
-                            title={isOnShift(onShiftIds, group.lead.staff) ? 'On shift' : 'Not clocked in'}
+                            title={
+                              isOnShift(onShiftIds, group.lead.staff)
+                                ? 'On shift'
+                                : 'Not clocked in'
+                            }
                           />
                           <span className="text-[13px] font-semibold text-[#111827] truncate">
                             {assignmentStaffName(group.lead.staff)}
@@ -592,7 +595,9 @@ export function ShiftManagerTab({
                       }
                       disabled={full}
                       className="mt-2.5 w-full rounded-[12px] border border-dashed border-[#C4CBD4] py-1.5 text-[11px] font-semibold text-[#8C94A0] hover:text-[#0A6C6D] hover:border-[#0A6C6D]/40 transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:text-[#8C94A0] disabled:hover:border-[#C4CBD4]"
-                      title={full ? `Unit is at its maximum of ${group.capacity}` : 'Add a support slot'}
+                      title={
+                        full ? `Unit is at its maximum of ${group.capacity}` : 'Add a support slot'
+                      }
                     >
                       + Add helper
                     </button>
@@ -631,8 +636,7 @@ export function ShiftManagerTab({
               <SelectContent>
                 {staffOptions.map((s) => (
                   <SelectItem key={s._id} value={s._id}>
-                    {s.name} ({s.role})
-                    {!onShiftIds.has(s._id) ? ' · not clocked in' : ''}
+                    {s.name} ({s.role}){!onShiftIds.has(s._id) ? ' · not clocked in' : ''}
                   </SelectItem>
                 ))}
               </SelectContent>

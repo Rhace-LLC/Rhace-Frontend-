@@ -3,7 +3,14 @@ import { Link } from 'react-router';
 import type { ReportParams } from '@/services/payment.service';
 import { formatMoney } from '@/utils/money';
 import { useTransactions } from '../report/queries';
-import { CardSkeleton, EmptyState, ErrorState, ProviderBadge, ReportCard, StatusPill } from '../report/ui';
+import {
+  CardSkeleton,
+  EmptyState,
+  ErrorState,
+  ProviderBadge,
+  ReportCard,
+  StatusPill,
+} from '../report/ui';
 import PaymentDetailsDialog from './PaymentDetailDialog';
 
 const when = (iso: string) =>
@@ -25,7 +32,10 @@ export function RecentTransactions({ params, allHref }: { params: ReportParams; 
     <ReportCard
       title="Recent transactions"
       actions={
-        <Link to={allHref} className="type-res-small font-semibold text-res-brand hover:text-res-brand-hover">
+        <Link
+          to={allHref}
+          className="type-res-small font-semibold text-res-brand hover:text-res-brand-hover"
+        >
           View all →
         </Link>
       }
@@ -46,7 +56,9 @@ export function RecentTransactions({ params, allHref }: { params: ReportParams; 
                 className="flex w-full cursor-pointer flex-wrap items-center gap-x-4 gap-y-1 py-3 text-left hover:bg-res-surface md:px-2"
               >
                 <div className="min-w-0 flex-1">
-                  <p className="type-res-small truncate font-semibold text-res-ink">{row.customerName}</p>
+                  <p className="type-res-small truncate font-semibold text-res-ink">
+                    {row.customerName}
+                  </p>
                   <p className="type-res-caption text-res-ink-muted">{when(row.at)}</p>
                 </div>
                 <div className="flex items-center gap-1.5">

@@ -92,10 +92,7 @@ export interface RestaurantTableBlueprint extends InventoryBlueprintBase {
   turnTimeMinutes?: number;
 }
 
-export type InventoryBlueprint =
-  | HotelRoomBlueprint
-  | ClubTableBlueprint
-  | RestaurantTableBlueprint;
+export type InventoryBlueprint = HotelRoomBlueprint | ClubTableBlueprint | RestaurantTableBlueprint;
 
 // ─── Operational state machines ───────────────────────────────────────────────
 
@@ -194,12 +191,7 @@ export interface CanvasStructure {
 // ─── Reservations ─────────────────────────────────────────────────────────────
 
 export type ReservationStatus =
-  | 'pending_payment'
-  | 'upcoming'
-  | 'active'
-  | 'completed'
-  | 'cancelled'
-  | 'no_show';
+  'pending_payment' | 'upcoming' | 'active' | 'completed' | 'cancelled' | 'no_show';
 
 export interface ReservationLock {
   token: string;

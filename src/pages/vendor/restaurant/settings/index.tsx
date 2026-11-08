@@ -1,4 +1,3 @@
-
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
@@ -51,131 +50,131 @@ const RestaurantSettings = () => {
 
   return (
     <div className="min-h-screen p-4 md:p-6">
-        <div className="space-y-6">
-          <DashboardPageHeader
-            title="Restaurant Settings"
-            subtitle="Manage your restaurant profile and contact details"
-          />
-          {/* Main Grid Content */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Left Column: Business Info */}
-            <div className="space-y-6">
-              <Card className="p-6 rounded-res-lg border border-res-line bg-res-card shadow-res-low">
-                <div className="flex justify-between items-center mb-6">
-                  <h2 className="type-res-h2 text-res-ink">Business Information</h2>
-                  <Edit3 className="w-5 h-5 text-res-ink-muted cursor-pointer" />
-                </div>
+      <div className="space-y-6">
+        <DashboardPageHeader
+          title="Restaurant Settings"
+          subtitle="Manage your restaurant profile and contact details"
+        />
+        {/* Main Grid Content */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Left Column: Business Info */}
+          <div className="space-y-6">
+            <Card className="p-6 rounded-res-lg border border-res-line bg-res-card shadow-res-low">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="type-res-h2 text-res-ink">Business Information</h2>
+                <Edit3 className="w-5 h-5 text-res-ink-muted cursor-pointer" />
+              </div>
 
-                <div className="space-y-5">
-                  <div>
-                    <label className="type-res-small font-medium text-res-ink-muted mb-1.5 block uppercase tracking-wider">
-                      Business name
-                    </label>
-                    <div className="relative">
-                      <Input
-                        value={formData.businessName}
-                        onChange={(e) => updateField('businessName', e.target.value)}
-                        className="bg-res-surface border-res-line h-12 rounded-res-sm focus:bg-res-card transition-all"
-                      />
-                      <span className="absolute right-3 top-3 text-[10px] text-res-ink-muted">
-                        0/50
-                      </span>
-                    </div>
+              <div className="space-y-5">
+                <div>
+                  <label className="type-res-small font-medium text-res-ink-muted mb-1.5 block uppercase tracking-wider">
+                    Business name
+                  </label>
+                  <div className="relative">
+                    <Input
+                      value={formData.businessName}
+                      onChange={(e) => updateField('businessName', e.target.value)}
+                      className="bg-res-surface border-res-line h-12 rounded-res-sm focus:bg-res-card transition-all"
+                    />
+                    <span className="absolute right-3 top-3 text-[10px] text-res-ink-muted">
+                      0/50
+                    </span>
                   </div>
                 </div>
-              </Card>
+              </div>
+            </Card>
 
-              {/* Logo Upload Section */}
-              <BusinessLogo
-                value={value}
-                onChange={(e) => {
-                  setValue(e);
-                  updateField('logo', e);
-                }}
+            {/* Logo Upload Section */}
+            <BusinessLogo
+              value={value}
+              onChange={(e) => {
+                setValue(e);
+                updateField('logo', e);
+              }}
+            />
+
+            {/* Photo Gallery */}
+            <Card className="p-6 rounded-res-lg border border-res-line bg-res-card shadow-res-low">
+              <div className="flex items-center gap-2 mb-1">
+                <h2 className="type-res-h2 text-res-ink">Photo Gallery</h2>
+              </div>
+              <p className="type-res-small font-normal text-res-ink-muted mb-4">
+                Photos customers see on your listing. Changes save with the page.
+              </p>
+              <GalleryEditor
+                value={formData.profileImages}
+                onChange={(urls) => updateField('profileImages', urls)}
+                hint="Showcase your space, dishes and atmosphere. High-quality landscape photos work best."
               />
-
-              {/* Photo Gallery */}
-              <Card className="p-6 rounded-res-lg border border-res-line bg-res-card shadow-res-low">
-                <div className="flex items-center gap-2 mb-1">
-                  <h2 className="type-res-h2 text-res-ink">Photo Gallery</h2>
-                </div>
-                <p className="type-res-small font-normal text-res-ink-muted mb-4">
-                  Photos customers see on your listing. Changes save with the page.
-                </p>
-                <GalleryEditor
-                  value={formData.profileImages}
-                  onChange={(urls) => updateField('profileImages', urls)}
-                  hint="Showcase your space, dishes and atmosphere. High-quality landscape photos work best."
-                />
-              </Card>
-            </div>
-
-            {/* Right Column: Contact Info */}
-            <div className="space-y-6">
-              <Card className="p-6 rounded-res-lg border border-res-line bg-res-card shadow-res-low h-fit">
-                <div className="flex justify-between items-center mb-6">
-                  <h2 className="type-res-h2 text-res-ink">Contact Information</h2>
-                  <Edit3 className="w-5 h-5 text-res-ink-muted cursor-pointer" />
-                </div>
-
-                <div className="space-y-5">
-                  <div>
-                    <label className="type-res-small font-medium text-res-ink-muted mb-1.5 block uppercase tracking-wider">
-                      Support Contact Email<span className="text-red-500">*</span>
-                    </label>
-                    <div className="relative">
-                      <Input
-                        value={formData.email}
-                        className="bg-res-surface border-res-line h-12 pl-4 pr-10 rounded-res-sm"
-                        onChange={(e) => updateField('email', e.target.value)}
-                      />
-                      <MailIcon className="absolute right-3 top-3.5 w-5 h-5 text-res-ink-muted" />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="type-res-small font-medium text-res-ink-muted mb-1.5 block uppercase tracking-wider">
-                      Support Phone Number<span className="text-red-500">*</span>
-                    </label>
-                    <div className="relative">
-                      <Input
-                        value={formData.phone}
-                        className="bg-res-surface border-res-line h-12 pl-4 pr-10 rounded-res-sm"
-                        onChange={(e) => updateField('phone', e.target.value)}
-                      />
-                      <PhoneIcon className="absolute right-3 top-3.5 w-5 h-5 text-res-ink-muted" />
-                    </div>
-                  </div>
-                </div>
-              </Card>
-            </div>
+            </Card>
           </div>
 
-              {/* Payment settings live on their own page */}
+          {/* Right Column: Contact Info */}
+          <div className="space-y-6">
+            <Card className="p-6 rounded-res-lg border border-res-line bg-res-card shadow-res-low h-fit">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="type-res-h2 text-res-ink">Contact Information</h2>
+                <Edit3 className="w-5 h-5 text-res-ink-muted cursor-pointer" />
+              </div>
 
-              <PaymentSettingsLink />
+              <div className="space-y-5">
+                <div>
+                  <label className="type-res-small font-medium text-res-ink-muted mb-1.5 block uppercase tracking-wider">
+                    Support Contact Email<span className="text-red-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <Input
+                      value={formData.email}
+                      className="bg-res-surface border-res-line h-12 pl-4 pr-10 rounded-res-sm"
+                      onChange={(e) => updateField('email', e.target.value)}
+                    />
+                    <MailIcon className="absolute right-3 top-3.5 w-5 h-5 text-res-ink-muted" />
+                  </div>
+                </div>
 
-              {/* Footer Actions */}
-              <div className="flex justify-end gap-3 pt-6 border-t border-res-line">
-            <button
-              type="button"
-              onClick={() => setFormData(vendor)}
-              className="type-res-small inline-flex cursor-pointer items-center rounded-full bg-res-card px-8 py-3 font-semibold text-res-ink shadow-res-low transition-all outline-none hover:text-res-brand hover:shadow-res-medium focus-visible:ring-2 focus-visible:ring-res-brand"
-            >
-              Reset to Default
-            </button>
-            <button
-              type="button"
-              onClick={handleSubmit}
-              disabled={isLoading}
-              className="type-res-small inline-flex cursor-pointer items-center rounded-full bg-res-brand px-8 py-3 font-semibold text-res-ink-inverted shadow-res-low transition-all outline-none hover:shadow-res-medium focus-visible:ring-2 focus-visible:ring-res-brand disabled:cursor-wait disabled:opacity-60"
-            >
-              {isLoading ? 'Saving...' : 'Save Changes'}
-            </button>
+                <div>
+                  <label className="type-res-small font-medium text-res-ink-muted mb-1.5 block uppercase tracking-wider">
+                    Support Phone Number<span className="text-red-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <Input
+                      value={formData.phone}
+                      className="bg-res-surface border-res-line h-12 pl-4 pr-10 rounded-res-sm"
+                      onChange={(e) => updateField('phone', e.target.value)}
+                    />
+                    <PhoneIcon className="absolute right-3 top-3.5 w-5 h-5 text-res-ink-muted" />
+                  </div>
+                </div>
+              </div>
+            </Card>
           </div>
         </div>
+
+        {/* Payment settings live on their own page */}
+
+        <PaymentSettingsLink />
+
+        {/* Footer Actions */}
+        <div className="flex justify-end gap-3 pt-6 border-t border-res-line">
+          <button
+            type="button"
+            onClick={() => setFormData(vendor)}
+            className="type-res-small inline-flex cursor-pointer items-center rounded-full bg-res-card px-8 py-3 font-semibold text-res-ink shadow-res-low transition-all outline-none hover:text-res-brand hover:shadow-res-medium focus-visible:ring-2 focus-visible:ring-res-brand"
+          >
+            Reset to Default
+          </button>
+          <button
+            type="button"
+            onClick={handleSubmit}
+            disabled={isLoading}
+            className="type-res-small inline-flex cursor-pointer items-center rounded-full bg-res-brand px-8 py-3 font-semibold text-res-ink-inverted shadow-res-low transition-all outline-none hover:shadow-res-medium focus-visible:ring-2 focus-visible:ring-res-brand disabled:cursor-wait disabled:opacity-60"
+          >
+            {isLoading ? 'Saving...' : 'Save Changes'}
+          </button>
+        </div>
       </div>
-    );
+    </div>
+  );
 };
 
 export default RestaurantSettings;

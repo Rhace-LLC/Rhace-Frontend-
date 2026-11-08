@@ -243,13 +243,13 @@ const BottleServiceManager = ({
     );
   };
 
-  const filteredDrinks = drinks.filter((drink: any) =>
-    String(drink.name ?? '')
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase())
-  ).filter(
-    (drink: any) => categoryFilter === 'All Category' || drink.category === categoryFilter
-  );
+  const filteredDrinks = drinks
+    .filter((drink: any) =>
+      String(drink.name ?? '')
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase())
+    )
+    .filter((drink: any) => categoryFilter === 'All Category' || drink.category === categoryFilter);
 
   useEffect(() => {
     const fetchDrinks = async () => {

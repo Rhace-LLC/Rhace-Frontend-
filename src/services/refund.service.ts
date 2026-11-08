@@ -51,7 +51,13 @@ const unwrap = <T>(response: { data: unknown }): T => {
 
 /** Refund tickets — refunds are paid offline (cash / bank transfer) and recorded here. */
 class RefundApi {
-  async list(params?: { status?: string; source?: string; page?: number; limit?: number; orderId?: string }) {
+  async list(params?: {
+    status?: string;
+    source?: string;
+    page?: number;
+    limit?: number;
+    orderId?: string;
+  }) {
     const res = await api.get('/refunds', { params });
     return res.data as RefundList;
   }
@@ -70,7 +76,7 @@ class RefundApi {
   }
   async complete(
     id: string,
-    input: { method: RefundMethod; reference?: string; note?: string; amount?: number },
+    input: { method: RefundMethod; reference?: string; note?: string; amount?: number }
   ): Promise<RefundTicketDto> {
     return unwrap<RefundTicketDto>(await api.patch(`/refunds/${id}/complete`, input));
   }

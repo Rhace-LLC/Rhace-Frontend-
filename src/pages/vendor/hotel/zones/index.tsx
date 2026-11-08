@@ -166,7 +166,9 @@ function OutletPicker({
 
 const roomCountText = (zone: DeliveryZoneDto) => {
   const picked = zone.unitIds.length;
-  const range = zone.labelRange?.from ? `rooms ${zone.labelRange.from}–${zone.labelRange.to}` : null;
+  const range = zone.labelRange?.from
+    ? `rooms ${zone.labelRange.from}–${zone.labelRange.to}`
+    : null;
   const parts = [
     zone.kind === 'rooms' ? 'Rooms' : 'Common area',
     picked > 0 ? `${picked} ${picked === 1 ? 'room' : 'rooms'} selected` : null,
@@ -405,8 +407,16 @@ export default function HotelZonesPage() {
                       >
                         {isEditing ? 'Close' : 'Outlets'}
                       </button>
-                      <button type="button" onClick={() => void toggleActive(zone)} className={PILL_QUIET}>
-                        {zone.active ? <Pause className="size-4" strokeWidth={1.75} /> : <Play className="size-4" strokeWidth={1.75} />}
+                      <button
+                        type="button"
+                        onClick={() => void toggleActive(zone)}
+                        className={PILL_QUIET}
+                      >
+                        {zone.active ? (
+                          <Pause className="size-4" strokeWidth={1.75} />
+                        ) : (
+                          <Play className="size-4" strokeWidth={1.75} />
+                        )}
                         {zone.active ? 'Pause' : 'Resume'}
                       </button>
                       <button
@@ -516,7 +526,11 @@ export default function HotelZonesPage() {
                   </Select>
                 </Field>
 
-                <Field label="Floor map" htmlFor="zone-plan" hint="Rooms are read from this floor map.">
+                <Field
+                  label="Floor map"
+                  htmlFor="zone-plan"
+                  hint="Rooms are read from this floor map."
+                >
                   <Select value={planId} onValueChange={setPlanId}>
                     <SelectTrigger id="zone-plan" className={FIELD_CLASS}>
                       <SelectValue placeholder="Select a floor map" />

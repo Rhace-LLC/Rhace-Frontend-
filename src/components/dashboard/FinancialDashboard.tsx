@@ -36,7 +36,11 @@ interface FinancialDashboardProps {
 
 const FinancialDashboard = ({ info }: FinancialDashboardProps) => {
   const [time, setTime] = useState('weekly');
-  const [trend, setTrends] = useState<TrendData>({ trends: [], totalEarnings: 0, percentChange: 0 });
+  const [trend, setTrends] = useState<TrendData>({
+    trends: [],
+    totalEarnings: 0,
+    percentChange: 0,
+  });
   const [loading, setLoading] = useState(false);
   const availableBalance = info.balance;
   const currencySymbol = '₦';
@@ -59,7 +63,10 @@ const FinancialDashboard = ({ info }: FinancialDashboardProps) => {
       const res = (await paymentService.getTrends({ range: time })) as TrendData;
       setTrends(res);
     } catch (error) {
-      toast.error((error as { response?: { message?: string } }).response?.message || 'Failed to fetch payment trends');
+      toast.error(
+        (error as { response?: { message?: string } }).response?.message ||
+          'Failed to fetch payment trends'
+      );
     } finally {
       setLoading(false);
     }
@@ -90,9 +97,7 @@ const FinancialDashboard = ({ info }: FinancialDashboardProps) => {
       <div className="flex-1 p-5 bg-white rounded-2xl border">
         <div className="flex justify-between items-start mb-5">
           <div>
-            <p className="text-xs text-gray-400 mt-1">
-              Last payment processed on {lastPayment}
-            </p>
+            <p className="text-xs text-gray-400 mt-1">Last payment processed on {lastPayment}</p>
           </div>
         </div>
 

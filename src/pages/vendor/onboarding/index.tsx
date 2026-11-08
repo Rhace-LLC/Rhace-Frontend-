@@ -220,8 +220,8 @@ const validateStep = (step: number, data: OnboardFormData) => {
   }
 
   let errLogs = { isValid: Object.keys(errors).length === 0, errors };
-//  console.log("======================== errors ========================");
-//  console.log(errLogs)
+  //  console.log("======================== errors ========================");
+  //  console.log(errLogs)
   return errLogs;
 };
 
@@ -306,12 +306,10 @@ export function Onboard() {
   };
 
   const removeImage = (imageUrl: string) => {
-  updateFormData({
-    profileImages: formData.profileImages.filter((img) => img !== imageUrl),
-  });
-};
-
-
+    updateFormData({
+      profileImages: formData.profileImages.filter((img) => img !== imageUrl),
+    });
+  };
 
   const handleImageUpload = useCallback(
     async (files: FileList) => {
@@ -361,7 +359,7 @@ export function Onboard() {
         profileImages: [...formData.profileImages, ...uploadedUrls],
       });
 
-setUploadProgress({});
+      setUploadProgress({});
     },
     [formData.profileImages]
   );
@@ -683,10 +681,12 @@ setUploadProgress({});
                     <Label className="text-base font-medium">
                       Business Photos (Upload at least 5)
                     </Label>
-                    <div className={cn(
-                      'border-2 border-dashed bg-white rounded-lg p-8 text-center hover:border-primary/50 transition-colors',
-                      errors.profileImages ? 'border-red-500' : 'border-border'
-                    )}>
+                    <div
+                      className={cn(
+                        'border-2 border-dashed bg-white rounded-lg p-8 text-center hover:border-primary/50 transition-colors',
+                        errors.profileImages ? 'border-red-500' : 'border-border'
+                      )}
+                    >
                       <Upload className="w-8 h-8 text-muted-foreground mx-auto mb-4" />
                       <p className="text-sm text-muted-foreground mb-4">
                         Drag and drop your images here, or click to browse
@@ -863,9 +863,7 @@ setUploadProgress({});
                         )}
                         aria-invalid={!!errors.phone}
                       />
-                      {errors.phone && (
-                        <p className="text-red-500 text-xs mt-1">{errors.phone}</p>
-                      )}
+                      {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
                     </div>
 
                     <div className="space-y-2">
@@ -952,7 +950,8 @@ setUploadProgress({});
                     >
                       <SelectTrigger
                         className={cn(
-                          errors.bankCode && 'border-red-500 focus:border-red-500 focus:ring-red-500'
+                          errors.bankCode &&
+                            'border-red-500 focus:border-red-500 focus:ring-red-500'
                         )}
                       >
                         {loading ? (
@@ -1148,9 +1147,7 @@ setUploadProgress({});
 
                       {/* Operating Days Selection */}
                       <div className="space-y-3">
-                        <Label className="text-base font-medium">
-                          Days Open
-                        </Label>
+                        <Label className="text-base font-medium">Days Open</Label>
                         <div className="grid grid-cols-4 sm:grid-cols-7 gap-2">
                           {DAYS_OF_WEEK.map((day) => {
                             const isSelected = formData.operatingDays.includes(day.value);
@@ -1328,9 +1325,7 @@ setUploadProgress({});
 
                       {/* Operating Days Selection */}
                       <div className="space-y-3">
-                        <Label className="text-base font-medium">
-                          Days Open
-                        </Label>
+                        <Label className="text-base font-medium">Days Open</Label>
                         <div className="grid grid-cols-4 sm:grid-cols-7 gap-2">
                           {DAYS_OF_WEEK.map((day) => {
                             const isSelected = formData.operatingDays.includes(day.value);
@@ -1391,7 +1386,8 @@ setUploadProgress({});
                         >
                           <SelectTrigger
                             className={cn(
-                              errors.ageLimit && 'border-red-500 focus:border-red-500 focus:ring-red-500'
+                              errors.ageLimit &&
+                                'border-red-500 focus:border-red-500 focus:ring-red-500'
                             )}
                           >
                             <SelectValue placeholder="Select age requirement" />
@@ -1508,9 +1504,7 @@ function TagInput({ label, placeholder, tags, onAdd, onRemove, error }: TagInput
           </div>
         </button>
       </div>
-      {error && (
-        <p className="text-red-500 text-xs mt-1">{error}</p>
-      )}
+      {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
       {tags.length > 0 && (
         <div className="flex flex-wrap gap-2 mt-2">
           {tags.map((tag) => (

@@ -6,12 +6,7 @@ import DashboardPageHeader from '@/components/dashboard/DashboardPageHeader';
 import { dishService } from '@/services/dish.service';
 import { menuCategoryService, type CategoryDto } from '@/services/menuCategory.service';
 import { addOnService, type AddOnDto } from '@/services/addon.service';
-import {
-  EMPTY_DISH_FORM,
-  deleteDishDraft,
-  saveDishDraft,
-  type DishFormState,
-} from '../dishDrafts';
+import { EMPTY_DISH_FORM, deleteDishDraft, saveDishDraft, type DishFormState } from '../dishDrafts';
 
 interface DishWorkspaceProps {
   mode: 'new' | 'edit';
@@ -110,7 +105,7 @@ export function DishWorkspace({
             addonIds: (dish.addonIds ?? []).map((entry: unknown) =>
               typeof entry === 'object' && entry
                 ? String((entry as { _id: string })._id)
-                : String(entry),
+                : String(entry)
             ),
             isVisible: dish.isVisible ?? true,
           });
@@ -152,7 +147,7 @@ export function DishWorkspace({
       formData.append('upload_preset', UPLOAD_PRESET);
       const response = await axios.post(
         `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
-        formData,
+        formData
       );
       setForm((prev) => ({ ...prev, coverImage: response.data.secure_url }));
     } catch {
@@ -179,7 +174,7 @@ export function DishWorkspace({
     } catch (error) {
       toast.error(
         (error as { response?: { data?: { message?: string } } })?.response?.data?.message ||
-          'Could not create category.',
+          'Could not create category.'
       );
     } finally {
       setCreatingCategory(false);
@@ -235,7 +230,7 @@ export function DishWorkspace({
     } catch (error) {
       toast.error(
         (error as { response?: { data?: { message?: string } } })?.response?.data?.message ||
-          (isEdit ? 'Could not update dish.' : 'Could not create dish.'),
+          (isEdit ? 'Could not update dish.' : 'Could not create dish.')
       );
     } finally {
       setSaving(false);
@@ -464,9 +459,7 @@ export function DishWorkspace({
                       type="number"
                       min="0"
                       value={form.discountPrice || ''}
-                      onChange={(e) =>
-                        setForm({ ...form, discountPrice: Number(e.target.value) })
-                      }
+                      onChange={(e) => setForm({ ...form, discountPrice: Number(e.target.value) })}
                       placeholder="0"
                       className="type-res-body w-full bg-transparent font-normal text-res-ink outline-none placeholder:text-res-ink-muted"
                     />

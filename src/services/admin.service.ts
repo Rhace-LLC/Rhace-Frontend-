@@ -81,8 +81,7 @@ export const approveVendor = (id: string | number, data: unknown) =>
   api.patch(`/vendors/${id}/approval`, data);
 export const updateVendorStatus = (id: string | number, data: unknown) =>
   api.patch(`/vendors/${id}/status`, data);
-export const updateVendor = (id: string | number, data: unknown) =>
-  api.put(`/vendors/${id}`, data);
+export const updateVendor = (id: string | number, data: unknown) => api.put(`/vendors/${id}`, data);
 export const deleteVendor = (id: string | number) => api.delete(`/vendors/${id}`);
 export const updateVendorCommission = (id: string | number, data: unknown) =>
   api.patch(`/vendors/${id}/commission`, data);
@@ -201,7 +200,8 @@ export const exportReservations = (params?: Record<string, unknown>) =>
   });
 
 export const getTotalEarnings = () => api.get('/payments/stats');
-export const getVendorEarnings = (vendorId: string) => api.get(`/payments/vendor-earnings/${vendorId}`);
+export const getVendorEarnings = (vendorId: string) =>
+  api.get(`/payments/vendor-earnings/${vendorId}`);
 /**
  * @deprecated Manual platform→vendor payouts are deprecated. Vendors are paid
  * directly by the PSP via gateway split/subaccount. These helpers hit the
@@ -211,9 +211,11 @@ export const getVendorEarnings = (vendorId: string) => api.get(`/payments/vendor
  * implemented; it is dead.
  */
 export const initiatePayout = (data: unknown) => api.post('/payments/payouts', data);
-export const getPayouts = (params?: Record<string, unknown>) => api.get('/payments/payouts', { params });
+export const getPayouts = (params?: Record<string, unknown>) =>
+  api.get('/payments/payouts', { params });
 export const getPayoutById = (id: string | number) => api.get(`/payments/payouts/${id}`);
-export const getVendorPayouts = (vendorId: string) => api.get(`/payments/payouts/vendor/${vendorId}`);
+export const getVendorPayouts = (vendorId: string) =>
+  api.get(`/payments/payouts/vendor/${vendorId}`);
 export const approvePayout = (id: string | number, data?: unknown) =>
   api.patch(`/payments/payouts/${id}/approve`, data);
 export const getPayoutReceipt = (id: string | number) =>
@@ -358,9 +360,11 @@ export interface ReviewQueueItem {
   vendorName: string | null;
 }
 export const getReviewQueue = (params?: { page?: number; limit?: number }) =>
-  api.get<{ items: ReviewQueueItem[]; pagination: { total: number; page: number; limit: number; pages: number } }>('/ops/psp/review', { params });
-export const retryStripeTransfer = (paymentId: string) =>
-  api.post(`/stripe/retry/${paymentId}`);
+  api.get<{
+    items: ReviewQueueItem[];
+    pagination: { total: number; page: number; limit: number; pages: number };
+  }>('/ops/psp/review', { params });
+export const retryStripeTransfer = (paymentId: string) => api.post(`/stripe/retry/${paymentId}`);
 export const getAccountSettings = () => api.get('/settings/account');
 export const updateAccountSettings = (data: unknown) => api.put('/settings/account', data);
 
@@ -407,8 +411,10 @@ export const exportVendorsDirect = (params?: Record<string, unknown>) =>
 // LEGACY REPORT FUNCTIONS (Kept for backward compatibility)
 // ============================================================
 
-export const generateVendorEarningsReport = (data: unknown) => api.post('/reports/vendor-earnings', data);
-export const generateReservationsReport = (data: unknown) => api.post('/reports/reservations', data);
+export const generateVendorEarningsReport = (data: unknown) =>
+  api.post('/reports/vendor-earnings', data);
+export const generateReservationsReport = (data: unknown) =>
+  api.post('/reports/reservations', data);
 export const generatePaymentsReport = (data: unknown) => api.post('/reports/payments', data);
 export const generateUsersReport = (data: unknown) => api.post('/reports/users', data);
 export const generateVendorsReport = (data: unknown) => api.post('/reports/vendors', data);

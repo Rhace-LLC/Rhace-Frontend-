@@ -11,12 +11,7 @@ import { toast } from 'react-toastify';
 import { Modal } from '@/components/others/RhaceModal';
 import UniversalLoader from '@/components/user/ui/LogoLoader';
 import { DishWorkspace } from './components/DishWorkspace';
-import {
-  deleteDishDraft,
-  getDishDraft,
-  listDishDrafts,
-  type DishDraft,
-} from './dishDrafts';
+import { deleteDishDraft, getDishDraft, listDishDrafts, type DishDraft } from './dishDrafts';
 
 const PAGE_SIZE = 12;
 
@@ -204,16 +199,16 @@ const MenuDashboard = ({
       await stockService.setAvailability('dish', item._id, !isAvailable(item));
       setMenuItems((prev) =>
         prev.map((entry) =>
-          entry._id === item._id ? { ...entry, availability: !isAvailable(item) } : entry,
-        ),
+          entry._id === item._id ? { ...entry, availability: !isAvailable(item) } : entry
+        )
       );
       toast.success(
-        isAvailable(item) ? `${item.name} marked unavailable` : `${item.name} is available again`,
+        isAvailable(item) ? `${item.name} marked unavailable` : `${item.name} is available again`
       );
     } catch (error) {
       toast.error(
         (error as { response?: { data?: { message?: string } } })?.response?.data?.message ||
-          'Failed to update availability',
+          'Failed to update availability'
       );
     } finally {
       setBusyId(null);
@@ -249,9 +244,7 @@ const MenuDashboard = ({
 
   if (dishParam) {
     const draft =
-      dishParam === 'new' && draftParam && vendorId
-        ? getDishDraft(vendorId, draftParam)
-        : null;
+      dishParam === 'new' && draftParam && vendorId ? getDishDraft(vendorId, draftParam) : null;
     return (
       <div className="mb-12 space-y-6 md:p-6">
         <DishWorkspace
@@ -364,9 +357,7 @@ const MenuDashboard = ({
                 />
               )}
               <DashboardButton
-                onClick={() =>
-                  onCreateItem ? onCreateItem() : setSearchParams({ dish: 'new' })
-                }
+                onClick={() => (onCreateItem ? onCreateItem() : setSearchParams({ dish: 'new' }))}
                 variant="primary"
                 text="Add Dish"
                 icon={<Add fill="#fff" />}
@@ -672,9 +663,7 @@ const MenuDashboard = ({
             <div className="flex flex-wrap items-center gap-1.5">
               <span
                 className={`type-res-small inline-flex items-center rounded-full px-2.5 py-1 font-semibold whitespace-nowrap ${
-                  isAvailable(details)
-                    ? 'bg-emerald-50 text-emerald-700'
-                    : 'bg-red-50 text-red-700'
+                  isAvailable(details) ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'
                 }`}
               >
                 {isAvailable(details) ? 'Available' : 'Unavailable'}
@@ -699,9 +688,7 @@ const MenuDashboard = ({
               {isDeal(details) && (
                 <div className="flex justify-between gap-2">
                   <dt>Original price</dt>
-                  <dd className="font-medium text-res-ink line-through">
-                    {money(details.price)}
-                  </dd>
+                  <dd className="font-medium text-res-ink line-through">{money(details.price)}</dd>
                 </div>
               )}
               <div className="flex justify-between gap-2">
@@ -727,9 +714,7 @@ const MenuDashboard = ({
               {(details.addonIds?.length ?? 0) > 0 && (
                 <div className="flex justify-between gap-2">
                   <dt>Add-ons</dt>
-                  <dd className="font-medium text-res-ink">
-                    {details.addonIds!.length} available
-                  </dd>
+                  <dd className="font-medium text-res-ink">{details.addonIds!.length} available</dd>
                 </div>
               )}
             </dl>

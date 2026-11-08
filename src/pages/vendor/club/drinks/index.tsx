@@ -85,8 +85,7 @@ export function DrinksTable({
   const drinkParam = searchParams.get('drink');
 
   const vertical =
-    verticalProp ??
-    (vendor?.vendorType?.toLowerCase() === 'restaurant' ? 'restaurant' : 'club');
+    verticalProp ?? (vendor?.vendorType?.toLowerCase() === 'restaurant' ? 'restaurant' : 'club');
   const isClub = vertical !== 'restaurant';
 
   const resetPage = () => setPage(1);
@@ -155,8 +154,12 @@ export function DrinksTable({
       if (availability === 'unavailable' && isDrinkAvailable(item.status)) return false;
       if (!term) return true;
       return (
-        String(item.name ?? '').toLowerCase().includes(term) ||
-        String(item.description ?? '').toLowerCase().includes(term) ||
+        String(item.name ?? '')
+          .toLowerCase()
+          .includes(term) ||
+        String(item.description ?? '')
+          .toLowerCase()
+          .includes(term) ||
         drinkCategoryName(item).toLowerCase().includes(term)
       );
     });
@@ -207,14 +210,14 @@ export function DrinksTable({
       await stockService.setAvailability('drink', item._id, next);
       setDrinks((prev) =>
         prev.map((entry) =>
-          entry._id === item._id ? { ...entry, status: next ? 'Active' : 'hidden' } : entry,
-        ),
+          entry._id === item._id ? { ...entry, status: next ? 'Active' : 'hidden' } : entry
+        )
       );
       toast.success(next ? `${item.name} is available again` : `${item.name} marked unavailable`);
     } catch (error) {
       toast.error(
         (error as { response?: { data?: { message?: string } } })?.response?.data?.message ||
-          'Failed to update availability',
+          'Failed to update availability'
       );
     } finally {
       setBusyId(null);
@@ -230,7 +233,7 @@ export function DrinksTable({
     } catch (error) {
       toast.error(
         (error as { response?: { data?: { message?: string } } })?.response?.data?.message ||
-          'Failed to delete drink.',
+          'Failed to delete drink.'
       );
     }
   };
@@ -425,13 +428,13 @@ export function DrinksTable({
                       .slice(0, 3)
                       .map(
                         (it: any) =>
-                          `${it.quantity ? `${it.quantity}× ` : ''}${it.drinkId?.name ?? 'Drink'}`,
+                          `${it.quantity ? `${it.quantity}× ` : ''}${it.drinkId?.name ?? 'Drink'}`
                       );
                     if ((set.items ?? []).length > 3)
                       contents.push(`+${(set.items ?? []).length - 3} more`);
                     const drinkCount: number = (set.items ?? []).reduce(
                       (sum: number, it: any) => sum + (it.quantity ?? 0),
-                      0,
+                      0
                     );
                     return (
                       <article
@@ -458,9 +461,7 @@ export function DrinksTable({
                           <p className="type-res-caption font-medium tracking-[0.2px] text-res-ink-muted uppercase">
                             Bottle set
                           </p>
-                          <h3 className="type-res-h3 mt-1 line-clamp-1 text-res-ink">
-                            {set.name}
-                          </h3>
+                          <h3 className="type-res-h3 mt-1 line-clamp-1 text-res-ink">{set.name}</h3>
                           {contents.length > 0 && (
                             <p className="type-res-small mt-0.5 line-clamp-2 font-normal text-res-ink-muted">
                               {contents.join(' · ')}

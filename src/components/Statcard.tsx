@@ -11,7 +11,15 @@ interface StatCardProps {
   trend?: 'up' | 'down';
 }
 
-export function StatCard({ title, value, change, icon, iconBg, iconColor, trend = 'up' }: StatCardProps) {
+export function StatCard({
+  title,
+  value,
+  change,
+  icon,
+  iconBg,
+  iconColor,
+  trend = 'up',
+}: StatCardProps) {
   const renderIcon = () => {
     // If a React element (JSX) was passed, clone it to ensure the desired className is applied
     if (React.isValidElement(icon)) {

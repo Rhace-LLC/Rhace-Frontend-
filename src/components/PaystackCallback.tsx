@@ -204,8 +204,7 @@ const PaystackCallback = () => {
   }
 
   // Legacy booking success — receipt view.
-  const receiptType =
-    (resultData.reservation?.reservationType as ReservationVertical) || 'hotel';
+  const receiptType = (resultData.reservation?.reservationType as ReservationVertical) || 'hotel';
   return (
     <Receipt reservation={resultData.reservation} payment={resultData.payment} type={receiptType} />
   );

@@ -33,8 +33,7 @@ const Receipt = ({
   const room = reservation?.room;
   const isPayLater = reservation?.payLater;
 
-  const currency =
-    payment?.currency || (reservation?.currency as string | undefined) || 'NGN';
+  const currency = payment?.currency || (reservation?.currency as string | undefined) || 'NGN';
   const formatPrice = (price: number) =>
     currency === 'NGN'
       ? `₦${Number(price || 0).toLocaleString()}`
@@ -181,7 +180,11 @@ const Receipt = ({
                           ✅ Paid online - Ref: {payment.reference?.slice(-8)}
                           {providerLabel && <> · via {providerLabel}</>}
                           {payment.paymentConfig?.billingModel === 'subscription' && (
-                            <> · <span className="font-semibold">Subscription rate (0% platform)</span></>
+                            <>
+                              {' '}
+                              ·{' '}
+                              <span className="font-semibold">Subscription rate (0% platform)</span>
+                            </>
                           )}
                         </div>
                       )}

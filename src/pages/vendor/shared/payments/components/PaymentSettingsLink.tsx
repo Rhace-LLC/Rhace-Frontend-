@@ -15,7 +15,9 @@ export function PaymentSettingsLink() {
       </span>
       <span className="min-w-0 flex-1">
         <span className="type-res-h3 block text-res-ink">Payment settings</span>
-        <span className="type-res-small block text-res-ink-muted">Payout account and payment providers</span>
+        <span className="type-res-small block text-res-ink-muted">
+          Payout account and payment providers
+        </span>
       </span>
       <ChevronRight className="size-5 text-res-ink-muted" aria-hidden />
     </Link>

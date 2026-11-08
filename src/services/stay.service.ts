@@ -232,7 +232,10 @@ export const guestStayApi = {
   },
   /** Phase 6: settle (part of) the room tab online; omit amount for the full balance. */
   async folioPay(roomToken: string, amount?: number): Promise<PaymentIntent> {
-    const res = await guestApi.post('/stay/folio/pay', { roomToken, ...(amount ? { amount } : {}) });
+    const res = await guestApi.post('/stay/folio/pay', {
+      roomToken,
+      ...(amount ? { amount } : {}),
+    });
     return unwrap<PaymentIntent>(res);
   },
   /** Phase 6: confirm a Paystack return now (does not wait for the webhook). */
@@ -242,10 +245,12 @@ export const guestStayApi = {
   },
   async orderIntent(
     orderId: string,
-    roomToken: string,
+    roomToken: string
   ): Promise<{ authorization_url: string; ref: string; paymentId: string; amount: number }> {
     const res = await guestApi.post(`/stay/orders/${orderId}/intent`, { roomToken });
-    return unwrap<{ authorization_url: string; ref: string; paymentId: string; amount: number }>(res);
+    return unwrap<{ authorization_url: string; ref: string; paymentId: string; amount: number }>(
+      res
+    );
   },
 };
 
@@ -299,7 +304,7 @@ class StayService {
   /** Staff: post a charge-to-room order to a stay's folio. */
   async staffCheckout(
     stayId: string,
-    input: Omit<StayCheckoutInput, 'paymentMethod'> & { guestName?: string },
+    input: Omit<StayCheckoutInput, 'paymentMethod'> & { guestName?: string }
   ): Promise<StayCheckoutResult> {
     const res = await api.post(`/folios/stay/${stayId}/checkout`, {
       ...input,
@@ -315,7 +320,10 @@ class StayService {
     const res = await api.post(`/folios/${folioId}/entries`, input);
     return unwrap<unknown>(res);
   }
-  async folioPayment(folioId: string, input: { amount: number; method: string; reference?: string }) {
+  async folioPayment(
+    folioId: string,
+    input: { amount: number; method: string; reference?: string }
+  ) {
     const res = await api.post(`/folios/${folioId}/payments`, input);
     return unwrap<unknown>(res);
   }

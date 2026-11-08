@@ -24,10 +24,10 @@ export interface VenueGridItem {
 const parseList = (value?: string[] | string): string[] =>
   Array.isArray(value)
     ? value
-    : ((value
+    : (value
         ?.split(',')
         .map((c) => c.trim())
-        .filter(Boolean) as string[]) || []);
+        .filter(Boolean) as string[]) || [];
 
 const cuisineColorPalette = [
   'bg-orange-100 border-orange-200',
@@ -132,9 +132,7 @@ export const VenueGridCard = ({
         <div className="space-y-1.5">
           <div className="flex items-center">
             <FaStar className="text-yellow-500 mr-1 text-base" />
-            <span className="text-sm font-normal text-gray-900">
-              {venue.rating?.toFixed(1)}
-            </span>
+            <span className="text-sm font-normal text-gray-900">{venue.rating?.toFixed(1)}</span>
             <span className="text-xs sm:text-sm text-gray-500 ml-1">
               ({venue.reviews?.toLocaleString() || 0} reviews)
             </span>
@@ -145,9 +143,7 @@ export const VenueGridCard = ({
           </h3>
 
           {vertical === 'restaurant' && cuisines.length > 0 && (
-            <div className="line-clamp-1 mt-2 text-sm text-gray-500">
-              {cuisines.join(', ')}
-            </div>
+            <div className="line-clamp-1 mt-2 text-sm text-gray-500">{cuisines.join(', ')}</div>
           )}
 
           {vertical === 'club' && categories.length > 0 && (

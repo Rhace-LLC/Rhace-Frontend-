@@ -10,7 +10,14 @@ interface DashboardButtonProps {
   disabled?: boolean;
 }
 
-const DashboardButton = ({ text, icon, variant, className, onClick, disabled }: DashboardButtonProps) => {
+const DashboardButton = ({
+  text,
+  icon,
+  variant,
+  className,
+  onClick,
+  disabled,
+}: DashboardButtonProps) => {
   return (
     <Button
       onClick={onClick}

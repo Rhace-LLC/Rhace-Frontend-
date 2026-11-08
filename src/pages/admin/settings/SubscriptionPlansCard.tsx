@@ -18,10 +18,15 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { useAuth } from '@/contexts/AuthContext';
-import { getRevenueSettings, updateRevenueSettings, type RevenueSettings } from '@/services/admin.service';
+import {
+  getRevenueSettings,
+  updateRevenueSettings,
+  type RevenueSettings,
+} from '@/services/admin.service';
 import { billingService, type SubscriptionPlanDto } from '@/services/billing.service';
 
-const naira = (n: number) => `₦${Number(n || 0).toLocaleString('en-NG', { maximumFractionDigits: 2 })}`;
+const naira = (n: number) =>
+  `₦${Number(n || 0).toLocaleString('en-NG', { maximumFractionDigits: 2 })}`;
 
 const VERTICALS: { value: string; label: string }[] = [
   { value: '', label: 'All venues' },
@@ -42,7 +47,14 @@ const parseCohort = (raw: string) => [
   ),
 ];
 
-const EMPTY_FORM = { name: '', amount: '', vertical: '', minTermMonths: '3', graceDays: '7', cooldownDays: '60' };
+const EMPTY_FORM = {
+  name: '',
+  amount: '',
+  vertical: '',
+  minTermMonths: '3',
+  graceDays: '7',
+  cooldownDays: '60',
+};
 
 /**
  * Vendor subscription plans and availability (proposal §2.6). Plans are
@@ -183,8 +195,8 @@ export default function SubscriptionPlansCard() {
         <div>
           <h2 className="text-lg font-semibold">Vendor subscriptions</h2>
           <p className="text-sm text-muted-foreground mt-1">
-            Flat monthly plans as an alternative to the platform percentage. Subscribed venues keep 100% of NGN
-            payments minus processing fees. Terms version {termsVersion || '—'}.
+            Flat monthly plans as an alternative to the platform percentage. Subscribed venues keep
+            100% of NGN payments minus processing fees. Terms version {termsVersion || '—'}.
           </p>
         </div>
         <Button variant="outline" size="sm" onClick={() => void load()} disabled={loading}>
@@ -206,17 +218,23 @@ export default function SubscriptionPlansCard() {
           <div>
             <Label className="text-sm font-semibold">Open to all venues</Label>
             <p className="text-xs text-muted-foreground mt-1">
-              Off: only the pilot venues below can subscribe. Turning this off never ends existing subscriptions;
-              they run to the end of their paid period.
+              Off: only the pilot venues below can subscribe. Turning this off never ends existing
+              subscriptions; they run to the end of their paid period.
             </p>
           </div>
-          <Switch checked={enabled} onCheckedChange={setEnabled} disabled={!isSuperadmin || loading} />
+          <Switch
+            checked={enabled}
+            onCheckedChange={setEnabled}
+            disabled={!isSuperadmin || loading}
+          />
         </div>
         <div>
           <Label htmlFor="sub-cohort" className="text-sm font-semibold">
             Pilot venues ({cohort.length})
           </Label>
-          <p className="text-xs text-muted-foreground mt-1">Venue IDs, one per line. Used while the switch is off.</p>
+          <p className="text-xs text-muted-foreground mt-1">
+            Venue IDs, one per line. Used while the switch is off.
+          </p>
           <Textarea
             id="sub-cohort"
             value={cohortInput}
@@ -227,7 +245,9 @@ export default function SubscriptionPlansCard() {
             placeholder="64b0f1c2a9e4d1b2c3d4e5f6"
           />
           {invalidIds.length > 0 && (
-            <p className="text-xs text-red-600 mt-1">Not a valid venue ID: {invalidIds.join(', ')}</p>
+            <p className="text-xs text-red-600 mt-1">
+              Not a valid venue ID: {invalidIds.join(', ')}
+            </p>
           )}
         </div>
         {isSuperadmin && (
@@ -256,8 +276,8 @@ export default function SubscriptionPlansCard() {
           )}
         </div>
         <p className="text-xs text-muted-foreground">
-          To change a price, create a new plan and deactivate the old one. Existing subscribers keep the price they
-          subscribed at.
+          To change a price, create a new plan and deactivate the old one. Existing subscribers keep
+          the price they subscribed at.
         </p>
 
         {formOpen && (
@@ -330,8 +350,8 @@ export default function SubscriptionPlansCard() {
             </div>
             {formValid && (
               <p className="text-xs text-muted-foreground">
-                First invoice: {naira(amount * Number(form.minTermMonths))} for {form.minTermMonths} months, then{' '}
-                {naira(amount)} monthly. Price from the pricing worksheet, not a guess.
+                First invoice: {naira(amount * Number(form.minTermMonths))} for {form.minTermMonths}{' '}
+                months, then {naira(amount)} monthly. Price from the pricing worksheet, not a guess.
               </p>
             )}
             <div className="flex gap-2">
@@ -353,7 +373,9 @@ export default function SubscriptionPlansCard() {
         )}
 
         {plans.length === 0 && !loading ? (
-          <p className="text-sm text-muted-foreground">No plans yet. Venues cannot subscribe until one exists.</p>
+          <p className="text-sm text-muted-foreground">
+            No plans yet. Venues cannot subscribe until one exists.
+          </p>
         ) : (
           <div className="overflow-x-auto">
             <table className="min-w-full text-sm">
@@ -370,7 +392,10 @@ export default function SubscriptionPlansCard() {
               </thead>
               <tbody>
                 {[...active, ...inactive].map((p) => (
-                  <tr key={p._id} className={`border-t ${p.isActive === false ? 'text-muted-foreground' : ''}`}>
+                  <tr
+                    key={p._id}
+                    className={`border-t ${p.isActive === false ? 'text-muted-foreground' : ''}`}
+                  >
                     <td className="px-3 py-2.5 font-medium">{p.name}</td>
                     <td className="px-3 py-2.5">{naira(p.amount)}</td>
                     <td className="px-3 py-2.5 whitespace-nowrap">
@@ -383,7 +408,9 @@ export default function SubscriptionPlansCard() {
                     <td className="px-3 py-2.5">
                       <span
                         className={`rounded-full px-2 py-0.5 text-xs ${
-                          p.isActive === false ? 'bg-slate-100 text-slate-600' : 'bg-emerald-50 text-emerald-700'
+                          p.isActive === false
+                            ? 'bg-slate-100 text-slate-600'
+                            : 'bg-emerald-50 text-emerald-700'
                         }`}
                       >
                         {p.isActive === false ? 'Inactive' : 'Offered'}
@@ -409,8 +436,9 @@ export default function SubscriptionPlansCard() {
           <AlertDialogHeader>
             <AlertDialogTitle>Stop offering {deactivating?.name}?</AlertDialogTitle>
             <AlertDialogDescription>
-              New venues can no longer choose this plan. Current subscribers are not affected: their renewals keep
-              the price they subscribed at. This cannot be undone; create a new plan to offer it again.
+              New venues can no longer choose this plan. Current subscribers are not affected: their
+              renewals keep the price they subscribed at. This cannot be undone; create a new plan
+              to offer it again.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

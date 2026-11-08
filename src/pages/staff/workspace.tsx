@@ -9,11 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/contexts/AuthContext';
 import { ordersApi, todayServiceWindow } from '@/features/orders/api/service';
 import type { OrderDto, OrderItemType } from '@/features/orders/types';
-import {
-  staffService,
-  assignmentUnitId,
-  type StaffAssignmentDto,
-} from '@/services/staff.service';
+import { staffService, assignmentUnitId, type StaffAssignmentDto } from '@/services/staff.service';
 import type { StockItemKind } from '@/services/stock.service';
 import { slugForStaffRole, staffRoleLabel } from './roles';
 import TicketBoard from './components/TicketBoard';
@@ -58,7 +54,10 @@ const QUEUE_ROLES: Record<string, { title: string; transitions: Record<string, s
   bartender: { title: 'Bar Tickets', transitions: { placed: 'preparing', preparing: 'served' } },
   // Cellar/bar dispatch runs the same ticket flow as the bar ("prepared" is not
   // a real order status, so the old key left this queue with no usable action).
-  bar_staff: { title: 'Cellar Dispatch', transitions: { placed: 'preparing', preparing: 'served' } },
+  bar_staff: {
+    title: 'Cellar Dispatch',
+    transitions: { placed: 'preparing', preparing: 'served' },
+  },
   // waiter (floor map), vip_host (booth map + minimum-spend tracker),
   // front_desk (room grid) and housekeeping (room status) each have dedicated
   // workspaces below.
@@ -122,7 +121,7 @@ export default function StaffWorkspace() {
   const queueConfig = QUEUE_ROLES[role];
   const activeOrders = useMemo(
     () => orders.filter((o) => !['completed', 'cancelled'].includes(o.status)),
-    [orders],
+    [orders]
   );
 
   const handleTransition = async (order: OrderDto, nextStatus: string) => {

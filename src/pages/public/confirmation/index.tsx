@@ -92,11 +92,7 @@ const ConfirmationPage = () => {
                   : 'bg-res-secondary text-res-brand'
               }`}
             >
-              {finalizing
-                ? 'Finalizing…'
-                : awaitingPayment
-                  ? 'Awaiting payment'
-                  : 'Confirmed'}
+              {finalizing ? 'Finalizing…' : awaitingPayment ? 'Awaiting payment' : 'Confirmed'}
             </span>
           </div>
           <h1 className="type-res-h2 mt-3 text-res-ink">
@@ -115,18 +111,11 @@ const ConfirmationPage = () => {
             <dl className="mx-auto mt-6 grid grid-cols-1 gap-2.5 text-left sm:grid-cols-2">
               <DetailCell label="Guest" value={reservation.guestName} />
               <DetailCell label="Party size" value={reservation.partySize ?? '—'} />
-              <DetailCell
-                label="From"
-                value={new Date(reservation.start).toLocaleString()}
-              />
+              <DetailCell label="From" value={new Date(reservation.start).toLocaleString()} />
               <DetailCell label="To" value={new Date(reservation.end).toLocaleString()} />
               <DetailCell
                 label="Status"
-                value={
-                  <span className="capitalize">
-                    {reservation.status.replace('_', ' ')}
-                  </span>
-                }
+                value={<span className="capitalize">{reservation.status.replace('_', ' ')}</span>}
               />
               {typeof reservation.amount === 'number' && reservation.amount > 0 && (
                 <DetailCell
@@ -144,15 +133,14 @@ const ConfirmationPage = () => {
               {reservation.paymentStatus && (
                 <DetailCell
                   label="Payment"
-                  value={
-                    PAYMENT_LABEL[reservation.paymentStatus] ?? reservation.paymentStatus
-                  }
+                  value={PAYMENT_LABEL[reservation.paymentStatus] ?? reservation.paymentStatus}
                 />
               )}
             </dl>
           )}
 
-          {reservation && ['restaurant', 'club'].includes(String(reservation.vertical)) &&
+          {reservation &&
+            ['restaurant', 'club'].includes(String(reservation.vertical)) &&
             !orderQuery.data && (
               <div className="mt-5 rounded-res-md bg-res-secondary p-4 text-left">
                 <p className="type-res-body font-semibold text-res-ink">

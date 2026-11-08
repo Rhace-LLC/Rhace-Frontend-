@@ -9,7 +9,17 @@ import {
   getCoreRowModel,
   useReactTable,
 } from '@tanstack/react-table';
-import { ArrowDown, ArrowUp, ChevronDown, ChevronLeft, ChevronRight, Columns3, Download, Search, X } from 'lucide-react';
+import {
+  ArrowDown,
+  ArrowUp,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  Columns3,
+  Download,
+  Search,
+  X,
+} from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -19,8 +29,19 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { paymentService, type TransactionDto, type TransactionQuery } from '@/services/payment.service';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import {
+  paymentService,
+  type TransactionDto,
+  type TransactionQuery,
+} from '@/services/payment.service';
 import { formatMoney } from '@/utils/money';
 import { errorMessage, useTransactions } from '../report/queries';
 import { useReportFilters } from '../report/useReportFilters';
@@ -37,7 +58,11 @@ const FILTERS = {
   source: Object.entries(SOURCE_LABEL).map(([value, label]) => ({ value, label })),
 } as const;
 type FilterKey = keyof typeof FILTERS;
-const FILTER_TITLES: Record<FilterKey, string> = { status: 'Status', provider: 'Channel', source: 'Source' };
+const FILTER_TITLES: Record<FilterKey, string> = {
+  status: 'Status',
+  provider: 'Channel',
+  source: 'Source',
+};
 
 const dateTime = (iso: string) =>
   new Date(iso).toLocaleString('en-NG', {
@@ -98,7 +123,7 @@ export default function PaymentTransactionHistory() {
         if (resetPage) next.delete('page');
         return next;
       },
-      { replace: true },
+      { replace: true }
     );
 
   // Debounced search: the URL (and the query) only change after typing pauses.
@@ -125,7 +150,8 @@ export default function PaymentTransactionHistory() {
     setParams({ [key]: [...current].join(',') || null });
   };
 
-  const activeFilters = (['status', 'provider', 'source'] as FilterKey[]).some((k) => list(k).length) || q;
+  const activeFilters =
+    (['status', 'provider', 'source'] as FilterKey[]).some((k) => list(k).length) || q;
 
   const sorting: SortingState = useMemo(() => {
     const desc = sort.startsWith('-');
@@ -157,10 +183,23 @@ export default function PaymentTransactionHistory() {
           </div>
         ),
       },
-      { id: 'source', header: 'Source', cell: ({ row }) => SOURCE_LABEL[row.original.source] ?? row.original.source },
-      { id: 'provider', header: 'Channel', cell: ({ row }) => <ProviderBadge provider={row.original.provider} /> },
+      {
+        id: 'source',
+        header: 'Source',
+        cell: ({ row }) => SOURCE_LABEL[row.original.source] ?? row.original.source,
+      },
+      {
+        id: 'provider',
+        header: 'Channel',
+        cell: ({ row }) => <ProviderBadge provider={row.original.provider} />,
+      },
       { id: 'method', header: 'Method', cell: ({ row }) => methodLabel(row.original.method) },
-      { id: 'status', header: 'Status', enableHiding: false, cell: ({ row }) => <StatusPill status={row.original.status} /> },
+      {
+        id: 'status',
+        header: 'Status',
+        enableHiding: false,
+        cell: ({ row }) => <StatusPill status={row.original.status} />,
+      },
       {
         id: 'amount',
         header: 'Amount',
@@ -179,11 +218,13 @@ export default function PaymentTransactionHistory() {
         header: 'Net',
         meta: { align: 'right' },
         cell: ({ row }) => (
-          <span className="font-semibold text-res-ink">{formatMoney(row.original.netToVendor, row.original.currency)}</span>
+          <span className="font-semibold text-res-ink">
+            {formatMoney(row.original.netToVendor, row.original.currency)}
+          </span>
         ),
       },
     ],
-    [],
+    []
   );
 
   const table = useReactTable({
@@ -219,7 +260,10 @@ export default function PaymentTransactionHistory() {
       <div className="mb-4 flex flex-wrap items-center gap-2">
         <label className="relative min-w-0 flex-1 basis-56">
           <span className="sr-only">Search transactions</span>
-          <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-res-ink-muted" aria-hidden />
+          <Search
+            className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-res-ink-muted"
+            aria-hidden
+          />
           <input
             value={qDraft}
             onChange={(e) => setQDraft(e.target.value)}
@@ -234,7 +278,9 @@ export default function PaymentTransactionHistory() {
             <DropdownMenu key={key}>
               <DropdownMenuTrigger
                 className={`type-res-small inline-flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-2 font-medium outline-none focus-visible:ring-2 focus-visible:ring-res-brand ${
-                  selected.length ? 'bg-res-secondary text-res-brand' : 'bg-res-surface text-res-ink-muted hover:text-res-ink'
+                  selected.length
+                    ? 'bg-res-secondary text-res-brand'
+                    : 'bg-res-surface text-res-ink-muted hover:text-res-ink'
                 }`}
               >
                 {FILTER_TITLES[key]}
@@ -308,11 +354,16 @@ export default function PaymentTransactionHistory() {
       </div>
 
       {q && q.length < 3 && (
-        <p className="type-res-caption -mt-2 mb-3 text-res-ink-muted">Type at least 3 characters to search.</p>
+        <p className="type-res-caption -mt-2 mb-3 text-res-ink-muted">
+          Type at least 3 characters to search.
+        </p>
       )}
 
       {result.isError && !result.data ? (
-        <ErrorState message={errorMessage(result.error, "Couldn't load transactions.")} onRetry={() => result.refetch()} />
+        <ErrorState
+          message={errorMessage(result.error, "Couldn't load transactions.")}
+          onRetry={() => result.refetch()}
+        />
       ) : result.isLoading && !result.data ? (
         <div className="space-y-2">
           {Array.from({ length: 8 }, (_, i) => (
@@ -320,7 +371,13 @@ export default function PaymentTransactionHistory() {
           ))}
         </div>
       ) : !rows.length ? (
-        <EmptyState message={activeFilters ? 'No transactions match these filters.' : 'No transactions in this period.'} />
+        <EmptyState
+          message={
+            activeFilters
+              ? 'No transactions match these filters.'
+              : 'No transactions in this period.'
+          }
+        />
       ) : (
         <div className={result.isFetching ? 'opacity-60 transition-opacity' : 'transition-opacity'}>
           {/* Desktop table */}
@@ -330,14 +387,27 @@ export default function PaymentTransactionHistory() {
                 {table.getHeaderGroups().map((group) => (
                   <TableRow key={group.id} className="border-res-line hover:bg-transparent">
                     {group.headers.map((header) => {
-                      const right = (header.column.columnDef.meta as { align?: string } | undefined)?.align === 'right';
+                      const right =
+                        (header.column.columnDef.meta as { align?: string } | undefined)?.align ===
+                        'right';
                       const sortable = header.column.id === 'at' || header.column.id === 'amount';
-                      const state = sorting[0]?.id === header.column.id ? (sorting[0].desc ? 'desc' : 'asc') : null;
+                      const state =
+                        sorting[0]?.id === header.column.id
+                          ? sorting[0].desc
+                            ? 'desc'
+                            : 'asc'
+                          : null;
                       return (
                         <TableHead
                           key={header.id}
                           className={`type-res-caption text-res-ink-muted ${right ? 'text-right' : ''}`}
-                          aria-sort={state === 'asc' ? 'ascending' : state === 'desc' ? 'descending' : undefined}
+                          aria-sort={
+                            state === 'asc'
+                              ? 'ascending'
+                              : state === 'desc'
+                                ? 'descending'
+                                : undefined
+                          }
                         >
                           {sortable ? (
                             <button
@@ -366,7 +436,9 @@ export default function PaymentTransactionHistory() {
                     className="cursor-pointer border-res-line hover:bg-res-surface"
                   >
                     {row.getVisibleCells().map((cell) => {
-                      const right = (cell.column.columnDef.meta as { align?: string } | undefined)?.align === 'right';
+                      const right =
+                        (cell.column.columnDef.meta as { align?: string } | undefined)?.align ===
+                        'right';
                       return (
                         <TableCell
                           key={cell.id}
@@ -393,7 +465,9 @@ export default function PaymentTransactionHistory() {
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <p className="type-res-small truncate font-semibold text-res-ink">{row.customerName}</p>
+                      <p className="type-res-small truncate font-semibold text-res-ink">
+                        {row.customerName}
+                      </p>
                       <p className="type-res-caption text-res-ink-muted">{dateTime(row.at)}</p>
                     </div>
                     <p className="type-res-body font-semibold text-res-ink tabular-nums">
@@ -422,7 +496,9 @@ export default function PaymentTransactionHistory() {
               Rows
               <select
                 value={limit}
-                onChange={(e) => setParams({ limit: e.target.value === '25' ? null : e.target.value })}
+                onChange={(e) =>
+                  setParams({ limit: e.target.value === '25' ? null : e.target.value })
+                }
                 className="type-res-small cursor-pointer rounded-full bg-res-surface px-3 py-1.5 text-res-ink outline-none focus-visible:ring-2 focus-visible:ring-res-brand"
               >
                 {PAGE_SIZES.map((size) => (

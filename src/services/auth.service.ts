@@ -76,7 +76,15 @@ class AuthService {
     return res.data;
   }
 
-  async vendorRegister({ businessName, email, password }: { businessName: string; email: string; password: string }) {
+  async vendorRegister({
+    businessName,
+    email,
+    password,
+  }: {
+    businessName: string;
+    email: string;
+    password: string;
+  }) {
     const res = await api.post('/auth/vendors/register', {
       businessName,
       email,

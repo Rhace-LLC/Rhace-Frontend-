@@ -47,9 +47,7 @@ const UserBookingsPage = () => {
 
   const visible = useMemo(() => {
     if (bucket === 'all') {
-      return [...items].sort(
-        (a, b) => new Date(b.start).getTime() - new Date(a.start).getTime()
-      );
+      return [...items].sort((a, b) => new Date(b.start).getTime() - new Date(a.start).getTime());
     }
     return buckets[bucket];
   }, [bucket, buckets, items]);
@@ -79,7 +77,7 @@ const UserBookingsPage = () => {
     } catch (error) {
       toast.error(
         (error as { response?: { data?: { message?: string } } })?.response?.data?.message ||
-          'Could not cancel your reservation.',
+          'Could not cancel your reservation.'
       );
     }
   };
@@ -97,7 +95,7 @@ const UserBookingsPage = () => {
     } catch (error) {
       toast.error(
         (error as { response?: { data?: { message?: string } } })?.response?.data?.message ||
-          'Could not cancel your booking.',
+          'Could not cancel your booking.'
       );
     }
   };

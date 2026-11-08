@@ -3,7 +3,13 @@ import { useNavigate, useSearchParams } from 'react-router';
 import { toast } from 'react-toastify';
 import UniversalLoader from '@/components/user/ui/LogoLoader';
 import { money } from '@/features/orders/money';
-import { guestStayApi, setGuestToken, type GuestMe, type ResolvedRoom, type StayFolio } from '@/services/stay.service';
+import {
+  guestStayApi,
+  setGuestToken,
+  type GuestMe,
+  type ResolvedRoom,
+  type StayFolio,
+} from '@/services/stay.service';
 import { useStayCart } from '@/features/stay/cart';
 import { useGuestRealtime } from '@/features/stay/realtime';
 import { useOnlineStatus } from '@/features/stay/pwa';
@@ -34,7 +40,13 @@ const StayHub = ({ roomToken, room }: Props) => {
   const [ordersTick, setOrdersTick] = useState(0);
   const [outletFocus, setOutletFocus] = useState<string | null>(null);
   const [outlets, setOutlets] = useState<
-    Array<{ vendorLink: string; outletName: string; open: boolean; etaMins: number; reason: string | null }>
+    Array<{
+      vendorLink: string;
+      outletName: string;
+      open: boolean;
+      etaMins: number;
+      reason: string | null;
+    }>
   >([]);
   const cart = useStayCart(me?.stayId ?? null);
   const online = useOnlineStatus();
@@ -53,8 +65,8 @@ const StayHub = ({ roomToken, room }: Props) => {
               open: o.open,
               etaMins: o.etaMins,
               reason: o.reason,
-            })),
-        ),
+            }))
+        )
       )
       .catch(() => setOutlets([]));
   }, []);
@@ -76,7 +88,8 @@ const StayHub = ({ roomToken, room }: Props) => {
         else toast.info('Your payment is still processing. We will update your bill shortly.');
       })
       .catch(() => {
-        if (!cancelled) toast.info('We are confirming your payment; your bill will update shortly.');
+        if (!cancelled)
+          toast.info('We are confirming your payment; your bill will update shortly.');
       })
       .finally(() => {
         if (cancelled) return;
@@ -149,17 +162,19 @@ const StayHub = ({ roomToken, room }: Props) => {
   return (
     <main className="mx-auto max-w-md space-y-4 p-4 pb-10">
       {!online && (
-        <p role="status" className="rounded-2xl bg-amber-100 px-4 py-2 text-sm font-semibold text-amber-900">
-          You&apos;re offline — you can browse the saved menu, but ordering and your bill need a connection.
+        <p
+          role="status"
+          className="rounded-2xl bg-amber-100 px-4 py-2 text-sm font-semibold text-amber-900"
+        >
+          You&apos;re offline — you can browse the saved menu, but ordering and your bill need a
+          connection.
         </p>
       )}
       <header className="rounded-2xl bg-slate-900 p-4 text-white">
         <div className="flex items-start justify-between">
           <div>
             <p className="text-xs text-slate-300">Room {room?.roomLabel}</p>
-            <h1 className="text-xl font-bold">
-              Welcome{me?.firstName ? `, ${me.firstName}` : ''}
-            </h1>
+            <h1 className="text-xl font-bold">Welcome{me?.firstName ? `, ${me.firstName}` : ''}</h1>
           </div>
           <button
             type="button"
@@ -183,7 +198,10 @@ const StayHub = ({ roomToken, room }: Props) => {
         )}
       </header>
 
-      <nav aria-label="Stay sections" className="grid grid-cols-4 gap-1 rounded-full bg-slate-100 p-1 text-xs font-semibold">
+      <nav
+        aria-label="Stay sections"
+        className="grid grid-cols-4 gap-1 rounded-full bg-slate-100 p-1 text-xs font-semibold"
+      >
         {(
           [
             ['hub', 'Home'],
@@ -273,7 +291,11 @@ const StayHub = ({ roomToken, room }: Props) => {
         <StayBillView folio={folio} roomToken={roomToken} onRefresh={() => void refresh()} />
       )}
       {view === 'orders' && (
-        <StayOrdersView roomToken={roomToken} onPaid={() => void refresh()} refreshKey={ordersTick} />
+        <StayOrdersView
+          roomToken={roomToken}
+          onPaid={() => void refresh()}
+          refreshKey={ordersTick}
+        />
       )}
 
       <button

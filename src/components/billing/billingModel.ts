@@ -9,7 +9,9 @@ export interface PaymentWithModel {
  * (`paymentConfig.billingModel`) — never from the vendor's current billing,
  * so history stays true after a subscription starts or lapses.
  */
-export function paymentBillingModel(payment: PaymentWithModel | null | undefined): 'percentage' | 'subscription' {
+export function paymentBillingModel(
+  payment: PaymentWithModel | null | undefined
+): 'percentage' | 'subscription' {
   return payment?.paymentConfig?.billingModel === 'subscription' ? 'subscription' : 'percentage';
 }
 

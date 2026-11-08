@@ -1,14 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import {
-  Building2,
-  ChevronDown,
-  Clock,
-  DoorOpen,
-  RefreshCw,
-  Wrench,
-} from 'lucide-react';
+import { Building2, ChevronDown, Clock, DoorOpen, RefreshCw, Wrench } from 'lucide-react';
 import { Modal } from '@/components/others/RhaceModal';
 import { useAuth } from '@/contexts/AuthContext';
 import {
@@ -77,10 +70,10 @@ const labelClass = 'type-res-small mb-1.5 block font-medium text-res-ink-muted';
 const todayKey = () => new Date().toISOString().slice(0, 10);
 
 /** Map each assigned unit → its real label, from the loaded layout. */
-const unitLabel = (
-  refId: string | null | undefined,
-  units: readonly PhysicalUnitDto[],
-) => (units && refId != null ? (units.find((u) => u._id === refId)?.label ?? refId) ?? refId : refId ?? '—');
+const unitLabel = (refId: string | null | undefined, units: readonly PhysicalUnitDto[]) =>
+  units && refId != null
+    ? (units.find((u) => u._id === refId)?.label ?? refId ?? refId)
+    : (refId ?? '—');
 
 interface AssignedRoom {
   row: StaffAssignmentDto;
@@ -135,7 +128,7 @@ export default function HousekeepingWorkspace() {
       const planDocs = plansRes.data?.items ?? [];
       setPlans(planDocs);
       setPlanId((current) =>
-        current && planDocs.some((d) => d._id === current) ? current : planDocs[0]?._id ?? '',
+        current && planDocs.some((d) => d._id === current) ? current : (planDocs[0]?._id ?? '')
       );
       setAssignments(assignsRes.docs ?? []);
     } catch (error) {
@@ -183,7 +176,7 @@ export default function HousekeepingWorkspace() {
       (u) =>
         (u as { type?: string }).type === 'room' ||
         (u as { type?: string }).type === 'room_type' ||
-        (u as { type?: string }).type === 'room_zone',
+        (u as { type?: string }).type === 'room_zone'
     );
     return candidates.length > 0 ? candidates : units;
   }, [units]);
@@ -201,7 +194,7 @@ export default function HousekeepingWorkspace() {
       const state = String(unit?.state ?? populated?.state ?? 'vacant_clean');
       return {
         row: assign,
-        label: unit ? unitLabel(unit._id, roomList) : populated?.label ?? refId,
+        label: unit ? unitLabel(unit._id, roomList) : (populated?.label ?? refId),
         unit: {
           _id: refId,
           type: (unit as { type?: string })?.type ?? 'room',
@@ -211,7 +204,7 @@ export default function HousekeepingWorkspace() {
         state,
       };
     },
-    [],
+    []
   );
 
   const assignedRoomRows = useMemo((): AssignedRoom[] => {
@@ -225,13 +218,13 @@ export default function HousekeepingWorkspace() {
   const isMyStation = useCallback(
     (assign: StaffAssignmentDto) =>
       assignmentIsActive(assign) && assignmentStaffId(assign.staff) === myId,
-    [myId],
+    [myId]
   );
 
   // Rooms nobody holds yet — the claim picker.
   const freeRooms = useMemo(() => {
     const held = new Set(
-      assignments.filter((a) => assignmentIsActive(a)).map((a) => assignmentUnitId(a.refId)),
+      assignments.filter((a) => assignmentIsActive(a)).map((a) => assignmentUnitId(a.refId))
     );
     return roomUnits.filter((u) => !held.has(u._id));
   }, [assignments, roomUnits]);
@@ -259,11 +252,32 @@ export default function HousekeepingWorkspace() {
       const unitDoc = (await physicalUnitService.get(unitId)).data?.unit;
       if (unitDoc && to === 'out_of_order_ooo') {
         setMaintenance((prev) =>
-          prev.some((m) => m.unitId === unitId) ? prev.map((m) => (m.unitId === unitId ? { unitId, label: unitDoc.label as string, note: note ?? m.note, at: new Date().toISOString() } : m)) : [...prev, { unitId, label: unitDoc.label as string, note: note ?? '', at: new Date().toISOString() }],
+          prev.some((m) => m.unitId === unitId)
+            ? prev.map((m) =>
+                m.unitId === unitId
+                  ? {
+                      unitId,
+                      label: unitDoc.label as string,
+                      note: note ?? m.note,
+                      at: new Date().toISOString(),
+                    }
+                  : m
+              )
+            : [
+                ...prev,
+                {
+                  unitId,
+                  label: unitDoc.label as string,
+                  note: note ?? '',
+                  at: new Date().toISOString(),
+                },
+              ]
         );
       }
     } catch (error) {
-      const msg = (error as { response?: { data?: { message?: string } } })?.response?.data?.message ?? String(error);
+      const msg =
+        (error as { response?: { data?: { message?: string } } })?.response?.data?.message ??
+        String(error);
       toast.error(msg);
     } finally {
       setBusyUnitId(null);
@@ -287,7 +301,7 @@ export default function HousekeepingWorkspace() {
           : code === 'UNIT_LEAD_TAKEN'
             ? 'Someone owns that room now'
             : (error as { response?: { data?: { message?: string } } })?.response?.data?.message ||
-                'Could not claim this room',
+              'Could not claim this room'
       );
     } finally {
       setClaiming(false);
@@ -320,18 +334,28 @@ export default function HousekeepingWorkspace() {
     try {
       setNoteSubmitting(true);
       // Re-mark the room out of order with the note attached so it persists the reason.
-      await physicalUnitService.transitionStatus(noteForRoom, { to: 'out_of_order_ooo', note: noteDraft.trim() });
+      await physicalUnitService.transitionStatus(noteForRoom, {
+        to: 'out_of_order_ooo',
+        note: noteDraft.trim(),
+      });
       setNoteForRoom(null);
       setNoteDraft('');
       toast.success('Issue note recorded');
       refreshLayout();
       setMaintenance((prev) =>
         prev.some((m) => m.unitId === noteForRoom)
-          ? prev.map((m) => (m.unitId === noteForRoom ? { ...m, note: noteDraft.trim(), at: new Date().toISOString() } : m))
-          : prev,
+          ? prev.map((m) =>
+              m.unitId === noteForRoom
+                ? { ...m, note: noteDraft.trim(), at: new Date().toISOString() }
+                : m
+            )
+          : prev
       );
     } catch (error) {
-      toast.error((error as { response?: { data?: { message?: string } } })?.response?.data?.message ?? 'Failed to record issue note');
+      toast.error(
+        (error as { response?: { data?: { message?: string } } })?.response?.data?.message ??
+          'Failed to record issue note'
+      );
     } finally {
       setNoteSubmitting(false);
     }
@@ -357,7 +381,8 @@ export default function HousekeepingWorkspace() {
             <Building2 className="h-5 w-5 text-res-brand" /> Housekeeping
           </h1>
           <p className="type-res-body mt-1 font-normal text-res-ink-muted">
-            {staffRoleLabel(staff?.role)} · {new Date().toLocaleDateString(undefined, {
+            {staffRoleLabel(staff?.role)} ·{' '}
+            {new Date().toLocaleDateString(undefined, {
               weekday: 'long',
               day: 'numeric',
               month: 'long',

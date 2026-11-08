@@ -310,16 +310,14 @@ export interface BookingRoomRef {
 }
 
 export interface BookingTableRef {
-  tableType?:
-    | {
-        _id?: string;
-        name?: string;
-        category?: string;
-        price?: number;
-        seatingCapacity?: number;
-        addOns?: unknown[];
-      }
-    | null;
+  tableType?: {
+    _id?: string;
+    name?: string;
+    category?: string;
+    price?: number;
+    seatingCapacity?: number;
+    addOns?: unknown[];
+  } | null;
   quantity?: number;
   [key: string]: unknown;
 }

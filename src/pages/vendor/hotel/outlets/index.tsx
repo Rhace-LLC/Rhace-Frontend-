@@ -104,12 +104,13 @@ export default function HotelOutletsPage() {
       suspended: links.filter((l) => l.status === 'suspended').length,
       inactive: links.filter((l) => l.status === 'suspended' || l.status === 'revoked').length,
     }),
-    [links],
+    [links]
   );
 
   const visibleLinks = useMemo(() => {
     if (tab === 'active') return links.filter((l) => l.status === 'active');
-    if (tab === 'inactive') return links.filter((l) => l.status === 'suspended' || l.status === 'revoked');
+    if (tab === 'inactive')
+      return links.filter((l) => l.status === 'suspended' || l.status === 'revoked');
     return links;
   }, [links, tab]);
 
@@ -246,7 +247,9 @@ export default function HotelOutletsPage() {
     const isCommission = editing.field === 'commission';
 
     if (!Number.isFinite(value) || value < 0 || (!isCommission && value < 1)) {
-      toast.error(isCommission ? 'Enter a commission of 0 or more.' : 'Enter a prep time of 1 minute or more.');
+      toast.error(
+        isCommission ? 'Enter a commission of 0 or more.' : 'Enter a prep time of 1 minute or more.'
+      );
       return;
     }
 
@@ -261,7 +264,9 @@ export default function HotelOutletsPage() {
       setDraft('');
       await load();
     } catch {
-      toast.error(isCommission ? 'Could not save the commission.' : 'Could not save the prep time.');
+      toast.error(
+        isCommission ? 'Could not save the commission.' : 'Could not save the prep time.'
+      );
     } finally {
       setBusy(false);
     }
@@ -363,7 +368,9 @@ export default function HotelOutletsPage() {
                   }`}
                 >
                   {item.label}
-                  <span className={`ml-1.5 ${active ? 'text-res-ink-inverted/70' : 'text-res-ink-muted'}`}>
+                  <span
+                    className={`ml-1.5 ${active ? 'text-res-ink-inverted/70' : 'text-res-ink-muted'}`}
+                  >
                     {item.count}
                   </span>
                 </button>
@@ -634,7 +641,9 @@ function OutletCard({
         <div className="min-w-0 flex-1">
           <h3 className="type-res-h3 truncate text-res-ink">{name}</h3>
           {subline && (
-            <p className="type-res-small mt-0.5 truncate font-normal text-res-ink-muted">{subline}</p>
+            <p className="type-res-small mt-0.5 truncate font-normal text-res-ink-muted">
+              {subline}
+            </p>
           )}
         </div>
         <span
@@ -651,9 +660,7 @@ function OutletCard({
             <span
               key={scope}
               className={`type-res-small rounded-full px-2.5 py-1 font-medium ${
-                enabled
-                  ? 'bg-res-secondary text-res-brand'
-                  : 'bg-res-surface text-res-ink-muted'
+                enabled ? 'bg-res-secondary text-res-brand' : 'bg-res-surface text-res-ink-muted'
               }`}
             >
               {SCOPE_LABEL[scope] ?? scope}
@@ -693,11 +700,21 @@ function OutletCard({
 
       <div className="mt-4 flex flex-1 items-end justify-between gap-2">
         {link.status === 'active' ? (
-          <button type="button" onClick={() => onStatus('suspended')} disabled={busy} className={PILL_QUIET}>
+          <button
+            type="button"
+            onClick={() => onStatus('suspended')}
+            disabled={busy}
+            className={PILL_QUIET}
+          >
             Suspend
           </button>
         ) : link.status === 'suspended' ? (
-          <button type="button" onClick={() => onStatus('active')} disabled={busy} className={PILL_QUIET}>
+          <button
+            type="button"
+            onClick={() => onStatus('active')}
+            disabled={busy}
+            className={PILL_QUIET}
+          >
             Resume
           </button>
         ) : (
@@ -755,7 +772,8 @@ function DetailRow({
             autoFocus
             className="h-9 w-20 rounded-res-sm border-0 bg-res-card px-2.5 text-right type-res-body font-semibold text-res-ink"
           />
-          <span className="type-res-caption text-res-ink-muted">{suffix}</span>            <button type="button" onClick={onSave} disabled={busy} className={TEXT_ACTION}>
+          <span className="type-res-caption text-res-ink-muted">{suffix}</span>{' '}
+          <button type="button" onClick={onSave} disabled={busy} className={TEXT_ACTION}>
             Save
           </button>
           <button type="button" onClick={onCancelEdit} disabled={busy} className={TEXT_ACTION}>

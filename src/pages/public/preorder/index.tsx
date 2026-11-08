@@ -156,14 +156,19 @@ const PreOrderPage = () => {
             )}
           </section>
         ) : (
-            <OrderBuilder
-              vendorId={reservation.vendor}
-              vertical={reservation.vertical}
-              depositCredit={reservation.depositCredit?.available ?? reservation.group?.minimumDeposit ?? reservation.amount ?? 0}
-              submitLabel="Place pre-order"
-              submitting={createOrder.isPending}
-              onSubmit={handleSubmit}
-            />
+          <OrderBuilder
+            vendorId={reservation.vendor}
+            vertical={reservation.vertical}
+            depositCredit={
+              reservation.depositCredit?.available ??
+              reservation.group?.minimumDeposit ??
+              reservation.amount ??
+              0
+            }
+            submitLabel="Place pre-order"
+            submitting={createOrder.isPending}
+            onSubmit={handleSubmit}
+          />
         )}
       </main>
       <div className="hidden md:block">

@@ -22,7 +22,7 @@ export const clubStateMeta = (state: string) =>
 /** Required spend for a booth, taken from its club blueprint (0 = no minimum). */
 export const minimumSpendFor = (
   unit: PhysicalUnitDto,
-  minimumSpendByBlueprint?: Map<string, number>,
+  minimumSpendByBlueprint?: Map<string, number>
 ) => Number(minimumSpendByBlueprint?.get(String(unit.blueprint)) ?? 0);
 
 /**

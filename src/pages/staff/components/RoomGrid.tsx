@@ -54,7 +54,9 @@ export default function RoomGrid({
 
   if (units.length === 0) {
     return (
-      <p className={cn('type-res-small py-8 text-center font-normal text-res-ink-muted', className)}>
+      <p
+        className={cn('type-res-small py-8 text-center font-normal text-res-ink-muted', className)}
+      >
         No rooms found on this floor plan yet.
       </p>
     );
@@ -79,9 +81,7 @@ export default function RoomGrid({
               const guest = res?.guestName || unit.session?.guestName;
               const isBusy = Boolean(res && busyReservationId === res._id);
               const canCheckIn = Boolean(
-                res &&
-                  (res.status === 'upcoming' || res.status === 'no_show') &&
-                  onCheckIn,
+                res && (res.status === 'upcoming' || res.status === 'no_show') && onCheckIn
               );
               const canCheckOut = Boolean(res && res.status === 'active' && onCheckOut);
               return (
@@ -98,7 +98,7 @@ export default function RoomGrid({
                       <span
                         className={cn(
                           'type-res-small flex shrink-0 items-center gap-1.5 rounded-full px-2 py-1 font-semibold whitespace-nowrap',
-                          meta.pill,
+                          meta.pill
                         )}
                       >
                         <span className={cn('h-1.5 w-1.5 rounded-full', meta.dot)} />
@@ -118,7 +118,9 @@ export default function RoomGrid({
                       )}
                     </p>
                     {res && (
-                      <p className="type-res-small font-normal text-res-ink-muted">{nightRange(res)}</p>
+                      <p className="type-res-small font-normal text-res-ink-muted">
+                        {nightRange(res)}
+                      </p>
                     )}
                   </div>
 

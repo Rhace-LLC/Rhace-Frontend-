@@ -5,7 +5,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { useAuth } from '@/contexts/AuthContext';
 import {
   billingService,
@@ -15,14 +21,23 @@ import {
   type VendorTimelineDto,
 } from '@/services/billing.service';
 
-const naira = (n?: number) => `₦${Number(n || 0).toLocaleString('en-NG', { maximumFractionDigits: 0 })}`;
+const naira = (n?: number) =>
+  `₦${Number(n || 0).toLocaleString('en-NG', { maximumFractionDigits: 0 })}`;
 const day = (v?: string | null) =>
-  v ? new Date(v).toLocaleDateString('en-NG', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Africa/Lagos' }) : '—';
+  v
+    ? new Date(v).toLocaleDateString('en-NG', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+        timeZone: 'Africa/Lagos',
+      })
+    : '—';
 const monthLabel = (key: string) => {
   const [y, m] = key.split('-').map(Number);
   return new Date(y, m - 1, 1).toLocaleDateString('en-NG', { month: 'short', year: 'numeric' });
 };
-const ageDays = (v?: string | null) => (v ? Math.floor((Date.now() - new Date(v).getTime()) / 86_400_000) : null);
+const ageDays = (v?: string | null) =>
+  v ? Math.floor((Date.now() - new Date(v).getTime()) / 86_400_000) : null;
 
 const INVOICE_LABEL: Record<string, string> = {
   pending_payment: 'Awaiting payment',
@@ -115,7 +130,9 @@ const SubscriptionMonitor = () => {
   }, [loadInvoices]);
 
   const subscribers = summary
-    ? (summary.statuses.active ?? 0) + (summary.statuses.past_due ?? 0) + (summary.statuses.cancelled ?? 0)
+    ? (summary.statuses.active ?? 0) +
+      (summary.statuses.past_due ?? 0) +
+      (summary.statuses.cancelled ?? 0)
     : 0;
 
   return (
@@ -124,8 +141,8 @@ const SubscriptionMonitor = () => {
         <div>
           <h2 className="font-semibold text-lg">Vendor subscriptions</h2>
           <p className="text-sm text-muted-foreground">
-            Subscription fees beside the percentage take. NGN only; payments confirm automatically through the
-            provider.
+            Subscription fees beside the percentage take. NGN only; payments confirm automatically
+            through the provider.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -158,7 +175,11 @@ const SubscriptionMonitor = () => {
               value={naira(summary.totals.subscriptionIncome)}
               hint={`${subscribers} subscribed venue${subscribers === 1 ? '' : 's'}`}
             />
-            <Tile label="Percentage take" value={naira(summary.totals.percentageTake)} hint="NGN payments, gross share" />
+            <Tile
+              label="Percentage take"
+              value={naira(summary.totals.percentageTake)}
+              hint="NGN payments, gross share"
+            />
             <Tile
               label="Forgone take (estimate)"
               value={naira(summary.totals.forgoneTakeEstimate)}
@@ -168,7 +189,10 @@ const SubscriptionMonitor = () => {
 
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 text-sm">
             {(['active', 'past_due', 'cancelled', 'lapsed'] as const).map((s) => (
-              <div key={s} className="flex items-center justify-between rounded-lg bg-slate-50 px-4 py-2.5">
+              <div
+                key={s}
+                className="flex items-center justify-between rounded-lg bg-slate-50 px-4 py-2.5"
+              >
                 <span className="text-muted-foreground">{STATUS_LABEL[s]}</span>
                 <span className="font-semibold">{summary.statuses[s] ?? 0}</span>
               </div>
@@ -197,18 +221,26 @@ const SubscriptionMonitor = () => {
                       <td className="px-4 py-2.5">
                         {naira(m.subscriptionIncome)}
                         {m.invoicesPaid > 0 && (
-                          <span className="text-xs text-muted-foreground"> · {m.invoicesPaid} paid</span>
+                          <span className="text-xs text-muted-foreground">
+                            {' '}
+                            · {m.invoicesPaid} paid
+                          </span>
                         )}
                       </td>
                       <td className="px-4 py-2.5">{naira(m.percentageTake)}</td>
                       <td className="px-4 py-2.5">
                         {naira(m.subscriptionVolume)}
                         {m.subscriptionPayments > 0 && (
-                          <span className="text-xs text-muted-foreground"> · {m.subscriptionPayments}</span>
+                          <span className="text-xs text-muted-foreground">
+                            {' '}
+                            · {m.subscriptionPayments}
+                          </span>
                         )}
                       </td>
                       <td className="px-4 py-2.5">{naira(m.forgoneTakeEstimate)}</td>
-                      <td className={`px-4 py-2.5 font-medium ${net < 0 ? 'text-amber-700' : 'text-emerald-700'}`}>
+                      <td
+                        className={`px-4 py-2.5 font-medium ${net < 0 ? 'text-amber-700' : 'text-emerald-700'}`}
+                      >
                         {net < 0 ? '−' : '+'}
                         {naira(Math.abs(net))}
                       </td>
@@ -218,8 +250,8 @@ const SubscriptionMonitor = () => {
               </tbody>
             </table>
             <p className="mt-2 text-xs text-muted-foreground">
-              Net = subscription fees − forgone take. The estimate uses gross share at today&apos;s rate; the pilot
-              stop/go review should use the net-of-fee worksheet.
+              Net = subscription fees − forgone take. The estimate uses gross share at today&apos;s
+              rate; the pilot stop/go review should use the net-of-fee worksheet.
             </p>
           </div>
 
@@ -254,10 +286,13 @@ const SubscriptionMonitor = () => {
               </p>
               {summary.pendingInvoices.count > 0 && (
                 <p className="text-amber-900">
-                  {summary.pendingInvoices.count} unpaid invoice{summary.pendingInvoices.count === 1 ? '' : 's'} (
-                  {naira(summary.pendingInvoices.amount)} still to pay), oldest {summary.pendingInvoices.oldestAgeDays ?? 0}{' '}
-                  days{summary.pendingInvoices.withFailedPayments > 0 &&
-                    `; ${summary.pendingInvoices.withFailedPayments} with failed payment attempts`}.
+                  {summary.pendingInvoices.count} unpaid invoice
+                  {summary.pendingInvoices.count === 1 ? '' : 's'} (
+                  {naira(summary.pendingInvoices.amount)} still to pay), oldest{' '}
+                  {summary.pendingInvoices.oldestAgeDays ?? 0} days
+                  {summary.pendingInvoices.withFailedPayments > 0 &&
+                    `; ${summary.pendingInvoices.withFailedPayments} with failed payment attempts`}
+                  .
                 </p>
               )}
               {summary.attention.map((a) => (
@@ -339,15 +374,20 @@ const SubscriptionMonitor = () => {
                       {INVOICE_LABEL[inv.status] ?? inv.status}
                       {(inv.failedAttempts ?? 0) > 0 && inv.status === 'pending_payment' && (
                         <span className="block text-xs text-red-600">
-                          {inv.failedAttempts} failed{inv.lastFailureReason ? ` · ${inv.lastFailureReason}` : ''}
+                          {inv.failedAttempts} failed
+                          {inv.lastFailureReason ? ` · ${inv.lastFailureReason}` : ''}
                         </span>
                       )}
                       {(inv.amountReceived ?? 0) > 0 && inv.status === 'pending_payment' && (
-                        <span className="block text-xs text-muted-foreground">{naira(inv.amountReceived)} paid so far</span>
+                        <span className="block text-xs text-muted-foreground">
+                          {naira(inv.amountReceived)} paid so far
+                        </span>
                       )}
                     </td>
                     <td className="px-5 py-3 whitespace-nowrap">
-                      {inv.periodStart ? `${day(inv.periodStart)} – ${day(inv.periodEnd)}` : `due ${day(inv.dueDate)}`}
+                      {inv.periodStart
+                        ? `${day(inv.periodStart)} – ${day(inv.periodEnd)}`
+                        : `due ${day(inv.dueDate)}`}
                     </td>
                     <td className="px-5 py-3">{ageDays(inv.createdAt) ?? '—'}d</td>
                   </tr>
@@ -358,13 +398,23 @@ const SubscriptionMonitor = () => {
         </div>
         {pages > 1 && (
           <div className="flex items-center justify-end gap-2 px-6 py-4 text-sm">
-            <Button size="sm" variant="outline" disabled={page <= 1} onClick={() => setPage(page - 1)}>
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={page <= 1}
+              onClick={() => setPage(page - 1)}
+            >
               Previous
             </Button>
             <span className="text-muted-foreground">
               {page} / {pages}
             </span>
-            <Button size="sm" variant="outline" disabled={page >= pages} onClick={() => setPage(page + 1)}>
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={page >= pages}
+              onClick={() => setPage(page + 1)}
+            >
               Next
             </Button>
           </div>
@@ -417,7 +467,9 @@ const VendorTimelineDialog = ({
     void load();
   }, [load]);
 
-  const pendingInvoice = data?.rows.find((r) => r.kind === 'invoice' && r.status === 'pending_payment');
+  const pendingInvoice = data?.rows.find(
+    (r) => r.kind === 'invoice' && r.status === 'pending_payment'
+  );
   const billing = data?.vendor.billing;
 
   const run = async () => {
@@ -454,10 +506,24 @@ const VendorTimelineDialog = ({
         ) : (
           <div className="space-y-5 text-sm">
             <div className="grid gap-3 sm:grid-cols-4">
-              <Tile label="Model" value={billing?.model === 'subscription' ? 'Subscription' : 'Percentage'} />
-              <Tile label="Status" value={STATUS_LABEL[billing?.status ?? 'none'] ?? String(billing?.status)} />
-              <Tile label="Paid until" value={day(billing?.currentPeriodEnd)} hint={billing?.graceUntil ? `Grace to ${day(billing.graceUntil)}` : undefined} />
-              <Tile label="Credit" value={naira(data.availableCredit)} hint={billing?.autoRenew === false ? 'Auto-renew off' : 'Auto-renew on'} />
+              <Tile
+                label="Model"
+                value={billing?.model === 'subscription' ? 'Subscription' : 'Percentage'}
+              />
+              <Tile
+                label="Status"
+                value={STATUS_LABEL[billing?.status ?? 'none'] ?? String(billing?.status)}
+              />
+              <Tile
+                label="Paid until"
+                value={day(billing?.currentPeriodEnd)}
+                hint={billing?.graceUntil ? `Grace to ${day(billing.graceUntil)}` : undefined}
+              />
+              <Tile
+                label="Credit"
+                value={naira(data.availableCredit)}
+                hint={billing?.autoRenew === false ? 'Auto-renew off' : 'Auto-renew on'}
+              />
             </div>
 
             <div className="overflow-x-auto">
@@ -481,12 +547,18 @@ const VendorTimelineDialog = ({
                         ) : (
                           <span className="font-mono text-xs">{r.invoiceNumber}</span>
                         )}
-                        {r.cancelReason && <p className="text-xs text-muted-foreground">Cancelled: {r.cancelReason}</p>}
+                        {r.cancelReason && (
+                          <p className="text-xs text-muted-foreground">
+                            Cancelled: {r.cancelReason}
+                          </p>
+                        )}
                       </td>
                       <td className="px-3 py-2">{INVOICE_LABEL[r.status] ?? r.status}</td>
                       <td className="px-3 py-2">{naira(r.totalDue)}</td>
                       <td className="px-3 py-2">
-                        {r.kind === 'credit' ? `${naira(r.appliedAmount)} used` : naira(r.amountReceived)}
+                        {r.kind === 'credit'
+                          ? `${naira(r.appliedAmount)} used`
+                          : naira(r.amountReceived)}
                       </td>
                       <td className="px-3 py-2 whitespace-nowrap">
                         {r.periodStart ? `${day(r.periodStart)} – ${day(r.periodEnd)}` : '—'}
@@ -505,14 +577,17 @@ const VendorTimelineDialog = ({
               <div className="rounded-lg border p-4 space-y-3">
                 <p className="font-semibold">Support action</p>
                 <p className="text-xs text-muted-foreground">
-                  For support cases only — payments confirm automatically. Every action needs a reason and is audited.
+                  For support cases only — payments confirm automatically. Every action needs a
+                  reason and is audited.
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {(
                     [
                       ['extend', 'Extend period'],
                       ['cancel', 'Cancel at period end'],
-                      ...(pendingInvoice ? [['activate', `Activate ${pendingInvoice.invoiceNumber}`]] : []),
+                      ...(pendingInvoice
+                        ? [['activate', `Activate ${pendingInvoice.invoiceNumber}`]]
+                        : []),
                     ] as [SupportAction, string][]
                   ).map(([value, label]) => (
                     <Button
@@ -540,8 +615,8 @@ const VendorTimelineDialog = ({
                 )}
                 {action === 'activate' && (
                   <p className="text-xs text-amber-700">
-                    Marks the invoice paid without a provider confirmation. Use only when the payment is verified
-                    in the provider dashboard.
+                    Marks the invoice paid without a provider confirmation. Use only when the
+                    payment is verified in the provider dashboard.
                   </p>
                 )}
                 <div>

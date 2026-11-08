@@ -88,7 +88,10 @@ function DialogFooter({ className = undefined, ...props }: React.ComponentProps<
   );
 }
 
-function DialogTitle({ className = undefined, ...props }: React.ComponentProps<typeof DialogPrimitive.Title>) {
+function DialogTitle({
+  className = undefined,
+  ...props
+}: React.ComponentProps<typeof DialogPrimitive.Title>) {
   return (
     <DialogPrimitive.Title
       data-slot="dialog-title"
@@ -98,7 +101,10 @@ function DialogTitle({ className = undefined, ...props }: React.ComponentProps<t
   );
 }
 
-function DialogDescription({ className = undefined, ...props }: React.ComponentProps<typeof DialogPrimitive.Description>) {
+function DialogDescription({
+  className = undefined,
+  ...props
+}: React.ComponentProps<typeof DialogPrimitive.Description>) {
   return (
     <DialogPrimitive.Description
       data-slot="dialog-description"

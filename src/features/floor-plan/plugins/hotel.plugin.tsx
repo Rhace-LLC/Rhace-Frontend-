@@ -1,7 +1,14 @@
 /* eslint-disable react-refresh/only-export-components */
 import { Wrench } from 'lucide-react';
 import type { BusinessData, FloorEntity, FloorPlan, SpatialData } from '../core/types';
-import type { DrawerContext, ManageCardActions, TileContext, TopBarContext, ToolbarItem, VerticalPlugin } from '../core/plugin';
+import type {
+  DrawerContext,
+  ManageCardActions,
+  TileContext,
+  TopBarContext,
+  ToolbarItem,
+  VerticalPlugin,
+} from '../core/plugin';
 import { ScopeNav } from '../components/overlays/ScopeNav';
 import { BlueprintSpecs } from '../components/BlueprintSpecs';
 import { ManageUnitCard } from '../components/ManageUnitCard';
@@ -17,14 +24,13 @@ function renderScopeNav(ctx: TopBarContext) {
   const activeSection = plan.activeArea || sections[0] || '';
   // `??` alone never catches `floors: []` (the backend default) — treat empty
   // lists as missing so the Floor dropdown always has options.
-  const floors =
-    plan.sectionFloors?.[activeSection]?.length
-      ? plan.sectionFloors[activeSection]
-      : plan.floors?.length
-        ? plan.floors
-        : plan.floor
-          ? [plan.floor]
-          : ['Ground Floor'];
+  const floors = plan.sectionFloors?.[activeSection]?.length
+    ? plan.sectionFloors[activeSection]
+    : plan.floors?.length
+      ? plan.floors
+      : plan.floor
+        ? [plan.floor]
+        : ['Ground Floor'];
   const currentFloor = plan.floor && floors.includes(plan.floor) ? plan.floor : floors[0];
 
   return (
@@ -245,16 +251,39 @@ function manageToolbarItems({
 }: {
   plan: FloorPlan;
   selection: string[];
-  updateEntity: (id: string, patch: { businessData?: Partial<BusinessData>; spatialData?: Partial<SpatialData> }) => void;
+  updateEntity: (
+    id: string,
+    patch: { businessData?: Partial<BusinessData>; spatialData?: Partial<SpatialData> }
+  ) => void;
 }): ToolbarItem[] {
   if (selection.length !== 1) return [];
   const id = selection[0];
   return [
-    { id: 'clean', label: 'Mark Clean', onClick: () => updateEntity(id, { businessData: { status: 'vacant_clean' } }) },
-    { id: 'cleaning', label: 'Cleaning', onClick: () => updateEntity(id, { businessData: { status: 'cleaning_in_progress' } }) },
-    { id: 'inspected', label: 'Inspected', onClick: () => updateEntity(id, { businessData: { status: 'inspected' } }) },
-    { id: 'checkin', label: 'Check-In', onClick: () => updateEntity(id, { businessData: { status: 'occupied' } }) },
-    { id: 'ooo', label: 'Flag OOO', onClick: () => updateEntity(id, { businessData: { status: 'out_of_order_ooo' } }) },
+    {
+      id: 'clean',
+      label: 'Mark Clean',
+      onClick: () => updateEntity(id, { businessData: { status: 'vacant_clean' } }),
+    },
+    {
+      id: 'cleaning',
+      label: 'Cleaning',
+      onClick: () => updateEntity(id, { businessData: { status: 'cleaning_in_progress' } }),
+    },
+    {
+      id: 'inspected',
+      label: 'Inspected',
+      onClick: () => updateEntity(id, { businessData: { status: 'inspected' } }),
+    },
+    {
+      id: 'checkin',
+      label: 'Check-In',
+      onClick: () => updateEntity(id, { businessData: { status: 'occupied' } }),
+    },
+    {
+      id: 'ooo',
+      label: 'Flag OOO',
+      onClick: () => updateEntity(id, { businessData: { status: 'out_of_order_ooo' } }),
+    },
   ];
 }
 
@@ -278,19 +307,54 @@ export const hotelPlugin: VerticalPlugin = {
     { type: 'window', label: 'Window', shape: 'rect', width: 110, height: 12, structure: true },
     { type: 'entrance', label: 'Entrance', shape: 'rect', width: 110, height: 18, structure: true },
     { type: 'elevator', label: 'Elevator', shape: 'rect', width: 90, height: 90, structure: true },
-    { type: 'service_elevator', label: 'Service Elevator', shape: 'rect', width: 70, height: 70, structure: true },
+    {
+      type: 'service_elevator',
+      label: 'Service Elevator',
+      shape: 'rect',
+      width: 70,
+      height: 70,
+      structure: true,
+    },
     { type: 'stairs', label: 'Stairs', shape: 'rect', width: 90, height: 130, structure: true },
-    { type: 'fire_exit', label: 'Fire Exit', shape: 'rect', width: 70, height: 90, structure: true },
+    {
+      type: 'fire_exit',
+      label: 'Fire Exit',
+      shape: 'rect',
+      width: 70,
+      height: 90,
+      structure: true,
+    },
     { type: 'restroom', label: 'Restroom', shape: 'rect', width: 110, height: 90, structure: true },
     { type: 'lobby', label: 'Lobby', shape: 'rect', width: 300, height: 180, structure: true },
-    { type: 'reception', label: 'Reception', shape: 'rect', width: 220, height: 70, structure: true },
+    {
+      type: 'reception',
+      label: 'Reception',
+      shape: 'rect',
+      width: 220,
+      height: 70,
+      structure: true,
+    },
     { type: 'pool', label: 'Pool', shape: 'rect', width: 320, height: 200, structure: true },
     { type: 'gym', label: 'Gym', shape: 'rect', width: 300, height: 200, structure: true },
-    { type: 'meeting_room', label: 'Meeting Room', shape: 'rect', width: 260, height: 180, structure: true },
+    {
+      type: 'meeting_room',
+      label: 'Meeting Room',
+      shape: 'rect',
+      width: 260,
+      height: 180,
+      structure: true,
+    },
     { type: 'storage', label: 'Storage', shape: 'rect', width: 140, height: 120, structure: true },
     { type: 'laundry', label: 'Laundry', shape: 'rect', width: 140, height: 120, structure: true },
     { type: 'vending', label: 'Vending', shape: 'rect', width: 40, height: 40, structure: true },
-    { type: 'ice_machine', label: 'Ice Machine', shape: 'rect', width: 40, height: 40, structure: true },
+    {
+      type: 'ice_machine',
+      label: 'Ice Machine',
+      shape: 'rect',
+      width: 40,
+      height: 40,
+      structure: true,
+    },
     { type: 'parking', label: 'Parking', shape: 'rect', width: 200, height: 120, structure: true },
   ],
   renderTopBar: (ctx) => renderScopeNav(ctx),

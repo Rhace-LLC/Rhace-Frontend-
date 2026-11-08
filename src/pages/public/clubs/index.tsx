@@ -149,11 +149,7 @@ const ClubPage = () => {
         {/* Row 2 — gallery */}
         <section className="rounded-res-lg bg-res-card p-2 shadow-res-low">
           <Images images={club?.profileImages ?? []} name={club.businessName} />
-          <Images2
-            vendor={club}
-            images={club?.profileImages ?? []}
-            name={club.businessName}
-          />
+          <Images2 vendor={club} images={club?.profileImages ?? []} name={club.businessName} />
         </section>
 
         {/* Row 3 — tabs */}

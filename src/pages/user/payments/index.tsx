@@ -423,7 +423,9 @@ function DetailDrawer({ payment, onClose, openCheckout }: DetailDrawerProps) {
               Reference
             </p>
             <p className="text-[12px] font-semibold text-gray-700 font-mono tracking-tight">
-              {payment.paystackReference ? payment.paystackReference.toUpperCase() : 'Not specified'}
+              {payment.paystackReference
+                ? payment.paystackReference.toUpperCase()
+                : 'Not specified'}
             </p>
           </div>
 

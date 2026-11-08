@@ -120,8 +120,7 @@ function LineVisual({
       />
     );
   }
-  const Icon =
-    itemType === 'dish' ? UtensilsCrossed : itemType === 'drink' ? GlassWater : Package;
+  const Icon = itemType === 'dish' ? UtensilsCrossed : itemType === 'drink' ? GlassWater : Package;
   return (
     <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-res-sm bg-res-surface">
       <Icon className="h-6 w-6 text-res-brand" />
@@ -140,7 +139,10 @@ function OrderCard({
 }) {
   const lines = order.lines ?? [];
   const itemCount = lines.reduce((sum, l) => sum + (l.quantity ?? 0), 0);
-  const preview = lines.slice(0, 2).map((l) => l.name).join(' · ');
+  const preview = lines
+    .slice(0, 2)
+    .map((l) => l.name)
+    .join(' · ');
   const placedAt = formatPlacedAt(order.createdAt);
   return (
     <article className="flex w-full flex-col rounded-res-md border border-res-line bg-res-card p-4 shadow-res-low">
@@ -153,9 +155,7 @@ function OrderCard({
             {itemCount ? `${itemCount} item${itemCount === 1 ? '' : 's'}` : 'Order'}
           </h3>
           {placedAt && (
-            <p className="type-res-small mt-1 font-normal text-res-ink-muted">
-              Placed {placedAt}
-            </p>
+            <p className="type-res-small mt-1 font-normal text-res-ink-muted">Placed {placedAt}</p>
           )}
           {preview && (
             <p className="type-res-small mt-0.5 line-clamp-1 font-normal text-res-ink-muted">
@@ -271,7 +271,7 @@ function OrderDetailsModal({
     } catch (error) {
       toast.error(
         (error as { response?: { data?: { message?: string } } })?.response?.data?.message ||
-          'Could not add items.',
+          'Could not add items.'
       );
     } finally {
       setAddingBusy(false);
@@ -385,155 +385,159 @@ function OrderDetailsModal({
         ) : (
           <>
             {lines.length === 0 ? (
-          <p className="type-res-small font-normal text-res-ink-muted">No items on this order.</p>
-        ) : (
-          <div className="space-y-3">
-            <div className="flex items-center justify-between gap-2">
-              <p className="type-res-small font-semibold tracking-wide text-res-ink-muted uppercase">
-                Items ({itemCount})
+              <p className="type-res-small font-normal text-res-ink-muted">
+                No items on this order.
               </p>
-              {editable && (
-                <button
-                  type="button"
-                  onClick={openAdding}
-                  className="type-res-small cursor-pointer rounded-full bg-res-surface px-3.5 py-1.5 font-semibold text-res-ink transition-colors hover:text-res-brand"
-                >
-                  + Add more
-                </button>
-              )}
-            </div>
-            <ul className="space-y-3">
-              {lines.map((line) => {
-                const detail = catalogMap.get(`${line.itemType}:${line.itemId}`);
-                const description = detail?.description;
-                const image = detail?.image;
-                const category = detail?.category;
-                const volume = detail?.volume;
-                const contentsNote = detail?.contentsNote;
-                return (
-                  <li
-                    key={line._id}
-                    className="rounded-res-md border border-res-line bg-res-card p-3 shadow-res-low"
-                  >
-                    <div className="flex items-start gap-3">
-                      <LineVisual itemType={line.itemType} image={image} name={line.name} />
-                      <div className="min-w-0 flex-1">
-                        <div className="flex flex-wrap items-center gap-1.5">
-                          <p className="type-res-caption font-medium tracking-[0.2px] text-res-ink-muted uppercase">
-                            {ITEM_TYPE_LABEL[line.itemType] ?? line.itemType}
-                            {category ? ` · ${category}` : ''}
-                          </p>
-                          {volume && (
-                            <span className="type-res-caption rounded-full bg-res-surface px-2 py-0.5 font-semibold text-res-ink-muted">
-                              {volume}
-                            </span>
-                          )}
-                          {line.prepStatus && line.prepStatus !== 'queued' && (
-                            <span className="type-res-caption rounded-full bg-res-secondary px-2 py-0.5 font-semibold text-res-brand capitalize">
-                              {line.prepStatus}
-                            </span>
-                          )}
-                        </div>
-                        <div className="mt-1 flex items-start justify-between gap-2">
-                          <h4 className="type-res-body font-semibold text-res-ink">{line.name}</h4>
-                          <span className="type-res-body shrink-0 font-semibold text-res-ink">
-                            {money(line.lineTotal)}
-                          </span>
-                        </div>
-                        {(description || contentsNote) && (
-                          <p className="type-res-small mt-0.5 line-clamp-2 font-normal text-res-ink-muted">
-                            {description || contentsNote}
-                          </p>
-                        )}
-                        <p className="type-res-small mt-1 font-normal text-res-ink-muted">
-                          {line.quantity} × {money(line.unitPrice)}
-                        </p>
-                        {line.notes && (
-                          <p className="type-res-small mt-1 font-normal text-res-ink-muted italic">
-                            Note: {line.notes}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-
-                    {line.addons?.length > 0 && (
-                      <div className="mt-2.5 border-t border-res-line pt-2.5">
-                        <ul className="space-y-1">
-                          {line.addons.map((addon, i) => (
-                            <li
-                              key={`${line._id}-addon-${i}`}
-                              className="type-res-small flex justify-between gap-2 font-normal text-res-ink-muted"
-                            >
-                              <span>
-                                + {addon.name}
-                                {addon.quantity > 1 ? ` × ${addon.quantity}` : ''}
+            ) : (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between gap-2">
+                  <p className="type-res-small font-semibold tracking-wide text-res-ink-muted uppercase">
+                    Items ({itemCount})
+                  </p>
+                  {editable && (
+                    <button
+                      type="button"
+                      onClick={openAdding}
+                      className="type-res-small cursor-pointer rounded-full bg-res-surface px-3.5 py-1.5 font-semibold text-res-ink transition-colors hover:text-res-brand"
+                    >
+                      + Add more
+                    </button>
+                  )}
+                </div>
+                <ul className="space-y-3">
+                  {lines.map((line) => {
+                    const detail = catalogMap.get(`${line.itemType}:${line.itemId}`);
+                    const description = detail?.description;
+                    const image = detail?.image;
+                    const category = detail?.category;
+                    const volume = detail?.volume;
+                    const contentsNote = detail?.contentsNote;
+                    return (
+                      <li
+                        key={line._id}
+                        className="rounded-res-md border border-res-line bg-res-card p-3 shadow-res-low"
+                      >
+                        <div className="flex items-start gap-3">
+                          <LineVisual itemType={line.itemType} image={image} name={line.name} />
+                          <div className="min-w-0 flex-1">
+                            <div className="flex flex-wrap items-center gap-1.5">
+                              <p className="type-res-caption font-medium tracking-[0.2px] text-res-ink-muted uppercase">
+                                {ITEM_TYPE_LABEL[line.itemType] ?? line.itemType}
+                                {category ? ` · ${category}` : ''}
+                              </p>
+                              {volume && (
+                                <span className="type-res-caption rounded-full bg-res-surface px-2 py-0.5 font-semibold text-res-ink-muted">
+                                  {volume}
+                                </span>
+                              )}
+                              {line.prepStatus && line.prepStatus !== 'queued' && (
+                                <span className="type-res-caption rounded-full bg-res-secondary px-2 py-0.5 font-semibold text-res-brand capitalize">
+                                  {line.prepStatus}
+                                </span>
+                              )}
+                            </div>
+                            <div className="mt-1 flex items-start justify-between gap-2">
+                              <h4 className="type-res-body font-semibold text-res-ink">
+                                {line.name}
+                              </h4>
+                              <span className="type-res-body shrink-0 font-semibold text-res-ink">
+                                {money(line.lineTotal)}
                               </span>
-                              <span className="shrink-0 font-medium text-res-ink">
-                                {money(addon.unitPrice * (addon.quantity ?? 1))}
-                              </span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-        )}
+                            </div>
+                            {(description || contentsNote) && (
+                              <p className="type-res-small mt-0.5 line-clamp-2 font-normal text-res-ink-muted">
+                                {description || contentsNote}
+                              </p>
+                            )}
+                            <p className="type-res-small mt-1 font-normal text-res-ink-muted">
+                              {line.quantity} × {money(line.unitPrice)}
+                            </p>
+                            {line.notes && (
+                              <p className="type-res-small mt-1 font-normal text-res-ink-muted italic">
+                                Note: {line.notes}
+                              </p>
+                            )}
+                          </div>
+                        </div>
 
-        <div className="rounded-res-md bg-res-surface p-4">
-          <p className="type-res-small font-semibold tracking-wide text-res-ink-muted uppercase">
-            Bill
-          </p>
-          <dl className="type-res-small mt-2 space-y-1.5 font-normal text-res-ink-muted">
-            <div className="flex justify-between gap-2">
-              <dt>Subtotal</dt>
-              <dd className="font-medium text-res-ink">{money(order.subtotal)}</dd>
-            </div>
-            {order.discount > 0 && (
-              <div className="flex justify-between gap-2">
-                <dt>Discount</dt>
-                <dd className="font-medium text-res-ink">−{money(order.discount)}</dd>
+                        {line.addons?.length > 0 && (
+                          <div className="mt-2.5 border-t border-res-line pt-2.5">
+                            <ul className="space-y-1">
+                              {line.addons.map((addon, i) => (
+                                <li
+                                  key={`${line._id}-addon-${i}`}
+                                  className="type-res-small flex justify-between gap-2 font-normal text-res-ink-muted"
+                                >
+                                  <span>
+                                    + {addon.name}
+                                    {addon.quantity > 1 ? ` × ${addon.quantity}` : ''}
+                                  </span>
+                                  <span className="shrink-0 font-medium text-res-ink">
+                                    {money(addon.unitPrice * (addon.quantity ?? 1))}
+                                  </span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                      </li>
+                    );
+                  })}
+                </ul>
               </div>
             )}
-            {order.serviceFee > 0 && (
-              <div className="flex justify-between gap-2">
-                <dt>Service fee</dt>
-                <dd className="font-medium text-res-ink">{money(order.serviceFee)}</dd>
-              </div>
-            )}
-            <div className="flex justify-between gap-2 border-t border-res-line pt-2">
-              <dt className="font-semibold text-res-ink">Total</dt>
-              <dd className="type-res-body font-semibold text-res-ink">{money(order.total)}</dd>
-            </div>
-            {order.amountPaid > 0 && (
-              <div className="flex justify-between gap-2">
-                <dt>Paid</dt>
-                <dd className="font-medium text-res-ink">{money(order.amountPaid)}</dd>
-              </div>
-            )}
-            {order.minimumDepositCredit > 0 && (
-              <div className="flex justify-between gap-2">
-                <dt>Deposit credit</dt>
-                <dd className="font-medium text-res-ink">
-                  −{money(order.minimumDepositCredit)}
-                </dd>
-              </div>
-            )}
-          </dl>
-          <div className="mt-2 flex items-center justify-between border-t border-res-line pt-3">
-            <span className="type-res-small font-medium text-res-ink-muted">Still to pay</span>
-            <span className="type-res-h3 text-res-ink">{money(order.balance)}</span>
-          </div>
-        </div>
 
-        {order.notes && (
-          <p className="type-res-small rounded-res-sm bg-res-surface px-3 py-2 font-normal text-res-ink-muted">
-            Order note: {order.notes}
-          </p>
-        )}
+            <div className="rounded-res-md bg-res-surface p-4">
+              <p className="type-res-small font-semibold tracking-wide text-res-ink-muted uppercase">
+                Bill
+              </p>
+              <dl className="type-res-small mt-2 space-y-1.5 font-normal text-res-ink-muted">
+                <div className="flex justify-between gap-2">
+                  <dt>Subtotal</dt>
+                  <dd className="font-medium text-res-ink">{money(order.subtotal)}</dd>
+                </div>
+                {order.discount > 0 && (
+                  <div className="flex justify-between gap-2">
+                    <dt>Discount</dt>
+                    <dd className="font-medium text-res-ink">−{money(order.discount)}</dd>
+                  </div>
+                )}
+                {order.serviceFee > 0 && (
+                  <div className="flex justify-between gap-2">
+                    <dt>Service fee</dt>
+                    <dd className="font-medium text-res-ink">{money(order.serviceFee)}</dd>
+                  </div>
+                )}
+                <div className="flex justify-between gap-2 border-t border-res-line pt-2">
+                  <dt className="font-semibold text-res-ink">Total</dt>
+                  <dd className="type-res-body font-semibold text-res-ink">{money(order.total)}</dd>
+                </div>
+                {order.amountPaid > 0 && (
+                  <div className="flex justify-between gap-2">
+                    <dt>Paid</dt>
+                    <dd className="font-medium text-res-ink">{money(order.amountPaid)}</dd>
+                  </div>
+                )}
+                {order.minimumDepositCredit > 0 && (
+                  <div className="flex justify-between gap-2">
+                    <dt>Deposit credit</dt>
+                    <dd className="font-medium text-res-ink">
+                      −{money(order.minimumDepositCredit)}
+                    </dd>
+                  </div>
+                )}
+              </dl>
+              <div className="mt-2 flex items-center justify-between border-t border-res-line pt-3">
+                <span className="type-res-small font-medium text-res-ink-muted">Still to pay</span>
+                <span className="type-res-h3 text-res-ink">{money(order.balance)}</span>
+              </div>
+            </div>
+
+            {order.notes && (
+              <p className="type-res-small rounded-res-sm bg-res-surface px-3 py-2 font-normal text-res-ink-muted">
+                Order note: {order.notes}
+              </p>
+            )}
           </>
         )}
       </div>
@@ -556,7 +560,7 @@ const UserOrdersPage = () => {
     toast.success(
       order.source === 'reservation'
         ? 'Noted — you can settle with your waiter at the venue.'
-        : 'Noted — your waiter will collect payment at your table.',
+        : 'Noted — your waiter will collect payment at your table.'
     );
   };
 

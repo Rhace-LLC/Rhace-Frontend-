@@ -544,9 +544,7 @@ export default function Vendors() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="type-res-small font-medium text-res-ink-muted">Inactive Vendors</p>
-                <p className="text-3xl font-bold text-res-ink">
-                  {stats.inactive.toLocaleString()}
-                </p>
+                <p className="text-3xl font-bold text-res-ink">{stats.inactive.toLocaleString()}</p>
               </div>
               <div className="h-12 w-12 rounded-res-sm bg-res-surface flex items-center justify-center">
                 <XCircle className="h-6 w-6 text-amber-600" />

@@ -119,7 +119,11 @@ function TicketDetail({
               aria-label="Transfer reference"
               value={reference}
               onChange={(e) => setReference(e.target.value)}
-              placeholder={method === 'bank_transfer' ? 'Transfer reference (required)' : 'Receipt no. (optional)'}
+              placeholder={
+                method === 'bank_transfer'
+                  ? 'Transfer reference (required)'
+                  : 'Receipt no. (optional)'
+              }
               className={inputClass}
             />
             <input
@@ -150,7 +154,7 @@ function TicketDetail({
                     note: payNote.trim() || undefined,
                     amount: amount ? Number(amount) : undefined,
                   }),
-                'Refund recorded',
+                'Refund recorded'
               )
             }
             className="w-full rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
@@ -202,7 +206,9 @@ function TicketDetail({
           <button
             type="button"
             disabled={busy || !cancelReason.trim()}
-            onClick={() => run(() => refundApi.cancel(ticket._id, cancelReason.trim()), 'Ticket cancelled')}
+            onClick={() =>
+              run(() => refundApi.cancel(ticket._id, cancelReason.trim()), 'Ticket cancelled')
+            }
             className="shrink-0 rounded-full border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-600 disabled:opacity-50"
           >
             Cancel ticket
@@ -213,7 +219,13 @@ function TicketDetail({
   );
 }
 
-function OpenTicketForm({ initialOrderId, onOpened }: { initialOrderId?: string; onOpened: () => void }) {
+function OpenTicketForm({
+  initialOrderId,
+  onOpened,
+}: {
+  initialOrderId?: string;
+  onOpened: () => void;
+}) {
   const [amount, setAmount] = useState('');
   const [reason, setReason] = useState('');
   const [guestName, setGuestName] = useState('');
@@ -249,12 +261,43 @@ function OpenTicketForm({ initialOrderId, onOpened }: { initialOrderId?: string;
     <div className="space-y-2 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
       <p className="font-semibold">Open a refund ticket</p>
       <div className="grid gap-2 sm:grid-cols-2">
-        <input aria-label="Amount" value={amount} onChange={(e) => setAmount(e.target.value)} inputMode="decimal" placeholder="Amount" className={inputClass} />
-        <input aria-label="Order id" value={orderId} onChange={(e) => setOrderId(e.target.value)} placeholder="Order id (optional)" className={inputClass} />
-        <input aria-label="Guest name" value={guestName} onChange={(e) => setGuestName(e.target.value)} placeholder="Guest name" className={inputClass} />
-        <input aria-label="Guest phone" value={guestPhone} onChange={(e) => setGuestPhone(e.target.value)} placeholder="Guest phone" className={inputClass} />
+        <input
+          aria-label="Amount"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+          inputMode="decimal"
+          placeholder="Amount"
+          className={inputClass}
+        />
+        <input
+          aria-label="Order id"
+          value={orderId}
+          onChange={(e) => setOrderId(e.target.value)}
+          placeholder="Order id (optional)"
+          className={inputClass}
+        />
+        <input
+          aria-label="Guest name"
+          value={guestName}
+          onChange={(e) => setGuestName(e.target.value)}
+          placeholder="Guest name"
+          className={inputClass}
+        />
+        <input
+          aria-label="Guest phone"
+          value={guestPhone}
+          onChange={(e) => setGuestPhone(e.target.value)}
+          placeholder="Guest phone"
+          className={inputClass}
+        />
       </div>
-      <input aria-label="Reason" value={reason} onChange={(e) => setReason(e.target.value)} placeholder="Why is this refund owed?" className={inputClass} />
+      <input
+        aria-label="Reason"
+        value={reason}
+        onChange={(e) => setReason(e.target.value)}
+        placeholder="Why is this refund owed?"
+        className={inputClass}
+      />
       <button
         type="button"
         disabled={busy || !amount || !reason.trim()}
@@ -272,7 +315,13 @@ function OpenTicketForm({ initialOrderId, onOpened }: { initialOrderId?: string;
  * Tickets open automatically when money is owed back; staff pay the guest
  * offline (cash / bank transfer) and record it. Live via `refund:*` events.
  */
-export function RefundTracker({ compact = false, initialOrderId }: { compact?: boolean; initialOrderId?: string }) {
+export function RefundTracker({
+  compact = false,
+  initialOrderId,
+}: {
+  compact?: boolean;
+  initialOrderId?: string;
+}) {
   const [tab, setTab] = useState<(typeof TABS)[number]['key']>('open');
   const [tickets, setTickets] = useState<RefundTicketDto[]>([]);
   const [openStats, setOpenStats] = useState({ count: 0, amount: 0 });
@@ -305,10 +354,16 @@ export function RefundTracker({ compact = false, initialOrderId }: { compact?: b
   const shown = useMemo(() => tickets, [tickets]);
 
   return (
-    <section className={compact ? 'space-y-3 rounded-res-lg bg-res-card p-4 shadow-res-low md:p-5' : 'space-y-4'}>
+    <section
+      className={
+        compact ? 'space-y-3 rounded-res-lg bg-res-card p-4 shadow-res-low md:p-5' : 'space-y-4'
+      }
+    >
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
-          <p className={compact ? 'type-res-h3 text-res-ink' : 'text-lg font-bold'}>Refund tickets</p>
+          <p className={compact ? 'type-res-h3 text-res-ink' : 'text-lg font-bold'}>
+            Refund tickets
+          </p>
           <p className="text-xs text-gray-500">
             {openStats.count
               ? `${openStats.count} to pay · ${money(openStats.amount)} owed to guests`
@@ -373,10 +428,13 @@ export function RefundTracker({ compact = false, initialOrderId }: { compact?: b
                     {t.guestName || 'Guest'} · {money(t.amount)}
                   </p>
                   <p className="text-xs text-gray-500">
-                    {t.ticketNo ?? t._id.slice(-6)} · {SOURCE_LABEL[t.source] ?? t.source} · {age(t.createdAt)}
+                    {t.ticketNo ?? t._id.slice(-6)} · {SOURCE_LABEL[t.source] ?? t.source} ·{' '}
+                    {age(t.createdAt)}
                   </p>
                 </div>
-                <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${STATUS_STYLE[t.status] ?? ''}`}>
+                <span
+                  className={`rounded-full px-2.5 py-1 text-xs font-semibold ${STATUS_STYLE[t.status] ?? ''}`}
+                >
                   {t.status === 'pending' ? 'open' : t.status}
                 </span>
               </button>
@@ -385,7 +443,9 @@ export function RefundTracker({ compact = false, initialOrderId }: { compact?: b
                   <TicketDetail
                     ticket={t}
                     onChanged={(updated) => {
-                      setTickets((prev) => prev.map((x) => (x._id === updated._id ? { ...x, ...updated } : x)));
+                      setTickets((prev) =>
+                        prev.map((x) => (x._id === updated._id ? { ...x, ...updated } : x))
+                      );
                       void load();
                     }}
                   />

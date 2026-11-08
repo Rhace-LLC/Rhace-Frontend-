@@ -15,10 +15,7 @@ const LAST_KEY = (vertical: Vertical) => `prototype:last-blueprint:${vertical}`;
 const runtimeBlueprints: Partial<Record<Vertical, InventoryBlueprint[]>> = {};
 
 /** Publishes the API-fetched blueprint list for a vertical (called by the API layer). */
-export function setRuntimeBlueprints(
-  vertical: Vertical,
-  blueprints: InventoryBlueprint[]
-): void {
+export function setRuntimeBlueprints(vertical: Vertical, blueprints: InventoryBlueprint[]): void {
   runtimeBlueprints[vertical] = blueprints;
 }
 

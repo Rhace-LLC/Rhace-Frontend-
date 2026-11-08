@@ -29,17 +29,21 @@ export function MoneyFlowCard({
   const c = summary?.current;
 
   let body;
-  if (error && !summary) body = <ErrorState message="Couldn't load the breakdown." onRetry={onRetry} />;
+  if (error && !summary)
+    body = <ErrorState message="Couldn't load the breakdown." onRetry={onRetry} />;
   else if (loading && !summary) body = <CardSkeleton rows={5} />;
   else if (!c || c.count === 0) body = <EmptyState message="No payments in this period." />;
   else {
     const fromPayments = c.net;
-    const other = Math.round((c.gross - c.platformCommission - c.transactionFees - fromPayments) * 100) / 100;
+    const other =
+      Math.round((c.gross - c.platformCommission - c.transactionFees - fromPayments) * 100) / 100;
     const lines: { label: string; value: number; tone?: 'minus' | 'total' }[] = [
       { label: 'Gross', value: c.gross },
       { label: 'Platform commission', value: -c.platformCommission, tone: 'minus' },
       { label: 'Transaction fees', value: -c.transactionFees, tone: 'minus' },
-      ...(Math.abs(other) >= 1 ? [{ label: 'Other adjustments', value: -other, tone: 'minus' as const }] : []),
+      ...(Math.abs(other) >= 1
+        ? [{ label: 'Other adjustments', value: -other, tone: 'minus' as const }]
+        : []),
       ...(c.refunds ? [{ label: 'Refunds paid', value: -c.refunds, tone: 'minus' as const }] : []),
     ];
     const net = fromPayments - c.refunds;
@@ -49,7 +53,9 @@ export function MoneyFlowCard({
           {lines.map((line) => (
             <div key={line.label} className="flex items-center justify-between gap-3">
               <dt className="type-res-small text-res-ink-muted">{line.label}</dt>
-              <dd className={`type-res-body tabular-nums ${line.tone === 'minus' ? 'text-res-ink-muted' : 'font-semibold text-res-ink'}`}>
+              <dd
+                className={`type-res-body tabular-nums ${line.tone === 'minus' ? 'text-res-ink-muted' : 'font-semibold text-res-ink'}`}
+              >
                 {line.tone === 'minus' ? `−${money(Math.abs(line.value))}` : money(line.value)}
               </dd>
             </div>
@@ -68,7 +74,10 @@ export function MoneyFlowCard({
           className="type-res-small mt-4 inline-flex cursor-pointer items-center gap-1 font-semibold text-res-brand hover:text-res-brand-hover"
         >
           Fees by provider
-          <ChevronDown className={`size-4 transition-transform ${showFees ? 'rotate-180' : ''}`} aria-hidden />
+          <ChevronDown
+            className={`size-4 transition-transform ${showFees ? 'rotate-180' : ''}`}
+            aria-hidden
+          />
         </button>
         {showFees && <FeesByProvider params={params} currency={currency} />}
       </>
@@ -76,7 +85,10 @@ export function MoneyFlowCard({
   }
 
   return (
-    <ReportCard title="Where the money went" subtitle="From what customers paid to what reaches you.">
+    <ReportCard
+      title="Where the money went"
+      subtitle="From what customers paid to what reaches you."
+    >
       {body}
     </ReportCard>
   );
@@ -85,7 +97,8 @@ export function MoneyFlowCard({
 function FeesByProvider({ params, currency }: { params: ReportParams; currency: string }) {
   const query = useReportBreakdown(params, 'provider');
   if (query.isLoading) return <CardSkeleton rows={3} />;
-  if (query.isError) return <ErrorState message="Couldn't load provider fees." onRetry={() => query.refetch()} />;
+  if (query.isError)
+    return <ErrorState message="Couldn't load provider fees." onRetry={() => query.refetch()} />;
   const rows = query.data?.rows ?? [];
   if (!rows.length) return null;
 
@@ -106,15 +119,20 @@ function FeesByProvider({ params, currency }: { params: ReportParams; currency: 
             <tr key={row.key} className="border-t border-res-line">
               <td className="py-2">{row.label}</td>
               <td className="py-2 text-right">{row.count.toLocaleString()}</td>
-              <td className="py-2 text-right">{formatMoney(row.volume, currency, { compact: true })}</td>
+              <td className="py-2 text-right">
+                {formatMoney(row.volume, currency, { compact: true })}
+              </td>
               <td className="py-2 text-right">{formatMoney(row.fees, currency)}</td>
-              <td className="py-2 text-right">{row.key === 'offline' ? '—' : `${row.effectiveRate}%`}</td>
+              <td className="py-2 text-right">
+                {row.key === 'offline' ? '—' : `${row.effectiveRate}%`}
+              </td>
             </tr>
           ))}
         </tbody>
       </table>
       <p className="type-res-caption mt-2 text-res-ink-muted">
-        Fees show the part you pay under your fee plan. Offline payments (cash, POS, transfer) carry no provider fee.
+        Fees show the part you pay under your fee plan. Offline payments (cash, POS, transfer) carry
+        no provider fee.
       </p>
     </div>
   );

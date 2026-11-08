@@ -60,7 +60,10 @@ const StayCheckoutModal = ({
     for (const line of cart.lines) {
       const key = line.vendorLink ?? 'hotel';
       if (!map.has(key)) {
-        map.set(key, { title: line.vendorLink ? line.outletName || 'Restaurant' : 'Hotel services', lines: [] });
+        map.set(key, {
+          title: line.vendorLink ? line.outletName || 'Restaurant' : 'Hotel services',
+          lines: [],
+        });
       }
       map.get(key)!.lines.push(line);
     }
@@ -69,7 +72,7 @@ const StayCheckoutModal = ({
 
   const outletLinks = useMemo(
     () => [...new Set(cart.lines.map((l) => l.vendorLink).filter(Boolean) as string[])],
-    [cart.lines],
+    [cart.lines]
   );
 
   // Locations an outlet in the cart can deliver to; hotel-only carts can use any.
@@ -78,7 +81,7 @@ const StayCheckoutModal = ({
       outletLinks.length
         ? locations.filter((loc) => outletLinks.every((id) => loc.vendorLinks.includes(id)))
         : locations,
-    [locations, outletLinks],
+    [locations, outletLinks]
   );
 
   if (!open) return null;
@@ -86,7 +89,8 @@ const StayCheckoutModal = ({
   const overCredit = cart.subtotal > availableCredit;
   const canRoom = !overCredit && cart.lines.length > 0;
   const canOnline = cart.lines.length > 0;
-  const needsLocation = cart.fulfillment.mode === 'location' && cart.hasOutletItems && !cart.fulfillment.zoneId;
+  const needsLocation =
+    cart.fulfillment.mode === 'location' && cart.hasOutletItems && !cart.fulfillment.zoneId;
 
   const submit = async () => {
     if (cart.lines.length === 0 || submitting) return;
@@ -135,7 +139,7 @@ const StayCheckoutModal = ({
       toast.success(
         pending.length
           ? `Sent to ${pending.map((o) => o.outletName || 'the restaurant').join(' & ')} — we'll confirm shortly`
-          : 'Charged to your room',
+          : 'Charged to your room'
       );
       onDone();
     } catch (e) {
@@ -156,7 +160,9 @@ const StayCheckoutModal = ({
         aria-labelledby="stay-checkout-title"
         className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-t-3xl bg-white p-4 sm:rounded-3xl"
       >
-        <h2 id="stay-checkout-title" className="text-lg font-bold">Checkout</h2>
+        <h2 id="stay-checkout-title" className="text-lg font-bold">
+          Checkout
+        </h2>
 
         <div className="mt-3 space-y-3">
           {groups.map(([key, group]) => (
@@ -227,7 +233,9 @@ const StayCheckoutModal = ({
               {eligibleLocations.length > 0 ? (
                 <select
                   value={cart.fulfillment.zoneId}
-                  onChange={(e) => cart.setFulfillment({ ...cart.fulfillment, zoneId: e.target.value })}
+                  onChange={(e) =>
+                    cart.setFulfillment({ ...cart.fulfillment, zoneId: e.target.value })
+                  }
                   className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm"
                 >
                   <option value="">Choose a location…</option>
@@ -249,7 +257,9 @@ const StayCheckoutModal = ({
                 onChange={(e) =>
                   cart.setFulfillment({ ...cart.fulfillment, locationLabel: e.target.value })
                 }
-                placeholder={cart.fulfillment.zoneId ? 'Detail (e.g. Cabana 3)' : 'e.g. Lobby Table 4'}
+                placeholder={
+                  cart.fulfillment.zoneId ? 'Detail (e.g. Cabana 3)' : 'e.g. Lobby Table 4'
+                }
                 className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm"
               />
             </>

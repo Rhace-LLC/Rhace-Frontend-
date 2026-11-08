@@ -12,7 +12,7 @@
  */
 export function parseRequestError(
   error: unknown,
-  fallback = 'An unexpected error occurred.',
+  fallback = 'An unexpected error occurred.'
 ): string {
   if (error == null) {
     return fallback;
@@ -57,15 +57,7 @@ export function parseRequestError(
       const obj = value as Record<string, unknown>;
 
       // Common message field names, checked in priority order
-      const messageKeys = [
-        'message',
-        'msg',
-        'error',
-        'errors',
-        'detail',
-        'description',
-        'title',
-      ];
+      const messageKeys = ['message', 'msg', 'error', 'errors', 'detail', 'description', 'title'];
 
       for (const key of messageKeys) {
         if (key in obj && obj[key] != null) {
@@ -94,11 +86,7 @@ export function parseRequestError(
 }
 
 function extractResponseData(error: unknown): unknown {
-  if (
-    error != null &&
-    typeof error === 'object' &&
-    'response' in error
-  ) {
+  if (error != null && typeof error === 'object' && 'response' in error) {
     const response = (error as { response?: unknown }).response;
     if (response != null && typeof response === 'object' && 'data' in response) {
       return (response as { data?: unknown }).data;

@@ -126,14 +126,27 @@ class UserService {
     return res.data;
   }
 
-  async getNearest({ longitude, latitude, type }: { longitude?: number; latitude?: number; type?: string }) {
+  async getNearest({
+    longitude,
+    latitude,
+    type,
+  }: {
+    longitude?: number;
+    latitude?: number;
+    type?: string;
+  }) {
     const res = await api.get(
       `/vendors/nearest?longitude=${longitude || ''}&latitude=${latitude || ''}&type=${type || ''}`
     );
     return res.data;
   }
 
-  async updateReservationStatus({ reservationId, vendorId, resId, paymentRef }: UpdateStatusPayload) {
+  async updateReservationStatus({
+    reservationId,
+    vendorId,
+    resId,
+    paymentRef,
+  }: UpdateStatusPayload) {
     if (!reservationId) throw new Error('reservationId is required');
     if (!vendorId) throw new Error('vendorId is required');
 

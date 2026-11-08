@@ -68,10 +68,7 @@ export function BlueprintAvailabilityView({
   };
   const plan = data?.plan;
   const units = data?.units ?? [];
-  const structures = useMemo(
-    () => layoutQuery.data?.structures ?? [],
-    [layoutQuery.data]
-  );
+  const structures = useMemo(() => layoutQuery.data?.structures ?? [], [layoutQuery.data]);
 
   const planW = plan?.width || 0;
   const planH = plan?.height || 0;
@@ -227,15 +224,24 @@ export function BlueprintAvailabilityView({
         </p>
         <div className="flex flex-wrap items-center gap-3">
           <span className="type-res-small flex items-center gap-1.5 font-normal text-res-ink-muted">
-            <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ backgroundColor: AVAILABLE_FILL }} />
+            <span
+              className="inline-block h-2.5 w-2.5 rounded-full"
+              style={{ backgroundColor: AVAILABLE_FILL }}
+            />
             Available
           </span>
           <span className="type-res-small flex items-center gap-1.5 font-normal text-res-ink-muted">
-            <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ backgroundColor: UNAVAILABLE_FILL }} />
+            <span
+              className="inline-block h-2.5 w-2.5 rounded-full"
+              style={{ backgroundColor: UNAVAILABLE_FILL }}
+            />
             Occupied / locked
           </span>
           <span className="type-res-small flex items-center gap-1.5 font-normal text-res-ink-muted">
-            <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ backgroundColor: STRUCTURE_FILL }} />
+            <span
+              className="inline-block h-2.5 w-2.5 rounded-full"
+              style={{ backgroundColor: STRUCTURE_FILL }}
+            />
             Fixtures
           </span>
         </div>

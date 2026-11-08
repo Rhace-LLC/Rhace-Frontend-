@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import type { VerticalPlugin } from '../core/plugin';
-import { setRuntimeBlueprints } from '../domain/blueprintStore';import { useAuth } from '@/contexts/AuthContext';
+import { setRuntimeBlueprints } from '../domain/blueprintStore';
+import { useAuth } from '@/contexts/AuthContext';
 import { toDomainBlueprint, toDomainReservation } from '../api/adapter';
 import { useApiFloorPlanStore } from '../api/useApiFloorPlanStore';
 import { useEnsureBlueprints, useResolvedFloorPlan } from '../api/useResolvedFloorPlan';

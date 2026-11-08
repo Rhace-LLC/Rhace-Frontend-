@@ -23,7 +23,7 @@ self.addEventListener('install', (event) => {
       .open(SHELL_CACHE)
       .then((cache) => cache.add(new Request(SHELL_URL, { cache: 'reload' })))
       .catch(() => undefined)
-      .then(() => self.skipWaiting()),
+      .then(() => self.skipWaiting())
   );
 });
 
@@ -31,8 +31,10 @@ self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches
       .keys()
-      .then((keys) => Promise.all(keys.filter((k) => !k.startsWith(VERSION)).map((k) => caches.delete(k))))
-      .then(() => self.clients.claim()),
+      .then((keys) =>
+        Promise.all(keys.filter((k) => !k.startsWith(VERSION)).map((k) => caches.delete(k)))
+      )
+      .then(() => self.clients.claim())
   );
 });
 
@@ -67,7 +69,11 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(request.url);
 
   // App shell for /stay/* navigations (SPA: every route is index.html).
-  if (request.mode === 'navigate' && url.origin === self.location.origin && url.pathname.startsWith('/stay/')) {
+  if (
+    request.mode === 'navigate' &&
+    url.origin === self.location.origin &&
+    url.pathname.startsWith('/stay/')
+  ) {
     event.respondWith(networkFirst(request, SHELL_CACHE, SHELL_URL));
     return;
   }
@@ -81,7 +87,9 @@ self.addEventListener('fetch', (event) => {
   // Hashed build assets, icons and fonts on our own origin.
   if (
     url.origin === self.location.origin &&
-    (url.pathname.startsWith('/assets/') || url.pathname.startsWith('/stay-icons/') || /\.(woff2?|ttf)$/.test(url.pathname))
+    (url.pathname.startsWith('/assets/') ||
+      url.pathname.startsWith('/stay-icons/') ||
+      /\.(woff2?|ttf)$/.test(url.pathname))
   ) {
     event.respondWith(staleWhileRevalidate(request));
   }

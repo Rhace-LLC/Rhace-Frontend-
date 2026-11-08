@@ -2,7 +2,12 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { filtersFromParams, saveRecent, getRecent } from '../utils/filterUtils';
 import { searchSvc, type SearchLocation } from '../services/search.service';
-import { DEFAULT_FILTERS, TYPE_SPECIFIC_KEYS, DEBOUNCE_MS, type FilterState } from '../utils/constants';
+import {
+  DEFAULT_FILTERS,
+  TYPE_SPECIFIC_KEYS,
+  DEBOUNCE_MS,
+  type FilterState,
+} from '../utils/constants';
 
 interface Pagination {
   currentPage: number;
@@ -212,8 +217,7 @@ export const useSearchState = (userLocation: SearchLocation) => {
   );
 
   // ── Derived ───────────────────────────────────────────────────────────────
-  const showRecent =
-    isFocused && inputValue.trim().length === 0 && recentSearches.length > 0;
+  const showRecent = isFocused && inputValue.trim().length === 0 && recentSearches.length > 0;
   const showTrending = isFocused && inputValue.trim().length === 0 && !showRecent;
   const showSuggestions = isFocused && inputValue.trim().length >= 1;
   const showDropdown =

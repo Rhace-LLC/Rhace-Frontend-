@@ -111,7 +111,7 @@ function MiniGantt({
                 onPointerDown={(event) => {
                   event.stopPropagation();
                   (event.target as HTMLElement).setPointerCapture(event.pointerId);
-                  setDrag({ id: reservation.id, deltaDays: Math.ceil(((e - startMs) / DAY_MS)) });
+                  setDrag({ id: reservation.id, deltaDays: Math.ceil((e - startMs) / DAY_MS) });
                 }}
                 onPointerMove={handleMove}
                 onPointerUp={handleUp}
@@ -161,16 +161,20 @@ export function OperationalDrawer({
   const quickActions: Array<{ label: string; target?: UnitState; onClick?: () => void }> = [
     { label: 'Check-In', target: CHECK_IN_STATE[vertical] },
     { label: 'Check-Out', target: CHECK_OUT_STATE[vertical] },
-    { label: 'Extend Stay', onClick: () => {
-      if (activeReservation && onReservationChange) {
-        onReservationChange({
-          ...activeReservation,
-          end: new Date(new Date(activeReservation.end).getTime() + DAY_MS).toISOString(),
-        });
-      }
-    } },
+    {
+      label: 'Extend Stay',
+      onClick: () => {
+        if (activeReservation && onReservationChange) {
+          onReservationChange({
+            ...activeReservation,
+            end: new Date(new Date(activeReservation.end).getTime() + DAY_MS).toISOString(),
+          });
+        }
+      },
+    },
   ];
-  if (vertical === 'hotel') quickActions.push({ label: 'Flag Maintenance', target: 'out_of_order_ooo' });
+  if (vertical === 'hotel')
+    quickActions.push({ label: 'Flag Maintenance', target: 'out_of_order_ooo' });
 
   return (
     <Modal
@@ -219,7 +223,9 @@ export function OperationalDrawer({
               {since ? new Date(since).toLocaleTimeString() : '—'}
             </span>
             <span className="text-gray-500">Live duration</span>
-            <span className="font-mono text-gray-900">{since ? formatDuration(now - new Date(since).getTime()) : '—'}</span>
+            <span className="font-mono text-gray-900">
+              {since ? formatDuration(now - new Date(since).getTime()) : '—'}
+            </span>
             <span className="text-gray-500">POS ticket</span>
             <span className="text-gray-900">
               {vertical === 'club'

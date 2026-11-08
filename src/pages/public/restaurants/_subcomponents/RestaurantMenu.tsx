@@ -55,9 +55,7 @@ function MenuItemCard({ dish }: { dish: VendorDishDto }) {
   const image = getDishImage(dish);
   const hasDeal = Boolean(dish.discount && dish.discountPrice && dish.discountPrice < dish.price);
   const salePrice = hasDeal ? dish.discountPrice! : dish.price;
-  const offPct = hasDeal
-    ? Math.round(((dish.price - dish.discountPrice!) / dish.price) * 100)
-    : 0;
+  const offPct = hasDeal ? Math.round(((dish.price - dish.discountPrice!) / dish.price) * 100) : 0;
   const addonCount = Array.isArray(dish.addonIds) ? dish.addonIds.length : 0;
   const initials = dish.name
     .split(' ')
@@ -160,25 +158,18 @@ export default function RestaurantMenu({ id }: RestaurantMenuProps) {
   }, [id]);
 
   const categories: Category[] = useMemo(() => {
-    const names = Array.from(
-      new Set(menuItems.map(getCategoryName).filter(Boolean))
-    );
-    return [
-      { name: 'All', category: 'All' },
-      ...names.map((name) => ({ name, category: name })),
-    ];
+    const names = Array.from(new Set(menuItems.map(getCategoryName).filter(Boolean)));
+    return [{ name: 'All', category: 'All' }, ...names.map((name) => ({ name, category: name }))];
   }, [menuItems]);
 
   const filteredItems = useMemo(() => {
     const q = query.trim().toLowerCase();
     return menuItems.filter((item) => {
-      const inCategory =
-        activeCategory === 'All' || getCategoryName(item) === activeCategory;
+      const inCategory = activeCategory === 'All' || getCategoryName(item) === activeCategory;
       if (!inCategory) return false;
       if (!q) return true;
       return (
-        item.name.toLowerCase().includes(q) ||
-        (item.description ?? '').toLowerCase().includes(q)
+        item.name.toLowerCase().includes(q) || (item.description ?? '').toLowerCase().includes(q)
       );
     });
   }, [menuItems, activeCategory, query]);

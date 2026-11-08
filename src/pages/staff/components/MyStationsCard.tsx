@@ -30,10 +30,13 @@ const todayKey = () => new Date().toISOString().slice(0, 10);
  * The floor plan that holds this vertical's roster units: the hotel plan for
  * rooms, the restaurant/club plan for tables. `layout` loads from that plan.
  */
-const planForUnitType = (plans: FloorPlanDto[], unitType: 'table' | 'room'): FloorPlanDto | undefined =>
+const planForUnitType = (
+  plans: FloorPlanDto[],
+  unitType: 'table' | 'room'
+): FloorPlanDto | undefined =>
   unitType === 'room'
-    ? plans.find((p) => p.vertical === 'hotel') ?? plans[0]
-    : plans.find((p) => p.vertical === 'restaurant' || p.vertical === 'club') ?? plans[0];
+    ? (plans.find((p) => p.vertical === 'hotel') ?? plans[0])
+    : (plans.find((p) => p.vertical === 'restaurant' || p.vertical === 'club') ?? plans[0]);
 
 /** Friendly copy for the backend's typed error codes (plan §6.2). */
 const claimErrorMessage = (error: unknown, fallback: string): string => {
@@ -128,16 +131,19 @@ export default function MyStationsCard({
           (a) =>
             assignmentIsActive(a) &&
             assignmentStaffId(a.staff) === myId &&
-            (unitType === 'room' ? a.type === 'room' : a.type !== 'room'),
+            (unitType === 'room' ? a.type === 'room' : a.type !== 'room')
         )
-        .sort((a, b) => (assignmentRole(a) === 'lead' ? -1 : 1) - (assignmentRole(b) === 'lead' ? -1 : 1)),
-    [assignments, myId, unitType],
+        .sort(
+          (a, b) =>
+            (assignmentRole(a) === 'lead' ? -1 : 1) - (assignmentRole(b) === 'lead' ? -1 : 1)
+        ),
+    [assignments, myId, unitType]
   );
 
   const unitLabel = useCallback(
     (unitId: string) =>
       layout?.units.find((u) => u._id === unitId)?.label ?? `#${unitId.slice(-4)}`,
-    [layout],
+    [layout]
   );
 
   const openClaimDialog = async () => {
@@ -158,9 +164,7 @@ export default function MyStationsCard({
       // Only units nobody holds a slot on yet — the backend still enforces
       // lead uniqueness, capacity, role compatibility and clock-in on submit.
       const held = new Set(
-        assignments
-          .filter((a) => assignmentIsActive(a))
-          .map((a) => assignmentUnitId(a.refId)),
+        assignments.filter((a) => assignmentIsActive(a)).map((a) => assignmentUnitId(a.refId))
       );
       setClaimUnits(units.filter((u) => !held.has(u._id)));
     } catch (error) {
@@ -190,9 +194,10 @@ export default function MyStationsCard({
   const release = async (assignmentId: string) => {
     try {
       setBusyId(assignmentId);
-      await staffService.selfAssign({ refId: assignmentUnitId(
-        assignments.find((a) => a._id === assignmentId)?.refId ?? null,
-      ), action: 'release' });
+      await staffService.selfAssign({
+        refId: assignmentUnitId(assignments.find((a) => a._id === assignmentId)?.refId ?? null),
+        action: 'release',
+      });
       toast.success('Station released');
       await load();
       onChanged?.();
@@ -223,8 +228,7 @@ export default function MyStationsCard({
             </span>
           </div>
           <p className="type-res-small mt-1 font-normal text-res-ink-muted">
-            {unitType === 'room' ? 'Rooms' : 'Tables'} you&apos;ve claimed or been assigned
-            today.
+            {unitType === 'room' ? 'Rooms' : 'Tables'} you&apos;ve claimed or been assigned today.
           </p>
         </div>
         <div className="flex items-center gap-2">

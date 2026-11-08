@@ -16,7 +16,13 @@ const GUEST_STATUS: Partial<Record<OrderDto['status'], string>> = {
   rejected: 'Not accepted',
 };
 
-const STEPS: Array<OrderDto['status']> = ['placed', 'preparing', 'ready', 'out_for_delivery', 'delivered'];
+const STEPS: Array<OrderDto['status']> = [
+  'placed',
+  'preparing',
+  'ready',
+  'out_for_delivery',
+  'delivered',
+];
 
 function stepIndex(status: OrderDto['status']): number {
   if (status === 'served' || status === 'completed') return STEPS.length - 1;
@@ -81,7 +87,10 @@ const StayOrdersView = ({
   return (
     <ul className="space-y-2">
       {orders.map((o) => {
-        const outstanding = Math.max(0, (o.total ?? 0) - (o.minimumDepositCredit ?? 0) - (o.amountPaid ?? 0));
+        const outstanding = Math.max(
+          0,
+          (o.total ?? 0) - (o.minimumDepositCredit ?? 0) - (o.amountPaid ?? 0)
+        );
         const step = stepIndex(o.status);
         const closed = o.status === 'rejected' || o.status === 'cancelled';
         return (
@@ -118,8 +127,12 @@ const StayOrdersView = ({
               </div>
             )}
             <p className="mt-1 text-xs text-slate-500">
-              {(o.lines?.length ?? 0)} item(s)
-              {o.fulfillment?.locationLabel ? ` · ${o.fulfillment.locationLabel}` : o.notes ? ` · ${o.notes}` : ''}
+              {o.lines?.length ?? 0} item(s)
+              {o.fulfillment?.locationLabel
+                ? ` · ${o.fulfillment.locationLabel}`
+                : o.notes
+                  ? ` · ${o.notes}`
+                  : ''}
             </p>
             {(o.lines?.length ?? 0) > 0 && (
               <ul className="mt-1.5 space-y-0.5">
@@ -140,7 +153,9 @@ const StayOrdersView = ({
                 onClick={() => payOnline(o)}
                 className="mt-2 w-full rounded-full bg-slate-900 px-4 py-2 text-xs font-semibold text-white disabled:opacity-50"
               >
-                {o.cart && o.status === 'open' ? 'Complete payment' : `Pay ${money(outstanding)} online`}
+                {o.cart && o.status === 'open'
+                  ? 'Complete payment'
+                  : `Pay ${money(outstanding)} online`}
               </button>
             )}
             {(o.fees ?? []).length > 0 && (
@@ -149,7 +164,9 @@ const StayOrdersView = ({
               </p>
             )}
             {outstanding > 0 && !closed && o.settlementMethod !== 'online' && (
-              <p className="mt-1 text-xs text-slate-400">On your room tab · {money(o.balance)} due</p>
+              <p className="mt-1 text-xs text-slate-400">
+                On your room tab · {money(o.balance)} due
+              </p>
             )}
           </li>
         );

@@ -4,7 +4,11 @@ import { toast } from 'react-toastify';
 import Header from '@/components/user/Header';
 import Footer from '@/navigation/user_layout/_sub_component/Footer';
 import { Modal } from '@/components/others/RhaceModal';
-import { DateTimeFields, type DateSelection, type DateTimeValue } from '@/components/user/reservation/DateTimeFields';
+import {
+  DateTimeFields,
+  type DateSelection,
+  type DateTimeValue,
+} from '@/components/user/reservation/DateTimeFields';
 import { TimeSlotPicker } from '@/components/user/reservation/TimeSlotPicker';
 import { BlueprintAvailabilityView } from '@/components/user/inventory/BlueprintAvailabilityView';
 import {
@@ -163,8 +167,7 @@ const ReserveBlueprintPage = () => {
     setGuest((prev) => ({
       ...prev,
       guestName:
-        prev.guestName ||
-        [user?.firstName, user?.lastName].filter(Boolean).join(' ').trim(),
+        prev.guestName || [user?.firstName, user?.lastName].filter(Boolean).join(' ').trim(),
       guestEmail: prev.guestEmail || user?.email || '',
     }));
   }, [user?.firstName, user?.lastName, user?.email]);
@@ -515,7 +518,11 @@ const ReserveBlueprintPage = () => {
         isOpen={stage === 'confirm'}
         onClose={handleCloseConfirm}
         title="Confirm your reservation"
-        subtitle={unitLabel ? `${vertical === 'hotel' ? 'Room' : 'Table'} ${unitLabel} held for you` : 'Complete your details'}
+        subtitle={
+          unitLabel
+            ? `${vertical === 'hotel' ? 'Room' : 'Table'} ${unitLabel} held for you`
+            : 'Complete your details'
+        }
         footer={
           <>
             <button
@@ -547,7 +554,9 @@ const ReserveBlueprintPage = () => {
           </div>
 
           <label className="block">
-            <span className="type-res-small mb-1.5 block font-medium text-res-ink-muted">Full name</span>
+            <span className="type-res-small mb-1.5 block font-medium text-res-ink-muted">
+              Full name
+            </span>
             <input
               value={guest.guestName}
               onChange={(e) => setGuest({ ...guest, guestName: e.target.value })}
@@ -557,7 +566,9 @@ const ReserveBlueprintPage = () => {
 
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <label className="block">
-              <span className="type-res-small mb-1.5 block font-medium text-res-ink-muted">Email</span>
+              <span className="type-res-small mb-1.5 block font-medium text-res-ink-muted">
+                Email
+              </span>
               <input
                 type="email"
                 value={guest.guestEmail}
@@ -566,7 +577,9 @@ const ReserveBlueprintPage = () => {
               />
             </label>
             <label className="block">
-              <span className="type-res-small mb-1.5 block font-medium text-res-ink-muted">Phone</span>
+              <span className="type-res-small mb-1.5 block font-medium text-res-ink-muted">
+                Phone
+              </span>
               <input
                 value={guest.guestPhone}
                 onChange={(e) => setGuest({ ...guest, guestPhone: e.target.value })}
@@ -576,7 +589,9 @@ const ReserveBlueprintPage = () => {
           </div>
 
           <label className="block">
-            <span className="type-res-small mb-1.5 block font-medium text-res-ink-muted">Special requests</span>
+            <span className="type-res-small mb-1.5 block font-medium text-res-ink-muted">
+              Special requests
+            </span>
             <textarea
               value={guest.specialRequests}
               onChange={(e) => setGuest({ ...guest, specialRequests: e.target.value })}
@@ -589,9 +604,13 @@ const ReserveBlueprintPage = () => {
             {quote?.pricingMode === 'table' ? (
               <>
                 <div className="flex items-center justify-between">
-                  <span className="type-res-small font-medium text-res-ink-muted">Reservation deposit</span>
+                  <span className="type-res-small font-medium text-res-ink-muted">
+                    Reservation deposit
+                  </span>
                   <span className="type-res-h3 text-res-ink">
-                    {quote.minimumDeposit > 0 ? `₦${quote.minimumDeposit.toLocaleString()}` : 'Free'}
+                    {quote.minimumDeposit > 0
+                      ? `₦${quote.minimumDeposit.toLocaleString()}`
+                      : 'Free'}
                   </span>
                 </div>
                 {quote.minimumDeposit > 0 ? (
@@ -599,7 +618,9 @@ const ReserveBlueprintPage = () => {
                     This deposit is credited against your bill at the venue.
                   </p>
                 ) : (
-                  <p className="type-res-small font-normal text-res-ink-muted">No deposit required to reserve.</p>
+                  <p className="type-res-small font-normal text-res-ink-muted">
+                    No deposit required to reserve.
+                  </p>
                 )}
               </>
             ) : (
@@ -608,7 +629,9 @@ const ReserveBlueprintPage = () => {
                   <span className="type-res-small font-medium text-res-ink-muted">Total</span>
                   <span className="type-res-h3 text-res-ink">
                     ₦
-                    {(quote?.total ?? (pricing && pricing.mode === 'room' ? pricing.price : 0)).toLocaleString()}
+                    {(
+                      quote?.total ?? (pricing && pricing.mode === 'room' ? pricing.price : 0)
+                    ).toLocaleString()}
                   </span>
                 </div>
                 {quote?.unitsKind === 'nights' && (
@@ -618,7 +641,9 @@ const ReserveBlueprintPage = () => {
                 )}
 
                 {quoteQuery.isLoading && (
-                  <p className="type-res-small font-normal text-res-ink-muted">Calculating price…</p>
+                  <p className="type-res-small font-normal text-res-ink-muted">
+                    Calculating price…
+                  </p>
                 )}
 
                 <div className="space-y-2">

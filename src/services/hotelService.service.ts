@@ -153,13 +153,17 @@ class HotelServiceApi {
     const res = await api.get(`/hotel-services/${id}/slots`, { params: { date } });
     return unwrap<SlotDto[]>(res);
   }
-  async bookings(params?: { from?: string; to?: string; status?: string }): Promise<ServiceBookingDto[]> {
+  async bookings(params?: {
+    from?: string;
+    to?: string;
+    status?: string;
+  }): Promise<ServiceBookingDto[]> {
     const res = await api.get('/hotel-services/bookings/all', { params });
     return unwrap<ServiceBookingDto[]>(res);
   }
   async updateBooking(
     id: string,
-    input: { status: 'confirmed' | 'completed' | 'cancelled'; assignedStaff?: string | null },
+    input: { status: 'confirmed' | 'completed' | 'cancelled'; assignedStaff?: string | null }
   ): Promise<ServiceBookingDto> {
     const res = await api.patch(`/hotel-services/bookings/${id}`, input);
     return unwrap<ServiceBookingDto>(res);

@@ -43,7 +43,9 @@ export function ReportCard({
 
 export function StatusPill({ status }: { status: TransactionStatus }) {
   return (
-    <span className={`type-res-caption inline-flex rounded-full px-2.5 py-1 font-medium ${STATUS_STYLE[status]}`}>
+    <span
+      className={`type-res-caption inline-flex rounded-full px-2.5 py-1 font-medium ${STATUS_STYLE[status]}`}
+    >
       {STATUS_LABEL[status]}
     </span>
   );
@@ -71,7 +73,11 @@ export function ChangeChip({
   suffix?: string;
 }) {
   if (value === null || value === undefined) {
-    return <span className="type-res-caption text-res-ink-muted">No earlier data{suffix ? ` ${suffix}` : ''}</span>;
+    return (
+      <span className="type-res-caption text-res-ink-muted">
+        No earlier data{suffix ? ` ${suffix}` : ''}
+      </span>
+    );
   }
   const up = value > 0;
   const flat = value === 0;

@@ -52,7 +52,10 @@ const QuickOrderPage = () => {
       .getVendor(vendorId)
       // getVendor resolves the response body ({ status, data }) — the venue
       // itself lives on .data (other pages read res.data the same way).
-      .then((body) => active && setVendor(((body as { data?: VendorSummary })?.data ?? body) as VendorSummary))
+      .then(
+        (body) =>
+          active && setVendor(((body as { data?: VendorSummary })?.data ?? body) as VendorSummary)
+      )
       .catch(() => undefined)
       .finally(() => active && setLoading(false));
     return () => {
@@ -71,7 +74,9 @@ const QuickOrderPage = () => {
       .listForVendor(vendorId)
       .then(async (res) => {
         const plans = res.data?.items ?? [];
-        const layouts = await Promise.all(plans.map((plan) => floorPlanService.getPublicLayout(plan._id)));
+        const layouts = await Promise.all(
+          plans.map((plan) => floorPlanService.getPublicLayout(plan._id))
+        );
         if (!active) return;
         const seen = new Map<string, string>();
         for (const layout of layouts) {
@@ -152,10 +157,7 @@ const QuickOrderPage = () => {
       <Header />
       <div aria-hidden className="h-[96px] md:hidden" />
       <main className="mx-auto md:mt-[85px] mb-[140px] md:mb-8 max-w-5xl px-4 md:py-8">
-        <Link
-          to={venuePath}
-          className="text-xs text-gray-500 hover:text-[#0A6C6D]"
-        >
+        <Link to={venuePath} className="text-xs text-gray-500 hover:text-[#0A6C6D]">
           ← Back to venue
         </Link>
 
@@ -168,7 +170,8 @@ const QuickOrderPage = () => {
             ? scannedTableLabel
               ? ` · You're on ${tableName(scannedTableLabel)}`
               : ' · table scanned'
-            : ''}.
+            : ''}
+          .
         </p>
 
         {loading ? (
@@ -181,10 +184,7 @@ const QuickOrderPage = () => {
           <>
             {!qrUnitId && (tablesLoading || tables.length > 0) && (
               <div className="mt-4 rounded-2xl border border-gray-200 bg-white p-4">
-                <label
-                  htmlFor="quick-order-table"
-                  className="text-sm font-semibold text-gray-900"
-                >
+                <label htmlFor="quick-order-table" className="text-sm font-semibold text-gray-900">
                   Which table are you on?
                 </label>
                 <p className="mt-0.5 text-xs text-gray-500">

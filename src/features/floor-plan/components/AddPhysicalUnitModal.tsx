@@ -58,7 +58,9 @@ export function AddPhysicalUnitModal({
   const [blueprintId, setBlueprintId] = useState('');
   const [floor, setFloor] = useState('');
   const [section, setSection] = useState('');
-  const [state, setState] = useState<UnitState>(defaultState ?? stateOptions(vertical)[0].value as UnitState);
+  const [state, setState] = useState<UnitState>(
+    defaultState ?? (stateOptions(vertical)[0].value as UnitState)
+  );
 
   useEffect(() => {
     if (!isOpen) return;
@@ -68,13 +70,21 @@ export function AddPhysicalUnitModal({
     const resolvedDefault =
       defaultBlueprintId && blueprints.some((b) => b.id === defaultBlueprintId)
         ? defaultBlueprintId
-        : blueprints[0]?.id ?? '';
+        : (blueprints[0]?.id ?? '');
     setBlueprintId(resolvedDefault);
     setFloor(defaultFloor ?? floors[0] ?? '');
     setSection(defaultSection ?? sections[0] ?? '');
     setState(defaultState ?? (stateOptions(vertical)[0].value as UnitState));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen, defaultBlueprintId, defaultFloor, defaultSection, suggestedName, vertical, blueprints]);
+  }, [
+    isOpen,
+    defaultBlueprintId,
+    defaultFloor,
+    defaultSection,
+    suggestedName,
+    vertical,
+    blueprints,
+  ]);
 
   const selected = blueprints.find((b) => b.id === blueprintId);
   const width = selected?.canvasWidth ?? object.width;
@@ -137,7 +147,8 @@ export function AddPhysicalUnitModal({
           >
             {blueprints.map((blueprint) => (
               <option key={blueprint.id} value={blueprint.id}>
-                {blueprint.name} ({formatBlueprintPricing(getBlueprintPricing(blueprint))} · {blueprint.capacity} guests)
+                {blueprint.name} ({formatBlueprintPricing(getBlueprintPricing(blueprint))} ·{' '}
+                {blueprint.capacity} guests)
               </option>
             ))}
           </select>

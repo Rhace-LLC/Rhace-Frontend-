@@ -71,7 +71,7 @@ const BookingDetails = () => {
     } catch (error) {
       toast.error(
         (error as { response?: { data?: { message?: string } } })?.response?.data?.message ||
-          'Could not cancel your booking.',
+          'Could not cancel your booking.'
       );
     }
   };

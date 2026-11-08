@@ -46,7 +46,7 @@ export default function BoothMap({
       { label: 'Closing', className: 'bg-purple-500' },
       { label: 'Mine', className: 'bg-[#0A6C6D]' },
     ],
-    [],
+    []
   );
 
   return (
@@ -87,7 +87,7 @@ export default function BoothMap({
                   ? 'border-2 border-[#0A6C6D] bg-white shadow-sm ring-1 ring-[#0A6C6D]/40'
                   : 'border-gray-300 bg-white/70',
                 isSelected && 'ring-2 ring-[#0A6C6D]',
-                clickable ? 'cursor-pointer hover:bg-[#0A6C6D]/5' : 'cursor-default',
+                clickable ? 'cursor-pointer hover:bg-[#0A6C6D]/5' : 'cursor-default'
               )}
               title={boothTitle(unit, minimum, spend)}
             >
@@ -99,7 +99,7 @@ export default function BoothMap({
                   <span
                     className={cn(
                       'text-[9px] font-medium leading-tight',
-                      met ? 'text-emerald-600' : 'text-amber-600',
+                      met ? 'text-emerald-600' : 'text-amber-600'
                     )}
                   >
                     {money(spend)} / {money(minimum)}
@@ -108,7 +108,7 @@ export default function BoothMap({
                     <span
                       className={cn(
                         'block h-full rounded-full',
-                        met ? 'bg-emerald-500' : 'bg-amber-500',
+                        met ? 'bg-emerald-500' : 'bg-amber-500'
                       )}
                       style={{ width: `${pct}%` }}
                     />

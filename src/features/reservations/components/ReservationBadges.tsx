@@ -6,8 +6,7 @@ const badgeClass =
 
 export function ReservationStatusBadge({ status }: { status?: ReservationStatus | string }) {
   if (!status) return null;
-  const style =
-    STATUS_STYLE[status as ReservationStatus] ?? 'bg-res-surface text-res-ink-muted';
+  const style = STATUS_STYLE[status as ReservationStatus] ?? 'bg-res-surface text-res-ink-muted';
   return <span className={`${badgeClass} ${style}`}>{statusLabel(status)}</span>;
 }
 

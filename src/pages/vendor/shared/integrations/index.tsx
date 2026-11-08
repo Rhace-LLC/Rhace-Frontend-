@@ -21,12 +21,24 @@ const DELIVERY_STYLE: Record<string, string> = {
 };
 
 /** Shows a secret exactly once with a copy button and a warning. */
-function SecretOnce({ label, value, onDone }: { label: string; value: string; onDone: () => void }) {
+function SecretOnce({
+  label,
+  value,
+  onDone,
+}: {
+  label: string;
+  value: string;
+  onDone: () => void;
+}) {
   return (
     <div role="alert" className="space-y-2 rounded-2xl border border-amber-300 bg-amber-50 p-4">
-      <p className="text-sm font-semibold text-amber-900">{label} — copy it now, it won&apos;t be shown again.</p>
+      <p className="text-sm font-semibold text-amber-900">
+        {label} — copy it now, it won&apos;t be shown again.
+      </p>
       <div className="flex gap-2">
-        <code className="min-w-0 flex-1 truncate rounded-lg bg-white px-3 py-2 font-mono text-xs">{value}</code>
+        <code className="min-w-0 flex-1 truncate rounded-lg bg-white px-3 py-2 font-mono text-xs">
+          {value}
+        </code>
         <button
           type="button"
           onClick={() => {
@@ -38,14 +50,26 @@ function SecretOnce({ label, value, onDone }: { label: string; value: string; on
           Copy
         </button>
       </div>
-      <button type="button" onClick={onDone} className="text-xs font-semibold text-amber-900 underline">
+      <button
+        type="button"
+        onClick={onDone}
+        className="text-xs font-semibold text-amber-900 underline"
+      >
         I&apos;ve stored it safely
       </button>
     </div>
   );
 }
 
-function TopicPicker({ topics, value, onChange }: { topics: string[]; value: string[]; onChange: (v: string[]) => void }) {
+function TopicPicker({
+  topics,
+  value,
+  onChange,
+}: {
+  topics: string[];
+  value: string[];
+  onChange: (v: string[]) => void;
+}) {
   const all = value.includes('*');
   return (
     <div className="flex flex-wrap gap-1.5" role="group" aria-label="Events">
@@ -89,22 +113,35 @@ function DeliveryLog({ endpointId }: { endpointId: string }) {
     void load();
   }, [load]);
   if (!rows) return <div className="h-16 animate-pulse rounded-xl bg-gray-100" />;
-  if (!rows.length) return <p className="text-xs text-gray-500">No deliveries yet. Send a test ping.</p>;
+  if (!rows.length)
+    return <p className="text-xs text-gray-500">No deliveries yet. Send a test ping.</p>;
   return (
     <div className="space-y-1.5">
-      <button type="button" onClick={() => void load()} className="text-xs font-semibold text-slate-700 underline">
+      <button
+        type="button"
+        onClick={() => void load()}
+        className="text-xs font-semibold text-slate-700 underline"
+      >
         Refresh
       </button>
       <ul className="max-h-64 space-y-1 overflow-auto">
         {rows.map((d) => (
-          <li key={d._id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-white px-2 py-1.5 text-xs">
+          <li
+            key={d._id}
+            className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-white px-2 py-1.5 text-xs"
+          >
             <span className="min-w-0">
-              <span className="font-mono">{d.topic}</span> · {new Date(d.createdAt).toLocaleString()} · {d.attempts} attempt(s)
+              <span className="font-mono">{d.topic}</span> ·{' '}
+              {new Date(d.createdAt).toLocaleString()} · {d.attempts} attempt(s)
               {d.lastStatusCode ? ` · HTTP ${d.lastStatusCode}` : ''}
               {d.lastError && d.status !== 'succeeded' ? ` · ${d.lastError}` : ''}
             </span>
             <span className="flex items-center gap-2">
-              <span className={`rounded-full px-2 py-0.5 font-semibold ${DELIVERY_STYLE[d.status]}`}>{d.status}</span>
+              <span
+                className={`rounded-full px-2 py-0.5 font-semibold ${DELIVERY_STYLE[d.status]}`}
+              >
+                {d.status}
+              </span>
               {d.status !== 'pending' && (
                 <button
                   type="button"
@@ -131,7 +168,11 @@ function DeliveryLog({ endpointId }: { endpointId: string }) {
 function WebhooksSection({ topics }: { topics: string[] }) {
   const [endpoints, setEndpoints] = useState<WebhookEndpointDto[]>([]);
   const [url, setUrl] = useState('');
-  const [events, setEvents] = useState<string[]>(['order:created', 'order:accepted', 'order:status']);
+  const [events, setEvents] = useState<string[]>([
+    'order:created',
+    'order:accepted',
+    'order:status',
+  ]);
   const [secret, setSecret] = useState<string | null>(null);
   const [expanded, setExpanded] = useState<string | null>(null);
 
@@ -161,12 +202,15 @@ function WebhooksSection({ topics }: { topics: string[] }) {
       <div>
         <h2 className="text-lg font-bold">Webhooks</h2>
         <p className="text-xs text-gray-500">
-          We POST signed JSON to your HTTPS endpoint for each event. Verify the <code>X-Rhace-Signature</code> header
-          (HMAC-SHA256 of <code>timestamp.body</code>) with the endpoint secret.
+          We POST signed JSON to your HTTPS endpoint for each event. Verify the{' '}
+          <code>X-Rhace-Signature</code> header (HMAC-SHA256 of <code>timestamp.body</code>) with
+          the endpoint secret.
         </p>
       </div>
 
-      {secret && <SecretOnce label="Webhook signing secret" value={secret} onDone={() => setSecret(null)} />}
+      {secret && (
+        <SecretOnce label="Webhook signing secret" value={secret} onDone={() => setSecret(null)} />
+      )}
 
       <div className="space-y-2 rounded-xl bg-slate-50 p-3">
         <input
@@ -204,9 +248,13 @@ function WebhooksSection({ topics }: { topics: string[] }) {
                   <p className="truncate font-mono text-sm">{ep.url}</p>
                   <p className="text-xs text-gray-500">
                     {ep.events.includes('*') ? 'All events' : ep.events.join(', ')}
-                    {ep.lastSuccessAt ? ` · last OK ${new Date(ep.lastSuccessAt).toLocaleString()}` : ''}
+                    {ep.lastSuccessAt
+                      ? ` · last OK ${new Date(ep.lastSuccessAt).toLocaleString()}`
+                      : ''}
                   </p>
-                  {ep.disabledReason && <p className="text-xs font-semibold text-red-600">{ep.disabledReason}</p>}
+                  {ep.disabledReason && (
+                    <p className="text-xs font-semibold text-red-600">{ep.disabledReason}</p>
+                  )}
                 </div>
                 <span
                   className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
@@ -217,12 +265,21 @@ function WebhooksSection({ topics }: { topics: string[] }) {
                 </span>
               </div>
               <div className="mt-2 flex flex-wrap gap-3 text-xs font-semibold">
-                <button type="button" onClick={() => act(() => integrationApi.testWebhook(ep._id), 'Test ping queued')} className="text-slate-700">
+                <button
+                  type="button"
+                  onClick={() => act(() => integrationApi.testWebhook(ep._id), 'Test ping queued')}
+                  className="text-slate-700"
+                >
                   Send test
                 </button>
                 <button
                   type="button"
-                  onClick={() => act(() => integrationApi.updateWebhook(ep._id, { active: !ep.active }), ep.active ? 'Paused' : 'Resumed')}
+                  onClick={() =>
+                    act(
+                      () => integrationApi.updateWebhook(ep._id, { active: !ep.active }),
+                      ep.active ? 'Paused' : 'Resumed'
+                    )
+                  }
                   className="text-slate-700"
                 >
                   {ep.active ? 'Pause' : 'Resume'}
@@ -250,7 +307,8 @@ function WebhooksSection({ topics }: { topics: string[] }) {
                 <button
                   type="button"
                   onClick={() => {
-                    if (window.confirm('Delete this webhook endpoint?')) void act(() => integrationApi.deleteWebhook(ep._id), 'Deleted');
+                    if (window.confirm('Delete this webhook endpoint?'))
+                      void act(() => integrationApi.deleteWebhook(ep._id), 'Deleted');
                   }}
                   className="text-red-600"
                 >
@@ -305,8 +363,9 @@ function ApiClientsSection({ scopes }: { scopes: string[] }) {
         <h2 className="text-lg font-bold">API clients</h2>
         <p className="text-xs text-gray-500">
           For external POS / kitchen displays. Exchange the client id + secret at{' '}
-          <code>{apiBase}/api/partner/v1/oauth/token</code> (OAuth 2.0 client credentials), then call the partner API
-          with the bearer token. Full reference: <code>{apiBase}/api-docs</code> → Partner API.
+          <code>{apiBase}/api/partner/v1/oauth/token</code> (OAuth 2.0 client credentials), then
+          call the partner API with the bearer token. Full reference:{' '}
+          <code>{apiBase}/api-docs</code> → Partner API.
         </p>
       </div>
 
@@ -319,7 +378,13 @@ function ApiClientsSection({ scopes }: { scopes: string[] }) {
       )}
 
       <div className="space-y-2 rounded-xl bg-slate-50 p-3">
-        <input aria-label="Client name" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Kitchen display" className={inputClass} />
+        <input
+          aria-label="Client name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="e.g. Kitchen display"
+          className={inputClass}
+        />
         <div className="flex flex-wrap gap-1.5" role="group" aria-label="Scopes">
           {scopes.map((s) => {
             const on = picked.includes(s);
@@ -341,7 +406,10 @@ function ApiClientsSection({ scopes }: { scopes: string[] }) {
           disabled={!name.trim() || !picked.length}
           onClick={() =>
             act(async () => {
-              const res = await integrationApi.createApiClient({ name: name.trim(), scopes: picked });
+              const res = await integrationApi.createApiClient({
+                name: name.trim(),
+                scopes: picked,
+              });
               setRevealed({ clientId: res.client.clientId, secret: res.clientSecret });
               setName('');
             }, 'API client created')
@@ -357,7 +425,10 @@ function ApiClientsSection({ scopes }: { scopes: string[] }) {
       ) : (
         <ul className="space-y-2">
           {clients.map((c) => (
-            <li key={c._id} className={`rounded-xl border border-slate-200 p-3 ${c.revokedAt ? 'opacity-60' : ''}`}>
+            <li
+              key={c._id}
+              className={`rounded-xl border border-slate-200 p-3 ${c.revokedAt ? 'opacity-60' : ''}`}
+            >
               <div className="flex flex-wrap items-start justify-between gap-2">
                 <div className="min-w-0">
                   <p className="font-semibold">{c.name}</p>
@@ -366,7 +437,9 @@ function ApiClientsSection({ scopes }: { scopes: string[] }) {
                   </p>
                   <p className="text-xs text-gray-500">
                     {c.scopes.join(', ')}
-                    {c.lastUsedAt ? ` · last used ${new Date(c.lastUsedAt).toLocaleString()}` : ' · never used'}
+                    {c.lastUsedAt
+                      ? ` · last used ${new Date(c.lastUsedAt).toLocaleString()}`
+                      : ' · never used'}
                   </p>
                 </div>
                 <span
@@ -394,7 +467,9 @@ function ApiClientsSection({ scopes }: { scopes: string[] }) {
                   <button
                     type="button"
                     onClick={() => {
-                      if (window.confirm(`Revoke ${c.name}? Its tokens stop working within a minute.`)) {
+                      if (
+                        window.confirm(`Revoke ${c.name}? Its tokens stop working within a minute.`)
+                      ) {
                         void act(() => integrationApi.revokeApiClient(c._id), 'Revoked');
                       }
                     }}

@@ -103,7 +103,7 @@ class OrdersApi {
     // `paginated()` wraps the page in a `{ success, data }` envelope; callers read
     // `.items` straight off the result, so unwrap it here.
     return unwrap<{ items: OrderDto[]; total: number; page: number; limit: number; pages: number }>(
-      res,
+      res
     );
   }
 
@@ -121,7 +121,7 @@ class OrdersApi {
   async bumpLine(
     id: string,
     lineId: string,
-    prepStatus: 'queued' | 'preparing' | 'ready' | 'served',
+    prepStatus: 'queued' | 'preparing' | 'ready' | 'served'
   ): Promise<OrderDto> {
     const res = await api.patch(`/orders/${id}/lines/${lineId}/prep`, { prepStatus });
     return unwrap<OrderDto>(res);
@@ -150,7 +150,13 @@ class OrdersApi {
   }
 
   /** Phase 5 hotel: every in-stay order it hosts (own services + outlets). */
-  async hosted(params?: { status?: string; vendorLink?: string; from?: string; to?: string; limit?: number }) {
+  async hosted(params?: {
+    status?: string;
+    vendorLink?: string;
+    from?: string;
+    to?: string;
+    limit?: number;
+  }) {
     const res = await api.get('/orders/hosted', { params });
     return unwrap<OrderDto[]>(res);
   }

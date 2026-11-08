@@ -69,7 +69,7 @@ export default function Item86Panel({ kinds }: { kinds: StockItemKind[] }) {
       (item) =>
         item.name.toLowerCase().includes(term) ||
         (item.description ?? '').toLowerCase().includes(term) ||
-        (item.category ?? '').toLowerCase().includes(term),
+        (item.category ?? '').toLowerCase().includes(term)
     );
   }, [items, search]);
 
@@ -80,15 +80,17 @@ export default function Item86Panel({ kinds }: { kinds: StockItemKind[] }) {
       setBusyId(item.id);
       await stockService.setAvailability(item.kind, item.id, !item.available);
       setItems((prev) =>
-        prev.map((entry) => (entry.id === item.id ? { ...entry, available: !item.available } : entry)),
+        prev.map((entry) =>
+          entry.id === item.id ? { ...entry, available: !item.available } : entry
+        )
       );
       toast.success(
-        item.available ? `${item.name} is now unavailable` : `${item.name} is available again`,
+        item.available ? `${item.name} is now unavailable` : `${item.name} is available again`
       );
     } catch (error) {
       toast.error(
         (error as { response?: { data?: { message?: string } } })?.response?.data?.message ||
-          'Failed to update availability',
+          'Failed to update availability'
       );
     } finally {
       setBusyId(null);
@@ -191,9 +193,7 @@ export default function Item86Panel({ kinds }: { kinds: StockItemKind[] }) {
                   <div className="flex shrink-0 items-center gap-2 pl-[68px] sm:pl-0">
                     <span
                       className={`type-res-small inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 font-semibold whitespace-nowrap ${
-                        item.available
-                          ? 'bg-emerald-50 text-emerald-700'
-                          : 'bg-red-50 text-red-700'
+                        item.available ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'
                       }`}
                     >
                       <span
@@ -221,11 +221,7 @@ export default function Item86Panel({ kinds }: { kinds: StockItemKind[] }) {
                       ) : (
                         <Undo2 className="h-3.5 w-3.5" />
                       )}
-                      {busy
-                        ? 'Saving…'
-                        : item.available
-                          ? 'Mark unavailable'
-                          : 'Mark available'}
+                      {busy ? 'Saving…' : item.available ? 'Mark unavailable' : 'Mark available'}
                     </button>
                   </div>
                 </li>

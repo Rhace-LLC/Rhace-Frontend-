@@ -43,7 +43,12 @@ interface SearchHeaderProps {
   };
 }
 
-export const SearchHeader = ({ searchProps, filters, updateFilter, locationState }: SearchHeaderProps) => {
+export const SearchHeader = ({
+  searchProps,
+  filters,
+  updateFilter,
+  locationState,
+}: SearchHeaderProps) => {
   const navigate = useNavigate();
   const { user, isAuthenticated, logout } = useAuth();
   const dropdownRef = useRef<HTMLDivElement>(null);

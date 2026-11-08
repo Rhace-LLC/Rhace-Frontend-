@@ -228,20 +228,23 @@ export function ReservationTable({
                             Pay now
                           </button>
                         )}
-                        {onRecordOffline && role !== 'customer' && balance > 0 && reservation.bookingGroup && (
-                          <button
-                            type="button"
-                            role="menuitem"
-                            onClick={() => {
-                              setOpenMenuId(null);
-                              onRecordOffline(reservation);
-                            }}
-                            className={menuItemClass}
-                          >
-                            <Wallet className="h-4 w-4 text-res-brand" />
-                            Record payment
-                          </button>
-                        )}
+                        {onRecordOffline &&
+                          role !== 'customer' &&
+                          balance > 0 &&
+                          reservation.bookingGroup && (
+                            <button
+                              type="button"
+                              role="menuitem"
+                              onClick={() => {
+                                setOpenMenuId(null);
+                                onRecordOffline(reservation);
+                              }}
+                              className={menuItemClass}
+                            >
+                              <Wallet className="h-4 w-4 text-res-brand" />
+                              Record payment
+                            </button>
+                          )}
                         {onCheckIn && canCheckIn && (
                           <button
                             type="button"

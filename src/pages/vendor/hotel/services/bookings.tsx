@@ -1,10 +1,7 @@
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import DashboardPageHeader from '@/components/dashboard/DashboardPageHeader';
-import {
-  hotelServiceApi,
-  type ServiceBookingDto,
-} from '@/services/hotelService.service';
+import { hotelServiceApi, type ServiceBookingDto } from '@/services/hotelService.service';
 
 const todayKey = () => new Date().toISOString().slice(0, 10);
 
@@ -19,7 +16,7 @@ export default function ServiceBookingsPage() {
     try {
       setLoading(true);
       setBookings(
-        await hotelServiceApi.bookings({ from: `${day}T00:00:00.000Z`, to: `${day}T23:59:59.999Z` }),
+        await hotelServiceApi.bookings({ from: `${day}T00:00:00.000Z`, to: `${day}T23:59:59.999Z` })
       );
     } catch {
       toast.error('Could not load bookings.');

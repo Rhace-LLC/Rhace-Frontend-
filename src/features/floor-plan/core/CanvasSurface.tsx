@@ -16,7 +16,10 @@ interface CanvasSurfaceProps {
   onToggleSelect: (id: string) => void;
   setSelection: (ids: string[]) => void;
   onCommitPositions: (positions: Record<string, { x: number; y: number }>) => void;
-  onCommitGeometry: (id: string, geometry: { x: number; y: number; width: number; height: number }) => void;
+  onCommitGeometry: (
+    id: string,
+    geometry: { x: number; y: number; width: number; height: number }
+  ) => void;
   onEditEntity: (id: string) => void;
   onDropNew: (kind: string, x: number, y: number, alt?: boolean) => void;
   isEntityLocked?: (id: string) => boolean;
@@ -112,7 +115,12 @@ export function CanvasSurface({
 }: CanvasSurfaceProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const panRef = useRef<PanState>({ active: false, lastX: 0, lastY: 0 });
-  const dragRef = useRef<DragState>({ active: false, ids: [], startPlan: { x: 0, y: 0 }, origins: {} });
+  const dragRef = useRef<DragState>({
+    active: false,
+    ids: [],
+    startPlan: { x: 0, y: 0 },
+    origins: {},
+  });
   const resizeRef = useRef<ResizeState>({
     active: false,
     id: '',
@@ -127,7 +135,9 @@ export function CanvasSurface({
   const [guides, setGuides] = useState<{ v: number[]; h: number[] }>({ v: [], h: [] });
   const [spaceHeld, setSpaceHeld] = useState(false);
 
-  const entities = plugin.filterEntities ? plugin.filterEntities(plan, plan.entities) : plan.entities;
+  const entities = plugin.filterEntities
+    ? plugin.filterEntities(plan, plan.entities)
+    : plan.entities;
   const structure = entities.filter((e) => e.spatialData.layer === 'structure');
   const areas = entities.filter((e) => e.spatialData.layer === 'area');
   const interactable = entities.filter(
@@ -137,7 +147,7 @@ export function CanvasSurface({
 
   const selectedEntity =
     canvas.selection.length >= 1
-      ? plan.entities.find((e) => e.entityId === canvas.selection[0]) ?? null
+      ? (plan.entities.find((e) => e.entityId === canvas.selection[0]) ?? null)
       : null;
 
   const clientToPlan = (event: { clientX: number; clientY: number }) => {
@@ -517,19 +527,19 @@ export function CanvasSurface({
                 styleExtra={entityStyle(entity)}
                 zIndex={0}
               >
-                {plugin.renderStructureTile
-                  ? plugin.renderStructureTile(entity, {
-                      mode: canvas.mode,
-                      selected,
-                      vertical: plugin.id,
-                    })
-                  : (
-                      <div
-                        className={`flex h-full w-full items-center justify-center rounded-lg border text-[10px] uppercase tracking-wide ${plugin.theme.structure}`}
-                      >
-                        {entity.businessData.name}
-                      </div>
-                    )}
+                {plugin.renderStructureTile ? (
+                  plugin.renderStructureTile(entity, {
+                    mode: canvas.mode,
+                    selected,
+                    vertical: plugin.id,
+                  })
+                ) : (
+                  <div
+                    className={`flex h-full w-full items-center justify-center rounded-lg border text-[10px] uppercase tracking-wide ${plugin.theme.structure}`}
+                  >
+                    {entity.businessData.name}
+                  </div>
+                )}
               </EntityNode>
             );
           })}
@@ -555,17 +565,17 @@ export function CanvasSurface({
               styleExtra={entityStyle(entity)}
               zIndex={1}
             >
-              {plugin.renderAreaTile
-                ? plugin.renderAreaTile(entity, {
-                    mode: canvas.mode,
-                    selected: canvas.selection.includes(entity.entityId),
-                    vertical: plugin.id,
-                  })
-                : (
-                    <div className="h-full w-full rounded-xl border-2 border-dashed border-teal-400/60 bg-teal-500/5 p-2 text-[11px] font-medium text-teal-700">
-                      {entity.businessData.name}
-                    </div>
-                  )}
+              {plugin.renderAreaTile ? (
+                plugin.renderAreaTile(entity, {
+                  mode: canvas.mode,
+                  selected: canvas.selection.includes(entity.entityId),
+                  vertical: plugin.id,
+                })
+              ) : (
+                <div className="h-full w-full rounded-xl border-2 border-dashed border-teal-400/60 bg-teal-500/5 p-2 text-[11px] font-medium text-teal-700">
+                  {entity.businessData.name}
+                </div>
+              )}
             </EntityNode>
           ))}
 

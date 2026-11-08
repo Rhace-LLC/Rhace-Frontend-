@@ -55,7 +55,9 @@ function weekDays(date: Date): Date[] {
 }
 
 function overlapsWindow(reservation: Reservation, startMs: number, endMs: number) {
-  return new Date(reservation.start).getTime() < endMs && new Date(reservation.end).getTime() > startMs;
+  return (
+    new Date(reservation.start).getTime() < endMs && new Date(reservation.end).getTime() > startMs
+  );
 }
 
 export function GrandTimeline({
@@ -93,7 +95,7 @@ export function GrandTimeline({
     }))
     .filter((group) => group.units.length > 0);
 
-  const dragging = dragId ? reservations.find((r) => r.id === dragId) ?? null : null;
+  const dragging = dragId ? (reservations.find((r) => r.id === dragId) ?? null) : null;
 
   const evaluate = (unit: PhysicalUnit): boolean => {
     if (!dragging) return false;
@@ -204,7 +206,10 @@ export function GrandTimeline({
             </div>
             <div className="grid flex-1 grid-cols-[repeat(24,minmax(0,1fr))]">
               {HOURS.map((hour) => (
-                <div key={hour} className="border-r border-gray-100 px-1 py-1 text-center text-[9px] text-gray-400">
+                <div
+                  key={hour}
+                  className="border-r border-gray-100 px-1 py-1 text-center text-[9px] text-gray-400"
+                >
                   {hour}:00
                 </div>
               ))}
@@ -216,7 +221,9 @@ export function GrandTimeline({
             return (
               <div key={blueprint.id}>
                 <button
-                  onClick={() => setCollapsed((prev) => ({ ...prev, [blueprint.id]: !prev[blueprint.id] }))}
+                  onClick={() =>
+                    setCollapsed((prev) => ({ ...prev, [blueprint.id]: !prev[blueprint.id] }))
+                  }
                   className="flex w-full items-center gap-2 border-b border-gray-100 bg-gray-50 px-3 py-1.5 text-left text-xs font-semibold text-gray-700"
                 >
                   <span>{isCollapsed ? '▸' : '▾'}</span>
@@ -226,8 +233,8 @@ export function GrandTimeline({
 
                 {!isCollapsed &&
                   groupUnits.map((unit) => {
-                    const unitReservations = reservationsForUnit(reservations, unit.id).filter((r) =>
-                      overlapsWindow(r, dayStartMs, dayEndMs)
+                    const unitReservations = reservationsForUnit(reservations, unit.id).filter(
+                      (r) => overlapsWindow(r, dayStartMs, dayEndMs)
                     );
                     const isDropTarget = dropTarget?.unitId === unit.id;
                     return (

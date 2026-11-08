@@ -337,7 +337,13 @@ interface AvatarEditorProps {
   uploadRef: React.RefObject<(() => void) | null>;
 }
 
-function AvatarEditor({ avatar, firstName, lastName, onAvatarChange, uploadRef }: AvatarEditorProps) {
+function AvatarEditor({
+  avatar,
+  firstName,
+  lastName,
+  onAvatarChange,
+  uploadRef,
+}: AvatarEditorProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   // expose trigger to parent
   useEffect(() => {

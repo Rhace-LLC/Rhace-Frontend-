@@ -46,7 +46,7 @@ export default function StaffLayout() {
     } catch (error) {
       toast.error(
         (error as { response?: { data?: { message?: string } } })?.response?.data?.message ||
-          'Clock action failed',
+          'Clock action failed'
       );
     } finally {
       setIsBusy(false);

@@ -35,7 +35,13 @@ function bucketLabel(iso: string, bucket: ReportBucket): string {
   return d.toLocaleString('en-NG', { ...opts, timeZone: 'Africa/Lagos' });
 }
 
-export function RevenueChart({ params, onLongerRange }: { params: ReportParams; onLongerRange: () => void }) {
+export function RevenueChart({
+  params,
+  onLongerRange,
+}: {
+  params: ReportParams;
+  onLongerRange: () => void;
+}) {
   const [metric, setMetric] = useState<TimeseriesMetric>('gross');
   const [bucket, setBucket] = useState<ReportBucket | undefined>();
   const query = useReportTimeseries({ ...params, bucket }, metric);
@@ -51,7 +57,7 @@ export function RevenueChart({ params, onLongerRange }: { params: ReportParams; 
         current: p.current,
         previous: p.previous,
       })),
-    [data],
+    [data]
   );
   const empty = points.every((p) => !p.current && !p.previous);
   const fmt = (v: number, compact = true) =>
@@ -115,7 +121,13 @@ export function RevenueChart({ params, onLongerRange }: { params: ReportParams; 
               </linearGradient>
             </defs>
             <CartesianGrid vertical={false} strokeDasharray="3 3" />
-            <XAxis dataKey="label" tickLine={false} axisLine={false} minTickGap={24} tickMargin={8} />
+            <XAxis
+              dataKey="label"
+              tickLine={false}
+              axisLine={false}
+              minTickGap={24}
+              tickMargin={8}
+            />
             <YAxis
               tickLine={false}
               axisLine={false}

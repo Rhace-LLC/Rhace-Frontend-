@@ -80,7 +80,6 @@ const Signup = () => {
       const parsedError = parseRequestError(err);
       console.log('err', parsedError);
       toast.error(parsedError);
-
     } finally {
       setIsloading(false);
     }
@@ -246,25 +245,25 @@ const Signup = () => {
                 </div>
               )}
               <button
-              disabled={
-                !formData.businessName ||
-                !formData.email ||
-                !formData.password ||
-                !formData.confirmPassword ||
-                strength < 3
-              }
-              onClick={handleRegister}
-              className="w-full py-6 rounded-md bg-[#0A6C6D] text-white text-sm font-light transition-transform duration-200 hover:shadow-lg hover:bg-[#0A6C6D] disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center"
-            >
-              {isLoading ? (
-                <span className="flex items-center gap-2">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  <span>Loading...</span>
-                </span>
-              ) : (
-                "Register"
-              )}
-            </button>
+                disabled={
+                  !formData.businessName ||
+                  !formData.email ||
+                  !formData.password ||
+                  !formData.confirmPassword ||
+                  strength < 3
+                }
+                onClick={handleRegister}
+                className="w-full py-6 rounded-md bg-[#0A6C6D] text-white text-sm font-light transition-transform duration-200 hover:shadow-lg hover:bg-[#0A6C6D] disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center"
+              >
+                {isLoading ? (
+                  <span className="flex items-center gap-2">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span>Loading...</span>
+                  </span>
+                ) : (
+                  'Register'
+                )}
+              </button>
             </CardContent>
             <CardFooter className="flex flex-col space-y-4 pt-6">
               <p className="text-sm text-center text-[#0A6C6D] hover:text-[#074f55] transition-all font-light">

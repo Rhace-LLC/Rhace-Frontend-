@@ -4,9 +4,6 @@ import { PrototypeTimelineView, hotelPlugin } from '@/features/floor-plan';
 export default function PrototypeTimelineHotel() {
   const [searchParams] = useSearchParams();
   return (
-    <PrototypeTimelineView
-      plugin={hotelPlugin}
-      planId={searchParams.get('planId') ?? undefined}
-    />
+    <PrototypeTimelineView plugin={hotelPlugin} planId={searchParams.get('planId') ?? undefined} />
   );
 }

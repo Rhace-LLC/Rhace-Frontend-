@@ -40,7 +40,7 @@ const StayBillView = ({
     } catch (e) {
       toast.error(
         (e as { response?: { data?: { message?: string } } })?.response?.data?.message ||
-          'Could not start the payment.',
+          'Could not start the payment.'
       );
       setPaying(false);
     }

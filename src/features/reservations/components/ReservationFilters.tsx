@@ -35,8 +35,7 @@ export function ReservationFilters({
   todayOnly?: boolean;
   onToggleToday?: (next: boolean) => void;
 }) {
-  const set = (patch: Partial<ReservationFiltersType>) =>
-    onChange({ ...value, ...patch, page: 1 });
+  const set = (patch: Partial<ReservationFiltersType>) => onChange({ ...value, ...patch, page: 1 });
 
   // While the today scope is on it owns the date bounds, so the manual
   // range inputs stay hidden to avoid conflicting filters.

@@ -51,8 +51,7 @@ export const useFavorites = () => {
         favoritesArray = res as Favorite[];
       } else if ((res as Record<string, unknown>)?.data) {
         const resData = (res as Record<string, unknown>).data as
-          | Favorite[]
-          | { favorites?: Favorite[] };
+          Favorite[] | { favorites?: Favorite[] };
         if (Array.isArray(resData)) {
           favoritesArray = resData;
         } else if (Array.isArray((resData as { favorites?: Favorite[] }).favorites)) {
@@ -165,7 +164,9 @@ export const useFavorites = () => {
 // Common carousel logic hook
 export const useCarouselLogic = () => {
   const [currentIndices, setCurrentIndices] = useState<Record<string, number>>({});
-  const [intervalIds, setIntervalIds] = useState<Record<string, ReturnType<typeof setInterval>>>({});
+  const [intervalIds, setIntervalIds] = useState<Record<string, ReturnType<typeof setInterval>>>(
+    {}
+  );
 
   const startImageRotation = (restaurantId: string, images: unknown[]) => {
     // Clear any existing interval for this restaurant
@@ -281,9 +282,7 @@ export const useRestaurantData = (vendorType: string, type?: string) => {
         } else {
           const res = (await userService.getVendors(
             vendorType,
-            user
-              ? ((user as unknown as { user?: { _id?: string } }).user?._id as string) || ''
-              : ''
+            user ? ((user as unknown as { user?: { _id?: string } }).user?._id as string) || '' : ''
           )) as { data: unknown[] };
           console.log('Fetched restaurants:', res.data);
           setRestaurants(res.data);

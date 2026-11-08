@@ -47,7 +47,10 @@ export default function FolioPanel({ stayId, stayCreditLimit, guestName }: Props
 
   useEffect(() => {
     void load();
-    hotelServiceApi.list('amenity').then(setItems).catch(() => null);
+    hotelServiceApi
+      .list('amenity')
+      .then(setItems)
+      .catch(() => null);
   }, [load]);
 
   if (!stayId) {
@@ -88,7 +91,7 @@ export default function FolioPanel({ stayId, stayCreditLimit, guestName }: Props
           idempotencyKey: `desk-${stayId}-${Date.now()}`,
         }),
       `Charged to ${guestName}`,
-      'Could not post the charge.',
+      'Could not post the charge.'
     );
   };
 
@@ -132,44 +135,44 @@ export default function FolioPanel({ stayId, stayCreditLimit, guestName }: Props
               {(e.status === 'posted' || e.status === 'draft') &&
                 (e.type === 'charge' || e.type === 'adjustment') &&
                 folioId && (
-                <div className="flex items-center gap-1.5">
-                  {voidingId === e._id ? (
-                    <>
-                      <input
-                        value={voidReason}
-                        onChange={(ev) => setVoidReason(ev.target.value)}
-                        placeholder="Reason"
-                        className="type-res-small w-32 rounded-full border border-res-line bg-res-surface px-3 py-1.5 outline-none"
-                      />
+                  <div className="flex items-center gap-1.5">
+                    {voidingId === e._id ? (
+                      <>
+                        <input
+                          value={voidReason}
+                          onChange={(ev) => setVoidReason(ev.target.value)}
+                          placeholder="Reason"
+                          className="type-res-small w-32 rounded-full border border-res-line bg-res-surface px-3 py-1.5 outline-none"
+                        />
+                        <button
+                          type="button"
+                          disabled={busy || !voidReason.trim()}
+                          onClick={() =>
+                            act(
+                              () => stayService.voidFolioEntry(folioId, e._id, voidReason.trim()),
+                              'Entry voided',
+                              'Could not void the entry.'
+                            ).finally(() => {
+                              setVoidingId(null);
+                              setVoidReason('');
+                            })
+                          }
+                          className="type-res-small rounded-full bg-red-600 px-3 py-1.5 font-semibold text-white disabled:opacity-50"
+                        >
+                          Confirm
+                        </button>
+                      </>
+                    ) : (
                       <button
                         type="button"
-                        disabled={busy || !voidReason.trim()}
-                        onClick={() =>
-                          act(
-                            () => stayService.voidFolioEntry(folioId, e._id, voidReason.trim()),
-                            'Entry voided',
-                            'Could not void the entry.',
-                          ).finally(() => {
-                            setVoidingId(null);
-                            setVoidReason('');
-                          })
-                        }
-                        className="type-res-small rounded-full bg-red-600 px-3 py-1.5 font-semibold text-white disabled:opacity-50"
+                        onClick={() => setVoidingId(e._id)}
+                        className="type-res-small rounded-full bg-res-card px-3 py-1.5 font-semibold text-red-600 shadow-res-low"
                       >
-                        Confirm
+                        Void
                       </button>
-                    </>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => setVoidingId(e._id)}
-                      className="type-res-small rounded-full bg-res-card px-3 py-1.5 font-semibold text-red-600 shadow-res-low"
-                    >
-                      Void
-                    </button>
-                  )}
-                </div>
-              )}
+                    )}
+                  </div>
+                )}
             </li>
           ))}
         </ul>
@@ -232,7 +235,7 @@ export default function FolioPanel({ stayId, stayCreditLimit, guestName }: Props
                       description: manualDesc.trim(),
                     }),
                   'Manual charge posted',
-                  'Could not post the charge.',
+                  'Could not post the charge.'
                 )
               }
               className="type-res-small rounded-full bg-res-card px-4 py-2 font-semibold shadow-res-low disabled:opacity-50"
@@ -270,7 +273,7 @@ export default function FolioPanel({ stayId, stayCreditLimit, guestName }: Props
                       method: payMethod,
                     }),
                   'Payment recorded',
-                  'Could not record the payment.',
+                  'Could not record the payment.'
                 )
               }
               className="type-res-small rounded-full bg-res-card px-4 py-2 font-semibold shadow-res-low disabled:opacity-50"
@@ -286,12 +289,12 @@ export default function FolioPanel({ stayId, stayCreditLimit, guestName }: Props
                   async () => {
                     const link = await stayService.folioPayLink(
                       folioId,
-                      payAmount ? Number(payAmount) : undefined,
+                      payAmount ? Number(payAmount) : undefined
                     );
                     setPayLink({ url: link.authorization_url, amount: link.amount });
                   },
                   'Payment link ready',
-                  'Could not create a payment link.',
+                  'Could not create a payment link.'
                 )
               }
               className="type-res-small rounded-full bg-res-card px-4 py-2 font-semibold shadow-res-low disabled:opacity-50"
@@ -307,7 +310,7 @@ export default function FolioPanel({ stayId, stayCreditLimit, guestName }: Props
                   'Folio closed',
                   balance > 0
                     ? `Outstanding ${money(balance)} — settle first or force close.`
-                    : 'Could not close the folio.',
+                    : 'Could not close the folio.'
                 )
               }
               className="type-res-small rounded-full bg-slate-900 px-4 py-2 font-semibold text-white disabled:opacity-50"

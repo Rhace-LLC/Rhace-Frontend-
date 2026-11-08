@@ -150,7 +150,11 @@ interface DiscoveryListCardProps {
   navigate?: NavigateFunction;
 }
 
-export const DiscoveryListCard = ({ vendor, activeType, navigate: nav }: DiscoveryListCardProps) => {
+export const DiscoveryListCard = ({
+  vendor,
+  activeType,
+  navigate: nav,
+}: DiscoveryListCardProps) => {
   const hookNavigate = useNavigate();
   const navigate = nav || hookNavigate;
   const type = vendorType(vendor.vendorType || activeType);
@@ -291,7 +295,9 @@ interface ShimmerProps {
   className?: string;
 }
 
-const Shimmer = ({ className = '' }: ShimmerProps) => <div className={className} style={shimmerStyle} />;
+const Shimmer = ({ className = '' }: ShimmerProps) => (
+  <div className={className} style={shimmerStyle} />
+);
 
 export const SkeletonCard = () => (
   <div className="bg-white rounded-xl overflow-hidden shadow-sm">

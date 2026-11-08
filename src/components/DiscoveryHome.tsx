@@ -89,7 +89,14 @@ interface CardSectionProps {
   navigate: ReturnType<typeof useNavigate>;
 }
 
-const CardSection = ({ vendors = [], isLoading, type, skeletonCount = 4, onAction, navigate }: CardSectionProps) => {
+const CardSection = ({
+  vendors = [],
+  isLoading,
+  type,
+  skeletonCount = 4,
+  onAction,
+  navigate,
+}: CardSectionProps) => {
   if (isLoading) {
     return (
       <div className="bg-white rounded-2xl  border-gray-100 overflow-hidden">

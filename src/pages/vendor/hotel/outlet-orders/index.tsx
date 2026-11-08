@@ -1,42 +1,94 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router';
 import { toast } from 'react-toastify';
-import {
-  Clock,
-  MapPin,
-  Truck,
-  CheckCircle2,
-  Building2,
-  Wallet,
-} from 'lucide-react';
+import { Clock, MapPin, Truck, CheckCircle2, Building2, Wallet } from 'lucide-react';
 import DashboardPageHeader from '@/components/dashboard/DashboardPageHeader';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { ordersApi } from '@/features/orders/api/service';
 import { useOrderRealtime } from '@/features/orders/realtime';
 import { money } from '@/features/orders/money';
 import { isLinkedStayOrder, ORDER_STATUS_TEXT, type OrderDto } from '@/features/orders/types';
 import { vendorLinkApi, type VendorLinkDto } from '@/services/vendorlink.service';
 
-const STATUS_CONFIG: Record<
-  string,
-  { label: string; bg: string; text: string; border: string }
-> = {
-  awaiting_confirmation: { label: 'Awaiting outlet', bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-100' },
-  placed: { label: 'Placed', bg: 'bg-res-secondary', text: 'text-res-brand', border: 'border-res-secondary' },
-  preparing: { label: 'Preparing', bg: 'bg-res-brand/10', text: 'text-res-brand', border: 'border-res-brand/20' },
-  ready: { label: 'Ready for pickup', bg: 'bg-indigo-50', text: 'text-indigo-700', border: 'border-indigo-100' },
-  out_for_delivery: { label: 'Out for delivery', bg: 'bg-indigo-50', text: 'text-indigo-700', border: 'border-indigo-100' },
-  delivered: { label: 'Delivered', bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-100' },
-  served: { label: 'Served', bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-100' },
-  completed: { label: 'Completed', bg: 'bg-slate-50', text: 'text-slate-700', border: 'border-slate-100' },
+const STATUS_CONFIG: Record<string, { label: string; bg: string; text: string; border: string }> = {
+  awaiting_confirmation: {
+    label: 'Awaiting outlet',
+    bg: 'bg-amber-50',
+    text: 'text-amber-700',
+    border: 'border-amber-100',
+  },
+  placed: {
+    label: 'Placed',
+    bg: 'bg-res-secondary',
+    text: 'text-res-brand',
+    border: 'border-res-secondary',
+  },
+  preparing: {
+    label: 'Preparing',
+    bg: 'bg-res-brand/10',
+    text: 'text-res-brand',
+    border: 'border-res-brand/20',
+  },
+  ready: {
+    label: 'Ready for pickup',
+    bg: 'bg-indigo-50',
+    text: 'text-indigo-700',
+    border: 'border-indigo-100',
+  },
+  out_for_delivery: {
+    label: 'Out for delivery',
+    bg: 'bg-indigo-50',
+    text: 'text-indigo-700',
+    border: 'border-indigo-100',
+  },
+  delivered: {
+    label: 'Delivered',
+    bg: 'bg-emerald-50',
+    text: 'text-emerald-700',
+    border: 'border-emerald-100',
+  },
+  served: {
+    label: 'Served',
+    bg: 'bg-emerald-50',
+    text: 'text-emerald-700',
+    border: 'border-emerald-100',
+  },
+  completed: {
+    label: 'Completed',
+    bg: 'bg-slate-50',
+    text: 'text-slate-700',
+    border: 'border-slate-100',
+  },
   rejected: { label: 'Rejected', bg: 'bg-red-50', text: 'text-red-700', border: 'border-red-100' },
-  cancelled: { label: 'Cancelled', bg: 'bg-slate-50', text: 'text-slate-700', border: 'border-slate-100' },
+  cancelled: {
+    label: 'Cancelled',
+    bg: 'bg-slate-50',
+    text: 'text-slate-700',
+    border: 'border-slate-100',
+  },
 };
 
 const VIEWS = [
-  { key: 'live', label: 'Live', statuses: 'awaiting_confirmation,placed,preparing,ready,out_for_delivery' },
+  {
+    key: 'live',
+    label: 'Live',
+    statuses: 'awaiting_confirmation,placed,preparing,ready,out_for_delivery',
+  },
   { key: 'done', label: 'Delivered', statuses: 'delivered,served,completed' },
   { key: 'issues', label: 'Rejected / voided', statuses: 'rejected,cancelled' },
 ] as const;
@@ -46,7 +98,9 @@ const POLL_MS = 30_000;
 function time(iso?: string | null): string {
   if (!iso) return '—';
   const d = new Date(iso);
-  return Number.isNaN(d.getTime()) ? '—' : d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  return Number.isNaN(d.getTime())
+    ? '—'
+    : d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }
 
 export default function HotelOutletOrdersPage() {
@@ -77,7 +131,7 @@ export default function HotelOutletOrdersPage() {
         setLoading(false);
       }
     },
-    [statuses, linkFilter, view],
+    [statuses, linkFilter, view]
   );
 
   useEffect(() => {
@@ -86,7 +140,10 @@ export default function HotelOutletOrdersPage() {
   }, [load]);
 
   useEffect(() => {
-    vendorLinkApi.hotelLinks().then(setLinks).catch(() => undefined);
+    vendorLinkApi
+      .hotelLinks()
+      .then(setLinks)
+      .catch(() => undefined);
   }, []);
 
   const reloadTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -115,7 +172,7 @@ export default function HotelOutletOrdersPage() {
     } catch (error) {
       toast.error(
         (error as { response?: { data?: { message?: string } } })?.response?.data?.message ||
-          'Could not update the order.',
+          'Could not update the order.'
       );
     } finally {
       setBusy(null);
@@ -154,9 +211,21 @@ export default function HotelOutletOrdersPage() {
 
       {/* Summary stats */}
       <div className="grid gap-3 md:grid-cols-3">
-        <StatCard label="Total orders" value={orders.length} icon={<Building2 className="size-5 text-res-ink-muted" />} />
-        <StatCard label="Awaiting outlet" value={counts.pending} icon={<Clock className="size-5 text-amber-600" />} />
-        <StatCard label="En route" value={counts.enRoute} icon={<Truck className="size-5 text-indigo-600" />} />
+        <StatCard
+          label="Total orders"
+          value={orders.length}
+          icon={<Building2 className="size-5 text-res-ink-muted" />}
+        />
+        <StatCard
+          label="Awaiting outlet"
+          value={counts.pending}
+          icon={<Clock className="size-5 text-amber-600" />}
+        />
+        <StatCard
+          label="En route"
+          value={counts.enRoute}
+          icon={<Truck className="size-5 text-indigo-600" />}
+        />
       </div>
 
       {/* View tabs */}
@@ -195,7 +264,10 @@ export default function HotelOutletOrdersPage() {
           <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-res-surface mb-4">
             <CheckCircle2 className="h-8 w-8 text-res-ink-muted" />
           </div>
-          <h3 className="type-res-h3 text-res-ink">No {view === 'live' ? 'live' : view === 'done' ? 'delivered' : 'rejected or voided'} orders</h3>
+          <h3 className="type-res-h3 text-res-ink">
+            No {view === 'live' ? 'live' : view === 'done' ? 'delivered' : 'rejected or voided'}{' '}
+            orders
+          </h3>
           <p className="mt-2 type-res-body text-res-ink-muted max-w-sm mx-auto">
             {view === 'live'
               ? 'Room orders placed by guests will appear here automatically.'
@@ -210,7 +282,10 @@ export default function HotelOutletOrdersPage() {
             const linked = isLinkedStayOrder(order);
             const status = STATUS_CONFIG[order.status] ?? STATUS_CONFIG.pending;
             return (
-              <Card key={order._id} className="rounded-res-lg border border-res-line bg-res-card shadow-res-low">
+              <Card
+                key={order._id}
+                className="rounded-res-lg border border-res-line bg-res-card shadow-res-low"
+              >
                 <CardHeader className="grid grid-cols-3 items-start gap-3 pb-3">
                   <div className="col-span-2 min-w-0">
                     <div className="flex items-center gap-2">
@@ -225,11 +300,13 @@ export default function HotelOutletOrdersPage() {
                     </div>
                     <p className="type-res-small text-res-ink-muted mt-1">
                       #{order._id.slice(-6).toUpperCase()} ·
-                      {order.fulfillment?.locationLabel || order.guestName || 'Guest'} ·
-                      placed {time(order.createdAt)}
+                      {order.fulfillment?.locationLabel || order.guestName || 'Guest'} · placed{' '}
+                      {time(order.createdAt)}
                       {order.acceptedAt ? ` · accepted ${time(order.acceptedAt)}` : ''}
                       {order.deliveredAt ? ` · delivered ${time(order.deliveredAt)}` : ''}
-                      {order.fulfillment?.scheduledFor ? ` · scheduled ${time(order.fulfillment.scheduledFor)}` : ''}
+                      {order.fulfillment?.scheduledFor
+                        ? ` · scheduled ${time(order.fulfillment.scheduledFor)}`
+                        : ''}
                     </p>
                     {order.rejectReason && (
                       <p className="mt-1 type-res-small font-medium text-red-700">
@@ -240,7 +317,11 @@ export default function HotelOutletOrdersPage() {
                   <div className="col-start-3 self-start text-right">
                     <p className="type-res-body text-res-ink font-bold">{money(order.total)}</p>
                     <p className="type-res-small text-res-ink-muted">
-                      {order.settlementMethod === 'folio' ? 'Room tab' : order.settlementMethod === 'online' ? 'Paid online' : ''}
+                      {order.settlementMethod === 'folio'
+                        ? 'Room tab'
+                        : order.settlementMethod === 'online'
+                          ? 'Paid online'
+                          : ''}
                     </p>
                   </div>
                 </CardHeader>
@@ -249,15 +330,21 @@ export default function HotelOutletOrdersPage() {
                   {(order.lines ?? []).length > 0 && (
                     <ul className="space-y-1.5 text-sm">
                       {(order.lines ?? []).map((line) => (
-                        <li key={line._id} className="flex justify-between type-res-body text-res-ink">
-                          <span>{line.quantity}× {line.name}</span>
+                        <li
+                          key={line._id}
+                          className="flex justify-between type-res-body text-res-ink"
+                        >
+                          <span>
+                            {line.quantity}× {line.name}
+                          </span>
                         </li>
                       ))}
                     </ul>
                   )}
                   {(order.fees ?? []).length > 0 && (
                     <p className="mt-3 type-res-small text-res-ink-muted">
-                      Fees: {(order.fees ?? []).map((f) => `${f.label} ${money(f.amount)}`).join(' · ')}
+                      Fees:{' '}
+                      {(order.fees ?? []).map((f) => `${f.label} ${money(f.amount)}`).join(' · ')}
                     </p>
                   )}
                 </CardContent>
@@ -271,7 +358,11 @@ export default function HotelOutletOrdersPage() {
                         variant="outline"
                         className="flex-1 text-sm"
                       >
-                        {busy === order._id ? <Clock className="size-4 animate-spin mr-2" /> : <Truck className="size-4 mr-2" />}
+                        {busy === order._id ? (
+                          <Clock className="size-4 animate-spin mr-2" />
+                        ) : (
+                          <Truck className="size-4 mr-2" />
+                        )}
                         Hotel runner picked up
                       </Button>
                     )}
@@ -280,7 +371,12 @@ export default function HotelOutletOrdersPage() {
                       disabled={busy === order._id}
                       className="flex-1 bg-res-brand text-res-ink-inverted hover:bg-res-brand-hover text-sm"
                     >
-                      {busy === order._id ? 'Delivering…' : <CheckCircle2 className="size-4 mr-2" />}Delivered to guest
+                      {busy === order._id ? (
+                        'Delivering…'
+                      ) : (
+                        <CheckCircle2 className="size-4 mr-2" />
+                      )}
+                      Delivered to guest
                     </Button>
                   </CardFooter>
                 )}

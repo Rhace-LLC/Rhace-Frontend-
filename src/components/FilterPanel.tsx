@@ -459,7 +459,14 @@ interface FilterPanelProps {
   onClose?: () => void;
 }
 
-export const FilterPanel = ({ filters: f, onChange, onClear, facets, hasFilters, onClose }: FilterPanelProps) => {
+export const FilterPanel = ({
+  filters: f,
+  onChange,
+  onClear,
+  facets,
+  hasFilters,
+  onClose,
+}: FilterPanelProps) => {
   const typeCount = (t: string) => facets?.byType?.find((x) => x._id === t)?.count;
   return (
     <div className="space-y-4">

@@ -1,12 +1,4 @@
-import {
-  Search,
-  X,
-  Clock,
-  TrendingUp,
-  ArrowUpRight,
-  Loader2,
-  ArrowLeft,
-} from 'lucide-react';
+import { Search, X, Clock, TrendingUp, ArrowUpRight, Loader2, ArrowLeft } from 'lucide-react';
 import { FaStar } from 'react-icons/fa6';
 import { TYPE_CONFIG, type VendorTypeKey } from '../utils/constants';
 import { delRecent, getRecent } from '../utils/filterUtils';
@@ -294,7 +286,13 @@ interface SearchPopupProps {
   inputRef: RefObject<HTMLInputElement | null>;
 }
 
-export const SearchPopup = ({ show, setShow, searchProps, filters, inputRef }: SearchPopupProps) => {
+export const SearchPopup = ({
+  show,
+  setShow,
+  searchProps,
+  filters,
+  inputRef,
+}: SearchPopupProps) => {
   useEffect(() => {
     if (show) {
       requestAnimationFrame(() => {

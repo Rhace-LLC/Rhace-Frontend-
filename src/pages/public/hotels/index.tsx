@@ -62,9 +62,7 @@ const HotelsPage = () => {
         <div className="flex flex-col md:flex-row md:justify-between gap-4 px-4 md:px-0">
           <div className="space-y-2">
             <div className="flex items-center gap-3 pt-2 md:pt-0">
-              <h1 className="type-res-h1 text-res-ink">
-                {hotel.businessName}{' '}
-              </h1>{' '}
+              <h1 className="type-res-h1 text-res-ink">{hotel.businessName} </h1>{' '}
               <span className="px-2 py-0.5 rounded-full border border-[#37703F] bg-[#D1FAE5] text-xs text-[#37703F]">
                 {' '}
                 Open
@@ -73,9 +71,7 @@ const HotelsPage = () => {
             <div className="flex gap-1 items-center text-xs">
               <StarRating size={16} rating={Number(hotel.rating)} readOnly />
               <span className="font-semibold text-lg">{hotel.rating}</span>
-              <span className="text-gray-600">
-                ({hotel.reviews.toLocaleString()} reviews)
-              </span>
+              <span className="text-gray-600">({hotel.reviews.toLocaleString()} reviews)</span>
             </div>
             <div className="mt-2">
               <HotelSaveCopy type="hotels" vendor={hotel} id={id} />
@@ -115,11 +111,7 @@ const HotelsPage = () => {
         <div className="w-full space-y-6">
           <div className="flex md:gap-2">
             <Images images={hotel?.profileImages ?? []} name={hotel.businessName} />
-            <Images2
-              vendor={hotel}
-              images={hotel?.profileImages ?? []}
-              name={hotel.businessName}
-            />
+            <Images2 vendor={hotel} images={hotel?.profileImages ?? []} name={hotel.businessName} />
           </div>
         </div>
 

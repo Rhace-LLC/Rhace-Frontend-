@@ -24,14 +24,20 @@ function socketBaseUrl(): string {
  * Listen to any vendor-room events (refund tickets, settlement batches…).
  * The server derives the vendor room from the access token.
  */
-export function useVendorEvents(events: readonly string[], onEvent: (event: string, payload: unknown) => void) {
+export function useVendorEvents(
+  events: readonly string[],
+  onEvent: (event: string, payload: unknown) => void
+) {
   const handlerRef = useRef(onEvent);
   const key = events.join(',');
   useEffect(() => {
     handlerRef.current = onEvent;
   }, [onEvent]);
   useEffect(() => {
-    const socket: Socket = io(socketBaseUrl(), { transports: ['websocket'], auth: socketHandshakeAuth() });
+    const socket: Socket = io(socketBaseUrl(), {
+      transports: ['websocket'],
+      auth: socketHandshakeAuth(),
+    });
     for (const event of key.split(',')) {
       socket.on(event, (payload: unknown) => handlerRef.current?.(event, payload));
     }
@@ -49,7 +55,7 @@ export function useVendorEvents(events: readonly string[], onEvent: (event: stri
  */
 export function useOrderRealtime(
   enabled: boolean,
-  onEvent: (event: OrderRealtimeEvent, payload: unknown) => void,
+  onEvent: (event: OrderRealtimeEvent, payload: unknown) => void
 ): { connected: boolean } {
   const handlerRef = useRef(onEvent);
   const [connected, setConnected] = useState(false);

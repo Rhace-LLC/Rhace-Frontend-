@@ -30,8 +30,7 @@ interface CompleteFormData {
 }
 
 type BookingPolicyValue =
-  | Record<string, unknown>
-  | ((prev: Record<string, unknown>) => Record<string, unknown>);
+  Record<string, unknown> | ((prev: Record<string, unknown>) => Record<string, unknown>);
 
 export default function AddRooms() {
   const [currentStep, setCurrentStep] = useState(1);

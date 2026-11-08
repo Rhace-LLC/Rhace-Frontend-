@@ -27,8 +27,18 @@ const errorMessage = (e: unknown, fallback: string) =>
 
 // ─── Batch detail ───────────────────────────────────────────────────────
 
-function BatchDetail({ id, side, onChanged }: { id: string; side: SettlementSide; onChanged: () => void }) {
-  const [detail, setDetail] = useState<{ batch: SettlementBatchDto; rows: BatchRowDto[] } | null>(null);
+function BatchDetail({
+  id,
+  side,
+  onChanged,
+}: {
+  id: string;
+  side: SettlementSide;
+  onChanged: () => void;
+}) {
+  const [detail, setDetail] = useState<{ batch: SettlementBatchDto; rows: BatchRowDto[] } | null>(
+    null
+  );
   const [comment, setComment] = useState('');
   const [method, setMethod] = useState('bank_transfer');
   const [reference, setReference] = useState('');
@@ -67,10 +77,28 @@ function BatchDetail({ id, side, onChanged }: { id: string; side: SettlementSide
   return (
     <div className="space-y-3 rounded-xl bg-slate-50 p-3">
       <div className="grid grid-cols-2 gap-2 text-xs sm:grid-cols-4">
-        <p>Food & drink<br /><strong className="text-sm">{money(batch.totals.gross)}</strong></p>
-        <p>Hotel commission<br /><strong className="text-sm">−{money(batch.totals.commission)}</strong></p>
-        <p>Reversals / adjustments<br /><strong className="text-sm">{money(batch.totals.reversals + batch.totals.adjustments)}</strong></p>
-        <p>{side === 'hotel' ? 'You pay' : 'You receive'}<br /><strong className="text-sm">{money(batch.totals.net)}</strong></p>
+        <p>
+          Food & drink
+          <br />
+          <strong className="text-sm">{money(batch.totals.gross)}</strong>
+        </p>
+        <p>
+          Hotel commission
+          <br />
+          <strong className="text-sm">−{money(batch.totals.commission)}</strong>
+        </p>
+        <p>
+          Reversals / adjustments
+          <br />
+          <strong className="text-sm">
+            {money(batch.totals.reversals + batch.totals.adjustments)}
+          </strong>
+        </p>
+        <p>
+          {side === 'hotel' ? 'You pay' : 'You receive'}
+          <br />
+          <strong className="text-sm">{money(batch.totals.net)}</strong>
+        </p>
       </div>
 
       <div className="max-h-64 overflow-auto rounded-xl bg-white">
@@ -90,7 +118,7 @@ function BatchDetail({ id, side, onChanged }: { id: string; side: SettlementSide
               <tr key={r._id} className="border-t border-slate-100">
                 <td className="px-2 py-1.5">{day(r.createdAt)}</td>
                 <td className="px-2 py-1.5">{r.type.replace(/_/g, ' ')}</td>
-                <td className="px-2 py-1.5">{r.orderRef ? `#${r.orderRef}` : r.note ?? '—'}</td>
+                <td className="px-2 py-1.5">{r.orderRef ? `#${r.orderRef}` : (r.note ?? '—')}</td>
                 <td className="px-2 py-1.5 text-right">{money(r.gross)}</td>
                 <td className="px-2 py-1.5 text-right">{money(r.commission)}</td>
                 <td className="px-2 py-1.5 text-right font-semibold">{money(r.net)}</td>
@@ -103,7 +131,9 @@ function BatchDetail({ id, side, onChanged }: { id: string; side: SettlementSide
       <div className="flex flex-wrap gap-2">
         <button
           type="button"
-          onClick={() => settlementApi.downloadStatement(batch).catch(() => toast.error('Download failed.'))}
+          onClick={() =>
+            settlementApi.downloadStatement(batch).catch(() => toast.error('Download failed.'))
+          }
           className="rounded-full border border-slate-300 px-3 py-1.5 text-xs font-semibold"
         >
           Download statement (CSV)
@@ -123,9 +153,16 @@ function BatchDetail({ id, side, onChanged }: { id: string; side: SettlementSide
       {side === 'hotel' && batch.status === 'approved' && (
         <div className="space-y-2 rounded-xl border border-slate-200 bg-white p-3">
           <p className="text-sm font-semibold">Record the payout ({money(batch.totals.net)})</p>
-          <p className="text-xs text-gray-500">Pay the outlet by bank transfer or cash, then record it here.</p>
+          <p className="text-xs text-gray-500">
+            Pay the outlet by bank transfer or cash, then record it here.
+          </p>
           <div className="flex flex-wrap gap-2">
-            <select aria-label="Payout method" value={method} onChange={(e) => setMethod(e.target.value)} className={inputClass}>
+            <select
+              aria-label="Payout method"
+              value={method}
+              onChange={(e) => setMethod(e.target.value)}
+              className={inputClass}
+            >
               <option value="bank_transfer">Bank transfer</option>
               <option value="cash">Cash</option>
               <option value="other">Other</option>
@@ -134,14 +171,25 @@ function BatchDetail({ id, side, onChanged }: { id: string; side: SettlementSide
               aria-label="Payout reference"
               value={reference}
               onChange={(e) => setReference(e.target.value)}
-              placeholder={method === 'bank_transfer' ? 'Transfer reference (required)' : 'Reference (optional)'}
+              placeholder={
+                method === 'bank_transfer'
+                  ? 'Transfer reference (required)'
+                  : 'Reference (optional)'
+              }
               className={`${inputClass} min-w-0 flex-1`}
             />
             <button
               type="button"
               disabled={busy || (method === 'bank_transfer' && !reference.trim())}
               onClick={() =>
-                run(() => settlementApi.markPaid(batch._id, { method, reference: reference.trim() || undefined }), 'Payout recorded')
+                run(
+                  () =>
+                    settlementApi.markPaid(batch._id, {
+                      method,
+                      reference: reference.trim() || undefined,
+                    }),
+                  'Payout recorded'
+                )
               }
               className="rounded-full bg-slate-900 px-4 py-2 text-xs font-semibold text-white disabled:opacity-50"
             >
@@ -162,9 +210,12 @@ function BatchDetail({ id, side, onChanged }: { id: string; side: SettlementSide
         <p className="text-xs font-semibold text-gray-500">Conversation</p>
         <ol className="mt-1 space-y-1">
           {batch.comments.map((c, i) => (
-            <li key={i} className={`text-xs ${c.kind === 'disputed' ? 'text-red-700' : 'text-gray-700'}`}>
-              <span className="text-gray-400">{new Date(c.at).toLocaleString()}</span> · <strong>{c.actorName}</strong>{' '}
-              ({c.side}) {c.kind !== 'comment' ? `${c.kind} — ` : ''}
+            <li
+              key={i}
+              className={`text-xs ${c.kind === 'disputed' ? 'text-red-700' : 'text-gray-700'}`}
+            >
+              <span className="text-gray-400">{new Date(c.at).toLocaleString()}</span> ·{' '}
+              <strong>{c.actorName}</strong> ({c.side}) {c.kind !== 'comment' ? `${c.kind} — ` : ''}
               {c.body}
             </li>
           ))}
@@ -175,7 +226,9 @@ function BatchDetail({ id, side, onChanged }: { id: string; side: SettlementSide
           onChange={(e) => setComment(e.target.value)}
           rows={2}
           placeholder={
-            side === 'partner' ? 'Ask a question, or explain what is wrong to dispute' : 'Reply, or explain how a dispute was resolved'
+            side === 'partner'
+              ? 'Ask a question, or explain what is wrong to dispute'
+              : 'Reply, or explain how a dispute was resolved'
           }
           className={`${inputClass} mt-2 w-full`}
         />
@@ -183,7 +236,9 @@ function BatchDetail({ id, side, onChanged }: { id: string; side: SettlementSide
           <button
             type="button"
             disabled={busy || !comment.trim()}
-            onClick={() => run(() => settlementApi.comment(batch._id, comment.trim()), 'Comment added')}
+            onClick={() =>
+              run(() => settlementApi.comment(batch._id, comment.trim()), 'Comment added')
+            }
             className="rounded-full border border-slate-300 px-3 py-1.5 text-xs font-semibold disabled:opacity-50"
           >
             Comment
@@ -192,7 +247,9 @@ function BatchDetail({ id, side, onChanged }: { id: string; side: SettlementSide
             <button
               type="button"
               disabled={busy || !comment.trim()}
-              onClick={() => run(() => settlementApi.dispute(batch._id, comment.trim()), 'Dispute raised')}
+              onClick={() =>
+                run(() => settlementApi.dispute(batch._id, comment.trim()), 'Dispute raised')
+              }
               className="rounded-full border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-600 disabled:opacity-50"
             >
               Dispute this settlement
@@ -202,7 +259,9 @@ function BatchDetail({ id, side, onChanged }: { id: string; side: SettlementSide
             <button
               type="button"
               disabled={busy || !comment.trim()}
-              onClick={() => run(() => settlementApi.resolve(batch._id, comment.trim()), 'Dispute resolved')}
+              onClick={() =>
+                run(() => settlementApi.resolve(batch._id, comment.trim()), 'Dispute resolved')
+              }
               className="rounded-full bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-50"
             >
               Resolve dispute
@@ -211,7 +270,8 @@ function BatchDetail({ id, side, onChanged }: { id: string; side: SettlementSide
         </div>
         {side === 'hotel' && batch.status === 'disputed' && (
           <p className="mt-1 text-[11px] text-gray-500">
-            If money must change, add an adjustment below (or void the folio charge) — it lands in the next batch.
+            If money must change, add an adjustment below (or void the folio charge) — it lands in
+            the next batch.
           </p>
         )}
       </div>
@@ -243,7 +303,10 @@ function BatchesTab({ side, links }: { side: SettlementSide; links: VendorLinkDt
   useEffect(() => {
     void load();
   }, [load]);
-  useVendorEvents(['settlement:batch', 'settlement:adjustment', 'settlement:reversal'], () => void load());
+  useVendorEvents(
+    ['settlement:batch', 'settlement:adjustment', 'settlement:reversal'],
+    () => void load()
+  );
 
   const linkName = (id: string) => {
     const l = links.find((x) => x._id === id);
@@ -253,7 +316,9 @@ function BatchesTab({ side, links }: { side: SettlementSide; links: VendorLinkDt
   const generate = async () => {
     try {
       const created = await settlementApi.generate();
-      toast.success(created.length ? `${created.length} batch(es) created` : 'Nothing to settle yet');
+      toast.success(
+        created.length ? `${created.length} batch(es) created` : 'Nothing to settle yet'
+      );
       await load();
     } catch (e) {
       toast.error(errorMessage(e, 'Could not create batches.'));
@@ -262,7 +327,11 @@ function BatchesTab({ side, links }: { side: SettlementSide; links: VendorLinkDt
 
   const adjust = async () => {
     try {
-      await settlementApi.adjustment({ linkId: adjLink, amount: Number(adjAmount), note: adjNote.trim() });
+      await settlementApi.adjustment({
+        linkId: adjLink,
+        amount: Number(adjAmount),
+        note: adjNote.trim(),
+      });
       toast.success('Adjustment recorded — it joins the next batch');
       setAdjAmount('');
       setAdjNote('');
@@ -281,7 +350,11 @@ function BatchesTab({ side, links }: { side: SettlementSide; links: VendorLinkDt
           <div className="flex flex-wrap items-center justify-between gap-2">
             <p className="font-semibold">Not yet batched</p>
             {side === 'hotel' && (
-              <button type="button" onClick={() => void generate()} className="rounded-full bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white">
+              <button
+                type="button"
+                onClick={() => void generate()}
+                className="rounded-full bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white"
+              >
                 Settle now
               </button>
             )}
@@ -289,12 +362,16 @@ function BatchesTab({ side, links }: { side: SettlementSide; links: VendorLinkDt
           <ul className="mt-2 space-y-1 text-sm">
             {data.unbatched.map((u) => (
               <li key={u.vendorLink} className="flex justify-between">
-                <span>{linkName(u.vendorLink)} · {u.rows} row(s)</span>
+                <span>
+                  {linkName(u.vendorLink)} · {u.rows} row(s)
+                </span>
                 <strong>{money(u.net)}</strong>
               </li>
             ))}
           </ul>
-          <p className="mt-1 text-[11px] text-gray-500">Batches are created nightly per each outlet&apos;s daily/weekly cycle.</p>
+          <p className="mt-1 text-[11px] text-gray-500">
+            Batches are created nightly per each outlet&apos;s daily/weekly cycle.
+          </p>
         </div>
       )}
 
@@ -314,13 +391,19 @@ function BatchesTab({ side, links }: { side: SettlementSide; links: VendorLinkDt
               >
                 <div>
                   <p className="font-semibold">
-                    {side === 'hotel' ? b.outletName || b.counterpartName : b.counterpartName} · {money(b.totals.net)}
+                    {side === 'hotel' ? b.outletName || b.counterpartName : b.counterpartName} ·{' '}
+                    {money(b.totals.net)}
                   </p>
                   <p className="text-xs text-gray-500">
-                    {b.batchNo} · {day(b.periodStart)} – {day(b.periodEnd)} · {b.totals.orders} order(s)
+                    {b.batchNo} · {day(b.periodStart)} – {day(b.periodEnd)} · {b.totals.orders}{' '}
+                    order(s)
                   </p>
                 </div>
-                <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${STATUS_STYLE[b.status]}`}>{b.status}</span>
+                <span
+                  className={`rounded-full px-2.5 py-1 text-xs font-semibold ${STATUS_STYLE[b.status]}`}
+                >
+                  {b.status}
+                </span>
               </button>
               {selected === b._id && (
                 <div className="mt-3">
@@ -336,17 +419,38 @@ function BatchesTab({ side, links }: { side: SettlementSide; links: VendorLinkDt
         <div className="space-y-2 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
           <p className="font-semibold">Adjustment</p>
           <p className="text-xs text-gray-500">
-            Positive = you owe the outlet more; negative = you recover money. It joins that outlet&apos;s next batch.
+            Positive = you owe the outlet more; negative = you recover money. It joins that
+            outlet&apos;s next batch.
           </p>
           <div className="grid gap-2 sm:grid-cols-3">
-            <select aria-label="Outlet" value={adjLink} onChange={(e) => setAdjLink(e.target.value)} className={inputClass}>
+            <select
+              aria-label="Outlet"
+              value={adjLink}
+              onChange={(e) => setAdjLink(e.target.value)}
+              className={inputClass}
+            >
               <option value="">Choose outlet…</option>
               {links.map((l) => (
-                <option key={l._id} value={l._id}>{l.outletName || l.counterpartName || 'Outlet'}</option>
+                <option key={l._id} value={l._id}>
+                  {l.outletName || l.counterpartName || 'Outlet'}
+                </option>
               ))}
             </select>
-            <input aria-label="Adjustment amount" value={adjAmount} onChange={(e) => setAdjAmount(e.target.value)} inputMode="decimal" placeholder="e.g. -1500" className={inputClass} />
-            <input aria-label="Adjustment note" value={adjNote} onChange={(e) => setAdjNote(e.target.value)} placeholder="Why" className={inputClass} />
+            <input
+              aria-label="Adjustment amount"
+              value={adjAmount}
+              onChange={(e) => setAdjAmount(e.target.value)}
+              inputMode="decimal"
+              placeholder="e.g. -1500"
+              className={inputClass}
+            />
+            <input
+              aria-label="Adjustment note"
+              value={adjNote}
+              onChange={(e) => setAdjNote(e.target.value)}
+              placeholder="Why"
+              className={inputClass}
+            />
           </div>
           <button
             type="button"
@@ -369,7 +473,9 @@ function ReportsTab({ side }: { side: SettlementSide }) {
   const [to, setTo] = useState(today);
   const [rows, setRows] = useState<OutletRevenueRow[] | null>(null);
   const [postingDate, setPostingDate] = useState(today);
-  const [postings, setPostings] = useState<Awaited<ReturnType<typeof settlementApi.folioPostings>> | null>(null);
+  const [postings, setPostings] = useState<Awaited<
+    ReturnType<typeof settlementApi.folioPostings>
+  > | null>(null);
 
   useEffect(() => {
     settlementApi
@@ -390,10 +496,24 @@ function ReportsTab({ side }: { side: SettlementSide }) {
     <div className="space-y-4">
       <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <p className="font-semibold">{side === 'hotel' ? 'Revenue & commission by outlet' : 'Room-service revenue by hotel'}</p>
+          <p className="font-semibold">
+            {side === 'hotel' ? 'Revenue & commission by outlet' : 'Room-service revenue by hotel'}
+          </p>
           <div className="flex gap-2">
-            <input aria-label="From" type="date" value={from} onChange={(e) => setFrom(e.target.value)} className={inputClass} />
-            <input aria-label="To" type="date" value={to} onChange={(e) => setTo(e.target.value)} className={inputClass} />
+            <input
+              aria-label="From"
+              type="date"
+              value={from}
+              onChange={(e) => setFrom(e.target.value)}
+              className={inputClass}
+            />
+            <input
+              aria-label="To"
+              type="date"
+              value={to}
+              onChange={(e) => setTo(e.target.value)}
+              className={inputClass}
+            />
           </div>
         </div>
         {!rows ? (
@@ -418,7 +538,9 @@ function ReportsTab({ side }: { side: SettlementSide }) {
               <tbody>
                 {rows.map((r) => (
                   <tr key={r.vendorLink} className="border-t border-slate-100">
-                    <td className="py-1.5">{side === 'hotel' ? r.outletName || r.counterpartName : r.counterpartName}</td>
+                    <td className="py-1.5">
+                      {side === 'hotel' ? r.outletName || r.counterpartName : r.counterpartName}
+                    </td>
                     <td className="py-1.5 text-right">{r.orders}</td>
                     <td className="py-1.5 text-right">{money(r.gross)}</td>
                     <td className="py-1.5 text-right">{money(r.commission)}</td>
@@ -438,7 +560,13 @@ function ReportsTab({ side }: { side: SettlementSide }) {
         <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <p className="font-semibold">Folio postings</p>
-            <input aria-label="Posting date" type="date" value={postingDate} onChange={(e) => setPostingDate(e.target.value)} className={inputClass} />
+            <input
+              aria-label="Posting date"
+              type="date"
+              value={postingDate}
+              onChange={(e) => setPostingDate(e.target.value)}
+              className={inputClass}
+            />
           </div>
           {!postings ? (
             <div className="mt-3 h-16 animate-pulse rounded-xl bg-gray-100" />
@@ -448,7 +576,9 @@ function ReportsTab({ side }: { side: SettlementSide }) {
             <ul className="mt-3 space-y-1 text-sm">
               {postings.groups.map((g) => (
                 <li key={g.revenueCode} className="flex justify-between">
-                  <span className="font-mono text-xs">{g.revenueCode} · {g.count}</span>
+                  <span className="font-mono text-xs">
+                    {g.revenueCode} · {g.count}
+                  </span>
                   <strong>{money(g.amount)}</strong>
                 </li>
               ))}
@@ -463,11 +593,15 @@ function ReportsTab({ side }: { side: SettlementSide }) {
 function ReconciliationTab({ side }: { side: SettlementSide }) {
   const [reports, setReports] = useState<ReconciliationReportDto[] | null>(null);
   const [onlyMismatch, setOnlyMismatch] = useState(false);
-  const [runDate, setRunDate] = useState(new Date(Date.now() - 86400000).toISOString().slice(0, 10));
+  const [runDate, setRunDate] = useState(
+    new Date(Date.now() - 86400000).toISOString().slice(0, 10)
+  );
 
   const load = useCallback(async () => {
     try {
-      setReports(await settlementApi.reconciliation({ status: onlyMismatch ? 'mismatch' : undefined }));
+      setReports(
+        await settlementApi.reconciliation({ status: onlyMismatch ? 'mismatch' : undefined })
+      );
     } catch {
       toast.error('Could not load reconciliation reports.');
     }
@@ -481,7 +615,9 @@ function ReconciliationTab({ side }: { side: SettlementSide }) {
   const run = async () => {
     try {
       const res = await settlementApi.runReconciliation(runDate);
-      toast.success(`${res.length} outlet report(s) · ${res.filter((r) => r.status === 'mismatch').length} mismatch(es)`);
+      toast.success(
+        `${res.length} outlet report(s) · ${res.filter((r) => r.status === 'mismatch').length} mismatch(es)`
+      );
       await load();
     } catch (e) {
       toast.error(errorMessage(e, 'Could not run reconciliation.'));
@@ -492,25 +628,42 @@ function ReconciliationTab({ side }: { side: SettlementSide }) {
     <div className="space-y-3">
       <div className="flex flex-wrap items-center gap-2">
         <label className="flex items-center gap-1.5 text-sm">
-          <input type="checkbox" checked={onlyMismatch} onChange={(e) => setOnlyMismatch(e.target.checked)} />
+          <input
+            type="checkbox"
+            checked={onlyMismatch}
+            onChange={(e) => setOnlyMismatch(e.target.checked)}
+          />
           Mismatches only
         </label>
         {side === 'hotel' && (
           <>
-            <input aria-label="Reconcile date" type="date" value={runDate} onChange={(e) => setRunDate(e.target.value)} className={inputClass} />
-            <button type="button" onClick={() => void run()} className="rounded-full bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white">
+            <input
+              aria-label="Reconcile date"
+              type="date"
+              value={runDate}
+              onChange={(e) => setRunDate(e.target.value)}
+              className={inputClass}
+            />
+            <button
+              type="button"
+              onClick={() => void run()}
+              className="rounded-full bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white"
+            >
               Re-run day
             </button>
           </>
         )}
       </div>
       <p className="text-xs text-gray-500">
-        Each night, posted room charges, accepted outlet orders and amounts owed to outlets are matched per outlet.
+        Each night, posted room charges, accepted outlet orders and amounts owed to outlets are
+        matched per outlet.
       </p>
       {!reports ? (
         <div className="h-24 animate-pulse rounded-xl bg-gray-100" />
       ) : reports.length === 0 ? (
-        <p className="rounded-2xl border border-dashed border-gray-300 bg-white p-6 text-center text-sm text-gray-500">No reports yet.</p>
+        <p className="rounded-2xl border border-dashed border-gray-300 bg-white p-6 text-center text-sm text-gray-500">
+          No reports yet.
+        </p>
       ) : (
         <ul className="space-y-2">
           {reports.map((r) => (
@@ -528,8 +681,8 @@ function ReconciliationTab({ side }: { side: SettlementSide }) {
                 </span>
               </div>
               <p className="text-xs text-gray-500">
-                {r.totals.orders} order(s) · orders {money(r.totals.ordersTotal)} · room charges {money(r.totals.folioPosted)} ·
-                owed to outlet {money(r.totals.accruedNet)}
+                {r.totals.orders} order(s) · orders {money(r.totals.ordersTotal)} · room charges{' '}
+                {money(r.totals.folioPosted)} · owed to outlet {money(r.totals.accruedNet)}
                 {r.totals.onlineOrders ? ` · ${r.totals.onlineOrders} paid online` : ''}
               </p>
               {r.issues.length > 0 && (

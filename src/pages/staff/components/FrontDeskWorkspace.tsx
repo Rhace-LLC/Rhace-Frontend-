@@ -12,12 +12,7 @@ import {
   Receipt,
   RefreshCw,
 } from 'lucide-react';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCreateOrder } from '@/features/orders/api/hooks';
 import { ordersApi } from '@/features/orders/api/service';
@@ -84,7 +79,9 @@ function Stat({
           <Icon className="h-4 w-4 text-res-brand" />
         </span>
       </div>
-      <p className={`type-res-h2 mt-1 ${highlight && value > 0 ? 'text-res-brand' : 'text-res-ink'}`}>
+      <p
+        className={`type-res-h2 mt-1 ${highlight && value > 0 ? 'text-res-brand' : 'text-res-ink'}`}
+      >
         {value}
       </p>
     </div>
@@ -175,13 +172,11 @@ export default function FrontDeskWorkspace() {
       const docs = plansRes.data?.items ?? [];
       setPlans(docs);
       setPlanId((current) =>
-        current && docs.some((d) => d._id === current) ? current : defaultPlanId(docs),
+        current && docs.some((d) => d._id === current) ? current : defaultPlanId(docs)
       );
       setArrivals(arrivalsRes.data?.items ?? []);
       setInHouse(inHouseRes.data?.items ?? []);
-      setStaysByReservation(
-        new Map((staysRes ?? []).map((s) => [String(s.reservation), s])),
-      );
+      setStaysByReservation(new Map((staysRes ?? []).map((s) => [String(s.reservation), s])));
     } catch (error) {
       console.error(error);
       toast.error('Failed to load the front desk board');
@@ -228,7 +223,7 @@ export default function FrontDeskWorkspace() {
   const unitLabel = useCallback(
     (unitId?: string | null) =>
       units.find((u) => u._id === unitId)?.label ?? (unitId ? `Room ${unitId.slice(-4)}` : '—'),
-    [units],
+    [units]
   );
 
   /** The reservation that currently holds each room: in-house beats a due arrival. */
@@ -244,7 +239,7 @@ export default function FrontDeskWorkspace() {
 
   const dueIn = useMemo(
     () => arrivals.filter((r) => r.status === 'upcoming' || r.status === 'no_show'),
-    [arrivals],
+    [arrivals]
   );
   const dueOut = useMemo(() => {
     const end = new Date(endOfToday()).getTime();
@@ -252,7 +247,7 @@ export default function FrontDeskWorkspace() {
   }, [inHouse]);
   const outOfOrder = units.filter((u) => u.state === 'out_of_order_ooo').length;
   const dirty = units.filter((u) =>
-    ['vacant_dirty', 'cleaning_in_progress'].includes(u.state),
+    ['vacant_dirty', 'cleaning_in_progress'].includes(u.state)
   ).length;
 
   const changeReservation = async (kind: 'checkIn' | 'checkOut', r: UnitReservationDto) => {
@@ -266,7 +261,7 @@ export default function FrontDeskWorkspace() {
           stayPin
             ? `${r.guestName} checked into Room ${unitLabel(r.unitId)} · guest PIN ${stayPin}`
             : `${r.guestName} checked into Room ${unitLabel(r.unitId)}`,
-          { autoClose: stayPin ? 15000 : 5000 },
+          { autoClose: stayPin ? 15000 : 5000 }
         );
       } else {
         await unitReservationService.checkOut(r._id);
@@ -274,7 +269,9 @@ export default function FrontDeskWorkspace() {
       }
       await refresh();
     } catch (error) {
-      toast.error(apiMessage(error) || `Failed to ${kind === 'checkIn' ? 'check in' : 'check out'}`);
+      toast.error(
+        apiMessage(error) || `Failed to ${kind === 'checkIn' ? 'check in' : 'check out'}`
+      );
     } finally {
       setBusyReservationId(null);
     }
@@ -352,7 +349,7 @@ export default function FrontDeskWorkspace() {
 
   const tabReservation = useMemo(
     () => inHouse.find((r) => r._id === tabReservationId) ?? null,
-    [inHouse, tabReservationId],
+    [inHouse, tabReservationId]
   );
 
   const handleCharge = async (lines: CreateOrderLineInput[]) => {

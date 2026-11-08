@@ -23,15 +23,13 @@ export interface AssignmentRealtimeMessage {
 }
 
 function socketBaseUrl(): string {
-  const raw =
-    envConfig.socketUrl ||
-    (typeof window !== 'undefined' ? window.location.origin : '');
+  const raw = envConfig.socketUrl || (typeof window !== 'undefined' ? window.location.origin : '');
   return raw.replace(/\/+$/, '');
 }
 
 export function useAssignmentRealtime(
   vendorId: string | undefined,
-  onEvent: (message: AssignmentRealtimeMessage) => void,
+  onEvent: (message: AssignmentRealtimeMessage) => void
 ) {
   const handlerRef = useRef(onEvent);
 

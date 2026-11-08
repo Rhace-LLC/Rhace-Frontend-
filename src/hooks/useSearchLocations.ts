@@ -67,7 +67,13 @@ export const useSearchLocation = () => {
         );
         if (r.ok) {
           const d = (await r.json()) as {
-            address?: { city?: string; town?: string; state_district?: string; state?: string; country?: string };
+            address?: {
+              city?: string;
+              town?: string;
+              state_district?: string;
+              state?: string;
+              country?: string;
+            };
           };
           const city =
             d.address?.city ||
@@ -198,9 +204,7 @@ export const useSearchLocation = () => {
     if (cached) {
       setLocation(cached);
       setStatus(cached.lat ? 'granted' : 'ip');
-      dispatch(
-        reduxSetLocation({ ...cached, status: cached.lat ? 'granted' : 'ip', error: null })
-      );
+      dispatch(reduxSetLocation({ ...cached, status: cached.lat ? 'granted' : 'ip', error: null }));
       return;
     }
 

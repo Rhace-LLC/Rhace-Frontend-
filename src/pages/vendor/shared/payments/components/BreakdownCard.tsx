@@ -59,7 +59,10 @@ export function BreakdownCard({ params }: { params: ReportParams }) {
                 </span>
               </div>
               <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-res-surface" aria-hidden>
-                <div className="h-full rounded-full bg-res-brand" style={{ width: `${Math.max(row.share, 1)}%` }} />
+                <div
+                  className="h-full rounded-full bg-res-brand"
+                  style={{ width: `${Math.max(row.share, 1)}%` }}
+                />
               </div>
               <p className="type-res-caption mt-1 text-res-ink-muted">
                 {row.count.toLocaleString()} payment{row.count === 1 ? '' : 's'}

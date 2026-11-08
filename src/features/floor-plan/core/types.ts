@@ -1,15 +1,7 @@
 export type CanvasMode = 'edit' | 'manage';
 export type FloorVertical = 'restaurant' | 'club' | 'hotel';
 export type EntityShape =
-  | 'rect'
-  | 'round'
-  | 'square'
-  | 'rectangle'
-  | 'oval'
-  | 'booth'
-  | 'cabana'
-  | 'room'
-  | 'bar-seat';
+  'rect' | 'round' | 'square' | 'rectangle' | 'oval' | 'booth' | 'cabana' | 'room' | 'bar-seat';
 
 export interface BusinessData {
   name: string;

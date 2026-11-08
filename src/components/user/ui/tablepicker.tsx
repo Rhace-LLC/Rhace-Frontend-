@@ -27,7 +27,15 @@ interface TablePickerProps {
   edit?: boolean;
 }
 
-export function TablePicker({ value, onChange, className, tables, loading, chevron, edit }: TablePickerProps) {
+export function TablePicker({
+  value,
+  onChange,
+  className,
+  tables,
+  loading,
+  chevron,
+  edit,
+}: TablePickerProps) {
   const [open, setOpen] = useState(false);
 
   return (

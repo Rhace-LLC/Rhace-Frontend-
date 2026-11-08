@@ -153,7 +153,7 @@ export function AllStaffTab({
   const vertical = verticalProp ?? verticalFromPath(pathname);
   const roleOptions = useMemo(
     () => ROLE_OPTIONS.filter((r) => ROLES_BY_VERTICAL[vertical].includes(r.value)),
-    [vertical],
+    [vertical]
   );
   const [staff, setStaff] = useState<StaffMember[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -200,7 +200,7 @@ export function AllStaffTab({
         const matchesStatus = filterStatus === 'all' || s.status === filterStatus;
         return matchesSearch && matchesRole && matchesStatus;
       }),
-    [staff, searchTerm, filterRole, filterStatus],
+    [staff, searchTerm, filterRole, filterStatus]
   );
 
   const stats = useMemo(
@@ -210,7 +210,7 @@ export function AllStaffTab({
       invited: staff.filter((s) => s.status === 'invited').length,
       suspended: staff.filter((s) => s.status === 'suspended').length,
     }),
-    [staff],
+    [staff]
   );
 
   const handleInvite = async () => {
@@ -234,7 +234,7 @@ export function AllStaffTab({
     } catch (error) {
       toast.error(
         (error as { response?: { data?: { message?: string } } })?.response?.data?.message ||
-          'Failed to send invitation',
+          'Failed to send invitation'
       );
     } finally {
       setIsInviting(false);
@@ -249,7 +249,7 @@ export function AllStaffTab({
     } catch (error) {
       toast.error(
         (error as { response?: { data?: { message?: string } } })?.response?.data?.message ||
-          'Failed to resend invitation',
+          'Failed to resend invitation'
       );
     } finally {
       setBusyId(null);
@@ -275,7 +275,7 @@ export function AllStaffTab({
       setBusyId(member._id);
       await staffService.revokeStaff(member._id);
       setStaff((prev) =>
-        prev.map((s) => (s._id === member._id ? { ...s, status: 'suspended' } : s)),
+        prev.map((s) => (s._id === member._id ? { ...s, status: 'suspended' } : s))
       );
       toast.success('Access revoked');
     } catch {
@@ -391,7 +391,11 @@ export function AllStaffTab({
                 </option>
               ))}
             </NativeSelect>
-            <NativeSelect value={filterStatus} onChange={setFilterStatus} ariaLabel="Filter by status">
+            <NativeSelect
+              value={filterStatus}
+              onChange={setFilterStatus}
+              ariaLabel="Filter by status"
+            >
               <option value="all">All statuses</option>
               <option value="active">Active</option>
               <option value="invited">Invited</option>
@@ -572,7 +576,8 @@ export function AllStaffTab({
                                   onClick={() => handleRevoke(member)}
                                   className="type-res-small cursor-pointer rounded-res-sm font-medium text-res-ink focus:bg-res-surface focus:text-res-brand"
                                 >
-                                  <UserX className="mr-2 h-4 w-4 text-res-ink-muted" /> Revoke access
+                                  <UserX className="mr-2 h-4 w-4 text-res-ink-muted" /> Revoke
+                                  access
                                 </DropdownMenuItem>
                               )}
                               <DropdownMenuItem

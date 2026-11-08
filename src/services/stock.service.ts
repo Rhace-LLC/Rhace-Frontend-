@@ -45,7 +45,9 @@ interface RawDrink {
   categoryId?: { name?: string } | string | null;
 }
 
-const categoryLabel = (value: RawDish['categoryId'] | RawDrink['categoryId']): string | undefined => {
+const categoryLabel = (
+  value: RawDish['categoryId'] | RawDrink['categoryId']
+): string | undefined => {
   if (!value) return undefined;
   return typeof value === 'string' ? undefined : (value.name ?? undefined);
 };

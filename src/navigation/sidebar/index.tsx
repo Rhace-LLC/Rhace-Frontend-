@@ -35,8 +35,7 @@ const useMenuConfig = (businessType?: string) => {
       ...child,
       active: isActiveRoute(child.path),
     }));
-    const active =
-      isActiveRoute(item.path) || (children?.some((child) => child.active) ?? false);
+    const active = isActiveRoute(item.path) || (children?.some((child) => child.active) ?? false);
     return { ...item, active, children };
   };
 
@@ -255,12 +254,7 @@ const Sidebar = ({ isOpen, onClose, onNavigate, type }: SidebarProps) => {
               {item.children?.length && expandedItems[item.label] && (
                 <div className="mt-1 space-y-1">
                   {item.children.map((child) => (
-                    <SidebarItem
-                      key={child.label}
-                      item={child}
-                      onClick={handleItemClick}
-                      indent
-                    />
+                    <SidebarItem key={child.label} item={child} onClick={handleItemClick} indent />
                   ))}
                 </div>
               )}

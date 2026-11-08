@@ -133,34 +133,31 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     [role]
   );
 
-  const value = useMemo<AuthContextValue>(
-    () => {
-      const vendorType = vendor?.type || vendor?.vendorType || vendor?.businessType || '';
-      const normalizedType = String(vendorType).toLowerCase();
-      return {
-        user,
-        vendor,
-        admin,
-        staff,
-        role,
-        isAuthenticated: Boolean(user || vendor || admin || staff),
-        loading,
-        vendorIsHotel: normalizedType === 'hotel',
-        vendorIsClub: normalizedType === 'club',
-        vendorIsRestaurant: normalizedType === 'restaurant',
-        isAdmin: Boolean(admin),
-        isUser: Boolean(user),
-        isVendor: Boolean(vendor),
-        isStaff: Boolean(staff),
-        setUser,
-        setVendor,
-        setAdmin,
-        setStaff,
-        logout,
-      };
-    },
-    [user, vendor, admin, staff, role, loading, setUser, setVendor, setAdmin, setStaff, logout]
-  );
+  const value = useMemo<AuthContextValue>(() => {
+    const vendorType = vendor?.type || vendor?.vendorType || vendor?.businessType || '';
+    const normalizedType = String(vendorType).toLowerCase();
+    return {
+      user,
+      vendor,
+      admin,
+      staff,
+      role,
+      isAuthenticated: Boolean(user || vendor || admin || staff),
+      loading,
+      vendorIsHotel: normalizedType === 'hotel',
+      vendorIsClub: normalizedType === 'club',
+      vendorIsRestaurant: normalizedType === 'restaurant',
+      isAdmin: Boolean(admin),
+      isUser: Boolean(user),
+      isVendor: Boolean(vendor),
+      isStaff: Boolean(staff),
+      setUser,
+      setVendor,
+      setAdmin,
+      setStaff,
+      logout,
+    };
+  }, [user, vendor, admin, staff, role, loading, setUser, setVendor, setAdmin, setStaff, logout]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

@@ -1,9 +1,5 @@
 import api from '@/lib/axios';
-import type {
-  CanvasStructureDto,
-  FloorPlanApiEnvelope,
-  UpdateStructureInput,
-} from '@/types';
+import type { CanvasStructureDto, FloorPlanApiEnvelope, UpdateStructureInput } from '@/types';
 
 class CanvasStructureService {
   async get(structureId: string) {

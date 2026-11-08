@@ -61,7 +61,7 @@ const newId = (): string =>
 
 export function listDishDrafts(vendorId: string): DishDraft[] {
   return readAll(vendorId).sort(
-    (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
+    (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
   );
 }
 
@@ -87,6 +87,6 @@ export function saveDishDraft(vendorId: string, data: DishFormState, id?: string
 export function deleteDishDraft(vendorId: string, id: string): void {
   writeAll(
     vendorId,
-    readAll(vendorId).filter((d) => d.id !== id),
+    readAll(vendorId).filter((d) => d.id !== id)
   );
 }

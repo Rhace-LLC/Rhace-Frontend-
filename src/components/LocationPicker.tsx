@@ -20,7 +20,12 @@ interface LocationPickerProps {
   updateFilter?: (key: string, value: unknown) => void;
 }
 
-export const LocationPicker = ({ requestLocation, setCity, onClose, updateFilter }: LocationPickerProps) => {
+export const LocationPicker = ({
+  requestLocation,
+  setCity,
+  onClose,
+  updateFilter,
+}: LocationPickerProps) => {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<CityResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -45,14 +50,25 @@ export const LocationPicker = ({ requestLocation, setCity, onClose, updateFilter
         display_name?: string;
         lat?: string;
         lon?: string;
-        address?: { city?: string; town?: string; state_district?: string; state?: string; country?: string };
+        address?: {
+          city?: string;
+          town?: string;
+          state_district?: string;
+          state?: string;
+          country?: string;
+        };
       }[];
       setResults(
         data.map((item) => ({
           displayName: item.display_name || '',
           lat: item.lat || '',
           lng: item.lon || '',
-          city: item.address?.city || item.address?.town || item.address?.state_district || item.address?.state || '',
+          city:
+            item.address?.city ||
+            item.address?.town ||
+            item.address?.state_district ||
+            item.address?.state ||
+            '',
           country: item.address?.country || '',
         }))
       );
@@ -110,7 +126,10 @@ export const LocationPicker = ({ requestLocation, setCity, onClose, updateFilter
           className="w-full pl-8 pr-8 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-[#0A6C6D] focus:ring-1 focus:ring-[#0A6C6D]/20"
         />
         {query && (
-          <button onClick={handleClear} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+          <button
+            onClick={handleClear}
+            className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+          >
             <X className="w-3.5 h-3.5" />
           </button>
         )}

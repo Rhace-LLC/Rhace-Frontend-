@@ -59,10 +59,7 @@ const AdminReservations = () => {
 
   return (
     <div className="space-y-5 p-4 md:p-6">
-      <DashboardPageHeader
-        title="Reservations"
-        subtitle="All unit reservations across vendors."
-      />
+      <DashboardPageHeader title="Reservations" subtitle="All unit reservations across vendors." />
 
       <ReservationStatCards counters={countersQuery.data} loading={countersQuery.isLoading} />
 

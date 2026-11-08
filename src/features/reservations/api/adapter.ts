@@ -67,7 +67,9 @@ export function isPaid(view: ReservationView): boolean {
 }
 
 /** Client-side time bucketing replacing the removed `/bookings` buckets. */
-export function bucketReservations(items: ReservationView[]): Record<TimeBucket, ReservationView[]> {
+export function bucketReservations(
+  items: ReservationView[]
+): Record<TimeBucket, ReservationView[]> {
   const now = Date.now();
   const startOfToday = new Date();
   startOfToday.setHours(0, 0, 0, 0);

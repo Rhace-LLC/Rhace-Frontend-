@@ -98,7 +98,9 @@ export function ReservationCards({
               <p className="flex items-center gap-1.5">
                 <Users className="h-3.5 w-3.5 shrink-0 text-res-brand" />
                 {spotLabel}
-                {reservation.partySize ? ` · ${reservation.partySize} guest${reservation.partySize === 1 ? '' : 's'}` : ''}
+                {reservation.partySize
+                  ? ` · ${reservation.partySize} guest${reservation.partySize === 1 ? '' : 's'}`
+                  : ''}
               </p>
             </div>
 

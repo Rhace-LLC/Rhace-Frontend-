@@ -111,10 +111,25 @@ export interface SubscriptionSummaryDto {
     subscriptionPayments: number;
     forgoneTakeEstimate: number;
   }[];
-  byVertical: { vertical: string; subscriptionIncome: number; percentageTake: number; forgoneTakeEstimate: number }[];
-  totals: { subscriptionIncome: number; percentageTake: number; forgoneTakeEstimate: number; platformIncome: number };
+  byVertical: {
+    vertical: string;
+    subscriptionIncome: number;
+    percentageTake: number;
+    forgoneTakeEstimate: number;
+  }[];
+  totals: {
+    subscriptionIncome: number;
+    percentageTake: number;
+    forgoneTakeEstimate: number;
+    platformIncome: number;
+  };
   statuses: Record<string, number>;
-  pendingInvoices: { count: number; oldestAgeDays: number | null; amount: number; withFailedPayments: number };
+  pendingInvoices: {
+    count: number;
+    oldestAgeDays: number | null;
+    amount: number;
+    withFailedPayments: number;
+  };
   attention: {
     vendorId: string;
     businessName: string;
@@ -148,7 +163,13 @@ class BillingService {
     return res.data as {
       success: boolean;
       /** `checkoutUrl` is null when credit covered the invoice and it activated at once. */
-      data: { invoiceId: string; invoiceNumber: string; totalDue: number; creditApplied: number; checkoutUrl: string | null };
+      data: {
+        invoiceId: string;
+        invoiceNumber: string;
+        totalDue: number;
+        creditApplied: number;
+        checkoutUrl: string | null;
+      };
     };
   }
 
@@ -169,7 +190,10 @@ class BillingService {
 
   async confirmInvoice(invoiceId: string) {
     const res = await api.post(`/billing/invoices/${invoiceId}/confirm`);
-    return res.data as { success: boolean; data: { invoiceId: string; paid: boolean; status: InvoiceStatus } };
+    return res.data as {
+      success: boolean;
+      data: { invoiceId: string; paid: boolean; status: InvoiceStatus };
+    };
   }
 
   // ─── Admin ────────────────────────────────────────────────────────────
@@ -200,7 +224,15 @@ class BillingService {
     return res.data as { success: boolean; data: SubscriptionSummaryDto };
   }
 
-  async adminInvoices(params: { status?: string; kind?: string; vendorId?: string; page?: number; limit?: number } = {}) {
+  async adminInvoices(
+    params: {
+      status?: string;
+      kind?: string;
+      vendorId?: string;
+      page?: number;
+      limit?: number;
+    } = {}
+  ) {
     const res = await api.get('/billing/admin/invoices', { params });
     return res.data as {
       success: boolean;

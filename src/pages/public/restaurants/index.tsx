@@ -156,10 +156,7 @@ const RestaurantsPage = () => {
                   <span className="rounded-res-sm bg-res-card p-2 shadow-res-low">
                     <Mail className="h-4 w-4 text-res-brand" />
                   </span>
-                  <a
-                    href={`mailto:${restaurant.email}`}
-                    className="truncate hover:text-res-brand"
-                  >
+                  <a href={`mailto:${restaurant.email}`} className="truncate hover:text-res-brand">
                     {restaurant.email}
                   </a>
                 </div>

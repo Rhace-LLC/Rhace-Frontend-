@@ -256,7 +256,11 @@ export default function HotelServicesPage() {
           </h3>
           <div>
             <label className={labelClass}>Name</label>
-            <input value={form.name} onChange={(e) => set('name', e.target.value)} className={inputClass} />
+            <input
+              value={form.name}
+              onChange={(e) => set('name', e.target.value)}
+              className={inputClass}
+            />
           </div>
           <div>
             <label className={labelClass}>Description</label>
@@ -341,7 +345,10 @@ export default function HotelServicesPage() {
                   min={1}
                   value={form.experience?.capacityPerSlot ?? 1}
                   onChange={(e) =>
-                    set('experience', { ...form.experience!, capacityPerSlot: Number(e.target.value) })
+                    set('experience', {
+                      ...form.experience!,
+                      capacityPerSlot: Number(e.target.value),
+                    })
                   }
                   className={inputClass}
                 />

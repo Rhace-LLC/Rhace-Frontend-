@@ -15,7 +15,10 @@ export default function PrototypeInventoryHotel() {
   };
 
   const breadcrumbs = (
-    <nav aria-label="Breadcrumb" className="type-res-small flex items-center gap-1 font-medium mb-2">
+    <nav
+      aria-label="Breadcrumb"
+      className="type-res-small flex items-center gap-1 font-medium mb-2"
+    >
       <button
         type="button"
         onClick={() => setShowQr(false)}

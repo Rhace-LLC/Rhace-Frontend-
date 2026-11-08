@@ -1,7 +1,14 @@
 /* eslint-disable react-refresh/only-export-components */
 import { Clock, Users } from 'lucide-react';
 import type { BusinessData, FloorEntity, FloorPlan, SpatialData } from '../core/types';
-import type { DrawerContext, ManageCardActions, TileContext, TopBarContext, ToolbarItem, VerticalPlugin } from '../core/plugin';
+import type {
+  DrawerContext,
+  ManageCardActions,
+  TileContext,
+  TopBarContext,
+  ToolbarItem,
+  VerticalPlugin,
+} from '../core/plugin';
 import { uid } from '../core/ids';
 import { SectionHeatmap } from '../components/overlays/SectionHeatmap';
 import { ScopeNav } from '../components/overlays/ScopeNav';
@@ -67,12 +74,7 @@ function renderScopeNav(ctx: TopBarContext) {
   const activeArea = plan.activeArea || areas[0] || '';
   // `??` alone never catches `floors: []` (the backend default) — treat empty
   // lists as missing so the Floor dropdown always has options.
-  const floors =
-    plan.floors?.length
-      ? plan.floors
-      : plan.floor
-        ? [plan.floor]
-        : ['Ground Floor'];
+  const floors = plan.floors?.length ? plan.floors : plan.floor ? [plan.floor] : ['Ground Floor'];
   const currentFloor = plan.floor && floors.includes(plan.floor) ? plan.floor : floors[0];
 
   const addArea = (name: string) => {
@@ -263,7 +265,10 @@ function manageToolbarItems({
 }: {
   plan: FloorPlan;
   selection: string[];
-  updateEntity: (id: string, patch: { businessData?: Partial<BusinessData>; spatialData?: Partial<SpatialData> }) => void;
+  updateEntity: (
+    id: string,
+    patch: { businessData?: Partial<BusinessData>; spatialData?: Partial<SpatialData> }
+  ) => void;
   clearSelection: () => void;
 }): ToolbarItem[] {
   const items: ToolbarItem[] = [];
@@ -285,14 +290,12 @@ function manageToolbarItems({
       items.push({
         id: 'seat',
         label: 'Seat Party',
-        onClick: () =>
-          updateEntity(selection[0], { businessData: { status: 'seated_ordering' } }),
+        onClick: () => updateEntity(selection[0], { businessData: { status: 'seated_ordering' } }),
       });
       items.push({
         id: 'check',
         label: 'Present Check',
-        onClick: () =>
-          updateEntity(selection[0], { businessData: { status: 'awaiting_check' } }),
+        onClick: () => updateEntity(selection[0], { businessData: { status: 'awaiting_check' } }),
       });
       items.push({
         id: 'clear',
@@ -325,13 +328,48 @@ export const restaurantPlugin: VerticalPlugin = {
     { type: 'stairs', label: 'Stairs', shape: 'rect', width: 90, height: 130, structure: true },
     { type: 'bar', label: 'Bar', shape: 'rect', width: 260, height: 110, structure: true },
     { type: 'counter', label: 'Counter', shape: 'rect', width: 220, height: 60, structure: true },
-    { type: 'kitchen_pass', label: 'Kitchen Pass', shape: 'rect', width: 200, height: 100, structure: true },
-    { type: 'service_station', label: 'Service Station', shape: 'rect', width: 140, height: 80, structure: true },
-    { type: 'host_stand', label: 'Host Stand', shape: 'rect', width: 100, height: 60, structure: true },
-    { type: 'waiting_area', label: 'Waiting Area', shape: 'rect', width: 180, height: 120, structure: true },
+    {
+      type: 'kitchen_pass',
+      label: 'Kitchen Pass',
+      shape: 'rect',
+      width: 200,
+      height: 100,
+      structure: true,
+    },
+    {
+      type: 'service_station',
+      label: 'Service Station',
+      shape: 'rect',
+      width: 140,
+      height: 80,
+      structure: true,
+    },
+    {
+      type: 'host_stand',
+      label: 'Host Stand',
+      shape: 'rect',
+      width: 100,
+      height: 60,
+      structure: true,
+    },
+    {
+      type: 'waiting_area',
+      label: 'Waiting Area',
+      shape: 'rect',
+      width: 180,
+      height: 120,
+      structure: true,
+    },
     { type: 'restroom', label: 'Restroom', shape: 'rect', width: 110, height: 90, structure: true },
     { type: 'buffet', label: 'Buffet', shape: 'rect', width: 240, height: 80, structure: true },
-    { type: 'fireplace', label: 'Fireplace', shape: 'rect', width: 140, height: 60, structure: true },
+    {
+      type: 'fireplace',
+      label: 'Fireplace',
+      shape: 'rect',
+      width: 140,
+      height: 60,
+      structure: true,
+    },
     { type: 'divider', label: 'Divider', shape: 'rect', width: 220, height: 16, structure: true },
     { type: 'planter', label: 'Planter', shape: 'rect', width: 90, height: 90, structure: true },
     { type: 'patio', label: 'Patio', shape: 'rect', width: 320, height: 200, structure: true },

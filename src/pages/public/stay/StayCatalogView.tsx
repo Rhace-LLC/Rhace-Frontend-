@@ -64,8 +64,8 @@ const StayCatalogView = ({ cart, onCheckout, initialOutlet }: Props) => {
     <div className="space-y-3">
       {noOutletOpen && hotel.items.length > 0 && (
         <p role="status" className="rounded-2xl bg-slate-100 px-4 py-3 text-sm text-slate-700">
-          Restaurants aren&apos;t taking room orders right now — hotel amenities and services are still
-          available below.
+          Restaurants aren&apos;t taking room orders right now — hotel amenities and services are
+          still available below.
         </p>
       )}
       {outlets.length > 0 && (
@@ -76,7 +76,9 @@ const StayCatalogView = ({ cart, onCheckout, initialOutlet }: Props) => {
                 <div>
                   <p className="text-sm font-semibold">🍽️ {o.outletName}</p>
                   <p className="text-xs text-slate-500">
-                    {o.open ? `Open · ${o.etaMins}–${o.etaMins + 10} min to your room` : o.reason || 'Closed'}
+                    {o.open
+                      ? `Open · ${o.etaMins}–${o.etaMins + 10} min to your room`
+                      : o.reason || 'Closed'}
                   </p>
                 </div>
                 <span
@@ -94,7 +96,9 @@ const StayCatalogView = ({ cart, onCheckout, initialOutlet }: Props) => {
                   aria-expanded={openOutlet === o.vendorLink}
                   className="mt-2 w-full rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700"
                 >
-                  {openOutlet === o.vendorLink ? 'Hide menu' : `View menu · ${o.items.length} dish(es)`}
+                  {openOutlet === o.vendorLink
+                    ? 'Hide menu'
+                    : `View menu · ${o.items.length} dish(es)`}
                 </button>
               )}
               {o.open && openOutlet === o.vendorLink && (
@@ -104,9 +108,12 @@ const StayCatalogView = ({ cart, onCheckout, initialOutlet }: Props) => {
                       ? o.items.filter((d) => d.categoryId === cat._id)
                       : o.items;
                     const uncategorised = o.categories.length
-                      ? o.items.filter((d) => !d.categoryId || !o.categories.some((c) => c._id === d.categoryId))
+                      ? o.items.filter(
+                          (d) => !d.categoryId || !o.categories.some((c) => c._id === d.categoryId)
+                        )
                       : [];
-                    const list = cat._id === o.categories[0]?._id ? [...dishes, ...uncategorised] : dishes;
+                    const list =
+                      cat._id === o.categories[0]?._id ? [...dishes, ...uncategorised] : dishes;
                     if (list.length === 0) return null;
                     return (
                       <div key={cat._id || 'all'}>
@@ -124,7 +131,9 @@ const StayCatalogView = ({ cart, onCheckout, initialOutlet }: Props) => {
                               <div className="min-w-0">
                                 <p className="text-sm font-semibold">{dish.name}</p>
                                 {dish.description && (
-                                  <p className="line-clamp-2 text-xs text-slate-500">{dish.description}</p>
+                                  <p className="line-clamp-2 text-xs text-slate-500">
+                                    {dish.description}
+                                  </p>
                                 )}
                                 <p className="mt-0.5 text-sm font-bold">{money(dish.price)}</p>
                               </div>
@@ -189,7 +198,9 @@ const StayCatalogView = ({ cart, onCheckout, initialOutlet }: Props) => {
           <div className="flex items-start justify-between gap-2">
             <div>
               <p className="text-sm font-semibold">{item.name}</p>
-              {item.description && <p className="mt-0.5 text-xs text-slate-500">{item.description}</p>}
+              {item.description && (
+                <p className="mt-0.5 text-xs text-slate-500">{item.description}</p>
+              )}
               <p className="mt-1 text-sm font-bold">{money(item.price)}</p>
             </div>
             {item.kind === 'amenity' ? (
@@ -250,7 +261,7 @@ const StayCatalogView = ({ cart, onCheckout, initialOutlet }: Props) => {
                             kind: 'experience',
                             serviceStart: s.start,
                           },
-                          1,
+                          1
                         );
                         setSlotFor(null);
                         toast.success('Added to cart');

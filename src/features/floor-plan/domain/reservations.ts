@@ -16,7 +16,9 @@ import type {
 const LOCK_KEY = 'prototype:booking-locks';
 
 export function reservationsForUnit(reservations: Reservation[], unitId: string): Reservation[] {
-  return reservations.filter((r) => r.unitId === unitId).sort((a, b) => a.start.localeCompare(b.start));
+  return reservations
+    .filter((r) => r.unitId === unitId)
+    .sort((a, b) => a.start.localeCompare(b.start));
 }
 
 export function overlaps(a: Reservation, b: { start: string; end: string }): boolean {
@@ -33,7 +35,9 @@ export function isUnitAvailable(
   );
   if (!window) {
     // "Now" window: any active reservation blocks the unit.
-    return !relevant.some((r) => overlaps(r, { start: r.start, end: r.end }) && r.status === 'active');
+    return !relevant.some(
+      (r) => overlaps(r, { start: r.start, end: r.end }) && r.status === 'active'
+    );
   }
   return !relevant.some((r) => overlaps(r, window));
 }

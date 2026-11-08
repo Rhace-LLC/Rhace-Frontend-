@@ -23,7 +23,14 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import {
@@ -49,13 +56,25 @@ const SCOPE_CONFIG: Record<string, { label: string; description: string }> = {
 
 const ALL_SCOPES = ['read:menu', 'write:orders', 'read:delivery_locations'] as const;
 
-const STATUS_CONFIG: Record<
-  string,
-  { label: string; bg: string; text: string; border: string }
-> = {
-  active: { label: 'Active', bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-100' },
-  pending: { label: 'Pending', bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-100' },
-  suspended: { label: 'Suspended', bg: 'bg-slate-50', text: 'text-slate-700', border: 'border-slate-100' },
+const STATUS_CONFIG: Record<string, { label: string; bg: string; text: string; border: string }> = {
+  active: {
+    label: 'Active',
+    bg: 'bg-emerald-50',
+    text: 'text-emerald-700',
+    border: 'border-emerald-100',
+  },
+  pending: {
+    label: 'Pending',
+    bg: 'bg-amber-50',
+    text: 'text-amber-700',
+    border: 'border-amber-100',
+  },
+  suspended: {
+    label: 'Suspended',
+    bg: 'bg-slate-50',
+    text: 'text-slate-700',
+    border: 'border-slate-100',
+  },
   revoked: { label: 'Revoked', bg: 'bg-red-50', text: 'text-red-700', border: 'border-red-100' },
 };
 
@@ -178,9 +197,21 @@ export default function LinkedHotelsPage() {
 
       {/* Summary stats */}
       <div className="grid gap-3 md:grid-cols-3">
-        <StatCard label="Linked hotels" value={links.length} icon={<Link className="size-5 text-res-ink-muted" />} />
-        <StatCard label="Active" value={activeCount} icon={<CheckCircle2 className="size-5 text-emerald-600" />} />
-        <StatCard label="Pending approval" value={pendingCount} icon={<Clock className="size-5 text-amber-600" />} />
+        <StatCard
+          label="Linked hotels"
+          value={links.length}
+          icon={<Link className="size-5 text-res-ink-muted" />}
+        />
+        <StatCard
+          label="Active"
+          value={activeCount}
+          icon={<CheckCircle2 className="size-5 text-emerald-600" />}
+        />
+        <StatCard
+          label="Pending approval"
+          value={pendingCount}
+          icon={<Clock className="size-5 text-amber-600" />}
+        />
       </div>
 
       {/* Content */}
@@ -196,7 +227,8 @@ export default function LinkedHotelsPage() {
           </div>
           <h3 className="type-res-h3 text-res-ink">No linked hotels yet</h3>
           <p className="mt-2 type-res-body text-res-ink-muted max-w-sm mx-auto">
-            Get a pairing code from your hotel partner to start receiving room orders in your kitchen.
+            Get a pairing code from your hotel partner to start receiving room orders in your
+            kitchen.
           </p>
           <Button
             onClick={() => setRedeemOpen(true)}
@@ -216,7 +248,10 @@ export default function LinkedHotelsPage() {
             const busy = workingId === link._id;
 
             return (
-              <Card key={link._id} className="rounded-res-lg border border-res-line bg-res-card shadow-res-low">
+              <Card
+                key={link._id}
+                className="rounded-res-lg border border-res-line bg-res-card shadow-res-low"
+              >
                 <CardHeader className="grid grid-cols-3 items-start gap-3 pb-3">
                   <div className="col-span-2">
                     <div className="flex items-center gap-3">
@@ -264,7 +299,9 @@ export default function LinkedHotelsPage() {
                                   : 'bg-res-card border-res-line text-res-ink-muted hover:bg-res-surface'
                               }"
                             >
-                              <span className={`text-res-ink font-medium ${enabled ? 'text-emerald-700' : ''}`}>
+                              <span
+                                className={`text-res-ink font-medium ${enabled ? 'text-emerald-700' : ''}`}
+                              >
                                 {cfg.label}
                               </span>
                             </div>
@@ -280,7 +317,9 @@ export default function LinkedHotelsPage() {
                           <span className="type-res-caption text-res-ink-muted uppercase tracking-wider">
                             Hotel commission
                           </span>
-                          <span className="type-res-body text-res-ink font-semibold">{commission}</span>
+                          <span className="type-res-body text-res-ink font-semibold">
+                            {commission}
+                          </span>
                         </div>
                       </div>
                     )}
@@ -297,7 +336,9 @@ export default function LinkedHotelsPage() {
                           </div>
                           <div>
                             <p className="type-res-body text-res-ink font-medium">
-                              {zones ? `${zones.length} delivery zone${zones.length === 1 ? '' : 's'}` : 'View delivery zones'}
+                              {zones
+                                ? `${zones.length} delivery zone${zones.length === 1 ? '' : 's'}`
+                                : 'View delivery zones'}
                             </p>
                             <p className="type-res-small text-res-ink-muted">
                               Tap to see dispatch points and ETAs
@@ -365,7 +406,9 @@ export default function LinkedHotelsPage() {
                             >
                               <div className="flex items-center justify-between">
                                 <div>
-                                  <p className="type-res-body text-res-ink font-semibold">{z.name}</p>
+                                  <p className="type-res-body text-res-ink font-semibold">
+                                    {z.name}
+                                  </p>
                                   <p className="type-res-small text-res-ink-muted">
                                     {z.unitIds.length} unit{z.unitIds.length === 1 ? '' : 's'}
                                   </p>
@@ -383,7 +426,9 @@ export default function LinkedHotelsPage() {
                           );
                         })}
                         {zones.length === 0 && (
-                          <p className="type-res-small text-res-ink-muted">No zones assigned yet.</p>
+                          <p className="type-res-small text-res-ink-muted">
+                            No zones assigned yet.
+                          </p>
                         )}
                       </div>
                     </div>
@@ -399,16 +444,20 @@ export default function LinkedHotelsPage() {
       <Dialog open={redeemOpen} onOpenChange={setRedeemOpen}>
         <DialogContent className="rounded-res-lg border border-res-line bg-res-card shadow-res-high sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="type-res-body text-res-ink font-semibold">Link a hotel</DialogTitle>
+            <DialogTitle className="type-res-body text-res-ink font-semibold">
+              Link a hotel
+            </DialogTitle>
             <DialogDescription className="type-res-small text-res-ink-muted">
-              Enter the 8-character pairing code from your hotel partner and choose the
-              permissions to grant.
+              Enter the 8-character pairing code from your hotel partner and choose the permissions
+              to grant.
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-6">
             <div className="space-y-2">
-              <label className="type-res-small text-res-ink-muted uppercase tracking-wider block">Pairing code</label>
+              <label className="type-res-small text-res-ink-muted uppercase tracking-wider block">
+                Pairing code
+              </label>
               <Input
                 value={code}
                 onChange={(e) => setCode(e.target.value.toUpperCase())}
@@ -419,7 +468,9 @@ export default function LinkedHotelsPage() {
             </div>
 
             <div className="space-y-2">
-              <label className="type-res-small text-res-ink-muted uppercase tracking-wider block">Permissions to grant</label>
+              <label className="type-res-small text-res-ink-muted uppercase tracking-wider block">
+                Permissions to grant
+              </label>
               <div className="space-y-2">
                 {ALL_SCOPES.map((s) => {
                   const cfg = SCOPE_CONFIG[s];

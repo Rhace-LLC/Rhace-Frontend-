@@ -110,8 +110,7 @@ function selectableBearers(
 /** NGN rails take the active-provider radio; Stripe is currency-routed (own section below). */
 const ngnProviders = (data: RevenueSettings) =>
   data.providers.filter((p) => (p.currencies ?? ['NGN']).includes('NGN'));
-const stripeProvider = (data: RevenueSettings) =>
-  data.providers.find((p) => p.id === 'stripe');
+const stripeProvider = (data: RevenueSettings) => data.providers.find((p) => p.id === 'stripe');
 
 const bearerLabel = (b: FeeBearer) => BEARER_OPTIONS.find((o) => o.value === b)?.label ?? b;
 const providerLabel = (data: RevenueSettings, id: PaymentProviderId | undefined) =>
@@ -402,8 +401,8 @@ export default function RevenueSplitCard() {
                     {stripe.currencies.length > 0
                       ? `Takes ${stripe.currencies.join(', ')} checkouts automatically; naira keeps using the provider above.`
                       : 'Not connected yet: set the Stripe keys on the server first.'}{' '}
-                    Turning this off stops new foreign-currency checkouts; payments already
-                    started still settle.
+                    Turning this off stops new foreign-currency checkouts; payments already started
+                    still settle.
                   </p>
                   <p className="mt-1 text-xs text-muted-foreground">
                     {stripe.configured ? 'Keys configured' : 'Keys not configured'} ·{' '}
@@ -533,7 +532,8 @@ export default function RevenueSplitCard() {
             {data.previous.activeProvider && data.previous.activeProvider !== data.activeProvider
               ? `, provider ${providerLabel(data, data.previous.activeProvider)} → ${providerLabel(data, data.activeProvider)}`
               : ''}
-            {data.previous.stripeEnabled !== undefined && data.previous.stripeEnabled !== data.stripeEnabled
+            {data.previous.stripeEnabled !== undefined &&
+            data.previous.stripeEnabled !== data.stripeEnabled
               ? `, Stripe foreign-currency ${data.previous.stripeEnabled ? 'on' : 'off'} → ${data.stripeEnabled ? 'on' : 'off'}`
               : ''}
             .

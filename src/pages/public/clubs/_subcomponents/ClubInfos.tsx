@@ -13,7 +13,14 @@ interface ClubInfosProps {
   ageLimit?: string | number;
 }
 
-const ClubInfos = ({ address, openingTime, closingTime, dressCode, desc, ageLimit }: ClubInfosProps) => {
+const ClubInfos = ({
+  address,
+  openingTime,
+  closingTime,
+  dressCode,
+  desc,
+  ageLimit,
+}: ClubInfosProps) => {
   const [showMore, setShowMore] = useState(false);
   const [isOverflowing, setIsOverflowing] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);

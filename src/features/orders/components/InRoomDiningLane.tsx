@@ -5,7 +5,12 @@ import { ordersApi } from '../api/service';
 import { money } from '../money';
 import { isLinkedStayOrder, type OrderDto } from '../types';
 
-const REJECT_REASONS = ['Kitchen is closed', 'Item unavailable', 'Too busy right now', 'Cannot deliver there'];
+const REJECT_REASONS = [
+  'Kitchen is closed',
+  'Item unavailable',
+  'Too busy right now',
+  'Cannot deliver there',
+];
 
 const actionClass =
   'type-res-small inline-flex cursor-pointer items-center gap-1 rounded-full px-3.5 py-1.5 font-semibold transition-colors outline-none focus-visible:ring-2 focus-visible:ring-res-brand disabled:cursor-not-allowed disabled:opacity-50';
@@ -54,12 +59,12 @@ export function InRoomDiningLane({ orders, onChanged }: Props) {
           (o) =>
             o.source === 'in_stay' &&
             isLinkedStayOrder(o) &&
-            ['awaiting_confirmation', 'ready', 'out_for_delivery'].includes(o.status),
+            ['awaiting_confirmation', 'ready', 'out_for_delivery'].includes(o.status)
         )
         .sort(
-          (a, b) => new Date(a.createdAt ?? 0).getTime() - new Date(b.createdAt ?? 0).getTime(),
+          (a, b) => new Date(a.createdAt ?? 0).getTime() - new Date(b.createdAt ?? 0).getTime()
         ),
-    [orders],
+    [orders]
   );
   const hasPending = lane.some((o) => o.status === 'awaiting_confirmation');
 
@@ -80,7 +85,7 @@ export function InRoomDiningLane({ orders, onChanged }: Props) {
     } catch (error) {
       toast.error(
         (error as { response?: { data?: { message?: string } } })?.response?.data?.message ||
-          'Could not update the order',
+          'Could not update the order'
       );
     } finally {
       setBusy(null);
@@ -104,7 +109,8 @@ export function InRoomDiningLane({ orders, onChanged }: Props) {
 
       <ul className="mt-3 space-y-2">
         {lane.map((order) => {
-          const left = order.status === 'awaiting_confirmation' ? secondsLeft(order.acceptBy, now) : null;
+          const left =
+            order.status === 'awaiting_confirmation' ? secondsLeft(order.acceptBy, now) : null;
           const urgent = left !== null && left <= 120;
           return (
             <li key={order._id} className="rounded-res-md border border-res-line bg-res-card p-3">
@@ -149,10 +155,16 @@ export function InRoomDiningLane({ orders, onChanged }: Props) {
                     <button
                       type="button"
                       disabled={busy === order._id || left === 0}
-                      onClick={() => run(order, () => ordersApi.accept(order._id), 'Order accepted')}
+                      onClick={() =>
+                        run(order, () => ordersApi.accept(order._id), 'Order accepted')
+                      }
                       className={`${actionClass} bg-res-brand text-res-ink-inverted hover:bg-res-brand-hover`}
                     >
-                      {busy === order._id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : 'Accept'}
+                      {busy === order._id ? (
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        'Accept'
+                      )}
                     </button>
                     <button
                       type="button"
@@ -194,7 +206,11 @@ export function InRoomDiningLane({ orders, onChanged }: Props) {
                     type="button"
                     disabled={busy === order._id}
                     onClick={() =>
-                      run(order, () => ordersApi.updateStatus(order._id, 'out_for_delivery'), 'Dispatched')
+                      run(
+                        order,
+                        () => ordersApi.updateStatus(order._id, 'out_for_delivery'),
+                        'Dispatched'
+                      )
                     }
                     className={`${actionClass} bg-res-brand text-res-ink-inverted hover:bg-res-brand-hover`}
                   >
@@ -206,7 +222,11 @@ export function InRoomDiningLane({ orders, onChanged }: Props) {
                     type="button"
                     disabled={busy === order._id}
                     onClick={() =>
-                      run(order, () => ordersApi.updateStatus(order._id, 'delivered'), 'Marked delivered')
+                      run(
+                        order,
+                        () => ordersApi.updateStatus(order._id, 'delivered'),
+                        'Marked delivered'
+                      )
                     }
                     className={`${actionClass} bg-res-surface text-res-ink hover:text-res-brand`}
                   >

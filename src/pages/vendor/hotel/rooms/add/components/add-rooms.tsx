@@ -275,7 +275,6 @@ const RoomTypeForm = React.memo(
               </div>
             ))}
           </div>
-
         </div>
 
         {/* Room Images */}

@@ -1,6 +1,13 @@
 /* eslint-disable react-refresh/only-export-components */
 import type { BusinessData, FloorEntity, FloorPlan, SpatialData } from '../core/types';
-import type { DrawerContext, ManageCardActions, TileContext, TopBarContext, ToolbarItem, VerticalPlugin } from '../core/plugin';
+import type {
+  DrawerContext,
+  ManageCardActions,
+  TileContext,
+  TopBarContext,
+  ToolbarItem,
+  VerticalPlugin,
+} from '../core/plugin';
 import { SpendTierHeatmap } from '../components/overlays/SpendTierHeatmap';
 import { ScopeNav } from '../components/overlays/ScopeNav';
 import { BlueprintSpecs } from '../components/BlueprintSpecs';
@@ -16,12 +23,7 @@ function renderScopeNav(ctx: TopBarContext) {
   const { plan, mode, setPlanMeta, addFloor, deleteFloor } = ctx;
   // `??` alone never catches `floors: []` (the backend default) — treat empty
   // lists as missing so the Floor dropdown always has options.
-  const floors =
-    plan.floors?.length
-      ? plan.floors
-      : plan.floor
-        ? [plan.floor]
-        : ['Ground Floor'];
+  const floors = plan.floors?.length ? plan.floors : plan.floor ? [plan.floor] : ['Ground Floor'];
   const currentFloor = plan.floor && floors.includes(plan.floor) ? plan.floor : floors[0];
 
   return (
@@ -127,7 +129,9 @@ function renderManageCard(entity: FloorEntity, actions: ManageCardActions) {
   const spend = Number(b.currentSpend ?? 0);
   const pct = min > 0 ? Math.round((spend / min) * 100) : 0;
   const met = min > 0 && spend >= min;
-  const tier = String(b.tier ?? (blueprint && blueprint.vertical === 'club' ? blueprint.tier : '') ?? '');
+  const tier = String(
+    b.tier ?? (blueprint && blueprint.vertical === 'club' ? blueprint.tier : '') ?? ''
+  );
   const host = b.hostName ? String(b.hostName) : undefined;
   const party = b.partyName ? String(b.partyName) : undefined;
   const meta = stateMetaFor('club', displayClubState(entity));
@@ -248,7 +252,10 @@ function manageToolbarItems({
 }: {
   plan: FloorPlan;
   selection: string[];
-  updateEntity: (id: string, patch: { businessData?: Partial<BusinessData>; spatialData?: Partial<SpatialData> }) => void;
+  updateEntity: (
+    id: string,
+    patch: { businessData?: Partial<BusinessData>; spatialData?: Partial<SpatialData> }
+  ) => void;
 }): ToolbarItem[] {
   if (selection.length !== 1) return [];
   const id = selection[0];
@@ -257,8 +264,16 @@ function manageToolbarItems({
   const min = Number(entity?.businessData.minimumSpend ?? 0);
   const nextSpend = spend + 500;
   return [
-    { id: 'checkin', label: 'Check-In Guest', onClick: () => updateEntity(id, { businessData: { status: 'arrived_seated' } }) },
-    { id: 'host', label: 'Assign Host', onClick: () => updateEntity(id, { businessData: { hostName: 'You' } }) },
+    {
+      id: 'checkin',
+      label: 'Check-In Guest',
+      onClick: () => updateEntity(id, { businessData: { status: 'arrived_seated' } }),
+    },
+    {
+      id: 'host',
+      label: 'Assign Host',
+      onClick: () => updateEntity(id, { businessData: { hostName: 'You' } }),
+    },
     {
       id: 'bottle',
       label: 'Add Bottle',
@@ -291,27 +306,97 @@ export const nightclubPlugin: VerticalPlugin = {
     { type: 'door', label: 'Door', shape: 'rect', width: 70, height: 14, structure: true },
     { type: 'window', label: 'Window', shape: 'rect', width: 110, height: 12, structure: true },
     { type: 'entrance', label: 'Entrance', shape: 'rect', width: 130, height: 20, structure: true },
-    { type: 'vip_entrance', label: 'VIP Entrance', shape: 'rect', width: 130, height: 20, structure: true },
+    {
+      type: 'vip_entrance',
+      label: 'VIP Entrance',
+      shape: 'rect',
+      width: 130,
+      height: 20,
+      structure: true,
+    },
     { type: 'stairs', label: 'Stairs', shape: 'rect', width: 90, height: 130, structure: true },
     { type: 'dj_booth', label: 'DJ Booth', shape: 'rect', width: 120, height: 90, structure: true },
     { type: 'stage', label: 'Main Stage', shape: 'rect', width: 440, height: 120, structure: true },
-    { type: 'dance_floor', label: 'Dance Floor', shape: 'rect', width: 480, height: 200, structure: true },
+    {
+      type: 'dance_floor',
+      label: 'Dance Floor',
+      shape: 'rect',
+      width: 480,
+      height: 200,
+      structure: true,
+    },
     { type: 'bar', label: 'Bar', shape: 'rect', width: 240, height: 90, structure: true },
-    { type: 'bottle_station', label: 'Bottle Station', shape: 'rect', width: 120, height: 70, structure: true },
+    {
+      type: 'bottle_station',
+      label: 'Bottle Station',
+      shape: 'rect',
+      width: 120,
+      height: 70,
+      structure: true,
+    },
     { type: 'bar_back', label: 'Back Bar', shape: 'rect', width: 160, height: 60, structure: true },
-    { type: 'led_screen', label: 'LED Screen', shape: 'rect', width: 260, height: 20, structure: true },
-    { type: 'lighting_rig', label: 'Lighting Rig', shape: 'rect', width: 200, height: 30, structure: true },
+    {
+      type: 'led_screen',
+      label: 'LED Screen',
+      shape: 'rect',
+      width: 260,
+      height: 20,
+      structure: true,
+    },
+    {
+      type: 'lighting_rig',
+      label: 'Lighting Rig',
+      shape: 'rect',
+      width: 200,
+      height: 30,
+      structure: true,
+    },
     { type: 'speaker', label: 'Speaker', shape: 'rect', width: 40, height: 40, structure: true },
     { type: 'rope', label: 'VIP Rope', shape: 'rect', width: 12, height: 200, structure: true },
-    { type: 'checkpoint', label: 'Security Checkpoint', shape: 'rect', width: 80, height: 60, structure: true },
-    { type: 'coat_check', label: 'Coat Check', shape: 'rect', width: 110, height: 60, structure: true },
+    {
+      type: 'checkpoint',
+      label: 'Security Checkpoint',
+      shape: 'rect',
+      width: 80,
+      height: 60,
+      structure: true,
+    },
+    {
+      type: 'coat_check',
+      label: 'Coat Check',
+      shape: 'rect',
+      width: 110,
+      height: 60,
+      structure: true,
+    },
     { type: 'cashier', label: 'Cashier', shape: 'rect', width: 100, height: 60, structure: true },
-    { type: 'photo_booth', label: 'Photo Booth', shape: 'rect', width: 90, height: 90, structure: true },
+    {
+      type: 'photo_booth',
+      label: 'Photo Booth',
+      shape: 'rect',
+      width: 90,
+      height: 90,
+      structure: true,
+    },
     { type: 'lounge', label: 'Lounge', shape: 'rect', width: 220, height: 160, structure: true },
     { type: 'cage', label: 'Cage', shape: 'rect', width: 140, height: 140, structure: true },
-    { type: 'backstage', label: 'Backstage', shape: 'rect', width: 220, height: 160, structure: true },
+    {
+      type: 'backstage',
+      label: 'Backstage',
+      shape: 'rect',
+      width: 220,
+      height: 160,
+      structure: true,
+    },
     { type: 'restroom', label: 'Restroom', shape: 'rect', width: 110, height: 90, structure: true },
-    { type: 'smoking_area', label: 'Smoking Area', shape: 'rect', width: 200, height: 140, structure: true },
+    {
+      type: 'smoking_area',
+      label: 'Smoking Area',
+      shape: 'rect',
+      width: 200,
+      height: 140,
+      structure: true,
+    },
   ],
   renderTopBar: (ctx) => renderScopeNav(ctx),
   renderManageHeader: (ctx) => renderScopeNav(ctx),

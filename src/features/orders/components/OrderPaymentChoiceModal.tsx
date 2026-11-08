@@ -10,8 +10,8 @@ const VENUE_METHODS = [
 ];
 
 const intentErrorMessage = (error: unknown, fallback: string) =>
-  (error as { response?: { data?: { message?: string; paystackError?: string } } })?.response
-    ?.data?.paystackError ||
+  (error as { response?: { data?: { message?: string; paystackError?: string } } })?.response?.data
+    ?.paystackError ||
   (error as { response?: { data?: { message?: string } } })?.response?.data?.message ||
   fallback;
 
@@ -98,9 +98,7 @@ export function OrderPaymentChoiceModal({
         </div>
 
         <div>
-          <p className="type-res-small mb-1.5 font-medium text-res-ink-muted">
-            How will you pay?
-          </p>
+          <p className="type-res-small mb-1.5 font-medium text-res-ink-muted">How will you pay?</p>
           <div className="flex flex-wrap gap-2">
             {VENUE_METHODS.map((method) => {
               const isActive = venueMethod === method.id;

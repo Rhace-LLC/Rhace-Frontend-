@@ -76,7 +76,7 @@ export function useStayCart(stayId: string | null) {
     setLines((prev) =>
       quantity <= 0
         ? prev.filter((l) => l.key !== key)
-        : prev.map((l) => (l.key === key ? { ...l, quantity } : l)),
+        : prev.map((l) => (l.key === key ? { ...l, quantity } : l))
     );
   }, []);
 
@@ -85,5 +85,14 @@ export function useStayCart(stayId: string | null) {
   const subtotal = lines.reduce((sum, l) => sum + l.price * l.quantity, 0);
   const hasOutletItems = lines.some((l) => Boolean(l.vendorLink));
 
-  return { lines, addLine, updateQty, clear, subtotal, hasOutletItems, fulfillment, setFulfillment };
+  return {
+    lines,
+    addLine,
+    updateQty,
+    clear,
+    subtotal,
+    hasOutletItems,
+    fulfillment,
+    setFulfillment,
+  };
 }

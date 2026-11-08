@@ -213,9 +213,10 @@ export default function Reports() {
       }
 
       // Determine content type and file extension
-      const contentType = exportFormat === 'xlsx'
-        ? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        : 'text/csv';
+      const contentType =
+        exportFormat === 'xlsx'
+          ? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+          : 'text/csv';
       const extension = exportFormat === 'xlsx' ? 'xlsx' : 'csv';
 
       // Trigger download
@@ -332,9 +333,7 @@ export default function Reports() {
                       <SelectTrigger id="vendor-select">
                         <SelectValue
                           placeholder={
-                            currentExportType.requiresVendor
-                              ? 'Select a vendor'
-                              : 'All vendors'
+                            currentExportType.requiresVendor ? 'Select a vendor' : 'All vendors'
                           }
                         />
                       </SelectTrigger>
@@ -456,7 +455,9 @@ export default function Reports() {
           {!selectedExportType && (
             <div className="text-center py-8">
               <FileText className="h-12 w-12 text-res-ink-muted mx-auto mb-4" />
-              <p className="type-res-small text-res-ink-muted">Select an export type above to begin</p>
+              <p className="type-res-small text-res-ink-muted">
+                Select an export type above to begin
+              </p>
               <p className="type-res-small text-res-ink-muted mt-1">
                 Choose a data type, apply optional filters, and download instantly
               </p>

@@ -1,19 +1,27 @@
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
-import { Activity as ActivityIcon, CalendarDays, ChevronDown, Loader2, RefreshCw, User } from 'lucide-react';
+import {
+  Activity as ActivityIcon,
+  CalendarDays,
+  ChevronDown,
+  Loader2,
+  RefreshCw,
+  User,
+} from 'lucide-react';
 import { staffService, type StaffActivityDto, type StaffMember } from '@/services/staff.service';
 
 const toDateKey = (d: Date) => d.toISOString().slice(0, 10);
 
 /* ── Plain-word helpers (vocabulary standard: no codes, ids or raw keys) ── */
 
-const isIdLike = (value: unknown) =>
-  typeof value === 'string' && /^[a-f0-9]{24}$/i.test(value);
+const isIdLike = (value: unknown) => typeof value === 'string' && /^[a-f0-9]{24}$/i.test(value);
 
 const prettyWords = (value: string) =>
   value
     .split('_')
-    .map((w) => (w.toUpperCase() === 'VIP' || w === 'vip' ? 'VIP' : w ? w[0].toUpperCase() + w.slice(1) : w))
+    .map((w) =>
+      w.toUpperCase() === 'VIP' || w === 'vip' ? 'VIP' : w ? w[0].toUpperCase() + w.slice(1) : w
+    )
     .join(' ');
 
 const prettyRole = (role?: unknown) =>
@@ -29,9 +37,7 @@ const STATE_WORDS: Record<string, string> = {
 };
 
 const stateWord = (state?: unknown) =>
-  typeof state === 'string' && state
-    ? (STATE_WORDS[state] ?? prettyWords(state))
-    : undefined;
+  typeof state === 'string' && state ? (STATE_WORDS[state] ?? prettyWords(state)) : undefined;
 
 const fmtDay = (value?: unknown): string | undefined => {
   if (typeof value !== 'string' || !value) return undefined;
@@ -68,7 +74,8 @@ const actorOf = (meta: Record<string, unknown>): ActorShape | undefined => {
   const raw = meta.actor;
   if (raw && typeof raw === 'object' && !Array.isArray(raw)) {
     const { name, role } = raw as Record<string, unknown>;
-    if (typeof name === 'string' && name) return { name, role: typeof role === 'string' ? role : undefined };
+    if (typeof name === 'string' && name)
+      return { name, role: typeof role === 'string' ? role : undefined };
   }
   return undefined;
 };
@@ -121,7 +128,9 @@ export function describeActivity(entry: StaffActivityDto): ActivityStory {
       const lines = [
         from && to && from !== to ? `${from} → ${to}` : undefined,
         unit !== kind ? unit : undefined,
-        actor ? `Done by ${actor.name}${actor.role ? ` (${prettyRole(actor.role)})` : ''}` : undefined,
+        actor
+          ? `Done by ${actor.name}${actor.role ? ` (${prettyRole(actor.role)})` : ''}`
+          : undefined,
         covering ? `Covering: ${covering}` : undefined,
         typeof meta.note === 'string' && meta.note ? `Note: ${meta.note}` : undefined,
       ].filter(Boolean) as string[];
@@ -173,7 +182,9 @@ export function describeActivity(entry: StaffActivityDto): ActivityStory {
         typeof meta.shiftsClosed === 'number' && meta.shiftsClosed > 1
           ? `${meta.shiftsClosed} shifts closed`
           : undefined,
-        meta.missedClockOutFor ? `Missed clock-out for ${fmtDay(meta.missedClockOutFor) ?? meta.missedClockOutFor}` : undefined,
+        meta.missedClockOutFor
+          ? `Missed clock-out for ${fmtDay(meta.missedClockOutFor) ?? meta.missedClockOutFor}`
+          : undefined,
       ].filter(Boolean) as string[];
       return { title: 'Clocked out', lines };
     }
@@ -183,7 +194,7 @@ export function describeActivity(entry: StaffActivityDto): ActivityStory {
       const inOut = entry.action === 'check_in';
       const unit = namedKind(
         meta.kind === 'Room' || meta.kind === 'Table' ? meta.kind : kindOf(meta, entry.entity),
-        meta.unitLabel,
+        meta.unitLabel
       );
       const guest =
         typeof meta.guestName === 'string' && meta.guestName
@@ -191,7 +202,9 @@ export function describeActivity(entry: StaffActivityDto): ActivityStory {
           : undefined;
       const lines = [
         [unit, guest].filter(Boolean).join(' · ') || undefined,
-        actor ? `Done by ${actor.name}${actor.role ? ` (${prettyRole(actor.role)})` : ''}` : undefined,
+        actor
+          ? `Done by ${actor.name}${actor.role ? ` (${prettyRole(actor.role)})` : ''}`
+          : undefined,
         covering ? `Covering: ${covering}` : undefined,
       ].filter(Boolean) as string[];
       return { title: inOut ? 'Guest checked in' : 'Guest checked out', lines };
@@ -219,7 +232,12 @@ export function describeActivity(entry: StaffActivityDto): ActivityStory {
       };
     case 'payment_collected': {
       const lines = [
-        [naira(meta.amount), typeof meta.method === 'string' ? prettyWords(meta.method.replace(/^offline_/, '')) : undefined]
+        [
+          naira(meta.amount),
+          typeof meta.method === 'string'
+            ? prettyWords(meta.method.replace(/^offline_/, ''))
+            : undefined,
+        ]
           .filter(Boolean)
           .join(' · ') || undefined,
         typeof meta.guestName === 'string' && meta.guestName ? `From ${meta.guestName}` : undefined,

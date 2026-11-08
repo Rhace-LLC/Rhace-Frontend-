@@ -241,7 +241,11 @@ export default function HotelOrderingRulesPage() {
   };
 
   const deleteWindow = async (orderingWindow: OrderingWindowDto) => {
-    if (!window.confirm(`Delete “${orderingWindow.name}”? Ordering goes back to normal for its hours.`)) {
+    if (
+      !window.confirm(
+        `Delete “${orderingWindow.name}”? Ordering goes back to normal for its hours.`
+      )
+    ) {
       return;
     }
     setBusy(true);
@@ -273,9 +277,9 @@ export default function HotelOrderingRulesPage() {
   const shownWindows = useMemo(
     () =>
       windows.filter((w) =>
-        linkFilter ? String(w.vendorLink ?? '') === linkFilter : !w.vendorLink,
+        linkFilter ? String(w.vendorLink ?? '') === linkFilter : !w.vendorLink
       ),
-    [windows, linkFilter],
+    [windows, linkFilter]
   );
 
   const linkName = (id: string) => {
@@ -291,9 +295,7 @@ export default function HotelOrderingRulesPage() {
       fee.scope?.fulfillment?.length
         ? fee.scope.fulfillment.map((x) => DELIVERY_LABEL[x] ?? x).join(' or ')
         : 'Anywhere',
-      fee.scope?.vendorLinks?.length
-        ? fee.scope.vendorLinks.map(linkName).join(', ')
-        : null,
+      fee.scope?.vendorLinks?.length ? fee.scope.vendorLinks.map(linkName).join(', ') : null,
     ]
       .filter(Boolean)
       .join(' · ');
@@ -363,7 +365,10 @@ export default function HotelOrderingRulesPage() {
                     value={linkFilter || ANY}
                     onValueChange={(value) => setLinkFilter(fromAny(value))}
                   >
-                    <SelectTrigger className={FIELD_CLASS} aria-label="Which orders these windows apply to">
+                    <SelectTrigger
+                      className={FIELD_CLASS}
+                      aria-label="Which orders these windows apply to"
+                    >
                       <SelectValue placeholder="Hotel services" />
                     </SelectTrigger>
                     <SelectContent className="rounded-res-md">
@@ -554,7 +559,10 @@ export default function HotelOrderingRulesPage() {
                 </Field>
 
                 <Field label="What it does" htmlFor="window-mode">
-                  <Select value={wMode} onValueChange={(value) => setWMode(value as 'allow' | 'block')}>
+                  <Select
+                    value={wMode}
+                    onValueChange={(value) => setWMode(value as 'allow' | 'block')}
+                  >
                     <SelectTrigger id="window-mode" className={FIELD_CLASS}>
                       <SelectValue placeholder="Allow orders" />
                     </SelectTrigger>
@@ -686,7 +694,10 @@ export default function HotelOrderingRulesPage() {
 
                 <div className="grid w-full gap-3 sm:grid-cols-2">
                   <Field label="Charge type" htmlFor="fee-kind">
-                    <Select value={fKind} onValueChange={(value) => setFKind(value as 'flat' | 'percent')}>
+                    <Select
+                      value={fKind}
+                      onValueChange={(value) => setFKind(value as 'flat' | 'percent')}
+                    >
                       <SelectTrigger id="fee-kind" className={FIELD_CLASS}>
                         <SelectValue placeholder="Flat amount" />
                       </SelectTrigger>
@@ -696,7 +707,10 @@ export default function HotelOrderingRulesPage() {
                       </SelectContent>
                     </Select>
                   </Field>
-                  <Field label={fKind === 'flat' ? 'Amount (₦)' : 'Percentage (%)'} htmlFor="fee-value">
+                  <Field
+                    label={fKind === 'flat' ? 'Amount (₦)' : 'Percentage (%)'}
+                    htmlFor="fee-value"
+                  >
                     <Input
                       id="fee-value"
                       value={fValue}

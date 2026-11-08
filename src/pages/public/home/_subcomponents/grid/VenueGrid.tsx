@@ -25,8 +25,7 @@ interface VenueGridProps {
  * the full list, matching what users actually saw.
  */
 export const VenueGrid = ({ title, vertical, filter }: VenueGridProps) => {
-  const { currentIndices, handleMouseEnter, handleMouseLeave, handleDotClick } =
-    useVenueCarousel();
+  const { currentIndices, handleMouseEnter, handleMouseLeave, handleDotClick } = useVenueCarousel();
   const { venues, isLoading } = useVenues(vertical, filter);
 
   if (isLoading) return <VenueGridSkeleton />;

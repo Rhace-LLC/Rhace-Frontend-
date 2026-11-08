@@ -51,7 +51,8 @@ function categoryName(categoryId: unknown): string {
 }
 
 function ItemVisual({ item }: { item: CatalogItem }) {
-  const Icon = item.itemType === 'dish' ? UtensilsCrossed : item.itemType === 'drink' ? GlassWater : Package;
+  const Icon =
+    item.itemType === 'dish' ? UtensilsCrossed : item.itemType === 'drink' ? GlassWater : Package;
   if (item.image) {
     return (
       <img
@@ -94,7 +95,9 @@ export function OrderBuilder({
       for (const dish of dishesQuery.data ?? []) {
         // Kitchen 86 toggle: never offer a dish the kitchen marked unavailable.
         if (dish.availability === false) continue;
-        const deal = Boolean(dish.discount && dish.discountPrice && dish.discountPrice < dish.price);
+        const deal = Boolean(
+          dish.discount && dish.discountPrice && dish.discountPrice < dish.price
+        );
         items.push({
           key: `dish:${dish._id}`,
           itemType: 'dish',
@@ -172,8 +175,7 @@ export function OrderBuilder({
     });
   }, [catalog, kindFilter, query]);
 
-  const loading =
-    dishesQuery.isLoading || drinksQuery.isLoading || bottleSetsQuery.isLoading;
+  const loading = dishesQuery.isLoading || drinksQuery.isLoading || bottleSetsQuery.isLoading;
   const loadFailed =
     (dishesQuery.isError && normVertical === 'restaurant') ||
     drinksQuery.isError ||
@@ -193,7 +195,8 @@ export function OrderBuilder({
   const addToCart = (item: CatalogItem) =>
     setCart((prev) => {
       const existing = prev[item.key];
-      if (existing) return { ...prev, [item.key]: { ...existing, quantity: existing.quantity + 1 } };
+      if (existing)
+        return { ...prev, [item.key]: { ...existing, quantity: existing.quantity + 1 } };
       return {
         ...prev,
         [item.key]: {
@@ -242,7 +245,8 @@ export function OrderBuilder({
     onSubmit(lines, subtotal);
   };
 
-  if (loading) return <div className="mt-6 h-64 animate-pulse rounded-res-lg bg-res-card shadow-res-low" />;
+  if (loading)
+    return <div className="mt-6 h-64 animate-pulse rounded-res-lg bg-res-card shadow-res-low" />;
 
   if (loadFailed) {
     return (
@@ -411,7 +415,9 @@ export function OrderBuilder({
                               key={addon._id}
                               type="button"
                               disabled={!line}
-                              title={line ? `Add ${addon.name}` : 'Add the item first to pick extras'}
+                              title={
+                                line ? `Add ${addon.name}` : 'Add the item first to pick extras'
+                              }
                               onClick={() => toggleAddon(item.key, addon._id)}
                               className={`type-res-small cursor-pointer rounded-full px-2.5 py-1 transition-all outline-none focus-visible:ring-2 focus-visible:ring-res-brand disabled:cursor-not-allowed disabled:opacity-40 ${
                                 active
@@ -468,25 +474,34 @@ export function OrderBuilder({
         </div>
         {depositCredit > 0 && (
           <div className="mt-2 flex items-center justify-between">
-            <span className="type-res-small text-res-ink-muted uppercase tracking-wider">Deposit credit</span>
-            <span className="type-res-body text-res-brand font-semibold">−{money(depositCredit)}</span>
+            <span className="type-res-small text-res-ink-muted uppercase tracking-wider">
+              Deposit credit
+            </span>
+            <span className="type-res-body text-res-brand font-semibold">
+              −{money(depositCredit)}
+            </span>
           </div>
         )}
         <div className="mt-1 flex items-center justify-between">
           <span className="type-res-small font-medium text-res-ink-muted">To pay</span>
-          <span className="type-res-body text-res-ink font-bold">{money(Math.max(subtotal - depositCredit, 0))}</span>
+          <span className="type-res-body text-res-ink font-bold">
+            {money(Math.max(subtotal - depositCredit, 0))}
+          </span>
         </div>
         {depositCredit > 0 && subtotal > depositCredit && depositCredit > subtotal / 2 && (
           <p className="mt-2 type-res-small text-res-ink-muted">
-            {money(depositCredit - subtotal)} of your minimum spend is left. Order more now or at the
-            venue to use it. Unspent deposit isn&apos;t refunded.
+            {money(depositCredit - subtotal)} of your minimum spend is left. Order more now or at
+            the venue to use it. Unspent deposit isn&apos;t refunded.
           </p>
         )}
-        {depositCredit > 0 && subtotal > 0 && depositCredit < subtotal && subtotal - depositCredit > 0 && (
-          <p className="mt-1 type-res-small text-res-ink-muted">
-            {money(subtotal - depositCredit)} to pay after your deposit credit.
-          </p>
-        )}
+        {depositCredit > 0 &&
+          subtotal > 0 &&
+          depositCredit < subtotal &&
+          subtotal - depositCredit > 0 && (
+            <p className="mt-1 type-res-small text-res-ink-muted">
+              {money(subtotal - depositCredit)} to pay after your deposit credit.
+            </p>
+          )}
 
         <button
           type="button"

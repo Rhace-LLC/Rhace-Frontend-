@@ -380,12 +380,9 @@ export const WebSocketProvider = ({ url, children }: { url?: string; children: R
     [connected]
   );
 
-  const subscribe = useCallback(
-    (type: SocketEvent, handler: (payload: SocketPayload) => void) => {
-      listeners.current.set(type, handler);
-    },
-    []
-  );
+  const subscribe = useCallback((type: SocketEvent, handler: (payload: SocketPayload) => void) => {
+    listeners.current.set(type, handler);
+  }, []);
 
   const unsubscribe = useCallback((type: SocketEvent) => {
     listeners.current.delete(type);

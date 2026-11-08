@@ -8,7 +8,7 @@ import type { Vertical } from './types';
 export function unitDisplayName(
   raw: string | undefined | null,
   vertical: Vertical,
-  fallback = '',
+  fallback = ''
 ): string {
   const name = (raw ?? '').trim() || fallback;
   if (!name) return '';

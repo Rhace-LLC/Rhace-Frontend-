@@ -34,7 +34,10 @@ class FloorPlanService {
   }
 
   /** Public (unauthenticated) floor plan list for a vendor. */
-  async listForVendor(vendorId: string, params?: { vertical?: string; page?: number; limit?: number }) {
+  async listForVendor(
+    vendorId: string,
+    params?: { vertical?: string; page?: number; limit?: number }
+  ) {
     const res = await api.get<FloorPlanApiEnvelope<PaginatedData<FloorPlanDto>>>(
       `/vendors/${vendorId}/floor-plans`,
       { params }
@@ -82,7 +85,10 @@ class FloorPlanService {
   }
 
   async addFloor(id: string, input: { name: string; area?: string }) {
-    const res = await api.post<FloorPlanApiEnvelope<FloorPlanDto>>(`/floor-plans/${id}/floors`, input);
+    const res = await api.post<FloorPlanApiEnvelope<FloorPlanDto>>(
+      `/floor-plans/${id}/floors`,
+      input
+    );
     return res.data;
   }
 

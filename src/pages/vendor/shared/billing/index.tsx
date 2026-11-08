@@ -26,11 +26,17 @@ import {
  * Only the venue account can subscribe, pay or cancel; staff get a view-only page.
  */
 
-const naira = (value?: number) => `₦${Number(value || 0).toLocaleString('en-NG', { maximumFractionDigits: 0 })}`;
+const naira = (value?: number) =>
+  `₦${Number(value || 0).toLocaleString('en-NG', { maximumFractionDigits: 0 })}`;
 
 const day = (value?: string | null) =>
   value
-    ? new Date(value).toLocaleDateString('en-NG', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Africa/Lagos' })
+    ? new Date(value).toLocaleDateString('en-NG', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+        timeZone: 'Africa/Lagos',
+      })
     : '—';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -55,7 +61,15 @@ const INVOICE_STATUS: Record<string, { label: string; className: string }> = {
 
 // ─── Building blocks ────────────────────────────────────────────────────
 
-function Card({ title, aside, children }: { title: string; aside?: ReactNode; children: ReactNode }) {
+function Card({
+  title,
+  aside,
+  children,
+}: {
+  title: string;
+  aside?: ReactNode;
+  children: ReactNode;
+}) {
   return (
     <section className="rounded-res-lg bg-res-card p-5 shadow-res-low md:p-6">
       <div className="flex flex-wrap items-center justify-between gap-2">
@@ -170,12 +184,17 @@ const BillingPage = () => {
   const subscribed = status?.subscribedCurrent ?? false;
   const canManage = status?.canManage ?? false;
   const plan = plans.find((p) => p._id === selectedPlan) ?? null;
-  const pending = useMemo(() => (status?.invoices ?? []).filter((i) => i.status === 'pending_payment'), [status?.invoices]);
+  const pending = useMemo(
+    () => (status?.invoices ?? []).filter((i) => i.status === 'pending_payment'),
+    [status?.invoices]
+  );
 
   // Re-subscribe wait after a cancelled or ended subscription (mirrors the server rule).
   const cooldownUntil = useMemo(() => {
     if (subscribed || !billing?.currentPeriodEnd) return null;
-    const until = new Date(new Date(billing.currentPeriodEnd).getTime() + (plan?.cooldownDays ?? 60) * DAY_MS);
+    const until = new Date(
+      new Date(billing.currentPeriodEnd).getTime() + (plan?.cooldownDays ?? 60) * DAY_MS
+    );
     return until.getTime() > Date.now() ? until : null;
   }, [subscribed, billing, plan?.cooldownDays]);
 
@@ -305,7 +324,8 @@ const BillingPage = () => {
     onSubscription &&
     !!billing?.graceUntil &&
     (!billing.currentPeriodEnd || new Date(billing.currentPeriodEnd).getTime() <= Date.now());
-  const renewing = onSubscription && billing?.autoRenew !== false && billing?.status !== 'cancelled';
+  const renewing =
+    onSubscription && billing?.autoRenew !== false && billing?.status !== 'cancelled';
   const currentPlanName =
     status.invoices.find((i) => i.status === 'paid' && i.planName)?.planName ?? 'Monthly plan';
   const showPlans = !subscribed && pending.length === 0 && status.eligible && plans.length > 0;
@@ -337,7 +357,9 @@ const BillingPage = () => {
             </p>
           </div>
           {planBadge && (
-            <span className={`type-res-caption rounded-full px-3 py-1 font-semibold ${planBadge.className}`}>
+            <span
+              className={`type-res-caption rounded-full px-3 py-1 font-semibold ${planBadge.className}`}
+            >
               {planBadge.label}
             </span>
           )}
@@ -351,7 +373,9 @@ const BillingPage = () => {
             ) : (
               <Stat label="Renewal" value={renewing ? 'Monthly' : 'Off'} />
             )}
-            {status.commitmentEnd && <Stat label="Minimum term until" value={day(status.commitmentEnd)} />}
+            {status.commitmentEnd && (
+              <Stat label="Minimum term until" value={day(status.commitmentEnd)} />
+            )}
           </div>
         )}
 
@@ -386,8 +410,11 @@ const BillingPage = () => {
               {naira(inv.payable)} due {inv.dueDate ? `by ${day(inv.dueDate)}` : 'now'}
             </p>
             <p className="type-res-small text-res-ink-muted">
-              {inv.planName ?? 'Subscription'} · {inv.monthsCovered} month{inv.monthsCovered === 1 ? '' : 's'}
-              {inv.failedAttempts > 0 && <span className="text-red-600"> · Last attempt failed</span>}
+              {inv.planName ?? 'Subscription'} · {inv.monthsCovered} month
+              {inv.monthsCovered === 1 ? '' : 's'}
+              {inv.failedAttempts > 0 && (
+                <span className="text-red-600"> · Last attempt failed</span>
+              )}
             </p>
           </div>
           {canManage && (
@@ -400,7 +427,11 @@ const BillingPage = () => {
               >
                 {working === `check-${inv.id}` ? 'Checking…' : 'I already paid'}
               </button>
-              <PrimaryButton busy={working === `pay-${inv.id}`} disabled={!!working} onClick={() => void payPending(inv)}>
+              <PrimaryButton
+                busy={working === `pay-${inv.id}`}
+                disabled={!!working}
+                onClick={() => void payPending(inv)}
+              >
                 Pay {naira(inv.payable)}
               </PrimaryButton>
             </div>
@@ -421,7 +452,9 @@ const BillingPage = () => {
                   onClick={() => setSelectedPlan(p._id)}
                   aria-pressed={active}
                   className={`cursor-pointer rounded-res-md p-4 text-left transition-colors ${
-                    active ? 'bg-res-secondary ring-2 ring-res-brand' : 'bg-res-surface hover:bg-res-secondary/60'
+                    active
+                      ? 'bg-res-secondary ring-2 ring-res-brand'
+                      : 'bg-res-surface hover:bg-res-secondary/60'
                   }`}
                 >
                   <div className="flex items-center justify-between gap-2">
@@ -441,7 +474,9 @@ const BillingPage = () => {
           </div>
 
           {estimate && (
-            <p className={`type-res-small mt-4 font-medium ${estimate.saving > 0 ? 'text-emerald-700' : 'text-res-ink-muted'}`}>
+            <p
+              className={`type-res-small mt-4 font-medium ${estimate.saving > 0 ? 'text-emerald-700' : 'text-res-ink-muted'}`}
+            >
               {estimate.saving > 0
                 ? `At your usual ${naira(estimate.volume)} a month, this plan saves about ${naira(estimate.saving)} a month.`
                 : `At your usual ${naira(estimate.volume)} a month, pay as you go costs less.`}
@@ -450,13 +485,18 @@ const BillingPage = () => {
 
           {cooldownUntil ? (
             <p className="type-res-small mt-4 flex items-center gap-2 text-res-ink-muted">
-              <Clock className="size-4" aria-hidden /> You can join a plan again from {day(cooldownUntil.toISOString())}.
+              <Clock className="size-4" aria-hidden /> You can join a plan again from{' '}
+              {day(cooldownUntil.toISOString())}.
             </p>
           ) : canManage && plan ? (
             <div className="mt-5 space-y-4 border-t border-res-line pt-5">
               <div>
                 <label className="type-res-small flex cursor-pointer items-start gap-3 text-res-ink">
-                  <Checkbox checked={accepted} onCheckedChange={(v) => setAccepted(v === true)} className="mt-0.5" />
+                  <Checkbox
+                    checked={accepted}
+                    onCheckedChange={(v) => setAccepted(v === true)}
+                    className="mt-0.5"
+                  />
                   <span>
                     I agree to the plan terms. The first {plan.minTermMonths} months are{' '}
                     <strong>non-refundable</strong>.
@@ -469,26 +509,36 @@ const BillingPage = () => {
                   className="type-res-small mt-2 ml-7 inline-flex cursor-pointer items-center gap-1 font-semibold text-res-brand"
                 >
                   Read terms
-                  <ChevronDown className={`size-4 transition-transform ${showTerms ? 'rotate-180' : ''}`} aria-hidden />
+                  <ChevronDown
+                    className={`size-4 transition-transform ${showTerms ? 'rotate-180' : ''}`}
+                    aria-hidden
+                  />
                 </button>
                 {showTerms && (
                   <ul className="type-res-small mt-2 ml-7 list-disc space-y-1 pl-4 text-res-ink-muted">
                     <li>
-                      {naira(plan.amount * plan.minTermMonths)} for the first {plan.minTermMonths} months, paid now and not
-                      refunded if you leave early.
+                      {naira(plan.amount * plan.minTermMonths)} for the first {plan.minTermMonths}{' '}
+                      months, paid now and not refunded if you leave early.
                     </li>
-                    <li>Then {naira(plan.amount)} a month. Price changes are announced at least 30 days ahead.</li>
+                    <li>
+                      Then {naira(plan.amount)} a month. Price changes are announced at least 30
+                      days ahead.
+                    </li>
                     <li>Card and transfer fees on your payments come out of your share.</li>
                     <li>
-                      A late renewal has {plan.graceDays} days' grace, then you move back to pay as you go. After leaving,
-                      you can rejoin after {plan.cooldownDays} days.
+                      A late renewal has {plan.graceDays} days' grace, then you move back to pay as
+                      you go. After leaving, you can rejoin after {plan.cooldownDays} days.
                     </li>
                     <li>Terms version {status.termsVersion}.</li>
                   </ul>
                 )}
               </div>
               <div className="flex flex-wrap items-center gap-3">
-                <PrimaryButton busy={working === 'subscribe'} disabled={!accepted} onClick={() => void subscribe()}>
+                <PrimaryButton
+                  busy={working === 'subscribe'}
+                  disabled={!accepted}
+                  onClick={() => void subscribe()}
+                >
                   Subscribe · {naira(plan.amount * plan.minTermMonths)}
                 </PrimaryButton>
                 {status.availableCredit > 0 && (
@@ -526,17 +576,27 @@ const BillingPage = () => {
                 <li key={inv.id} className="flex flex-wrap items-center gap-x-4 gap-y-1 py-3">
                   <div className="min-w-0 flex-1">
                     <p className="type-res-body font-semibold text-res-ink">
-                      {inv.periodStart ? `${day(inv.periodStart)} – ${day(inv.periodEnd)}` : `${inv.monthsCovered} month${inv.monthsCovered === 1 ? '' : 's'}`}
+                      {inv.periodStart
+                        ? `${day(inv.periodStart)} – ${day(inv.periodEnd)}`
+                        : `${inv.monthsCovered} month${inv.monthsCovered === 1 ? '' : 's'}`}
                     </p>
                     <p className="type-res-caption text-res-ink-muted">
                       <span className="font-mono">{inv.invoiceNumber}</span>
                       {inv.planName && ` · ${inv.planName}`}
-                      {inv.status === 'paid' && inv.confirmedAt && ` · Paid ${day(inv.confirmedAt)}`}
+                      {inv.status === 'paid' &&
+                        inv.confirmedAt &&
+                        ` · Paid ${day(inv.confirmedAt)}`}
                       {inv.lagCreditDays > 0 && ` · +${inv.lagCreditDays} days added`}
                     </p>
                   </div>
-                  <p className="type-res-body font-semibold text-res-ink tabular-nums">{naira(inv.totalDue)}</p>
-                  <span className={`type-res-caption rounded-full px-2.5 py-1 font-semibold ${s.className}`}>{s.label}</span>
+                  <p className="type-res-body font-semibold text-res-ink tabular-nums">
+                    {naira(inv.totalDue)}
+                  </p>
+                  <span
+                    className={`type-res-caption rounded-full px-2.5 py-1 font-semibold ${s.className}`}
+                  >
+                    {s.label}
+                  </span>
                 </li>
               );
             })}
@@ -549,8 +609,9 @@ const BillingPage = () => {
           <AlertDialogHeader>
             <AlertDialogTitle>Cancel your plan?</AlertDialogTitle>
             <AlertDialogDescription>
-              It stays active until {day(billing?.currentPeriodEnd)}, then you're back on pay as you go. Time already paid
-              isn't refunded, and you can rejoin after {plan?.cooldownDays ?? 60} days.
+              It stays active until {day(billing?.currentPeriodEnd)}, then you're back on pay as you
+              go. Time already paid isn't refunded, and you can rejoin after{' '}
+              {plan?.cooldownDays ?? 60} days.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <Textarea

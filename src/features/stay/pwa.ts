@@ -82,7 +82,9 @@ export function useStayPwa(roomToken: string | undefined): void {
 
 /** Live online/offline flag for the guest app's offline banner. */
 export function useOnlineStatus(): boolean {
-  const [online, setOnline] = useState(() => (typeof navigator === 'undefined' ? true : navigator.onLine));
+  const [online, setOnline] = useState(() =>
+    typeof navigator === 'undefined' ? true : navigator.onLine
+  );
   useEffect(() => {
     const up = () => setOnline(true);
     const down = () => setOnline(false);

@@ -24,7 +24,10 @@ export interface VenueSuggestion {
 }
 
 /** Normalise whatever the API returns into a VenueSuggestion. */
-export const normalizeSuggestion = (item: unknown, fallbackType?: string): VenueSuggestion | null => {
+export const normalizeSuggestion = (
+  item: unknown,
+  fallbackType?: string
+): VenueSuggestion | null => {
   if (!item) return null;
   if (typeof item === 'string')
     return {

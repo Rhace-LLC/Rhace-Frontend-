@@ -13,7 +13,7 @@ import type { AuthStaff } from '@/types';
 const AcceptInvitePage = () => {
   const { setStaff } = useAuth();
   const [status, setStatus] = useState<'loading' | 'set-password' | 'accepted' | 'error'>(
-    'loading',
+    'loading'
   );
   const [error, setError] = useState<string | null>(null);
   const [searchParams] = useSearchParams();
@@ -38,7 +38,7 @@ const AcceptInvitePage = () => {
         if (!active) return;
         setError(
           (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||
-            'Invalid or expired invite token',
+            'Invalid or expired invite token'
         );
         setStatus('error');
       });
@@ -138,7 +138,7 @@ const PasswordSetupForm = ({ resetToken, onComplete }: PasswordSetupFormProps) =
     } catch (err) {
       toast.error(
         (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||
-          'Failed to set password. Please try again.',
+          'Failed to set password. Please try again.'
       );
     } finally {
       setIsSubmitting(false);

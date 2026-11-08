@@ -17,7 +17,14 @@ interface LocationPillProps {
   updateFilter?: (key: string, value: unknown) => void;
 }
 
-export const LocationPill = ({ location, status, isDetecting, requestLocation, setCity, updateFilter }: LocationPillProps) => {
+export const LocationPill = ({
+  location,
+  status,
+  isDetecting,
+  requestLocation,
+  setCity,
+  updateFilter,
+}: LocationPillProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
 
@@ -87,7 +94,11 @@ interface LocationBannerProps {
   onDismiss?: () => void;
 }
 
-export const LocationBanner = ({ requestLocation, isDetecting, onDismiss }: LocationBannerProps) => (
+export const LocationBanner = ({
+  requestLocation,
+  isDetecting,
+  onDismiss,
+}: LocationBannerProps) => (
   <div className="flex items-center justify-between gap-3 bg-gradient-to-r from-[#0A6C6D]/8 to-transparent border border-[#0A6C6D]/15 rounded-xl px-4 py-3 mb-6">
     <div className="flex items-center gap-3">
       <div className="w-8 h-8 bg-[#0A6C6D]/10 rounded-full flex items-center justify-center shrink-0">

@@ -7,8 +7,7 @@ import { drinkCategoryService } from '@/services/drinkCategory.service';
 
 type Kind = 'menu' | 'drink' | 'service';
 
-const serviceFor = (kind: Kind) =>
-  kind === 'drink' ? drinkCategoryService : menuCategoryService;
+const serviceFor = (kind: Kind) => (kind === 'drink' ? drinkCategoryService : menuCategoryService);
 
 const COPY: Record<Kind, { title: string; singular: string }> = {
   menu: { title: 'Menu categories', singular: 'category' },
@@ -156,14 +155,14 @@ export function CategoriesPage({ kind }: { kind: Kind }) {
         <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
           <table className="w-full text-left text-sm">
             <thead>
-                <tr className="border-b border-gray-100 text-xs uppercase tracking-wide text-gray-400">
-                  <th className="px-4 py-3 font-medium">Name</th>
-                  <th
-                    className="px-4 py-3 font-medium"
-                    title="Display position — lower numbers appear first on the guest menu"
-                  >
-                    Sort order
-                  </th>
+              <tr className="border-b border-gray-100 text-xs uppercase tracking-wide text-gray-400">
+                <th className="px-4 py-3 font-medium">Name</th>
+                <th
+                  className="px-4 py-3 font-medium"
+                  title="Display position — lower numbers appear first on the guest menu"
+                >
+                  Sort order
+                </th>
                 <th className="px-4 py-3 font-medium">Status</th>
                 <th className="px-4 py-3 text-right font-medium">Actions</th>
               </tr>
@@ -194,14 +193,14 @@ export function CategoriesPage({ kind }: { kind: Kind }) {
                     </button>
                   </td>
                   <td className="px-4 py-3">
-                      <div className="flex justify-end gap-2">
-                        <button
-                          type="button"
-                          onClick={() => openEdit(category)}
-                          className="rounded-lg border border-gray-200 px-2.5 py-1 text-[11px] font-medium text-gray-700 hover:border-[#0A6C6D] hover:text-[#0A6C6D]"
-                        >
-                          Edit
-                        </button>
+                    <div className="flex justify-end gap-2">
+                      <button
+                        type="button"
+                        onClick={() => openEdit(category)}
+                        className="rounded-lg border border-gray-200 px-2.5 py-1 text-[11px] font-medium text-gray-700 hover:border-[#0A6C6D] hover:text-[#0A6C6D]"
+                      >
+                        Edit
+                      </button>
                       <button
                         type="button"
                         onClick={() => remove(category)}

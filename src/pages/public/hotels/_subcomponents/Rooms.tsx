@@ -134,7 +134,10 @@ const Rooms = ({ setSelectedRooms, setShow, rooms }: RoomsProps) => {
     if (!checkInDate || !checkOutDate) return 1;
 
     const msPerDay = 1000 * 60 * 60 * 24;
-    return Math.max(1, Math.ceil((new Date(checkOutDate).getTime() - new Date(checkInDate).getTime()) / msPerDay));
+    return Math.max(
+      1,
+      Math.ceil((new Date(checkOutDate).getTime() - new Date(checkInDate).getTime()) / msPerDay)
+    );
   };
 
   // Add room to selection with quantity, dates, and guests

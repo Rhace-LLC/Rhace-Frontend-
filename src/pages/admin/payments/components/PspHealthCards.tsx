@@ -69,26 +69,37 @@ const PspHealthCards = () => {
               <dd className="text-right font-medium">{p.last24h.initialized}</dd>
               <dt className="text-muted-foreground">Settled</dt>
               <dd className="text-right font-medium">{p.last24h.settled}</dd>
-              <dt className="text-muted-foreground flex items-center gap-1" title="Settled via webhook (missed-webhook risk when low)">
+              <dt
+                className="text-muted-foreground flex items-center gap-1"
+                title="Settled via webhook (missed-webhook risk when low)"
+              >
                 Via webhook
               </dt>
               <dd className="text-right font-medium">{p.last24h.settledViaWebhook}</dd>
               <dt className="text-muted-foreground">Failed</dt>
-              <dd className={`text-right font-medium ${p.last24h.failed > 0 ? 'text-destructive' : ''}`}>
+              <dd
+                className={`text-right font-medium ${p.last24h.failed > 0 ? 'text-destructive' : ''}`}
+              >
                 {p.last24h.failed}
               </dd>
               <dt className="text-muted-foreground">Needs review</dt>
-              <dd className={`text-right font-medium ${p.last24h.needsReview > 0 ? 'text-amber-600' : ''}`}>
+              <dd
+                className={`text-right font-medium ${p.last24h.needsReview > 0 ? 'text-amber-600' : ''}`}
+              >
                 {p.last24h.needsReview}
               </dd>
               <dt className="text-muted-foreground">Stale pending</dt>
-              <dd className={`text-right font-medium ${p.last24h.pendingOlderThan15m > 0 ? 'text-amber-600' : ''}`}>
+              <dd
+                className={`text-right font-medium ${p.last24h.pendingOlderThan15m > 0 ? 'text-amber-600' : ''}`}
+              >
                 {p.last24h.pendingOlderThan15m}
               </dd>
               {p.id === 'stripe' && (
                 <>
                   <dt className="text-muted-foreground">Transfers failed</dt>
-                  <dd className={`text-right font-medium flex items-center justify-end gap-1 ${p.last24h.transfersFailed > 0 ? 'text-destructive' : ''}`}>
+                  <dd
+                    className={`text-right font-medium flex items-center justify-end gap-1 ${p.last24h.transfersFailed > 0 ? 'text-destructive' : ''}`}
+                  >
                     {p.last24h.transfersFailed > 0 && <XCircle className="h-4 w-4" />}
                     {p.last24h.transfersFailed}
                   </dd>

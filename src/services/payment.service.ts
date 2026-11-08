@@ -31,12 +31,7 @@ export interface PaymentAccountDto {
 // ─── Payments report (/payments/report/*, /payments/transactions*) ────────
 
 export type ReportPreset =
-  | 'today'
-  | 'this_week'
-  | 'last_30_days'
-  | 'this_month'
-  | 'last_quarter'
-  | 'last_year';
+  'today' | 'this_week' | 'last_30_days' | 'this_month' | 'last_quarter' | 'last_year';
 export type ReportBucket = 'hour' | 'day' | 'week' | 'month';
 
 /** Shared report filter: a preset, or a custom `from`/`to` (YYYY-MM-DD, Lagos days). */
@@ -107,7 +102,8 @@ export interface ReportBreakdownDto {
   rows: BreakdownRow[];
 }
 
-export type TransactionStatus = 'success' | 'pending' | 'failed' | 'refunded' | 'partially_refunded';
+export type TransactionStatus =
+  'success' | 'pending' | 'failed' | 'refunded' | 'partially_refunded';
 
 export interface TransactionDto {
   _id: string;
@@ -282,7 +278,12 @@ class PaymentService {
   /** Stripe Connect self-onboarding (foreign-currency opt-in). Returns an onboarding link. */
   async connectStripe(country = 'NG') {
     const res = await api.post('/vendors/me/connect-stripe', { country });
-    return res.data as { success: boolean; accountId?: string; onboardingUrl?: string; alreadyReady?: boolean };
+    return res.data as {
+      success: boolean;
+      accountId?: string;
+      onboardingUrl?: string;
+      alreadyReady?: boolean;
+    };
   }
 
   /** Get the calling vendor's payment-provider account status. */

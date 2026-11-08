@@ -1,6 +1,12 @@
 import type { ReactNode } from 'react';
 import { toast } from 'react-toastify';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import BillingModelBadge from '@/components/billing/BillingModelBadge';
 import { paymentBillingModel } from '@/components/billing/billingModel';
 import { formatMoney } from '@/utils/money';
@@ -17,7 +23,11 @@ const FEE_BEARER_COPY: Record<string, string> = {
 
 const when = (iso: string | null | undefined) =>
   iso
-    ? new Date(iso).toLocaleString('en-NG', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Africa/Lagos' })
+    ? new Date(iso).toLocaleString('en-NG', {
+        dateStyle: 'medium',
+        timeStyle: 'short',
+        timeZone: 'Africa/Lagos',
+      })
     : '—';
 
 function Field({ label, children }: { label: string; children: ReactNode }) {
@@ -53,7 +63,10 @@ export default function PaymentDetailsDialog({
         </DialogHeader>
 
         {query.isError ? (
-          <ErrorState message={errorMessage(query.error, "Couldn't load this payment.")} onRetry={() => query.refetch()} />
+          <ErrorState
+            message={errorMessage(query.error, "Couldn't load this payment.")}
+            onRetry={() => query.refetch()}
+          />
         ) : !p ? (
           <CardSkeleton rows={6} />
         ) : (
@@ -86,7 +99,8 @@ export default function PaymentDetailsDialog({
               </div>
               {paymentBillingModel(billing) === 'subscription' && (
                 <p className="type-res-caption -mt-1 mb-3 text-res-ink-muted">
-                  Taken under your subscription: no platform share, and the transaction fee is deducted from your share.
+                  Taken under your subscription: no platform share, and the transaction fee is
+                  deducted from your share.
                 </p>
               )}
               <dl className="space-y-2">
@@ -120,12 +134,17 @@ export default function PaymentDetailsDialog({
                 <h3 className="type-res-small mb-3 font-semibold text-res-ink">Refunds</h3>
                 <ul className="space-y-2">
                   {p.refunds.map((r) => (
-                    <li key={r._id} className="flex justify-between gap-3 rounded-res-sm bg-res-surface px-3 py-2">
+                    <li
+                      key={r._id}
+                      className="flex justify-between gap-3 rounded-res-sm bg-res-surface px-3 py-2"
+                    >
                       <span className="type-res-small text-res-ink">
                         {r.ticketNo ?? 'Refund'} · {titleCase(r.status)}
                         {r.reason && <span className="text-res-ink-muted"> · {r.reason}</span>}
                       </span>
-                      <span className="type-res-small text-res-ink tabular-nums">{formatMoney(r.amount, r.currency)}</span>
+                      <span className="type-res-small text-res-ink tabular-nums">
+                        {formatMoney(r.amount, r.currency)}
+                      </span>
                     </li>
                   ))}
                 </ul>

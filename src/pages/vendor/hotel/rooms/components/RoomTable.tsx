@@ -33,13 +33,7 @@ interface RoomTableProps {
   onViewImages: (room: any) => void;
 }
 
-const RoomTable = ({
-  rooms,
-  onEdit,
-  onDelete,
-  onViewDetails,
-  onViewImages,
-}: RoomTableProps) => {
+const RoomTable = ({ rooms, onEdit, onDelete, onViewDetails, onViewImages }: RoomTableProps) => {
   const [sorting, setSorting] = useState<any[]>([]);
   const [columnFilters, setColumnFilters] = useState<any[]>([]);
   const [columnVisibility, setColumnVisibility] = useState<any>({});

@@ -11,7 +11,11 @@ import {
 
 type NgnProvider = 'paystack' | 'monnify';
 
-const PROVIDER_NAME: Record<string, string> = { paystack: 'Paystack', monnify: 'Monnify', stripe: 'Stripe' };
+const PROVIDER_NAME: Record<string, string> = {
+  paystack: 'Paystack',
+  monnify: 'Monnify',
+  stripe: 'Stripe',
+};
 
 const FEE_BEARER: Record<PaymentAccountDto['feeBearer'], string> = {
   vendor: 'You',
@@ -25,7 +29,15 @@ const errorMessage = (e: unknown, fallback: string) =>
 
 // ─── Small building blocks ──────────────────────────────────────────────
 
-function Card({ title, subtitle, children }: { title: string; subtitle?: string; children: ReactNode }) {
+function Card({
+  title,
+  subtitle,
+  children,
+}: {
+  title: string;
+  subtitle?: string;
+  children: ReactNode;
+}) {
   return (
     <section className="rounded-res-lg bg-res-card p-5 shadow-res-low md:p-6">
       <h2 className="type-res-h3 text-res-ink">{title}</h2>
@@ -47,7 +59,9 @@ const TONE: Record<Tone, { label: string; className: string; Icon: typeof CheckC
 function StatusPill({ tone }: { tone: Tone }) {
   const { label, className, Icon } = TONE[tone];
   return (
-    <span className={`type-res-caption inline-flex items-center gap-1 rounded-full px-2.5 py-1 font-semibold ${className}`}>
+    <span
+      className={`type-res-caption inline-flex items-center gap-1 rounded-full px-2.5 py-1 font-semibold ${className}`}
+    >
       <Icon className="size-3.5" aria-hidden /> {label}
     </span>
   );
@@ -162,7 +176,7 @@ export default function PaymentSettings() {
           next.delete('stripe');
           return next;
         },
-        { replace: true },
+        { replace: true }
       );
     }
     if (stripe === 'refresh') {
@@ -180,7 +194,8 @@ export default function PaymentSettings() {
       setData(res.account);
       toast.success(`${PROVIDER_NAME[provider]} is set up.`);
     } catch (error) {
-      const account = (error as { response?: { data?: { account?: PaymentAccountDto } } })?.response?.data?.account;
+      const account = (error as { response?: { data?: { account?: PaymentAccountDto } } })?.response
+        ?.data?.account;
       if (account) setData(account);
       toast.error(errorMessage(error, `Could not set up ${PROVIDER_NAME[provider]}.`));
     } finally {
@@ -194,7 +209,12 @@ export default function PaymentSettings() {
     setBusy(null);
   };
 
-  const header = <DashboardPageHeader title="Payment settings" subtitle="Where your money goes and how customers pay you." />;
+  const header = (
+    <DashboardPageHeader
+      title="Payment settings"
+      subtitle="Where your money goes and how customers pay you."
+    />
+  );
 
   if (loading) {
     return (
@@ -211,7 +231,9 @@ export default function PaymentSettings() {
       <div className="space-y-5 p-4 md:p-6">
         {header}
         <div className="rounded-res-lg bg-res-card p-10 text-center shadow-res-low">
-          <p className="type-res-body text-res-ink-muted">We couldn't load your payment settings.</p>
+          <p className="type-res-body text-res-ink-muted">
+            We couldn't load your payment settings.
+          </p>
           <div className="mt-4 flex justify-center">
             <PillButton primary onClick={() => load()}>
               Try again
@@ -222,12 +244,15 @@ export default function PaymentSettings() {
     );
   }
 
-  const ngn = (['paystack', 'monnify'] as NgnProvider[]).filter((id) => data.providers[id]?.enabled);
+  const ngn = (['paystack', 'monnify'] as NgnProvider[]).filter(
+    (id) => data.providers[id]?.enabled
+  );
   // Payments route to any ready provider the platform uses (main or backup).
   const nairaReady = ngn.some((id) => data.providers[id].ready);
   const stripe = data.providers.stripe;
 
-  const ngnTone = (s: ProviderAccountStatus): Tone => (s.ready ? 'ready' : s.lastError ? 'failed' : 'idle');
+  const ngnTone = (s: ProviderAccountStatus): Tone =>
+    s.ready ? 'ready' : s.lastError ? 'failed' : 'idle';
   const stripeTone: Tone = stripe.ready
     ? 'ready'
     : stripe.started
@@ -251,10 +276,16 @@ export default function PaymentSettings() {
             nairaReady ? 'bg-white/15' : 'bg-amber-50 text-amber-600'
           }`}
         >
-          {nairaReady ? <CheckCircle2 className="size-6" aria-hidden /> : <AlertCircle className="size-6" aria-hidden />}
+          {nairaReady ? (
+            <CheckCircle2 className="size-6" aria-hidden />
+          ) : (
+            <AlertCircle className="size-6" aria-hidden />
+          )}
         </span>
         <div>
-          <p className="type-res-h3">{nairaReady ? 'You can take online payments' : 'Online payments need setup'}</p>
+          <p className="type-res-h3">
+            {nairaReady ? 'You can take online payments' : 'Online payments need setup'}
+          </p>
           <p className={`type-res-small ${nairaReady ? 'text-white/80' : 'text-res-ink-muted'}`}>
             {nairaReady
               ? 'Your share of every payment goes straight to your bank account.'
@@ -275,15 +306,21 @@ export default function PaymentSettings() {
               <Landmark className="size-5" aria-hidden />
             </span>
             <div className="min-w-0">
-              <p className="type-res-body font-semibold text-res-ink">{data.bank.accountName ?? '—'}</p>
+              <p className="type-res-body font-semibold text-res-ink">
+                {data.bank.accountName ?? '—'}
+              </p>
               <p className="type-res-small text-res-ink-muted">
                 {data.bank.bankName ?? 'Bank'}
-                {data.bank.accountNumberLast4 && <span className="tabular-nums"> · •••• {data.bank.accountNumberLast4}</span>}
+                {data.bank.accountNumberLast4 && (
+                  <span className="tabular-nums"> · •••• {data.bank.accountNumberLast4}</span>
+                )}
               </p>
             </div>
           </div>
         )}
-        <p className="type-res-caption mt-3 text-res-ink-muted">To change your payout account, contact support.</p>
+        <p className="type-res-caption mt-3 text-res-ink-muted">
+          To change your payout account, contact support.
+        </p>
       </Card>
 
       {/* Naira providers */}
@@ -307,7 +344,11 @@ export default function PaymentSettings() {
                   }
                   action={
                     !status.ready && data.bank.onFile !== false ? (
-                      <PillButton primary={tone === 'idle'} busy={busy === id} onClick={() => setUp(id)}>
+                      <PillButton
+                        primary={tone === 'idle'}
+                        busy={busy === id}
+                        onClick={() => setUp(id)}
+                      >
                         {tone === 'failed' ? 'Try again' : 'Set up'}
                       </PillButton>
                     ) : undefined
@@ -321,7 +362,10 @@ export default function PaymentSettings() {
 
       {/* Stripe */}
       {stripe.enabled && (
-        <Card title="Foreign currency" subtitle="Optional. Accept card payments in USD, EUR and GBP.">
+        <Card
+          title="Foreign currency"
+          subtitle="Optional. Accept card payments in USD, EUR and GBP."
+        >
           <ul>
             <ProviderRow
               name="Stripe"
@@ -360,7 +404,9 @@ export default function PaymentSettings() {
       <Card title="Processing fees">
         <div className="flex items-center justify-between gap-3 rounded-res-md bg-res-surface p-4">
           <p className="type-res-small text-res-ink-muted">Who pays the card or transfer fee</p>
-          <p className="type-res-body font-semibold text-res-ink">{FEE_BEARER[data.feeBearer] ?? data.feeBearer}</p>
+          <p className="type-res-body font-semibold text-res-ink">
+            {FEE_BEARER[data.feeBearer] ?? data.feeBearer}
+          </p>
         </div>
       </Card>
     </div>

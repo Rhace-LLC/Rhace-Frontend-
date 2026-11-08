@@ -53,9 +53,15 @@ export function useBlueprints(vertical?: string) {
 /** Public (unauthenticated) blueprint catalog for a vendor — customer booking flow. */
 export function useVendorBlueprints(vendorId?: string, vertical?: string) {
   return useQuery({
-    queryKey: [...floorPlanKeys.blueprintsRoot(), 'vendor', vendorId ?? '', vertical ?? 'all'] as const,
+    queryKey: [
+      ...floorPlanKeys.blueprintsRoot(),
+      'vendor',
+      vendorId ?? '',
+      vertical ?? 'all',
+    ] as const,
     queryFn: async () =>
-      (await inventoryBlueprintService.listForVendor(vendorId as string, { vertical, limit: 50 })).data,
+      (await inventoryBlueprintService.listForVendor(vendorId as string, { vertical, limit: 50 }))
+        .data,
     enabled: !!vendorId,
   });
 }
@@ -382,8 +388,13 @@ export function useCreateUnitReservation() {
 export function useReassignUnitReservation() {
   const invalidate = useInvalidateFloorPlan();
   return useMutation({
-    mutationFn: ({ reservationId, targetUnitId }: { reservationId: string; targetUnitId: string }) =>
-      unitReservationService.reassign(reservationId, targetUnitId),
+    mutationFn: ({
+      reservationId,
+      targetUnitId,
+    }: {
+      reservationId: string;
+      targetUnitId: string;
+    }) => unitReservationService.reassign(reservationId, targetUnitId),
     onSuccess: invalidate,
   });
 }

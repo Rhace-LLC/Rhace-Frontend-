@@ -29,7 +29,8 @@ const VendorPaymentOverview = () => {
 
       {other && (
         <p className="type-res-small rounded-res-md bg-res-secondary px-4 py-3 text-res-ink">
-          You also have {formatMoney(other.gross, other.currency)} in {other.currency} payments in this period.{' '}
+          You also have {formatMoney(other.gross, other.currency)} in {other.currency} payments in
+          this period.{' '}
           <button
             type="button"
             onClick={() => setCurrency(other.currency)}
@@ -49,7 +50,11 @@ const VendorPaymentOverview = () => {
       />
 
       {/* Remount on a new range so a bucket override doesn't carry over. */}
-      <RevenueChart key={JSON.stringify(params)} params={params} onLongerRange={() => setPreset('last_year')} />
+      <RevenueChart
+        key={JSON.stringify(params)}
+        params={params}
+        onLongerRange={() => setPreset('last_year')}
+      />
 
       <div className="grid gap-5 lg:grid-cols-2">
         <MoneyFlowCard
@@ -66,7 +71,10 @@ const VendorPaymentOverview = () => {
 
       <p className="type-res-small text-res-ink-muted">
         Payout account and payment providers are in{' '}
-        <Link to={`${base}/settings/payments`} className="font-semibold text-res-brand hover:text-res-brand-hover">
+        <Link
+          to={`${base}/settings/payments`}
+          className="font-semibold text-res-brand hover:text-res-brand-hover"
+        >
           Payment settings
         </Link>
         .

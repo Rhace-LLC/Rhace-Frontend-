@@ -29,7 +29,7 @@ export function ReportFilterBar() {
   const [customOpen, setCustomOpen] = useState(false);
   const openingCustom = useRef(false);
   const [draft, setDraft] = useState<DateRange | undefined>(() =>
-    params.from ? { from: fromDay(params.from), to: fromDay(params.to) } : undefined,
+    params.from ? { from: fromDay(params.from), to: fromDay(params.to) } : undefined
   );
 
   const applyCustom = () => {
@@ -44,44 +44,50 @@ export function ReportFilterBar() {
         {/* The menu opens the custom-range popover; the popover only anchors here. */}
         <PopoverAnchor asChild>
           <span className="inline-flex">
-        <DropdownMenu>
-          <DropdownMenuTrigger className={triggerClass}>
-            <CalendarDays className="size-4 text-res-ink-muted" aria-hidden />
-            {rangeLabel}
-            <ChevronDown className="size-4 text-res-ink-muted" aria-hidden />
-          </DropdownMenuTrigger>
-          <DropdownMenuContent
-            align="end"
-            className="w-48"
-            onCloseAutoFocus={(event) => {
-              // Returning focus to the trigger would count as a click outside
-              // the custom-range popover that is opening.
-              if (openingCustom.current) {
-                event.preventDefault();
-                openingCustom.current = false;
-              }
-            }}
-          >
-            {PRESETS.map((preset) => (
-              <DropdownMenuItem key={preset.value} onSelect={() => setPreset(preset.value)}>
-                <span className="flex-1">{preset.label}</span>
-                {!params.from && params.preset === preset.value && <Check className="size-4" aria-hidden />}
-              </DropdownMenuItem>
-            ))}
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onSelect={() => {
-                openingCustom.current = true;
-                setDraft(params.from ? { from: fromDay(params.from), to: fromDay(params.to) } : undefined);
-                // After the menu has closed, so its dismissal can't close the popover.
-                setTimeout(() => setCustomOpen(true), 0);
-              }}
-            >
-              <span className="flex-1">Custom range…</span>
-              {params.from && <Check className="size-4" aria-hidden />}
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+            <DropdownMenu>
+              <DropdownMenuTrigger className={triggerClass}>
+                <CalendarDays className="size-4 text-res-ink-muted" aria-hidden />
+                {rangeLabel}
+                <ChevronDown className="size-4 text-res-ink-muted" aria-hidden />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                align="end"
+                className="w-48"
+                onCloseAutoFocus={(event) => {
+                  // Returning focus to the trigger would count as a click outside
+                  // the custom-range popover that is opening.
+                  if (openingCustom.current) {
+                    event.preventDefault();
+                    openingCustom.current = false;
+                  }
+                }}
+              >
+                {PRESETS.map((preset) => (
+                  <DropdownMenuItem key={preset.value} onSelect={() => setPreset(preset.value)}>
+                    <span className="flex-1">{preset.label}</span>
+                    {!params.from && params.preset === preset.value && (
+                      <Check className="size-4" aria-hidden />
+                    )}
+                  </DropdownMenuItem>
+                ))}
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onSelect={() => {
+                    openingCustom.current = true;
+                    setDraft(
+                      params.from
+                        ? { from: fromDay(params.from), to: fromDay(params.to) }
+                        : undefined
+                    );
+                    // After the menu has closed, so its dismissal can't close the popover.
+                    setTimeout(() => setCustomOpen(true), 0);
+                  }}
+                >
+                  <span className="flex-1">Custom range…</span>
+                  {params.from && <Check className="size-4" aria-hidden />}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </span>
         </PopoverAnchor>
         <PopoverContent align="end" className="w-auto p-3">
@@ -91,7 +97,9 @@ export function ReportFilterBar() {
             selected={draft}
             onSelect={setDraft}
             disabled={{ after: new Date() }}
-            defaultMonth={draft?.from ?? new Date(new Date().getFullYear(), new Date().getMonth() - 1, 1)}
+            defaultMonth={
+              draft?.from ?? new Date(new Date().getFullYear(), new Date().getMonth() - 1, 1)
+            }
           />
           <div className="mt-3 flex items-center justify-end gap-2">
             <button

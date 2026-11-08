@@ -16,10 +16,7 @@ const UNIT_LABEL: Record<Vertical, string> = {
 
 export function MakeReservationSection({ vendorId, vertical }: MakeReservationSectionProps) {
   const query = useVendorBlueprints(vendorId, vertical);
-  const blueprints = useMemo(
-    () => (query.data?.items ?? []).map(toDomainBlueprint),
-    [query.data]
-  );
+  const blueprints = useMemo(() => (query.data?.items ?? []).map(toDomainBlueprint), [query.data]);
   const unitLabel = UNIT_LABEL[vertical];
 
   return (
@@ -59,9 +56,7 @@ export function MakeReservationSection({ vendorId, vertical }: MakeReservationSe
         ) : query.isError ? (
           <div className="rounded-res-md bg-res-card px-6 py-10 text-center shadow-res-low">
             <p className="type-res-h3 text-res-ink">Couldn&apos;t load reservations</p>
-            <p className="type-res-small mt-1 text-res-ink-muted">
-              Please try again in a moment.
-            </p>
+            <p className="type-res-small mt-1 text-res-ink-muted">Please try again in a moment.</p>
           </div>
         ) : blueprints.length === 0 ? (
           <div className="rounded-res-md bg-res-card px-6 py-10 text-center shadow-res-low">

@@ -47,22 +47,31 @@ const unwrap = <T>(response: { data: unknown }): T => {
 /** Phase 9: webhooks + partner API clients (managers). */
 class IntegrationApi {
   async meta() {
-    return unwrap<{ topics: string[]; scopes: string[]; partnerBasePath: string }>(await api.get('/integrations/meta'));
+    return unwrap<{ topics: string[]; scopes: string[]; partnerBasePath: string }>(
+      await api.get('/integrations/meta')
+    );
   }
   async webhooks() {
     return unwrap<WebhookEndpointDto[]>(await api.get('/integrations/webhooks'));
   }
   async createWebhook(input: { url: string; events: string[]; description?: string }) {
-    return unwrap<{ endpoint: WebhookEndpointDto; secret: string }>(await api.post('/integrations/webhooks', input));
+    return unwrap<{ endpoint: WebhookEndpointDto; secret: string }>(
+      await api.post('/integrations/webhooks', input)
+    );
   }
-  async updateWebhook(id: string, patch: Partial<{ url: string; events: string[]; description: string; active: boolean }>) {
+  async updateWebhook(
+    id: string,
+    patch: Partial<{ url: string; events: string[]; description: string; active: boolean }>
+  ) {
     return unwrap<WebhookEndpointDto>(await api.patch(`/integrations/webhooks/${id}`, patch));
   }
   async deleteWebhook(id: string) {
     await api.delete(`/integrations/webhooks/${id}`);
   }
   async rotateWebhookSecret(id: string) {
-    return unwrap<{ endpoint: WebhookEndpointDto; secret: string }>(await api.post(`/integrations/webhooks/${id}/rotate-secret`));
+    return unwrap<{ endpoint: WebhookEndpointDto; secret: string }>(
+      await api.post(`/integrations/webhooks/${id}/rotate-secret`)
+    );
   }
   async testWebhook(id: string) {
     return unwrap<WebhookDeliveryDto>(await api.post(`/integrations/webhooks/${id}/test`));
@@ -71,16 +80,22 @@ class IntegrationApi {
     return unwrap<WebhookDeliveryDto[]>(await api.get(`/integrations/webhooks/${id}/deliveries`));
   }
   async redeliver(deliveryId: string) {
-    return unwrap<WebhookDeliveryDto>(await api.post(`/integrations/deliveries/${deliveryId}/redeliver`));
+    return unwrap<WebhookDeliveryDto>(
+      await api.post(`/integrations/deliveries/${deliveryId}/redeliver`)
+    );
   }
   async apiClients() {
     return unwrap<ApiClientDto[]>(await api.get('/integrations/api-clients'));
   }
   async createApiClient(input: { name: string; scopes: string[] }) {
-    return unwrap<{ client: ApiClientDto; clientSecret: string }>(await api.post('/integrations/api-clients', input));
+    return unwrap<{ client: ApiClientDto; clientSecret: string }>(
+      await api.post('/integrations/api-clients', input)
+    );
   }
   async rotateApiClient(id: string) {
-    return unwrap<{ client: ApiClientDto; clientSecret: string }>(await api.post(`/integrations/api-clients/${id}/rotate`));
+    return unwrap<{ client: ApiClientDto; clientSecret: string }>(
+      await api.post(`/integrations/api-clients/${id}/rotate`)
+    );
   }
   async revokeApiClient(id: string) {
     return unwrap<ApiClientDto>(await api.delete(`/integrations/api-clients/${id}`));

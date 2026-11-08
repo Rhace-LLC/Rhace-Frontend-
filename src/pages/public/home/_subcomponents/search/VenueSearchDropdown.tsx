@@ -128,7 +128,8 @@ export const VenueSearchDropdown = ({
             </div>
           ) : (
             trending.slice(0, 6).map((v) => {
-              const cfg = TYPE_CONFIG[(v.vendorType as 'restaurant' | 'hotel' | 'club') || 'restaurant'];
+              const cfg =
+                TYPE_CONFIG[(v.vendorType as 'restaurant' | 'hotel' | 'club') || 'restaurant'];
               const firstImage = v.profileImages?.[0];
               const imgSrc = typeof firstImage === 'string' ? firstImage : firstImage?.url;
               return (
@@ -179,7 +180,8 @@ export const VenueSearchDropdown = ({
             </div>
           ) : suggestions.length > 0 ? (
             suggestions.map((v) => {
-              const cfg = TYPE_CONFIG[(v.vendorType as 'restaurant' | 'hotel' | 'club') || 'restaurant'];
+              const cfg =
+                TYPE_CONFIG[(v.vendorType as 'restaurant' | 'hotel' | 'club') || 'restaurant'];
               return (
                 <div
                   key={v._id || v.text}

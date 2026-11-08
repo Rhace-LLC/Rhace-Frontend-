@@ -59,7 +59,7 @@ export default function TableMap({
       { label: 'Needs bussing', className: 'bg-amber-500' },
       { label: 'Mine', className: 'bg-[#0A6C6D]' },
     ],
-    [],
+    []
   );
 
   return (
@@ -96,7 +96,7 @@ export default function TableMap({
                   ? 'border-2 border-[#0A6C6D] bg-white shadow-sm ring-1 ring-[#0A6C6D]/40'
                   : 'border-gray-300 bg-white/70',
                 isSelected && 'ring-2 ring-[#0A6C6D]',
-                clickable ? 'cursor-pointer hover:bg-[#0A6C6D]/5' : 'cursor-default',
+                clickable ? 'cursor-pointer hover:bg-[#0A6C6D]/5' : 'cursor-default'
               )}
               title={isAssigned ? `Open ${unit.label} for ordering` : unit.label}
             >

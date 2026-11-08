@@ -173,7 +173,8 @@ export const SearchAutocomplete = ({
                 if (!Array.isArray(restaurants) || restaurants.length === 0) return null;
 
                 const categoryConfig =
-                  suggestionCategories[category as keyof typeof suggestionCategories] || suggestionCategories.nearby;
+                  suggestionCategories[category as keyof typeof suggestionCategories] ||
+                  suggestionCategories.nearby;
 
                 return (
                   <div key={category} className="mb-3 last:mb-0">

@@ -1,15 +1,7 @@
 import { useEffect, useState } from 'react';
-import {
-  Area,
-  AreaChart,
-  CartesianGrid,
-  XAxis,
-} from 'recharts';
+import { Area, AreaChart, CartesianGrid, XAxis } from 'recharts';
 
-import {
-  ChartContainer,
-  ChartTooltip,
-} from '@/components/ui/chart';
+import { ChartContainer, ChartTooltip } from '@/components/ui/chart';
 import type { ChartConfig } from '@/components/ui/chart';
 
 import { paymentService } from '@/services/payment.service';
@@ -107,10 +99,7 @@ const AdminEarningTrends = () => {
 
       setTrend(res);
     } catch (error) {
-      toast.error(
-        error?.response?.data?.message ??
-          'Failed to fetch earnings trends'
-      );
+      toast.error(error?.response?.data?.message ?? 'Failed to fetch earnings trends');
     } finally {
       setLoading(false);
     }
@@ -120,13 +109,9 @@ const AdminEarningTrends = () => {
     fetchTrend();
   }, [metric, range]);
 
-  const total =
-    trend.totals?.[metric] ?? 0;
+  const total = trend.totals?.[metric] ?? 0;
 
-  const percent =
-    trend.percentChange?.[
-      metric
-    ] ?? 0;
+  const percent = trend.percentChange?.[metric] ?? 0;
 
   const chartData = trend.trends.map((item) => ({
     ...item,
@@ -135,13 +120,9 @@ const AdminEarningTrends = () => {
 
   return (
     <div className="rounded-res-lg border border-res-line bg-res-card shadow-res-low p-6">
-
       <div className="flex items-center justify-between">
-
         <div>
-          <h2 className="text-lg font-semibold">
-            Earnings Trends
-          </h2>
+          <h2 className="text-lg font-semibold">Earnings Trends</h2>
 
           <p className="text-sm text-muted-foreground mt-1">
             Track payment performance across the platform.
@@ -149,17 +130,13 @@ const AdminEarningTrends = () => {
         </div>
 
         <div className="flex gap-3">
-
           <select
             value={metric}
             onChange={(e) => setMetric(e.target.value)}
             className="border rounded-md px-3 py-2 text-sm"
           >
             {metricOptions.map((item) => (
-              <option
-                key={item.value}
-                value={item.value}
-              >
+              <option key={item.value} value={item.value}>
                 {item.label}
               </option>
             ))}
@@ -171,46 +148,27 @@ const AdminEarningTrends = () => {
             className="border rounded-md px-3 py-2 text-sm"
           >
             {rangeOptions.map((item) => (
-              <option
-                key={item.value}
-                value={item.value}
-              >
+              <option key={item.value} value={item.value}>
                 {item.label}
               </option>
             ))}
           </select>
-
         </div>
-
       </div>
 
       {loading ? (
-        <div className="h-[320px] flex items-center justify-center">
-          Loading...
-        </div>
+        <div className="h-[320px] flex items-center justify-center">Loading...</div>
       ) : (
         <>
           <div className="mt-6">
+            <h1 className="text-4xl font-bold">₦{total.toLocaleString()}</h1>
 
-            <h1 className="text-4xl font-bold">
-              ₦{total.toLocaleString()}
-            </h1>
-
-            <p
-              className={`mt-2 text-sm ${
-                percent >= 0
-                  ? 'text-green-600'
-                  : 'text-red-600'
-              }`}
-            >
-              {percent >= 0 ? '▲' : '▼'}{' '}
-              {Math.abs(percent).toFixed(2)}%
+            <p className={`mt-2 text-sm ${percent >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+              {percent >= 0 ? '▲' : '▼'} {Math.abs(percent).toFixed(2)}%
             </p>
-
           </div>
 
           <div className="mt-6">
-
             <ChartContainer
               id="admin-payment-trends"
               config={chartConfig}
@@ -219,17 +177,9 @@ const AdminEarningTrends = () => {
               <AreaChart data={chartData}>
                 <CartesianGrid vertical={false} />
 
-                <XAxis
-                  dataKey="label"
-                  tickLine={false}
-                  axisLine={false}
-                />
+                <XAxis dataKey="label" tickLine={false} axisLine={false} />
 
-                <ChartTooltip
-                  formatter={(value) =>
-                    `₦${Number(value).toLocaleString()}`
-                  }
-                />
+                <ChartTooltip formatter={(value) => `₦${Number(value).toLocaleString()}`} />
 
                 <Area
                   type="monotone"
@@ -240,7 +190,6 @@ const AdminEarningTrends = () => {
                 />
               </AreaChart>
             </ChartContainer>
-
           </div>
         </>
       )}

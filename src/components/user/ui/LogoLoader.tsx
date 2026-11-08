@@ -27,7 +27,11 @@ export interface UniversalLoaderProps {
   type?: string;
 }
 
-export function UniversalLoader({ fullscreen = false, size = 48, type = 'default' }: UniversalLoaderProps) {
+export function UniversalLoader({
+  fullscreen = false,
+  size = 48,
+  type = 'default',
+}: UniversalLoaderProps) {
   return (
     <>
       <style>{shimmerStyle}</style>

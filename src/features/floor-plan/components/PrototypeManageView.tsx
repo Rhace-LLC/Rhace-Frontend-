@@ -41,7 +41,12 @@ const KIND_PLURAL: Record<Vertical, string> = {
   restaurant: 'Tables',
 };
 
-export function PrototypeManageView({ plugin, floorPlanPath, description, planId: preferredPlanId }: PrototypeManageViewProps) {
+export function PrototypeManageView({
+  plugin,
+  floorPlanPath,
+  description,
+  planId: preferredPlanId,
+}: PrototypeManageViewProps) {
   const vertical = plugin.id as Vertical;
   const kind = KIND_LABEL[vertical];
   const queryClient = useQueryClient();
@@ -231,14 +236,18 @@ export function PrototypeManageView({ plugin, floorPlanPath, description, planId
             {groups.map(({ blueprint, entries }) => {
               const available = entries.filter((e) => unitAvailable(e.unit)).length;
               return (
-                <section key={blueprint.id} className="rounded-res-lg bg-res-card p-4 shadow-res-low md:p-5">
+                <section
+                  key={blueprint.id}
+                  className="rounded-res-lg bg-res-card p-4 shadow-res-low md:p-5"
+                >
                   <header className="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-res-line pb-3">
                     <div className="flex min-w-0 items-center gap-3">
                       <BlueprintThumb blueprint={blueprint} />
                       <div className="min-w-0">
                         <h2 className="type-res-h3 line-clamp-1 text-res-ink">{blueprint.name}</h2>
                         <p className="type-res-small line-clamp-1 font-normal text-res-ink-muted">
-                          {blueprint.type} · {formatBlueprintPricing(getBlueprintPricing(blueprint))} · seats{' '}
+                          {blueprint.type} ·{' '}
+                          {formatBlueprintPricing(getBlueprintPricing(blueprint))} · seats{' '}
                           {blueprint.capacity}
                         </p>
                       </div>

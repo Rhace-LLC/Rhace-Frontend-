@@ -53,18 +53,16 @@ export function FloorPlanWorkbench({
   const { plan } = store;
 
   const toggleOverlay = useCallback((id: string) => {
-    setActiveOverlays((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
-    );
+    setActiveOverlays((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
   }, []);
 
   const drawerEntity = drawerEntityId
-    ? plan.entities.find((e) => e.entityId === drawerEntityId) ?? null
+    ? (plan.entities.find((e) => e.entityId === drawerEntityId) ?? null)
     : null;
 
   const selectedEntity =
     canvas.selection.length === 1
-      ? plan.entities.find((e) => e.entityId === canvas.selection[0]) ?? null
+      ? (plan.entities.find((e) => e.entityId === canvas.selection[0]) ?? null)
       : null;
   const selectedBlueprint = selectedEntity
     ? findBlueprint(allBlueprints(vertical), String(selectedEntity.businessData.blueprintId ?? ''))
@@ -74,8 +72,12 @@ export function FloorPlanWorkbench({
 
   const createEntity = useCallback(
     (type: EntityTypeDefinition, position?: { x: number; y: number }): FloorEntity => {
-      const x = position ? Math.round(position.x - type.width / 2) : Math.round(plan.width / 2 - type.width / 2);
-      const y = position ? Math.round(position.y - type.height / 2) : Math.round(plan.height / 2 - type.height / 2);
+      const x = position
+        ? Math.round(position.x - type.width / 2)
+        : Math.round(plan.width / 2 - type.width / 2);
+      const y = position
+        ? Math.round(position.y - type.height / 2)
+        : Math.round(plan.height / 2 - type.height / 2);
       const base: FloorEntity = {
         entityId: uid(type.type),
         type: type.type,
@@ -110,8 +112,12 @@ export function FloorPlanWorkbench({
       const height = blueprint?.canvasHeight ?? object.height;
       const anchor = position ?? pendingPlacement?.position;
       const x = anchor ? Math.round(anchor.x - width / 2) : Math.round(plan.width / 2 - width / 2);
-      const y = anchor ? Math.round(anchor.y - height / 2) : Math.round(plan.height / 2 - height / 2);
-      const count = plan.entities.filter((e) => e.businessData.blueprintId === input.blueprintId).length;
+      const y = anchor
+        ? Math.round(anchor.y - height / 2)
+        : Math.round(plan.height / 2 - height / 2);
+      const count = plan.entities.filter(
+        (e) => e.businessData.blueprintId === input.blueprintId
+      ).length;
       const designation = input.designation || `${blueprint?.type ?? object.label} ${count + 1}`;
 
       const base: FloorEntity = {
@@ -163,7 +169,13 @@ export function FloorPlanWorkbench({
 
   const handleAddCustom = useCallback(
     (name: string) => {
-      const entity = createEntity({ type: 'custom', label: name, shape: 'rect', width: 160, height: 110 });
+      const entity = createEntity({
+        type: 'custom',
+        label: name,
+        shape: 'rect',
+        width: 160,
+        height: 110,
+      });
       store.addEntity(entity);
       canvas.select(entity.entityId);
     },
@@ -201,7 +213,16 @@ export function FloorPlanWorkbench({
       setPendingPlacement({ type, position: { x, y } });
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [plugin, createEntity, store.addEntity, canvas.select, vertical, plan.floor, plan.activeArea, handlePlaceUnit]
+    [
+      plugin,
+      createEntity,
+      store.addEntity,
+      canvas.select,
+      vertical,
+      plan.floor,
+      plan.activeArea,
+      handlePlaceUnit,
+    ]
   );
 
   const handleBlueprintSaved = useCallback(
@@ -274,7 +295,12 @@ export function FloorPlanWorkbench({
         else store.undo();
         return;
       }
-      if (meta && event.key.toLowerCase() === 'd' && canvas.mode === 'edit' && canvas.selection.length) {
+      if (
+        meta &&
+        event.key.toLowerCase() === 'd' &&
+        canvas.mode === 'edit' &&
+        canvas.selection.length
+      ) {
         event.preventDefault();
         handleDuplicate(canvas.selection);
         return;
@@ -290,7 +316,15 @@ export function FloorPlanWorkbench({
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [canvas.mode, canvas.selection, canvas.clearSelection, handleDeleteSelected, handleDuplicate, store.undo, store.redo]);
+  }, [
+    canvas.mode,
+    canvas.selection,
+    canvas.clearSelection,
+    handleDeleteSelected,
+    handleDuplicate,
+    store.undo,
+    store.redo,
+  ]);
 
   const manageItems = useMemo(
     () =>

@@ -28,10 +28,7 @@ export function useCanvasState(initialMode: CanvasMode = 'manage') {
   const togglePanTool = useCallback(() => setPanTool((p) => !p), []);
 
   const toggleSnap = useCallback(() => setSnap((s) => !s), []);
-  const toggleGrid = useCallback(
-    () => setGrid((g) => ({ ...g, visible: !g.visible })),
-    []
-  );
+  const toggleGrid = useCallback(() => setGrid((g) => ({ ...g, visible: !g.visible })), []);
   const setGridSize = useCallback(
     (size: number) => setGrid((g) => ({ ...g, size: Math.max(5, size) })),
     []
@@ -70,9 +67,7 @@ export function useCanvasState(initialMode: CanvasMode = 'manage') {
 
   const zoomBy = useCallback(
     (factor: number, viewSize?: { width: number; height: number }) => {
-      const center = viewSize
-        ? { x: viewSize.width / 2, y: viewSize.height / 2 }
-        : { x: 0, y: 0 };
+      const center = viewSize ? { x: viewSize.width / 2, y: viewSize.height / 2 } : { x: 0, y: 0 };
       zoomAt(center, factor);
     },
     [zoomAt]

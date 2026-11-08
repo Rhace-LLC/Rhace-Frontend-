@@ -1,6 +1,6 @@
-import React, { useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { X } from "lucide-react";
+import React, { useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { X } from 'lucide-react';
 
 interface ModalProps {
   isOpen: boolean;
@@ -22,22 +22,22 @@ export const Modal: React.FC<ModalProps> = ({
   // Prevent background body scrolling when modal is active
   useEffect(() => {
     if (isOpen) {
-      document.body.style.overflow = "hidden";
+      document.body.style.overflow = 'hidden';
     } else {
-      document.body.style.overflow = "unset";
+      document.body.style.overflow = 'unset';
     }
     return () => {
-      document.body.style.overflow = "unset";
+      document.body.style.overflow = 'unset';
     };
   }, [isOpen]);
 
   // Handle ESC key press to close
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === 'Escape') onClose();
     };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, [onClose]);
 
   return (
@@ -49,7 +49,7 @@ export const Modal: React.FC<ModalProps> = ({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.25, ease: "easeInOut" }}
+            transition={{ duration: 0.25, ease: 'easeInOut' }}
             onClick={onClose}
             className="fixed inset-0 bg-res-scrim"
             aria-hidden="true"
@@ -71,16 +71,8 @@ export const Modal: React.FC<ModalProps> = ({
             {/* Fixed Header */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-res-line">
               <div>
-                {title && (
-                  <h3 className="type-res-h3 text-res-ink">
-                    {title}
-                  </h3>
-                )}
-                {subtitle && (
-                  <p className="type-res-small text-res-ink-muted mt-0.5">
-                    {subtitle}
-                  </p>
-                )}
+                {title && <h3 className="type-res-h3 text-res-ink">{title}</h3>}
+                {subtitle && <p className="type-res-small text-res-ink-muted mt-0.5">{subtitle}</p>}
               </div>
               <button
                 onClick={onClose}
@@ -92,9 +84,7 @@ export const Modal: React.FC<ModalProps> = ({
             </div>
 
             {/* Vertically Scrollable Content Body */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-4">
-              {children}
-            </div>
+            <div className="flex-1 overflow-y-auto p-6 space-y-4">{children}</div>
 
             {/* Optional Fixed Footer */}
             {footer && (

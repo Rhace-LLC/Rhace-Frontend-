@@ -9,15 +9,18 @@ import {
   RefreshCcw,
   Building2,
 } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { QrCode } from '@/components/ui/qr-code';
 import { floorPlanService } from '@/services/floorPlan.service';
-import {
-  stayService,
-  type GuestOrderingSettings,
-  type RoomQr,
-} from '@/services/stay.service';
+import { stayService, type GuestOrderingSettings, type RoomQr } from '@/services/stay.service';
 import type { FloorPlanDto } from '@/types';
 
 /**
@@ -123,7 +126,10 @@ const GuestOrderingSection = () => {
   const [bulkRotating, setBulkRotating] = useState(false);
 
   useEffect(() => {
-    stayService.getSettings().then(setSettings).catch(() => null);
+    stayService
+      .getSettings()
+      .then(setSettings)
+      .catch(() => null);
     floorPlanService
       .list()
       .then((res) => {
@@ -188,7 +194,11 @@ const GuestOrderingSection = () => {
     try {
       const next = await stayService.rotateRoomQr(unitId);
       setQrs((list) => list.map((q) => (q.unitId === unitId ? { ...q, ...next } : q)));
-      setSelectedQrs((prev) => { const n = new Set(prev); n.delete(unitId); return n; });
+      setSelectedQrs((prev) => {
+        const n = new Set(prev);
+        n.delete(unitId);
+        return n;
+      });
       toast.success('QR rotated — old prints stop working');
     } catch {
       toast.error('Failed to rotate the QR code');
@@ -205,7 +215,7 @@ const GuestOrderingSection = () => {
         list.map((q) => {
           const updated = rows.find((r) => r.unitId === q.unitId);
           return updated ? { ...q, ...updated } : q;
-        }),
+        })
       );
       setSelectedQrs(new Set());
       toast.success(`${ids.length} QR code${ids.length === 1 ? '' : 's'} rotated`);
@@ -233,7 +243,9 @@ const GuestOrderingSection = () => {
     setSelectedQrs(new Set());
   };
 
-  const challengeModeLabel = settings?.challengeMode ? CHALLENGE_LABELS[settings.challengeMode] : 'Last name or PIN';
+  const challengeModeLabel = settings?.challengeMode
+    ? CHALLENGE_LABELS[settings.challengeMode]
+    : 'Last name or PIN';
   const hasSelection = selectedQrs.size > 0;
   const allSelected = qrs.length > 0 && selectedQrs.size === qrs.length;
 
@@ -241,7 +253,9 @@ const GuestOrderingSection = () => {
     <Card className="rounded-res-lg border border-res-line bg-res-card shadow-res-low p-6 md:p-8">
       {/* Header */}
       <div className="mb-6">
-        <CardTitle className="type-res-body text-res-ink font-semibold">Stay QR & guest ordering</CardTitle>
+        <CardTitle className="type-res-body text-res-ink font-semibold">
+          Stay QR & guest ordering
+        </CardTitle>
         <CardDescription className="type-res-small text-res-ink-muted">
           Configure guest ordering, challenge method, room-tab credit, and print room QR codes.
         </CardDescription>
@@ -283,7 +297,9 @@ const GuestOrderingSection = () => {
               <select
                 value={settings.challengeMode}
                 onChange={(e) =>
-                  update({ challengeMode: e.target.value as GuestOrderingSettings['challengeMode'] })
+                  update({
+                    challengeMode: e.target.value as GuestOrderingSettings['challengeMode'],
+                  })
                 }
                 className={selectClass}
               >
@@ -459,7 +475,11 @@ const GuestOrderingSection = () => {
                   >
                     <div className="flex flex-col items-center gap-3">
                       <div className="flex h-24 w-24 items-center justify-center rounded-lg bg-res-card border border-res-line p-2">
-                        <QrCode value={`${window.location.origin}${q.path}`} size={96} label={q.label} />
+                        <QrCode
+                          value={`${window.location.origin}${q.path}`}
+                          size={96}
+                          label={q.label}
+                        />
                       </div>
                       <div className="text-center">
                         <p className="type-res-body text-res-ink font-medium">{q.label}</p>

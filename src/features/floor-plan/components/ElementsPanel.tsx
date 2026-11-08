@@ -1,4 +1,13 @@
-import { Circle, DoorOpen, Minus, PanelTop, Plus, RectangleHorizontal, Sofa, Square } from 'lucide-react';
+import {
+  Circle,
+  DoorOpen,
+  Minus,
+  PanelTop,
+  Plus,
+  RectangleHorizontal,
+  Sofa,
+  Square,
+} from 'lucide-react';
 import type { EntityTypeDefinition, VerticalPlugin } from '../core/plugin';
 
 interface ElementsPanelProps {
@@ -22,10 +31,23 @@ const SHAPE_ICON: Record<string, typeof Circle> = {
 };
 
 function iconFor(type: string) {
-  return SHAPE_ICON[type] ?? (type === 'wall' ? Minus : type.includes('door') || type.includes('entrance') ? DoorOpen : PanelTop);
+  return (
+    SHAPE_ICON[type] ??
+    (type === 'wall'
+      ? Minus
+      : type.includes('door') || type.includes('entrance')
+        ? DoorOpen
+        : PanelTop)
+  );
 }
 
-export function ElementsPanel({ plugin, disabled, onAddEntity, onAddCustom, onCreateBlueprint }: ElementsPanelProps) {
+export function ElementsPanel({
+  plugin,
+  disabled,
+  onAddEntity,
+  onAddCustom,
+  onCreateBlueprint,
+}: ElementsPanelProps) {
   const objects = plugin.entityTypes.filter((t) => !t.structure);
   const structures = plugin.entityTypes.filter((t) => t.structure);
 

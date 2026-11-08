@@ -1,10 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Bell } from 'lucide-react';
-import {
-  notificationService,
-  type AppNotification,
-} from '@/services/notification.service';
+import { notificationService, type AppNotification } from '@/services/notification.service';
 
 const POLL_MS = 45_000;
 

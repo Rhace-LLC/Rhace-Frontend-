@@ -106,9 +106,8 @@ export const assignmentUnitId = (refId: StaffAssignmentDto['refId']): string => 
 };
 
 /** The populated unit document, or null when the API returned a bare id. */
-export const assignmentUnit = (
-  refId: StaffAssignmentDto['refId'],
-): StaffAssignmentUnit | null => (refId && typeof refId === 'object' ? refId : null);
+export const assignmentUnit = (refId: StaffAssignmentDto['refId']): StaffAssignmentUnit | null =>
+  refId && typeof refId === 'object' ? refId : null;
 
 /** Legacy rows predate the role field — they were all leads (plan §6.3). */
 export const assignmentRole = (a: Pick<StaffAssignmentDto, 'role'>): StaffAssignmentRole =>
@@ -119,9 +118,8 @@ export const assignmentIsActive = (a: Pick<StaffAssignmentDto, 'status'>): boole
   (a.status ?? 'active') === 'active';
 
 /** The staff display name whether the row is populated or a bare id. */
-export const assignmentStaffName = (
-  staff: StaffAssignmentDto['staff'],
-): string => (typeof staff === 'object' && staff ? staff.name || 'Staff' : 'Staff');
+export const assignmentStaffName = (staff: StaffAssignmentDto['staff']): string =>
+  typeof staff === 'object' && staff ? staff.name || 'Staff' : 'Staff';
 
 /** The staff id whether the row is populated or a bare id. */
 export const assignmentStaffId = (staff: StaffAssignmentDto['staff']): string => {
@@ -336,7 +334,7 @@ class StaffService {
       unitId?: string;
       status?: 'active' | 'released' | 'all';
       window?: StaffAssignmentWindow;
-    } = {},
+    } = {}
   ) {
     const res = await api.get('/staff/assignments', { params });
     return res.data as { docs: StaffAssignmentDto[]; total: number };
@@ -344,7 +342,7 @@ class StaffService {
 
   /** Unit-grouped roster for the Roster Board (plan §5.3/§6.1). */
   async getGroupedAssignments(
-    params: { date?: string; type?: string; window?: StaffAssignmentWindow } = {},
+    params: { date?: string; type?: string; window?: StaffAssignmentWindow } = {}
   ) {
     const res = await api.get('/staff/assignments', {
       params: { ...params, grouped: true },
@@ -371,7 +369,11 @@ class StaffService {
   }
 
   /** Staff self-service claim/release (plan §5, B9). */
-  async selfAssign(input: { refId: string; action: 'claim' | 'release'; role?: StaffAssignmentRole }) {
+  async selfAssign(input: {
+    refId: string;
+    action: 'claim' | 'release';
+    role?: StaffAssignmentRole;
+  }) {
     const res = await api.post('/staff/assignments/self', input);
     return res.data as StaffAssignmentDto;
   }
@@ -396,7 +398,10 @@ class StaffService {
   /** Auto-distribute open units across clocked-in staff (plan §5.3, Phase 3). */
   async balanceAssignments(date?: string) {
     const res = await api.post('/staff/assignments/balance', date ? { date } : {});
-    return res.data as { created: { unitId: string; staffId: string; role: string }[]; total: number };
+    return res.data as {
+      created: { unitId: string; staffId: string; role: string }[];
+      total: number;
+    };
   }
 
   async deleteAssignment(id: string) {
@@ -405,12 +410,16 @@ class StaffService {
   }
 
   // ── Activity & reports ─────────────────────────────────────────────────────
-  async getActivity(params: { date?: string; staffId?: string; page?: number; limit?: number } = {}) {
+  async getActivity(
+    params: { date?: string; staffId?: string; page?: number; limit?: number } = {}
+  ) {
     const res = await api.get('/staff/activity', { params });
     return res.data as { docs: StaffActivityDto[]; total: number; page: number; pages: number };
   }
 
-  async getReports(params: { from?: string; to?: string; branchId?: string; staffId?: string } = {}) {
+  async getReports(
+    params: { from?: string; to?: string; branchId?: string; staffId?: string } = {}
+  ) {
     const res = await api.get('/staff/reports', { params });
     return res.data as StaffReports;
   }

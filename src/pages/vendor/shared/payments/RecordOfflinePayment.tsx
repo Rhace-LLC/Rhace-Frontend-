@@ -109,12 +109,15 @@ export default function RecordOfflinePaymentModal({
               reference: formData.reference,
               note: formData.note,
             })
-          : await paymentService.recordOfflinePayment(resId as string, {
-              amount: formData.amount,
-              method: formData.method,
-              reference: formData.reference,
-              note: formData.note,
-            } as Record<string, unknown>);
+          : await paymentService.recordOfflinePayment(
+              resId as string,
+              {
+                amount: formData.amount,
+                method: formData.method,
+                reference: formData.reference,
+                note: formData.note,
+              } as Record<string, unknown>
+            );
       if (onSuccess) onSuccess(response);
       onClose();
     } catch (err) {
@@ -213,7 +216,10 @@ export default function RecordOfflinePaymentModal({
 
           <div>
             <div className="mb-1.5 flex items-center justify-between gap-2">
-              <label className="type-res-small font-medium text-res-ink-muted" htmlFor="offline-reference">
+              <label
+                className="type-res-small font-medium text-res-ink-muted"
+                htmlFor="offline-reference"
+              >
                 Receipt / transfer reference
               </label>
               <button

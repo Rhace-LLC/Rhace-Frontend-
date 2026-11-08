@@ -290,7 +290,7 @@ export default function UserManagement() {
         prev.map((u) => (u.id === userId || u._id === userId ? { ...u, isVip: !newVipStatus } : u))
       );
 
-     toast.info('Failed to update VIP status');
+      toast.info('Failed to update VIP status');
     }
   };
 
@@ -435,7 +435,7 @@ export default function UserManagement() {
     try {
       // Fetch current page users only (no reservation counts initially)
       const usersRes = await getUsers({ page: currentPage, limit: 20 });
-      console.log("user res", usersRes)
+      console.log('user res', usersRes);
       const payload = usersRes?.data;
       const list = extractArray(payload);
 
@@ -666,127 +666,135 @@ export default function UserManagement() {
         }
       />
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-          <Card className="rounded-res-md border border-res-line bg-res-card shadow-res-low">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="type-res-small font-medium text-res-ink-muted">Total Users</p>
-                  <p className="text-3xl font-bold text-res-ink">{totalUsers.toLocaleString()}</p>
-                </div>
-                <div className="h-12 w-12 rounded-res-sm bg-res-surface flex items-center justify-center">
-                  <Users className="h-6 w-6 text-res-brand" />
-                </div>
-              </div>
-              <Progress value={(stats.total / (stats.total || 1)) * 100} className="mt-4 h-1" />
-            </CardContent>
-          </Card>
-
-          <Card className="rounded-res-md border border-res-line bg-res-card shadow-res-low">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="type-res-small font-medium text-res-ink-muted">Active Users</p>
-                  <p className="text-3xl font-bold text-res-ink">
-                    {stats.active.toLocaleString()}
-                  </p>
-                </div>
-                <div className="h-12 w-12 rounded-res-sm bg-res-surface flex items-center justify-center">
-                  <UserCheck className="h-6 w-6 text-res-accent" />
-                </div>
-              </div>
-              <Progress value={(stats.active / (stats.total || 1)) * 100} className="mt-4 h-1" />
-            </CardContent>
-          </Card>
-
-          <Card className="rounded-res-md border border-res-line bg-res-card shadow-res-low">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="type-res-small font-medium text-res-ink-muted">Inactive Users</p>
-                  <p className="text-3xl font-bold text-res-ink">
-                    {stats.inactive.toLocaleString()}
-                  </p>
-                </div>
-                <div className="h-12 w-12 rounded-res-sm bg-res-surface flex items-center justify-center">
-                  <UserMinus className="h-6 w-6 text-amber-600" />
-                </div>
-              </div>
-              <Progress value={(stats.inactive / (stats.total || 1)) * 100} className="mt-4 h-1" />
-            </CardContent>
-          </Card>
-
-          <Card className="rounded-res-md border border-res-line bg-res-card shadow-res-low">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="type-res-small font-medium text-res-ink-muted">Suspended</p>
-                  <p className="text-3xl font-bold text-res-ink">
-                    {stats.suspended.toLocaleString()}
-                  </p>
-                </div>
-                <div className="h-12 w-12 rounded-res-sm bg-res-surface flex items-center justify-center">
-                  <Shield className="h-6 w-6 text-rose-600" />
-                </div>
-              </div>
-              <Progress value={(stats.suspended / (stats.total || 1)) * 100} className="mt-4 h-1" />
-            </CardContent>
-          </Card>
-
-          <Card className="rounded-res-md border border-res-line bg-res-card shadow-res-low">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="type-res-small font-medium text-res-ink-muted">VIP Users</p>
-                  <p className="text-3xl font-bold text-res-ink">{stats.vip.toLocaleString()}</p>
-                </div>
-                <div className="h-12 w-12 rounded-res-sm bg-res-surface flex items-center justify-center">
-                  <Star className="h-6 w-6 text-amber-500" />
-                </div>
-              </div>
-              <Progress value={(stats.vip / (stats.total || 1)) * 100} className="mt-4 h-1" />
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Search and Filter Bar */}
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
         <Card className="rounded-res-md border border-res-line bg-res-card shadow-res-low">
-          <CardContent className="p-4">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div className="flex-1">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-res-ink-muted" />
-                  <Input
-                    placeholder="Search by name, email, or phone number..."
-                    className="pl-9 w-full md:w-[400px] border-res-line rounded-res-sm bg-res-card"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                  />
-                </div>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="type-res-small font-medium text-res-ink-muted">Total Users</p>
+                <p className="text-3xl font-bold text-res-ink">{totalUsers.toLocaleString()}</p>
               </div>
-
-              <div className="flex items-center gap-3">
-                <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full md:w-auto">
-                  <TabsList className="bg-res-surface p-1 rounded-full">
-                    <TabsTrigger value="all" className="rounded-full data-[state=active]:bg-res-ink data-[state=active]:text-res-ink-inverted">
-                      All Users
-                    </TabsTrigger>
-                    <TabsTrigger value="active" className="rounded-full data-[state=active]:bg-res-ink data-[state=active]:text-res-ink-inverted">
-                      Active
-                    </TabsTrigger>
-                    <TabsTrigger value="inactive" className="rounded-full data-[state=active]:bg-res-ink data-[state=active]:text-res-ink-inverted">
-                      Inactive
-                    </TabsTrigger>
-                    <TabsTrigger value="suspended" className="rounded-full data-[state=active]:bg-res-ink data-[state=active]:text-res-ink-inverted">
-                      Suspended
-                    </TabsTrigger>
-                  </TabsList>
-                </Tabs>
+              <div className="h-12 w-12 rounded-res-sm bg-res-surface flex items-center justify-center">
+                <Users className="h-6 w-6 text-res-brand" />
               </div>
             </div>
+            <Progress value={(stats.total / (stats.total || 1)) * 100} className="mt-4 h-1" />
           </CardContent>
         </Card>
+
+        <Card className="rounded-res-md border border-res-line bg-res-card shadow-res-low">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="type-res-small font-medium text-res-ink-muted">Active Users</p>
+                <p className="text-3xl font-bold text-res-ink">{stats.active.toLocaleString()}</p>
+              </div>
+              <div className="h-12 w-12 rounded-res-sm bg-res-surface flex items-center justify-center">
+                <UserCheck className="h-6 w-6 text-res-accent" />
+              </div>
+            </div>
+            <Progress value={(stats.active / (stats.total || 1)) * 100} className="mt-4 h-1" />
+          </CardContent>
+        </Card>
+
+        <Card className="rounded-res-md border border-res-line bg-res-card shadow-res-low">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="type-res-small font-medium text-res-ink-muted">Inactive Users</p>
+                <p className="text-3xl font-bold text-res-ink">{stats.inactive.toLocaleString()}</p>
+              </div>
+              <div className="h-12 w-12 rounded-res-sm bg-res-surface flex items-center justify-center">
+                <UserMinus className="h-6 w-6 text-amber-600" />
+              </div>
+            </div>
+            <Progress value={(stats.inactive / (stats.total || 1)) * 100} className="mt-4 h-1" />
+          </CardContent>
+        </Card>
+
+        <Card className="rounded-res-md border border-res-line bg-res-card shadow-res-low">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="type-res-small font-medium text-res-ink-muted">Suspended</p>
+                <p className="text-3xl font-bold text-res-ink">
+                  {stats.suspended.toLocaleString()}
+                </p>
+              </div>
+              <div className="h-12 w-12 rounded-res-sm bg-res-surface flex items-center justify-center">
+                <Shield className="h-6 w-6 text-rose-600" />
+              </div>
+            </div>
+            <Progress value={(stats.suspended / (stats.total || 1)) * 100} className="mt-4 h-1" />
+          </CardContent>
+        </Card>
+
+        <Card className="rounded-res-md border border-res-line bg-res-card shadow-res-low">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="type-res-small font-medium text-res-ink-muted">VIP Users</p>
+                <p className="text-3xl font-bold text-res-ink">{stats.vip.toLocaleString()}</p>
+              </div>
+              <div className="h-12 w-12 rounded-res-sm bg-res-surface flex items-center justify-center">
+                <Star className="h-6 w-6 text-amber-500" />
+              </div>
+            </div>
+            <Progress value={(stats.vip / (stats.total || 1)) * 100} className="mt-4 h-1" />
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Search and Filter Bar */}
+      <Card className="rounded-res-md border border-res-line bg-res-card shadow-res-low">
+        <CardContent className="p-4">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex-1">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-res-ink-muted" />
+                <Input
+                  placeholder="Search by name, email, or phone number..."
+                  className="pl-9 w-full md:w-[400px] border-res-line rounded-res-sm bg-res-card"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full md:w-auto">
+                <TabsList className="bg-res-surface p-1 rounded-full">
+                  <TabsTrigger
+                    value="all"
+                    className="rounded-full data-[state=active]:bg-res-ink data-[state=active]:text-res-ink-inverted"
+                  >
+                    All Users
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="active"
+                    className="rounded-full data-[state=active]:bg-res-ink data-[state=active]:text-res-ink-inverted"
+                  >
+                    Active
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="inactive"
+                    className="rounded-full data-[state=active]:bg-res-ink data-[state=active]:text-res-ink-inverted"
+                  >
+                    Inactive
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="suspended"
+                    className="rounded-full data-[state=active]:bg-res-ink data-[state=active]:text-res-ink-inverted"
+                  >
+                    Suspended
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Users Table */}
       <Card className="rounded-res-lg border border-res-line bg-res-card shadow-res-low overflow-hidden">
@@ -794,7 +802,9 @@ export default function UserManagement() {
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className="type-res-h2 text-res-ink">User Directory</CardTitle>
-              <CardDescription className="text-res-ink-muted">{filteredUsers.length} users found</CardDescription>
+              <CardDescription className="text-res-ink-muted">
+                {filteredUsers.length} users found
+              </CardDescription>
             </div>
           </div>
         </CardHeader>

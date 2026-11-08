@@ -100,23 +100,20 @@ export default function TicketBoard({ title, itemTypes, addOnAlert = false }: Ti
 
   const itemTypesKey = itemTypes.join(',');
 
-  const load = useCallback(
-    async (silent = false) => {
-      try {
-        if (!silent) setIsRefreshing(true);
-        // Today's service only: a meal booked for next Friday is not a ticket
-        // the kitchen or bar can cook now.
-        const res = await ordersApi.list({ limit: 60, withLines: true, ...todayServiceWindow() });
-        setOrders(res.items ?? []);
-      } catch {
-        if (!silent) toast.error('Failed to load the ticket queue');
-      } finally {
-        setIsLoading(false);
-        setIsRefreshing(false);
-      }
-    },
-    [],
-  );
+  const load = useCallback(async (silent = false) => {
+    try {
+      if (!silent) setIsRefreshing(true);
+      // Today's service only: a meal booked for next Friday is not a ticket
+      // the kitchen or bar can cook now.
+      const res = await ordersApi.list({ limit: 60, withLines: true, ...todayServiceWindow() });
+      setOrders(res.items ?? []);
+    } catch {
+      if (!silent) toast.error('Failed to load the ticket queue');
+    } finally {
+      setIsLoading(false);
+      setIsRefreshing(false);
+    }
+  }, []);
 
   useEffect(() => {
     load();
@@ -133,7 +130,7 @@ export default function TicketBoard({ title, itemTypes, addOnAlert = false }: Ti
     () => () => {
       if (reloadTimer.current) clearTimeout(reloadTimer.current);
     },
-    [],
+    []
   );
   const { connected } = useOrderRealtime(true, scheduleReload);
 
@@ -149,7 +146,7 @@ export default function TicketBoard({ title, itemTypes, addOnAlert = false }: Ti
   /** Only the lines this station is responsible for. */
   const stationLines = useCallback(
     (order: OrderDto) => (order.lines ?? []).filter((line) => kinds.includes(line.itemType)),
-    [kinds],
+    [kinds]
   );
 
   const tickets = useMemo(
@@ -160,13 +157,13 @@ export default function TicketBoard({ title, itemTypes, addOnAlert = false }: Ti
         .filter((order) => !(order.source === 'in_stay' && order.status === 'open'))
         .map((order) => ({ order, lines: stationLines(order) }))
         .filter(
-          ({ lines }) => lines.length > 0 && lines.some((line) => lineState(line) !== 'ready'),
+          ({ lines }) => lines.length > 0 && lines.some((line) => lineState(line) !== 'ready')
         )
         .sort(
           (a, b) =>
-            new Date(a.order.createdAt ?? 0).getTime() - new Date(b.order.createdAt ?? 0).getTime(),
+            new Date(a.order.createdAt ?? 0).getTime() - new Date(b.order.createdAt ?? 0).getTime()
         ),
-    [orders, stationLines],
+    [orders, stationLines]
   );
 
   const replaceOrder = (updated: OrderDto) =>
@@ -180,7 +177,7 @@ export default function TicketBoard({ title, itemTypes, addOnAlert = false }: Ti
     } catch (error) {
       toast.error(
         (error as { response?: { data?: { message?: string } } })?.response?.data?.message ||
-          'Failed to bump the ticket',
+          'Failed to bump the ticket'
       );
     } finally {
       setBusyLine(null);
@@ -394,7 +391,7 @@ export default function TicketBoard({ title, itemTypes, addOnAlert = false }: Ti
                                         bump(
                                           order,
                                           line,
-                                          state === 'preparing' ? 'ready' : 'preparing',
+                                          state === 'preparing' ? 'ready' : 'preparing'
                                         )
                                       }
                                       className="type-res-small shrink-0 cursor-pointer rounded-full bg-res-brand px-3.5 py-1.5 font-semibold text-res-ink-inverted shadow-res-low transition-colors outline-none hover:bg-res-brand-hover focus-visible:ring-2 focus-visible:ring-res-brand disabled:cursor-not-allowed disabled:opacity-50"

@@ -96,11 +96,21 @@ const normalizeSuggestion = (item: unknown, fallbackType?: string): SearchItem |
     };
   const it = item as Record<string, unknown>;
   return {
-    _id: (it._id as string) || (it.id as string) || (it.businessName as string) || (it.name as string) || '',
+    _id:
+      (it._id as string) ||
+      (it.id as string) ||
+      (it.businessName as string) ||
+      (it.name as string) ||
+      '',
     businessName:
-      (it.businessName as string) || (it.name as string) || (it.title as string) || (it.value as string) || '',
+      (it.businessName as string) ||
+      (it.name as string) ||
+      (it.title as string) ||
+      (it.value as string) ||
+      '',
     vendorType: (it.vendorType as string) || (it.type as string) || fallbackType || 'restaurant',
-    profileImages: (it.profileImages as SearchItem['profileImages']) || (it.images as string[]) || [],
+    profileImages:
+      (it.profileImages as SearchItem['profileImages']) || (it.images as string[]) || [],
     address: (it.address as string) || (it.location as string) || '',
     rating: (it.rating as number) || 0,
     vendorTypeCategory: (it.vendorTypeCategory as string) || (it.category as string) || '',
@@ -421,7 +431,13 @@ type ActiveTab = 'restaurants' | 'hotels' | 'clubs';
 // ═══════════════════════════════════════════════════════════════════════════════
 interface SearchSectionProps {
   activeTab: ActiveTab;
-  onSearch?: (data: { query?: string; tab?: string; date?: Date | null; time?: string | null; guests?: number }) => void;
+  onSearch?: (data: {
+    query?: string;
+    tab?: string;
+    date?: Date | null;
+    time?: string | null;
+    guests?: number;
+  }) => void;
 }
 
 const SearchSection = ({ activeTab, onSearch }: SearchSectionProps) => {

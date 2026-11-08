@@ -1,8 +1,6 @@
 import type { EntityTypeDefinition } from '../core/plugin';
 import type { BusinessData, FloorEntity, FloorPlan, FloorVertical } from '../core/types';
-import {
-  defaultStateFor,
-} from './states';
+import { defaultStateFor } from './states';
 import { blueprintsFor, findBlueprint } from './blueprints';
 import type {
   BlueprintCategory,

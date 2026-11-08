@@ -1,6 +1,14 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
-import { BarChart3, Building2, Calendar, ChevronDown, Loader2, RefreshCw, User } from 'lucide-react';
+import {
+  BarChart3,
+  Building2,
+  Calendar,
+  ChevronDown,
+  Loader2,
+  RefreshCw,
+  User,
+} from 'lucide-react';
 import {
   staffService,
   type StaffBranchOption,
@@ -11,11 +19,16 @@ import {
 
 const toDateKey = (d: Date) => d.toISOString().slice(0, 10);
 
-const formatMinutes = (ms?: number | null) =>
-  ms == null ? '—' : `${(ms / 60000).toFixed(1)} min`;
+const formatMinutes = (ms?: number | null) => (ms == null ? '—' : `${(ms / 60000).toFixed(1)} min`);
 
 const formatMoney = (value?: number) =>
-  value == null ? '—' : new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN', maximumFractionDigits: 0 }).format(value);
+  value == null
+    ? '—'
+    : new Intl.NumberFormat('en-NG', {
+        style: 'currency',
+        currency: 'NGN',
+        maximumFractionDigits: 0,
+      }).format(value);
 
 interface MergedRow {
   staffId: string | null;
@@ -149,7 +162,7 @@ export function ReportsTab({ onRefresh }: { onRefresh?: () => void }) {
   }, [reports]);
 
   const nameOf = (id: string | null) =>
-    id ? staffMap.get(id)?.name ?? 'Unknown staff' : 'Unassigned';
+    id ? (staffMap.get(id)?.name ?? 'Unknown staff') : 'Unassigned';
 
   if (isLoading) {
     return (
@@ -165,7 +178,6 @@ export function ReportsTab({ onRefresh }: { onRefresh?: () => void }) {
       {/* Cohesive Header & Filter Panel */}
       <div className="bg-white border border-teal-100/80 rounded-2xl p-5 shadow-xs transition-all">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
-          
           {/* From Date Input */}
           <div className="space-y-1.5">
             <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
@@ -278,9 +290,7 @@ export function ReportsTab({ onRefresh }: { onRefresh?: () => void }) {
               <div className="w-12 h-12 rounded-2xl bg-teal-50 border border-teal-100 flex items-center justify-center text-teal-600 mb-3">
                 <BarChart3 className="w-6 h-6" />
               </div>
-              <p className="text-slate-800 font-bold text-sm mb-1">
-                No report data recorded
-              </p>
+              <p className="text-slate-800 font-bold text-sm mb-1">No report data recorded</p>
               <p className="text-slate-400 text-xs max-w-xs">
                 Metrics appear once staff-attributed orders exist within the selected range.
               </p>

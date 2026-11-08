@@ -10,14 +10,7 @@ import {
   TrendingDown,
   RefreshCw,
 } from 'lucide-react';
-import {
-  Wallet,
-  Building2,
-  Landmark,
-  CreditCard,
-  CheckCircle2,
-  Clock3,
-} from 'lucide-react';
+import { Wallet, Building2, Landmark, CreditCard, CheckCircle2, Clock3 } from 'lucide-react';
 import {
   AreaChart,
   Area,
@@ -53,7 +46,7 @@ import { useWebSocket } from '@/contexts/WebSocketContext';
 import { toast } from 'sonner';
 import { paymentService } from '@/services/payment.service';
 import PaymentStatCard from '@/pages/admin/payments/components/PaymentStatCart';
-import AdminEarningTrends from "@/pages/admin/payments/components/AdminEarningTrends";
+import AdminEarningTrends from '@/pages/admin/payments/components/AdminEarningTrends';
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -76,32 +69,29 @@ export default function Dashboard() {
     'connecting'
   );
 
-    const [loading, setLoading] = useState(true);
-  
-    const [stats, setStats] = useState(null);
-  
-    useEffect(() => {
-      fetchStats();
-    }, []);
-  
-    const fetchStats = async () => {
-      try {
-        setLoading(true);
-  
-        const res = await paymentService.getPaymentStats();
-  
-        setStats(res);
-        console.log('==============================')
-        console.log(res)
-      } catch (error) {
-        toast.error(
-          error?.response?.data?.message ??
-            'Unable to load payment statistics'
-        );
-      } finally {
-        setLoading(false);
-      }
-    };
+  const [loading, setLoading] = useState(true);
+
+  const [stats, setStats] = useState(null);
+
+  useEffect(() => {
+    fetchStats();
+  }, []);
+
+  const fetchStats = async () => {
+    try {
+      setLoading(true);
+
+      const res = await paymentService.getPaymentStats();
+
+      setStats(res);
+      console.log('==============================');
+      console.log(res);
+    } catch (error) {
+      toast.error(error?.response?.data?.message ?? 'Unable to load payment statistics');
+    } finally {
+      setLoading(false);
+    }
+  };
   useEffect(() => {
     const fetchInitialData = () => {
       Promise.all([
@@ -472,53 +462,49 @@ export default function Dashboard() {
       />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {
-          stats && (
-            <>
-            
-<PaymentStatCard
-  title="Gross Sales"
-  icon={Wallet}
-  value={stats.sales.thisWeek}
-  comparison={`Last Week: ₦${stats.sales.lastWeek.toLocaleString()}`}
-  change={stats.sales.change}
-  color="#0A6C6D"
-/>
+        {stats && (
+          <>
+            <PaymentStatCard
+              title="Gross Sales"
+              icon={Wallet}
+              value={stats.sales.thisWeek}
+              comparison={`Last Week: ₦${stats.sales.lastWeek.toLocaleString()}`}
+              change={stats.sales.change}
+              color="#0A6C6D"
+            />
 
-<PaymentStatCard
-  title="Vendor Revenue"
-  icon={Building2}
-  value={stats.vendorRevenue.thisWeek}
-  comparison={`Last Week: ₦${stats.vendorRevenue.lastWeek.toLocaleString()}`}
-  change={stats.vendorRevenue.change}
-  color="#2563EB"
-/>
-<PaymentStatCard
-  title="Completed Payments"
-  icon={CheckCircle2}
-  value={stats.payments.completed.thisWeek}
-  comparison={`Last Week: ${stats.payments.completed.lastWeek}`}
-  change={stats.payments.completed.change}
-  color="#10B981"
-  isCurrency={false}
-/>
+            <PaymentStatCard
+              title="Vendor Revenue"
+              icon={Building2}
+              value={stats.vendorRevenue.thisWeek}
+              comparison={`Last Week: ₦${stats.vendorRevenue.lastWeek.toLocaleString()}`}
+              change={stats.vendorRevenue.change}
+              color="#2563EB"
+            />
+            <PaymentStatCard
+              title="Completed Payments"
+              icon={CheckCircle2}
+              value={stats.payments.completed.thisWeek}
+              comparison={`Last Week: ${stats.payments.completed.lastWeek}`}
+              change={stats.payments.completed.change}
+              color="#10B981"
+              isCurrency={false}
+            />
 
-<PaymentStatCard
-  title="Pending Payments"
-  icon={Clock3}
-  value={stats.payments.pending.thisWeek}
-  comparison={`Last Week: ${stats.payments.pending.lastWeek}`}
-  change={stats.payments.pending.change}
-  color="#EF4444"
-  isCurrency={false}
-/>
-            </>
-          )
-        }
-
+            <PaymentStatCard
+              title="Pending Payments"
+              icon={Clock3}
+              value={stats.payments.pending.thisWeek}
+              comparison={`Last Week: ${stats.payments.pending.lastWeek}`}
+              change={stats.payments.pending.change}
+              color="#EF4444"
+              isCurrency={false}
+            />
+          </>
+        )}
       </div>
 
-        <AdminEarningTrends />
+      <AdminEarningTrends />
 
       <Card className="rounded-res-lg border border-res-line bg-res-card shadow-res-low">
         <CardHeader className="flex flex-row items-center justify-between pb-4">
@@ -527,14 +513,10 @@ export default function Dashboard() {
               <Users className="w-5 h-5 text-res-brand" />
             </div>
             <div>
-              <CardTitle className="type-res-h2 text-res-ink">
-                Today's Reservations
-              </CardTitle>
+              <CardTitle className="type-res-h2 text-res-ink">Today's Reservations</CardTitle>
               <div className="flex items-center gap-2 mt-1">
                 <div className="w-2 h-2 bg-res-accent rounded-full animate-pulse"></div>
-                <span className="type-res-small font-medium text-res-ink-muted">
-                  Live Updates
-                </span>
+                <span className="type-res-small font-medium text-res-ink-muted">Live Updates</span>
               </div>
             </div>
           </div>
@@ -551,9 +533,7 @@ export default function Dashboard() {
             {todaysReservations.length === 0 ? (
               <div className="text-center py-8">
                 <Users className="w-12 h-12 text-res-ink-muted mx-auto mb-3" />
-                <p className="type-res-small text-res-ink-muted">
-                  No reservations for today
-                </p>
+                <p className="type-res-small text-res-ink-muted">No reservations for today</p>
               </div>
             ) : (
               todaysReservations.slice(0, 5).map((res, i) => (
@@ -582,15 +562,11 @@ export default function Dashboard() {
                       </div>
                     </div>
                     <div className="text-right hidden sm:block">
-                      <p className="type-res-small font-medium text-res-ink">
-                        {res.date}
-                      </p>
+                      <p className="type-res-small font-medium text-res-ink">{res.date}</p>
                       <p className="type-res-small text-res-ink-muted">{res.time}</p>
                     </div>
                     <div className="hidden md:block">
-                      <p className="type-res-small font-medium text-res-ink">
-                        {res.venue}
-                      </p>
+                      <p className="type-res-small font-medium text-res-ink">{res.venue}</p>
                     </div>
                     <Badge
                       variant={
@@ -621,9 +597,7 @@ export default function Dashboard() {
               <TrendingUp className="w-5 h-5 text-res-brand" />
             </div>
             <div>
-              <CardTitle className="type-res-h2 text-res-ink">
-                Top Performing Vendors
-              </CardTitle>
+              <CardTitle className="type-res-h2 text-res-ink">Top Performing Vendors</CardTitle>
               <div className="flex items-center gap-2 mt-1">
                 <div className="w-2 h-2 bg-res-accent rounded-full animate-pulse"></div>
                 <span className="type-res-small font-medium text-res-ink-muted">

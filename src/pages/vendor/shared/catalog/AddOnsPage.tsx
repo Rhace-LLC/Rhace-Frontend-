@@ -115,8 +115,6 @@ export function AddOnsPage() {
     }
   };
 
-
-
   const remove = async (addOn: AddOnDto) => {
     try {
       await addOnService.remove(addOn._id);
@@ -173,14 +171,14 @@ export function AddOnsPage() {
                     {(addOn.appliesTo ?? ['dish', 'drink']).join(' · ')}
                   </td>
                   <td className="px-4 py-3">
-                      <div className="flex justify-end gap-2">
-                        <button
-                          type="button"
-                          onClick={() => openEdit(addOn)}
-                          className="rounded-lg border border-gray-200 px-2.5 py-1 text-[11px] font-medium text-gray-700 hover:border-[#0A6C6D] hover:text-[#0A6C6D]"
-                        >
-                          Edit
-                        </button>
+                    <div className="flex justify-end gap-2">
+                      <button
+                        type="button"
+                        onClick={() => openEdit(addOn)}
+                        className="rounded-lg border border-gray-200 px-2.5 py-1 text-[11px] font-medium text-gray-700 hover:border-[#0A6C6D] hover:text-[#0A6C6D]"
+                      >
+                        Edit
+                      </button>
                       <button
                         type="button"
                         onClick={() => remove(addOn)}

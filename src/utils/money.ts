@@ -5,7 +5,7 @@
 export function formatMoney(
   amount: number | null | undefined,
   currency = 'NGN',
-  { compact = false }: { compact?: boolean } = {},
+  { compact = false }: { compact?: boolean } = {}
 ): string {
   const value = Number(amount) || 0;
   const code = (currency || 'NGN').toUpperCase();
@@ -25,6 +25,6 @@ export function formatMoney(
 
 /** Compact count, e.g. 12.4K. */
 export const formatCount = (value: number | null | undefined) =>
-  new Intl.NumberFormat('en-NG', { notation: (Number(value) || 0) >= 10_000 ? 'compact' : 'standard' }).format(
-    Number(value) || 0,
-  );
+  new Intl.NumberFormat('en-NG', {
+    notation: (Number(value) || 0) >= 10_000 ? 'compact' : 'standard',
+  }).format(Number(value) || 0);

@@ -70,11 +70,7 @@ export function DrinkWorkspace({ mode, drinkId, onExit, onSaved }: DrinkWorkspac
   const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
   const UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
 
-  const title = isEdit
-    ? form.name
-      ? `Edit ${form.name}`
-      : 'Edit drink'
-    : 'Create drink';
+  const title = isEdit ? (form.name ? `Edit ${form.name}` : 'Edit drink') : 'Create drink';
   const subtitle = isEdit
     ? 'Update the details guests see on the menu.'
     : 'Add a new drink guests can order.';
@@ -104,14 +100,14 @@ export function DrinkWorkspace({ mode, drinkId, onExit, onSaved }: DrinkWorkspac
             volume: String(drink.volume ?? ''),
             price: Number(drink.price ?? 0),
             discount: Boolean(
-              drink.discountPrice && drink.price && drink.discountPrice < drink.price,
+              drink.discountPrice && drink.price && drink.discountPrice < drink.price
             ),
             discountPrice: Number(drink.discountPrice ?? 0),
             images: Array.isArray(drink.images) ? drink.images : drink.image ? [drink.image] : [],
             addonIds: (drink.addonIds ?? drink.addOns ?? []).map((entry: unknown) =>
               typeof entry === 'object' && entry
                 ? String((entry as { _id: string })._id)
-                : String(entry),
+                : String(entry)
             ),
             isVisible: drink.status ? drink.status !== 'hidden' : true,
           });
@@ -145,7 +141,7 @@ export function DrinkWorkspace({ mode, drinkId, onExit, onSaved }: DrinkWorkspac
       formData.append('upload_preset', UPLOAD_PRESET);
       const response = await axios.post(
         `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
-        formData,
+        formData
       );
       setForm((prev) => ({ ...prev, images: [response.data.secure_url] }));
     } catch {
@@ -176,7 +172,7 @@ export function DrinkWorkspace({ mode, drinkId, onExit, onSaved }: DrinkWorkspac
     } catch (error) {
       toast.error(
         (error as { response?: { data?: { message?: string } } })?.response?.data?.message ||
-          'Could not create category.',
+          'Could not create category.'
       );
     } finally {
       setCreatingCategory(false);
@@ -215,7 +211,7 @@ export function DrinkWorkspace({ mode, drinkId, onExit, onSaved }: DrinkWorkspac
     } catch (error) {
       toast.error(
         (error as { response?: { data?: { message?: string } } })?.response?.data?.message ||
-          (isEdit ? 'Could not update drink.' : 'Could not create drink.'),
+          (isEdit ? 'Could not update drink.' : 'Could not create drink.')
       );
     } finally {
       setSaving(false);
@@ -413,9 +409,7 @@ export function DrinkWorkspace({ mode, drinkId, onExit, onSaved }: DrinkWorkspac
                       type="number"
                       min="0"
                       value={form.discountPrice || ''}
-                      onChange={(e) =>
-                        setForm({ ...form, discountPrice: Number(e.target.value) })
-                      }
+                      onChange={(e) => setForm({ ...form, discountPrice: Number(e.target.value) })}
                       placeholder="0"
                       className="type-res-body w-full bg-transparent font-normal text-res-ink outline-none placeholder:text-res-ink-muted"
                     />

@@ -35,9 +35,7 @@ const FLOOR_PLAN_EVENTS = [
 ];
 
 function socketBaseUrl(): string {
-  const raw =
-    envConfig.socketUrl ||
-    (typeof window !== 'undefined' ? window.location.origin : '');
+  const raw = envConfig.socketUrl || (typeof window !== 'undefined' ? window.location.origin : '');
   return raw.replace(/\/+$/, '');
 }
 
