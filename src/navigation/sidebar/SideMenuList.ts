@@ -6,9 +6,7 @@ import {
   Building2,
   CalendarCheck,
   ConciergeBell,
-  Landmark,
   Plug,
-  RotateCcw,
   CreditCard,
   LayoutDashboard,
   LayoutGrid,
@@ -166,16 +164,6 @@ export const ClubList: SideMenuListConfig = {
           icon: CreditCard,
         },
         {
-          label: 'Refunds',
-          path: '/dashboard/club/refunds',
-          icon: RotateCcw,
-        },
-        {
-          label: 'Settlements',
-          path: '/dashboard/club/settlements',
-          icon: Landmark,
-        },
-        {
           label: 'Billing & plan',
           path: '/dashboard/club/billing',
           icon: Receipt,
@@ -321,16 +309,6 @@ export const HotelList: SideMenuListConfig = {
           label: 'Payments',
           path: '/dashboard/hotel/payments',
           icon: CreditCard,
-        },
-        {
-          label: 'Refunds',
-          path: '/dashboard/hotel/refunds',
-          icon: RotateCcw,
-        },
-        {
-          label: 'Settlements',
-          path: '/dashboard/hotel/settlements',
-          icon: Landmark,
         },
         {
           label: 'Billing & plan',
@@ -517,16 +495,6 @@ export const RestaurantList: SideMenuListConfig = {
           label: 'Payments',
           path: '/dashboard/restaurant/payments',
           icon: CreditCard,
-        },
-        {
-          label: 'Refunds',
-          path: '/dashboard/restaurant/refunds',
-          icon: RotateCcw,
-        },
-        {
-          label: 'Settlements',
-          path: '/dashboard/restaurant/settlements',
-          icon: Landmark,
         },
         {
           label: 'Billing & plan',

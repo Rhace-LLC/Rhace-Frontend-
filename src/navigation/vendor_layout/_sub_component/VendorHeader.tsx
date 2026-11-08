@@ -54,14 +54,19 @@ const Header = ({ onMenuClick }: HeaderProps) => {
     logout('vendor');
   };
 
+  // From the URL, so links never point at /dashboard/undefined/… while auth loads.
+  const vertical = verticalFromPath(pathname);
+  // Only hotels have a separate profile page; restaurant and club settings hold the profile.
+  const hasProfilePage = vertical === 'hotel';
+
   const handleProfile = () => {
     setDropdownOpen(false);
-    navigate(`/dashboard/${vendor?.vendorType}/profile`);
+    navigate(`/dashboard/${vertical}/profile`);
   };
 
   const handleSettings = () => {
     setDropdownOpen(false);
-    navigate(`/dashboard/${vendor?.vendorType}/settings`);
+    navigate(`/dashboard/${vertical}/settings`);
   };
 
   return (
@@ -78,7 +83,7 @@ const Header = ({ onMenuClick }: HeaderProps) => {
       {/* Dashboard title */}
       <div className="min-w-0">
         <h1 className="font-semibold tracking-tight truncate text-gray-600">
-          {VERTICAL_TITLE[verticalFromPath(pathname)]}
+          {VERTICAL_TITLE[vertical]}
         </h1>
       </div>
 
@@ -151,13 +156,15 @@ const Header = ({ onMenuClick }: HeaderProps) => {
                   </div>
                 </div>
                 <div className="p-1.5">
-                  <button
-                    onClick={handleProfile}
-                    className="type-res-small flex w-full cursor-pointer items-center gap-2.5 rounded-res-sm px-3 py-2.5 font-semibold text-res-ink transition-colors outline-none hover:bg-res-surface focus-visible:ring-2 focus-visible:ring-res-brand"
-                  >
-                    <User className="h-4 w-4 text-res-brand" />
-                    <span>Profile</span>
-                  </button>
+                  {hasProfilePage && (
+                    <button
+                      onClick={handleProfile}
+                      className="type-res-small flex w-full cursor-pointer items-center gap-2.5 rounded-res-sm px-3 py-2.5 font-semibold text-res-ink transition-colors outline-none hover:bg-res-surface focus-visible:ring-2 focus-visible:ring-res-brand"
+                    >
+                      <User className="h-4 w-4 text-res-brand" />
+                      <span>Profile</span>
+                    </button>
+                  )}
                   <button
                     onClick={handleSettings}
                     className="type-res-small flex w-full cursor-pointer items-center gap-2.5 rounded-res-sm px-3 py-2.5 font-semibold text-res-ink transition-colors outline-none hover:bg-res-surface focus-visible:ring-2 focus-visible:ring-res-brand"

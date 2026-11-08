@@ -54,6 +54,12 @@ export const TEXT_ACTION =
 export const FIELD_CLASS =
   'h-11 w-full rounded-res-sm border-0 bg-res-surface px-3.5 type-res-body font-normal text-res-ink shadow-none outline-none placeholder:text-res-ink-muted focus-visible:ring-2 focus-visible:ring-res-brand';
 
+/** FIELD_CLASS for fields sitting on a tinted inset (white field on tint). */
+export const FIELD_ON_INSET = FIELD_CLASS.replace('bg-res-surface', 'bg-res-card');
+
+/** Radix `<SelectTrigger>` sets its own height per size; match the 44px field. */
+export const SELECT_FIELD_CLASS = `${FIELD_CLASS} data-[size=default]:h-11`;
+
 /** Small uppercase section label used above fields and inside insets. */
 export const EYEBROW = 'type-res-caption block uppercase tracking-wider text-res-ink-muted';
 
@@ -119,6 +125,71 @@ export function Field({
       {children}
       {hint && <p className="type-res-caption font-normal text-res-ink-muted">{hint}</p>}
     </div>
+  );
+}
+
+/**
+ * Secondary view switch inside a page or card: a tinted track with the
+ * selected option lifted onto white. Sits one level below page tabs.
+ */
+export function SegmentedControl<T extends string>({
+  label,
+  value,
+  onChange,
+  options,
+}: {
+  label: string;
+  value: T;
+  onChange: (value: NoInfer<T>) => void;
+  options: ReadonlyArray<{ value: NoInfer<T>; label: ReactNode }>;
+}) {
+  return (
+    <div
+      role="tablist"
+      aria-label={label}
+      className="inline-flex max-w-full flex-wrap gap-1 rounded-full bg-res-surface p-1"
+    >
+      {options.map((option) => {
+        const selected = option.value === value;
+        return (
+          <button
+            key={option.value}
+            type="button"
+            role="tab"
+            aria-selected={selected}
+            onClick={() => onChange(option.value)}
+            className={`type-res-small cursor-pointer rounded-full px-3.5 py-1.5 font-semibold transition-colors outline-none focus-visible:ring-2 focus-visible:ring-res-brand ${
+              selected
+                ? 'bg-res-card text-res-ink shadow-res-low'
+                : 'text-res-ink-muted hover:text-res-ink'
+            }`}
+          >
+            {option.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+const PILL_TONE = {
+  neutral: 'bg-res-surface text-res-ink-muted',
+  brand: 'bg-res-secondary text-res-brand',
+  positive: 'bg-emerald-50 text-emerald-700',
+  attention: 'bg-amber-50 text-amber-700',
+  danger: 'bg-red-50 text-red-700',
+} as const;
+
+export type PillTone = keyof typeof PILL_TONE;
+
+/** Status chip: tinted fill, never a solid colour under coloured text. */
+export function TonePill({ tone, children }: { tone: PillTone; children: ReactNode }) {
+  return (
+    <span
+      className={`type-res-caption inline-flex items-center gap-1 rounded-full px-2.5 py-1 font-semibold whitespace-nowrap ${PILL_TONE[tone]}`}
+    >
+      {children}
+    </span>
   );
 }
 

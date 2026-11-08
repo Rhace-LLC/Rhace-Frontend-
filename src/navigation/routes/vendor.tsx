@@ -1,14 +1,14 @@
 /* eslint-disable react-refresh/only-export-components */
 import { lazy, Suspense } from 'react';
 import type { ReactNode } from 'react';
-import type { RouteObject } from 'react-router-dom';
+import { Navigate, type RouteObject } from 'react-router-dom';
 
 import Onboard from '@/pages/vendor/onboarding';
 
 // Vendor Dashboard
 import VendorDashboard from '@/pages/vendor/restaurant/dashboard';
 import PaymentDashboard from '@/pages/vendor/shared/payments';
-import PaymentTransactionsPage from '@/pages/vendor/shared/payments/transactions';
+import { PaymentsTabRedirect } from '@/pages/vendor/shared/payments/components/PaymentsTabs';
 import PaymentSettingsPage from '@/pages/vendor/shared/payments/PaymentSettings';
 import CreateMenuItem from '@/pages/vendor/restaurant/menu/items/create';
 import MenuDashboard from '@/pages/vendor/restaurant/menu';
@@ -49,9 +49,7 @@ import HotelOutletsPage from '@/pages/vendor/hotel/outlets';
 import HotelZonesPage from '@/pages/vendor/hotel/zones';
 import HotelOrderingRulesPage from '@/pages/vendor/hotel/ordering-rules';
 import HotelOutletOrdersPage from '@/pages/vendor/hotel/outlet-orders';
-import RefundsPage from '@/pages/vendor/shared/refunds';
 import BillingPage from '@/pages/vendor/shared/billing';
-import SettlementsPage from '@/pages/vendor/shared/settlements';
 import IntegrationsPage from '@/pages/vendor/shared/integrations';
 import LinkedHotelsPage from '@/pages/vendor/restaurant/linked-hotels';
 
@@ -94,9 +92,9 @@ function withSuspense(node: ReactNode) {
 const dashboardRestaurantRoutes: RouteObject[] = [
   { path: 'restaurant', element: <VendorDashboard /> },
   { path: 'restaurant/payments', element: <PaymentDashboard /> },
-  { path: 'restaurant/payments/transactions', element: <PaymentTransactionsPage /> },
-  { path: 'restaurant/refunds', element: <RefundsPage /> },
-  { path: 'restaurant/settlements', element: <SettlementsPage /> },
+  { path: 'restaurant/payments/transactions', element: <PaymentsTabRedirect tab="transactions" /> },
+  { path: 'restaurant/refunds', element: <PaymentsTabRedirect tab="refunds" /> },
+  { path: 'restaurant/settlements', element: <PaymentsTabRedirect tab="settlements" /> },
   { path: 'restaurant/billing', element: <BillingPage /> },
   { path: 'restaurant/integrations', element: <IntegrationsPage /> },
   { path: 'restaurant/staffs', element: <StaffManagementSystem /> },
@@ -136,6 +134,8 @@ const dashboardRestaurantRoutes: RouteObject[] = [
     element: withSuspense(<PrototypeTimelineRestaurant />),
   },
   { path: 'restaurant/settings', element: <RestaurantSettings /> },
+  // Restaurant settings hold the venue profile; keep old profile links working.
+  { path: 'restaurant/profile', element: <Navigate replace to="/dashboard/restaurant/settings" /> },
   { path: 'restaurant/settings/payments', element: <PaymentSettingsPage /> },
   { path: 'restaurant/linked-hotels', element: <LinkedHotelsPage /> },
 ];
@@ -158,9 +158,9 @@ const hotelVendorRoutes: RouteObject[] = [
   },
   { path: 'hotel/timeline/prototype', element: withSuspense(<PrototypeTimelineHotel />) },
   { path: 'hotel/payments', element: <PaymentDashboard /> },
-  { path: 'hotel/payments/transactions', element: <PaymentTransactionsPage /> },
-  { path: 'hotel/refunds', element: <RefundsPage /> },
-  { path: 'hotel/settlements', element: <SettlementsPage /> },
+  { path: 'hotel/payments/transactions', element: <PaymentsTabRedirect tab="transactions" /> },
+  { path: 'hotel/refunds', element: <PaymentsTabRedirect tab="refunds" /> },
+  { path: 'hotel/settlements', element: <PaymentsTabRedirect tab="settlements" /> },
   { path: 'hotel/billing', element: <BillingPage /> },
   { path: 'hotel/integrations', element: <IntegrationsPage /> },
   { path: 'hotel/staffs', element: <StaffManagementSystem /> },
@@ -201,9 +201,9 @@ const clubVendorRoutes: RouteObject[] = [
   { path: 'club/reservations', element: <VendorReservationsPage vertical="club" /> },
   { path: 'club/orders', element: <VendorOrdersPage /> },
   { path: 'club/payments', element: <PaymentDashboard /> },
-  { path: 'club/payments/transactions', element: <PaymentTransactionsPage /> },
-  { path: 'club/refunds', element: <RefundsPage /> },
-  { path: 'club/settlements', element: <SettlementsPage /> },
+  { path: 'club/payments/transactions', element: <PaymentsTabRedirect tab="transactions" /> },
+  { path: 'club/refunds', element: <PaymentsTabRedirect tab="refunds" /> },
+  { path: 'club/settlements', element: <PaymentsTabRedirect tab="settlements" /> },
   { path: 'club/billing', element: <BillingPage /> },
   { path: 'club/integrations', element: <IntegrationsPage /> },
   { path: 'club/staffs', element: <StaffManagementSystem /> },
@@ -213,6 +213,7 @@ const clubVendorRoutes: RouteObject[] = [
   { path: 'club/staffs/activity', element: <ActivityPage /> },
   { path: 'club/add-drinks', element: <BottleServiceManager /> },
   { path: 'club/settings', element: <ClubSettings /> },
+  { path: 'club/profile', element: <Navigate replace to="/dashboard/club/settings" /> },
   { path: 'club/settings/payments', element: <PaymentSettingsPage /> },
   { path: 'club/linked-hotels', element: <LinkedHotelsPage /> },
 ];

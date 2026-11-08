@@ -60,7 +60,7 @@ const Sidebar = ({ isOpen, onClose, onNavigate, type }: SidebarProps) => {
   // Auto-expand the group that contains the active route.
   useEffect(() => {
     const next: Record<string, boolean> = {};
-    menuItems.forEach((item) => {
+    [...menuItems, ...bottomItems].forEach((item) => {
       if (item.children?.some((child) => child.active)) next[item.label] = true;
     });
     setExpandedItems((prev) => ({ ...prev, ...next }));
@@ -98,6 +98,26 @@ const Sidebar = ({ isOpen, onClose, onNavigate, type }: SidebarProps) => {
     }
   };
 
+  /** A list of menu items; groups expand in place to show their children. */
+  const renderItems = (items: SideMenuItem[]) =>
+    items.map((item) => (
+      <div key={item.label}>
+        <SidebarItem
+          item={item}
+          onClick={handleItemClick}
+          hasChildren={!!item.children?.length}
+          expanded={!!expandedItems[item.label]}
+        />
+        {item.children?.length && expandedItems[item.label] ? (
+          <div className="mt-1 space-y-1">
+            {item.children.map((child) => (
+              <SidebarItem key={child.label} item={child} onClick={handleItemClick} indent />
+            ))}
+          </div>
+        ) : null}
+      </div>
+    ));
+
   // The venue name per the presentation vocabulary (never "Vendor").
   const getBusinessName = () => {
     if (vendor?.businessName) return vendor.businessName;
@@ -133,36 +153,11 @@ const Sidebar = ({ isOpen, onClose, onNavigate, type }: SidebarProps) => {
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
-            {menuItems.map((item) => (
-              <div key={item.label}>
-                <SidebarItem
-                  item={item}
-                  onClick={handleItemClick}
-                  hasChildren={!!item.children?.length}
-                  expanded={!!expandedItems[item.label]}
-                />
-                {item.children?.length && expandedItems[item.label] && (
-                  <div className="mt-1 space-y-1">
-                    {item.children.map((child) => (
-                      <SidebarItem
-                        key={child.label}
-                        item={child}
-                        onClick={handleItemClick}
-                        indent
-                      />
-                    ))}
-                  </div>
-                )}
-              </div>
-            ))}
-          </nav>
+          <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">{renderItems(menuItems)}</nav>
 
           {/* Bottom items */}
           <div className="space-y-1 border-t border-white/10 px-3 py-4">
-            {bottomItems.map((item) => (
-              <SidebarItem key={item.label} item={item} onClick={handleItemClick} />
-            ))}
+            {renderItems(bottomItems)}
           </div>
         </div>
       </div>
@@ -242,31 +237,11 @@ const Sidebar = ({ isOpen, onClose, onNavigate, type }: SidebarProps) => {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
-          {menuItems.map((item) => (
-            <div key={item.label}>
-              <SidebarItem
-                item={item}
-                onClick={handleItemClick}
-                hasChildren={!!item.children?.length}
-                expanded={!!expandedItems[item.label]}
-              />
-              {item.children?.length && expandedItems[item.label] && (
-                <div className="mt-1 space-y-1">
-                  {item.children.map((child) => (
-                    <SidebarItem key={child.label} item={child} onClick={handleItemClick} indent />
-                  ))}
-                </div>
-              )}
-            </div>
-          ))}
-        </nav>
+        <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">{renderItems(menuItems)}</nav>
 
         {/* Bottom items */}
         <div className="space-y-1 border-t border-white/10 px-3 py-4">
-          {bottomItems.map((item) => (
-            <SidebarItem key={item.label} item={item} onClick={handleItemClick} />
-          ))}
+          {renderItems(bottomItems)}
         </div>
       </div>
       {/* Confirmation dialog */}

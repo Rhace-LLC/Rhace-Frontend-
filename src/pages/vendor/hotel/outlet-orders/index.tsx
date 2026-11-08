@@ -384,7 +384,7 @@ export default function HotelOutletOrdersPage() {
                 {!linked && (order.amountPaid ?? 0) > 0 && order.settlementMethod === 'online' && (
                   <CardFooter className="pt-3">
                     <Link
-                      to={`/dashboard/hotel/refunds?orderId=${order._id}`}
+                      to={`/dashboard/hotel/payments?tab=refunds&orderId=${order._id}`}
                       className="flex items-center gap-1.5 type-res-small text-res-brand hover:underline"
                     >
                       <Wallet className="size-4" />
